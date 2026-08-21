@@ -865,6 +865,41 @@ parar de crescer e não tem como saber que foi o exército que comeu.
 **População na ficha não é enfeite.** Ela decide imposto, recrutamento e crescimento. A
 ficha mostra a população atual e `+N por turno`; a capacidade fica no tooltip.
 
+### A hoste tem identidade própria
+
+⚠️ **`estado.hostes` é indexado por ID DE HOSTE, não por província.** Já foi por província, e
+a chave impedia **estruturalmente** duas hostes no mesmo lugar — o que o cerco exige
+(sitiante do lado de fora, guarnição trancada dentro) e o que diplomacia (passagem
+militar), frota com tropa embarcada e general com nome vão exigir depois. Onde a hoste está
+agora vive em `hoste.posicao`.
+
+Fundir as do mesmo poder que se encontram continua acontecendo — mas agora por **política**,
+em `pousar`, e não porque a estrutura obrigava. É o lugar certo dessa regra: assim dá pra
+abrir exceção quando alguma mecânica pedir.
+
+⚠️ **O id vem de `estado.proximaHoste`, um contador, nunca de sorteio.** A resolução da
+rodada precisa ser determinística. E o contador mora no ESTADO, não numa variável de
+módulo, porque vai pro disco junto: retomar um salvamento tem que continuar a contagem de
+onde parou, senão a próxima leva nasceria com o id de uma hoste que ainda existe.
+
+⚠️ **As ordens também são endereçadas por id de hoste** — "uma ordem por hoste por rodada"
+virou literal. E aqui mora uma armadilha muda: `Record<string, …>` por província e
+`Record<string, …>` por id são o MESMO tipo, então misturar as duas chaves não dá erro de
+compilação nenhum. Dá uma ordem que a resolução nunca encontra e uma tropa que não sai do
+lugar. `Campanha.ordemEm` e `ordenarMarcha` são a ponte para quem ainda pergunta por
+província.
+
+⚠️ **`exercitoEm(provincia)` é CONVENIÊNCIA, não verdade estrutural.** Devolve a primeira
+hoste por id naquele lugar. Hoje nunca há duas, porque quem chega em terra alheia briga ou
+senta — mas o modelo já permite, e quem precisar disso pergunta por `hostesEm`.
+
+⚠️ **`partir` guarda a lista ANTES de esvaziar o tabuleiro.** Esvaziar primeiro e percorrer
+depois percorre o vazio: nenhuma força parte e o mapa fica sem exército nenhum. Foi
+exatamente o bug que apareceu na troca, e o teste de marcha o pegou.
+
+**Renomear o campo foi de propósito.** `exercitos` → `hostes` é o que faz o compilador achar
+os 19 usos em vez de deixá-los compilando errados contra a chave nova.
+
 ### A hoste no mapa
 
 **O exército existe no mundo, não só nas regras.** Um marcador por província com tropa,
