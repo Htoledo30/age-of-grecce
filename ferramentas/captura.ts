@@ -6,7 +6,7 @@
  * salva o PNG em capturas/ e relata qualquer erro de console.
  *
  * uso: npm run capturar -- [nome] [--espera=1000] [--visivel] [--afastar]
- *      [--andar=tecla:milissegundos]
+ *      [--andar=tecla:milissegundos] [--executar='<javascript>']
  *
  * Sem --visivel o navegador roda oculto e renderiza por SOFTWARE (SwiftShader), o que
  * trava o requestAnimationFrame em ~20/s. Serve pra conferir layout e erro, NUNCA pra
@@ -41,6 +41,17 @@ const cliques = argumentos
   .filter((a) => a.startsWith('--clicar='))
   .map((a) => a.split('=')[1] ?? '');
 const andar = argumentos.find((a) => a.startsWith('--andar='))?.slice('--andar='.length);
+/**
+ * --executar='<javascript>' : roda um trecho na página, com `inspecao` à mão, antes dos
+ * cliques e do print. Pode repetir, e os trechos saem na ordem escrita.
+ *
+ * É o que deixa uma captura montar um cenário — conquistar uma província, dar ouro,
+ * pular turnos — em vez de só olhar o estado inicial. Roda contra os ganchos de
+ * `inspecao`, que é global na página e só existe em desenvolvimento.
+ */
+const trechos = argumentos
+  .filter((a) => a.startsWith('--executar='))
+  .map((a) => a.slice('--executar='.length));
 
 async function servidorNoAr(): Promise<boolean> {
   try {
@@ -119,6 +130,11 @@ async function capturar(): Promise<void> {
     await pagina.keyboard.down(tecla);
     await pagina.waitForTimeout(duracao);
     await pagina.keyboard.up(tecla);
+  }
+  for (const trecho of trechos) {
+    // O Playwright avalia a string no contexto da PÁGINA, onde `inspecao` é global.
+    await pagina.evaluate(trecho);
+    await pagina.waitForTimeout(120);
   }
   for (const clique of cliques) {
     const [cx = 0, cy = 0] = clique.split(',').map(Number);

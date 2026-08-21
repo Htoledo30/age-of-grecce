@@ -176,17 +176,6 @@ void main() {
 
 type AjustesProvincias = Ajustes['provincias'];
 
-/** O que a interface precisa saber sobre a província apontada. */
-export interface InfoProvincia {
-  indice: number;
-  id: string;
-  nome: string;
-  regiao: string;
-  areaKm2: number;
-  poder: { id: string; nome: string; povo: string; cor: string };
-  vizinhas: number;
-}
-
 export class ProvinciasMapa {
   readonly visual: Mesh<Geometry, Shader>;
 
@@ -194,7 +183,8 @@ export class ProvinciasMapa {
   private readonly fontePaleta: BufferImageSource;
   private readonly corDoPoder = new Map<string, [number, number, number]>();
   private readonly indiceDaProvincia = new Map<string, number>();
-  private readonly porIndice = new Map<number, InfoProvincia>();
+  /** Todos os ids, na ordem do assado. É o que `pintarDonos` percorre. */
+  private readonly idsDasProvincias: readonly string[];
   private readonly uniformes: Record<string, number>;
   /** Texels do índice por unidade de mundo. É o que converte a posição do mouse em texel. */
   private readonly texelsPorUnidade: number;
@@ -207,6 +197,8 @@ export class ProvinciasMapa {
   private readonly opacidadeCheia: number;
   private selecionada = NENHUMA;
   private coresLigadas = true;
+  /** A paleta mudou desde o último envio? Drenada uma vez por quadro. */
+  private paletaSuja = false;
 
   private constructor(
     dados: Provincias,
@@ -216,22 +208,9 @@ export class ProvinciasMapa {
     alturaDoMundo: number,
     ajustes: AjustesProvincias,
   ) {
-    const poderes = new Map(dados.poderes.map((p) => [p.id, p]));
     for (const poder of dados.poderes) this.corDoPoder.set(poder.id, separarCor(poder.cor));
-    for (const p of dados.provincias) {
-      this.indiceDaProvincia.set(p.id, p.indice);
-      const poder = poderes.get(p.dono);
-      if (!poder) throw new Error(`província "${p.nome}" tem dono inexistente: ${p.dono}`);
-      this.porIndice.set(p.indice, {
-        indice: p.indice,
-        id: p.id,
-        nome: p.nome,
-        regiao: p.regiao,
-        areaKm2: p.areaKm2,
-        poder,
-        vizinhas: p.vizinhas.length,
-      });
-    }
+    for (const p of dados.provincias) this.indiceDaProvincia.set(p.id, p.indice);
+    this.idsDasProvincias = dados.provincias.map((p) => p.id);
 
     this.opacidadeCheia = ajustes.opacidade;
     this.indices = indices;
@@ -247,8 +226,10 @@ export class ProvinciasMapa {
       scaleMode: 'nearest',
       alphaMode: 'no-premultiply-alpha',
     });
+    // Dono ASSADO, que é a condição de 700 a.C. A campanha repinta por cima assim que
+    // existe partida — e a partir daí é ela quem sabe de quem é o quê.
     for (const p of dados.provincias) this.escreverNaPaleta(p.indice, p.dono);
-    this.fontePaleta.update();
+    this.aplicarPaleta();
 
     const [r, g, b] = separarCor(ajustes.corFronteira);
     const [sr, sg, sb] = separarCor(ajustes.corSelecao);
@@ -306,11 +287,38 @@ export class ProvinciasMapa {
     return new ProvinciasMapa(dados, indice, indices, larguraDoMundo, alturaDoMundo, ajustes);
   }
 
-  /** Passa uma província para outro dono. Custa quatro bytes e um upload de paleta. */
+  /** Passa uma província para outro dono. Custa quatro bytes na paleta. */
   trocarDono(idProvincia: string, idPoder: string): void {
     const indice = this.indiceDaProvincia.get(idProvincia);
     if (indice === undefined) throw new Error(`província inexistente: ${idProvincia}`);
     this.escreverNaPaleta(indice, idPoder);
+  }
+
+  /**
+   * Repinta o mapa político inteiro a partir de quem manda em cada província agora.
+   *
+   * **Idempotente de propósito.** Repintar as 205 custa menos que descobrir quais
+   * mudaram, e é isso que faz retomar um salvamento produzir exatamente a mesma tela que
+   * jogar até ali produziria. Quando a IA entrar e vinte províncias trocarem de dono numa
+   * virada de turno, isto continua sendo uma passada e um envio.
+   */
+  pintarDonos(donoDe: (idProvincia: string) => string): void {
+    for (const id of this.idsDasProvincias) {
+      const indice = this.indiceDaProvincia.get(id);
+      if (indice === undefined) continue;
+      this.escreverNaPaleta(indice, donoDe(id));
+    }
+  }
+
+  /**
+   * Manda a paleta pra GPU, se ela mudou.
+   *
+   * Drenada uma vez por quadro em vez de a cada escrita: `fontePaleta.update()` reenvia
+   * 256 KB, e sem esta guarda vinte conquistas numa virada de turno seriam vinte envios.
+   */
+  aplicarPaleta(): void {
+    if (!this.paletaSuja) return;
+    this.paletaSuja = false;
     this.fontePaleta.update();
   }
 
@@ -328,13 +336,21 @@ export class ProvinciasMapa {
     return this.coresLigadas;
   }
 
-  /** Qual província está neste ponto do mundo? `null` no mar e fora da moldura. */
-  provinciaEm(xMundo: number, yMundo: number): InfoProvincia | null {
+  /**
+   * Qual província está neste ponto do mundo? Devolve o ÍNDICE; `null` no mar e fora da
+   * moldura.
+   *
+   * Devolve índice, e não uma ficha montada, de propósito. Esta camada sabe *onde* cada
+   * província está desenhada — quem é o dono dela hoje é assunto da campanha. Quando esta
+   * classe montava a ficha, ela a montava com o dono ASSADO, e a primeira conquista fazia
+   * a interface mentir para sempre.
+   */
+  provinciaEm(xMundo: number, yMundo: number): number | null {
     const x = Math.floor(xMundo * this.texelsPorUnidade);
     const y = Math.floor(yMundo * this.texelsPorUnidade);
     if (x < 0 || y < 0 || x >= this.larguraEmTexels || y >= this.alturaEmTexels) return null;
     const indice = this.indices[y * this.larguraEmTexels + x]!;
-    return indice === NENHUMA ? null : (this.porIndice.get(indice) ?? null);
+    return indice === NENHUMA ? null : indice;
   }
 
   /**
@@ -355,8 +371,8 @@ export class ProvinciasMapa {
     if (forca !== undefined) atual[3] = forca;
   }
 
-  selecionar(provincia: InfoProvincia | null): void {
-    this.selecionada = provincia?.indice ?? NENHUMA;
+  selecionar(indice: number | null): void {
+    this.selecionada = indice ?? NENHUMA;
     this.uniformes['uSelecionada'] = this.selecionada;
   }
 
@@ -368,6 +384,7 @@ export class ProvinciasMapa {
     this.paleta[base + 1] = cor[1];
     this.paleta[base + 2] = cor[2];
     this.paleta[base + 3] = 255;
+    this.paletaSuja = true;
   }
 }
 

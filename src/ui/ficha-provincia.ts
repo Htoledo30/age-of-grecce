@@ -12,7 +12,20 @@
  */
 
 import type { RendaDaProvincia } from '@/campanha/economia';
-import type { InfoProvincia } from '@/mapa/provincias-mapa';
+
+/**
+ * A província como a ficha precisa vê-la.
+ *
+ * Composta pelo `main` a partir do atlas (nome, região) e da campanha (dono de AGORA).
+ * A camada de mapa não monta isto: ela sabe onde cada província está desenhada, não de
+ * quem ela é hoje — e quando montava, montava com o dono assado e mentia depois da
+ * primeira conquista.
+ */
+export interface VistaDaProvincia {
+  nome: string;
+  regiao: string;
+  poder: { nome: string; povo: string; cor: string };
+}
 
 export class FichaProvincia {
   /** Nomes das construções, pra ficha não ter que repetir o catálogo. */
@@ -54,7 +67,7 @@ export class FichaProvincia {
 
   /** `null` esconde a ficha — é o que acontece quando o clique cai no mar. */
   mostrar(
-    provincia: InfoProvincia | null,
+    provincia: VistaDaProvincia | null,
     renda: RendaDaProvincia | null = null,
     obra: { nome: string; turnosRestantes: number } | null = null,
   ): void {

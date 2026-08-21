@@ -19,7 +19,6 @@ import {
   carregarProvincias,
 } from '@/dados/carregar';
 import { CenaMapa } from '@/mapa/cena-mapa';
-import type { InfoProvincia } from '@/mapa/provincias-mapa';
 import { PainelFps } from '@/ui/painel-fps';
 import { PainelLateral } from '@/ui/painel-lateral';
 import { AcoesProvincia } from '@/ui/acoes-provincia';
@@ -27,6 +26,7 @@ import { Governo } from '@/ui/governo';
 import { Balanco } from '@/ui/balanco';
 import type { VistaDeAcoes } from '@/ui/acoes-provincia';
 import { FichaProvincia } from '@/ui/ficha-provincia';
+import type { VistaDaProvincia } from '@/ui/ficha-provincia';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Campanha } from '@/campanha/campanha';
@@ -70,7 +70,7 @@ async function iniciar(): Promise<void> {
       Object.entries(carregarConstrucoes().construcoes).map(([id, c]) => [id, c.nome]),
     ),
   );
-  const inicio = new InicioJogo(ui, provincias);
+  const inicio = new InicioJogo(ui);
   const barraTurno = new BarraTurno(ui);
   // A casca de governo já nasce com abas: a segunda (poderes, diplomacia, modos de mapa)
   // vai custar uma linha aqui em vez de uma remodelação de layout.
@@ -86,7 +86,25 @@ async function iniciar(): Promise<void> {
     ajustes.jogo,
   );
   let fase: 'menu' | 'escolha' | 'campanha' = 'menu';
-  let selecionada: InfoProvincia | null = null;
+  /** O ID da província escolhida — não uma ficha montada, que envelheceria. */
+  let selecionada: string | null = null;
+
+  /**
+   * Monta a ficha de uma província juntando as duas verdades: o atlas diz o que ela É, a
+   * campanha diz de quem ela É AGORA.
+   *
+   * Montar isto a cada desenho, em vez de guardar o resultado, é o que garante que
+   * conquistar uma província atualize a ficha dela no mesmo instante.
+   */
+  function vistaDaProvincia(id: string): VistaDaProvincia {
+    const p = atlas.provincia(id);
+    const poder = campanha.poder(campanha.donoDe(id));
+    return {
+      nome: p.nome,
+      regiao: p.regiao,
+      poder: { nome: poder.nome, povo: poder.povo, cor: poder.cor },
+    };
+  }
 
   /**
    * Redesenha a barra a partir do estado, inteira, sempre.
@@ -111,10 +129,10 @@ async function iniciar(): Promise<void> {
 
     // A ficha e o painel de investir são desenhados a partir da MESMA seleção, sempre
     // juntos: assim não existe estado em que um mostra uma província e o outro, outra.
-    const obraNaFicha = selecionada ? campanha.obraEm(selecionada.id) : undefined;
+    const obraNaFicha = selecionada ? campanha.obraEm(selecionada) : undefined;
     ficha.mostrar(
-      selecionada,
-      selecionada ? campanha.economiaDe(selecionada.id) : null,
+      selecionada ? vistaDaProvincia(selecionada) : null,
+      selecionada ? campanha.economiaDe(selecionada) : null,
       obraNaFicha
         ? {
             nome: campanha.construcoesDisponiveis[obraNaFicha.construcao]?.nome ?? '',
@@ -142,18 +160,19 @@ async function iniciar(): Promise<void> {
     if (fase !== 'campanha') return null;
     const alvo = selecionada;
     if (!alvo) return { pode: false, motivo: 'Clique numa província sua para investir nela.' };
+    const nomeDoAlvo = atlas.nomeDe(alvo);
     // O portão é a PROVÍNCIA, não uma ação: estar sem dinheiro não pode esconder a lista
     // de construções, senão o jogador quebrado deixa de ver o que existe pra comprar.
-    const r = campanha.podeAgirEm(alvo.id);
-    if (!r.pode) return { pode: false, motivo: `${alvo.nome}: ${r.motivo}.` };
-    const erguidas = campanha.construcoesEm(alvo.id);
-    const obra = campanha.obraEm(alvo.id);
+    const r = campanha.podeAgirEm(alvo);
+    if (!r.pode) return { pode: false, motivo: `${nomeDoAlvo}: ${r.motivo}.` };
+    const erguidas = campanha.construcoesEm(alvo);
+    const obra = campanha.obraEm(alvo);
     return {
       pode: true,
-      provincia: { id: alvo.id, nome: alvo.nome },
+      provincia: { id: alvo, nome: nomeDoAlvo },
       construcoes: Object.entries(campanha.construcoesDisponiveis).map(([id, c]) => {
-        const conta = campanha.retornoDaConstrucaoEm(alvo.id, id);
-        const r = campanha.podeConstruir(alvo.id, id);
+        const conta = campanha.retornoDaConstrucaoEm(alvo, id);
+        const r = campanha.podeConstruir(alvo, id);
         return {
           id,
           nome: c.nome,
@@ -167,11 +186,11 @@ async function iniciar(): Promise<void> {
           turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
         };
       }),
-      bonusAtual: campanha.investimentoEm(alvo.id)?.percentual ?? 0,
-      arrecadacoesRestantes: campanha.investimentoEm(alvo.id)?.arrecadacoesRestantes ?? 0,
-      avaliar: (valor) => campanha.podeInvestir(alvo.id, valor),
+      bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,
+      arrecadacoesRestantes: campanha.investimentoEm(alvo)?.arrecadacoesRestantes ?? 0,
+      avaliar: (valor) => campanha.podeInvestir(alvo, valor),
       duracao: ajustes.jogo.economia.investimento.arrecadacoes,
-      retorno: (valor) => campanha.retornoDe(alvo.id, valor),
+      retorno: (valor) => campanha.retornoDe(alvo, valor),
     };
   }
 
@@ -221,7 +240,12 @@ async function iniciar(): Promise<void> {
     governo.alternar();
   };
 
-  campanha.aoMudar = repintar;
+  // O mapa se repinta junto com a interface: mudou o dono nas regras, mudou a cor na
+  // tela, no mesmo instante e pela mesma verdade.
+  campanha.aoMudar = () => {
+    cena.pintarDonos((id) => campanha.donoDe(id));
+    repintar();
+  };
   barraTurno.aoPassarTurno = () => campanha.passarTurno();
   acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
@@ -240,13 +264,19 @@ async function iniciar(): Promise<void> {
     inicio.encerrar();
     campanha.comecar(idPoder);
   };
-  cena.aoSelecionar = (provincia) => {
+  cena.aoSelecionar = (indice) => {
+    const provincia = indice === null ? null : (atlas.porIndice(indice) ?? null);
     if (fase === 'escolha') {
-      inicio.selecionar(provincia);
+      if (!provincia) {
+        inicio.selecionar(null);
+        return;
+      }
+      const dono = campanha.poder(campanha.donoDe(provincia.id));
+      inicio.selecionar({ poder: dono, provincias: campanha.provinciasDe(dono.id).length });
       return;
     }
     if (fase !== 'campanha') return;
-    selecionada = provincia;
+    selecionada = provincia?.id ?? null;
     repintar();
   };
 
@@ -272,7 +302,14 @@ async function iniciar(): Promise<void> {
         turno: campanha.turno,
         tesouro: campanha.tesouro,
         renda: campanha.renda,
+        provincias: campanha.jogador ? campanha.provinciasDe(campanha.jogador.id).length : 0,
+        poderesVivos: campanha.poderesVivos().length,
       }),
+      donoDe: (idProvincia: string) => campanha.donoDe(idProvincia),
+      // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
+      // ser vista e testada antes de existir exército.
+      conquistar: (idProvincia: string, idPoder: string) =>
+        campanha.trocarDono(idProvincia, idPoder),
     };
   }
 

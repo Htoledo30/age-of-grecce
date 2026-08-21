@@ -6,10 +6,18 @@
  * liberados, não será necessário trocar o método de seleção.
  */
 
-import type { Provincias } from '@/dados/esquema';
-import type { InfoProvincia } from '@/mapa/provincias-mapa';
-
 const PODER_DISPONIVEL = 'atenas';
+
+/**
+ * O poder sob o cursor, como a tela de escolha precisa vê-lo.
+ *
+ * A contagem de províncias vem da CAMPANHA, não do arquivo assado: quando a conquista
+ * existir, escolher um poder tem que mostrar o tamanho que ele tem agora.
+ */
+export interface VistaDeEscolha {
+  poder: { id: string; nome: string; povo: string; cor: string };
+  provincias: number;
+}
 
 export class InicioJogo {
   private readonly raiz = document.createElement('div');
@@ -26,10 +34,7 @@ export class InicioJogo {
   aoPedirEscolha: () => void = () => {};
   aoComecarCampanha: (idPoder: string) => void = () => {};
 
-  constructor(
-    pai: HTMLElement,
-    private readonly dados: Provincias,
-  ) {
+  constructor(pai: HTMLElement) {
     this.raiz.className = 'inicio-jogo';
     this.montarMenu();
     this.montarEscolha();
@@ -53,14 +58,13 @@ export class InicioJogo {
     marcarFase('escolha');
   }
 
-  selecionar(provincia: InfoProvincia | null): void {
-    if (!provincia) {
+  selecionar(escolha: VistaDeEscolha | null): void {
+    if (!escolha) {
       this.limparEscolha();
       return;
     }
 
-    const poder = provincia.poder;
-    const quantidade = this.dados.provincias.filter((p) => p.dono === poder.id).length;
+    const { poder, provincias: quantidade } = escolha;
     const disponivel = poder.id === PODER_DISPONIVEL;
 
     this.nomeEscolhido.textContent = poder.nome;

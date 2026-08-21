@@ -19,7 +19,6 @@ import { ALTURA_BASE, LARGURA_BASE, aoMudarEscala, densidadeEfetiva } from '@/es
 import type { Ajustes, Mundo, Provincias } from '@/dados/esquema';
 import { Detalhes } from './detalhes';
 import { ProvinciasMapa } from './provincias-mapa';
-import type { InfoProvincia } from './provincias-mapa';
 
 /** Quanto o ponteiro pode andar entre apertar e soltar e a coisa ainda ser um clique. */
 const FOLGA_DO_CLIQUE = 5;
@@ -41,8 +40,13 @@ export class CenaMapa {
    */
   private percursoDoBotao = 0;
 
-  /** Avisa a interface que a província selecionada mudou. */
-  aoSelecionar: (provincia: InfoProvincia | null) => void = () => {};
+  /**
+   * Avisa a interface que a província selecionada mudou, pelo ÍNDICE dela.
+   *
+   * Índice e não ficha montada: quem sabe o nome e a região é o atlas, quem sabe o dono
+   * de hoje é a campanha, e esta camada não é nenhum dos dois.
+   */
+  aoSelecionar: (indice: number | null) => void = () => {};
 
   private constructor(
     private readonly dados: Mundo,
@@ -120,6 +124,17 @@ export class CenaMapa {
     this.camera.mover(0, 0);
   }
 
+  /**
+   * Repinta o mapa político a partir de quem manda em cada província agora.
+   *
+   * O envio pra GPU não acontece aqui: `escreverNaPaleta` só marca a paleta como suja, e
+   * `atualizar` drena isso uma vez por quadro. Vinte conquistas numa virada de turno
+   * viram um envio, não vinte.
+   */
+  pintarDonos(donoDe: (idProvincia: string) => string): void {
+    this.camadaProvincias.pintarDonos(donoDe);
+  }
+
   /** Liga e desliga a cor dos reinos. O recorte das províncias continua desenhado. */
   mostrarCoresDosPoderes(ligadas: boolean): void {
     this.camadaProvincias.mostrarCores(ligadas);
@@ -155,9 +170,9 @@ export class CenaMapa {
     if (entrada.botaoSegurando(0)) this.percursoDoBotao += Math.abs(m.dx) + Math.abs(m.dy);
     if (entrada.botaoSoltou(0) && this.percursoDoBotao <= FOLGA_DO_CLIQUE) {
       const alvo = this.camera.palcoParaMundo(m.x, m.y);
-      const provincia = this.camadaProvincias.provinciaEm(alvo.x, alvo.y);
-      this.camadaProvincias.selecionar(provincia);
-      this.aoSelecionar(provincia);
+      const indice = this.camadaProvincias.provinciaEm(alvo.x, alvo.y);
+      this.camadaProvincias.selecionar(indice);
+      this.aoSelecionar(indice);
     }
 
     const horizontal =
@@ -178,6 +193,8 @@ export class CenaMapa {
       this.camera.aproximar(m.roda < 0 ? passo : 1 / passo, m.x, m.y);
     }
 
+    // A paleta é drenada uma vez por quadro, depois de tudo que pôde sujá-la.
+    this.camadaProvincias.aplicarPaleta();
     this.detalhes.atualizar(this.camera.zoom);
 
     const centro = this.camera.mundoParaPalco(0, 0);
