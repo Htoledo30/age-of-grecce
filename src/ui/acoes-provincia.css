@@ -13,6 +13,16 @@
   align-items: stretch;
   gap: var(--gap-2);
   width: 320px;
+  /* Rede de segurança: a coluna cresce pra cima a partir da borda de baixo, e um dia
+     mais um painel a faria estourar 1080 e cortar o de cima sem aviso. Hoje ela não
+     rola — a ficha do exército foi pra baixo-centro justamente pra que não precise. */
+  max-height: calc(100% - var(--gap-3) * 2);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.coluna-provincia::-webkit-scrollbar {
+  display: none;
 }
 
 .acoes {

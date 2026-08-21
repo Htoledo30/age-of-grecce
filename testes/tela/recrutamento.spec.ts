@@ -65,19 +65,16 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   });
   expect(depois).toEqual({ forca: 1000, populacao: 34_000 });
 
-  // Os três painéis contam a mesma história.
+  // Os painéis contam a mesma história.
   await expect(page.locator('dd.ficha__populacao')).toContainText('34.000');
-  await expect(page.locator('.recrutamento__guarnicao')).toContainText('1.000 homens em armas');
   await expect(page.locator('.recrutamento__alvo')).toContainText('cabem mais 2.500');
   // 34.000 x 0,005 = 170 de imposto, contra 175: quem está em armas não é tributado.
   await expect(page.locator('.barra-turno__ouro')).toContainText('+703');
   await expect(page.locator('.barra-turno__ouro')).toContainText('−200');
 
-  // E dispensar desfaz tudo, pra que população não seja catraca de sentido único.
-  await page.getByRole('button', { name: /Dispensar/ }).click();
-  await expect(page.locator('dd.ficha__populacao')).toContainText('35.000');
-  await expect(page.locator('.recrutamento__guarnicao')).toBeHidden();
-  await expect(page.locator('.barra-turno__ouro')).not.toContainText('−');
+  // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
+  // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.
+  await expect(page.locator('.recrutamento')).not.toContainText('Dispensar');
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });

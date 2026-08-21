@@ -8,6 +8,8 @@ import '@/ui/inicio-jogo.css';
 import '@/ui/controles.css';
 import '@/ui/barra-turno.css';
 import '@/ui/recrutamento.css';
+import '@/ui/exercito-ficha.css';
+import '@/ui/hostes-mapa.css';
 
 import { iniciarEscala } from '@/estilo/escala';
 import { Entrada } from '@/nucleo/entrada';
@@ -30,6 +32,10 @@ import { FichaProvincia } from '@/ui/ficha-provincia';
 import type { VistaDaProvincia } from '@/ui/ficha-provincia';
 import { Recrutamento } from '@/ui/recrutamento';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
+import { ExercitoFicha } from '@/ui/exercito-ficha';
+import type { VistaDoExercito } from '@/ui/exercito-ficha';
+import { HostesMapa } from '@/ui/hostes-mapa';
+import type { MarcadorDeHoste } from '@/ui/hostes-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Campanha } from '@/campanha/campanha';
@@ -76,6 +82,12 @@ async function iniciar(): Promise<void> {
       Object.entries(carregarConstrucoes().construcoes).map(([id, c]) => [id, c.nome]),
     ),
   );
+  // Os marcadores ficam numa camada própria sobre o mapa, e não dentro de painel nenhum:
+  // eles pertencem ao mundo, e é a câmera que decide onde cada um aparece.
+  const hostesMapa = new HostesMapa(ui);
+  // A hoste escolhida ganha região própria, em baixo-centro: ela não é a província, e
+  // assim que marchar as duas deixam de coincidir.
+  const exercitoFicha = new ExercitoFicha(ui);
   const inicio = new InicioJogo(ui);
   const barraTurno = new BarraTurno(ui);
   // A casca de governo já nasce com abas: a segunda (poderes, diplomacia, modos de mapa)
@@ -94,6 +106,14 @@ async function iniciar(): Promise<void> {
   let fase: 'menu' | 'escolha' | 'campanha' = 'menu';
   /** O ID da província escolhida — não uma ficha montada, que envelheceria. */
   let selecionada: string | null = null;
+  /**
+   * A província onde está a HOSTE escolhida, ou `null`.
+   *
+   * Seleção separada da província de propósito: clicar no marcador escolhe a tropa,
+   * clicar no mapa escolhe o chão. São duas coisas diferentes no mesmo lugar, e é por
+   * isso que dispensar saiu do painel de recrutamento.
+   */
+  let hosteSelecionada: string | null = null;
 
   /**
    * Monta a ficha de uma província juntando as duas verdades: o atlas diz o que ela É, a
@@ -150,6 +170,16 @@ async function iniciar(): Promise<void> {
 
     acoes.mostrar(vistaDeAcoes());
     recrutamento.mostrar(vistaDeRecrutamento());
+
+    // A hoste selecionada pode ter deixado de existir (dispensada, desertada). Limpar
+    // ANTES de montar a vista é o que impede a ficha de descrever um exército que já não
+    // está no mapa.
+    if (hosteSelecionada !== null && !campanha.exercitoEm(hosteSelecionada)) {
+      hosteSelecionada = null;
+    }
+    hostesMapa.mostrar(fase === 'campanha' ? marcadoresDasHostes() : []);
+    hostesMapa.selecionar(hosteSelecionada);
+    exercitoFicha.mostrar(vistaDoExercito());
 
     // A janela de governo se redesenha junto com o resto, mas só quando está aberta:
     // fechada, montar a tabela seria trabalho jogado fora a cada turno.
@@ -226,10 +256,59 @@ async function iniciar(): Promise<void> {
       provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
       populacao: campanha.populacaoDe(alvo),
       teto: campanha.tetoDeLevaEm(alvo),
-      emArmas: campanha.forcaEm(alvo),
       custoPorHomem: ajustes.jogo.combate.custoPorHomem,
       manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
       avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
+    };
+  }
+
+  /** Onde desenhar cada hoste, e de que cor. O centro da província é a âncora. */
+  function marcadoresDasHostes(): MarcadorDeHoste[] {
+    const meu = campanha.jogador?.id ?? null;
+    return campanha.hostes().map(({ provincia, exercito }) => {
+      const p = atlas.provincia(provincia);
+      const poder = campanha.poder(exercito.poder);
+      return {
+        provincia,
+        x: p.centro.x,
+        y: p.centro.y,
+        forca: campanha.forcaEm(provincia),
+        // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra
+        // alheia as duas deixam de coincidir, e é aí que a cor passa a informar.
+        cor: poder.cor,
+        nomeDoPoder: poder.nome,
+        minha: exercito.poder === meu,
+      };
+    });
+  }
+
+  /** A hoste escolhida, como a ficha dela precisa vê-la. */
+  function vistaDoExercito(): VistaDoExercito | null {
+    if (fase !== 'campanha' || hosteSelecionada === null) return null;
+    const onde = hosteSelecionada;
+    const exercito = campanha.exercitoEm(onde);
+    if (!exercito) return null;
+    const poder = campanha.poder(exercito.poder);
+    const forca = campanha.forcaEm(onde);
+    return {
+      provincia: { id: onde, nome: atlas.nomeDe(onde) },
+      poder: { nome: poder.nome, cor: poder.cor },
+      forca,
+      manutencao: Math.round(forca * ajustes.jogo.combate.manutencaoPorHomem),
+      emTerraAlheia: campanha.donoDe(onde) !== exercito.poder,
+      minha: campanha.jogador?.id === exercito.poder,
+      origens: Object.entries(exercito.origem)
+        .map(([id, homens]) => {
+          const donoAgora = campanha.donoDe(id);
+          return {
+            provincia: id,
+            nome: atlas.nomeDe(id),
+            homens,
+            perdida: donoAgora !== exercito.poder,
+            donoAtual: campanha.poder(donoAgora).nome,
+          };
+        })
+        .sort((a, b) => b.homens - a.homens),
     };
   }
 
@@ -289,7 +368,14 @@ async function iniciar(): Promise<void> {
   acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
   recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
-  recrutamento.aoDispensar = (idProvincia, homens) => campanha.dispensar(idProvincia, homens);
+  exercitoFicha.aoDispensar = (idProvincia, homens) => campanha.dispensar(idProvincia, homens);
+  hostesMapa.aoSelecionar = (idProvincia) => {
+    // Clicar na hoste escolhe as DUAS coisas: a tropa e o chão sob ela. Os dois painéis
+    // ficam verdadeiros ao mesmo tempo, e o jogador não precisa clicar duas vezes.
+    hosteSelecionada = idProvincia;
+    selecionada = idProvincia;
+    repintar();
+  };
 
   inicio.aoPedirEscolha = () => {
     fase = 'escolha';
@@ -318,12 +404,18 @@ async function iniciar(): Promise<void> {
     }
     if (fase !== 'campanha') return;
     selecionada = provincia?.id ?? null;
+    // Clicar no mapa é escolher CHÃO: solta a hoste. Sem isto, a ficha do exército
+    // ficaria em pé descrevendo uma tropa que o jogador não está mais olhando.
+    hosteSelecionada = null;
     repintar();
   };
 
   iniciarLaco((relogio) => {
     if (entrada.apertou('F3')) painel.alternar();
     cena.atualizar(relogio, entrada);
+    // Os marcadores seguem o mundo: reprojetados a cada quadro, arrastar e dar zoom
+    // levam a peça junto.
+    hostesMapa.posicionar(cena.camera);
     painel.atualizar(relogio, cena.camera);
     entrada.novoQuadro();
   });
@@ -358,6 +450,8 @@ async function iniciar(): Promise<void> {
         campanha.construir(idProvincia, idConstrucao),
       recrutar: (idProvincia: string, homens: number) => campanha.recrutar(idProvincia, homens),
       forcaEm: (idProvincia: string) => campanha.forcaEm(idProvincia),
+      dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
+      noExilio: (idPoder: string) => campanha.noExilio(idPoder),
       populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.

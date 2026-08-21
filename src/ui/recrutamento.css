@@ -53,16 +53,6 @@
   color: var(--sangue);
 }
 
-/* A guarnição é fato consumado, não oferta: fica em ouro, como a obra em curso. */
-.recrutamento__guarnicao {
-  margin-top: var(--gap-3);
-  padding-top: var(--gap-2);
-  border-top: 1px solid var(--papel-escuro);
-  font-family: var(--fonte-numero);
-  font-size: 14px;
-  color: var(--tinta);
-}
-
 .recrutamento__botao {
   display: block;
   width: 100%;
@@ -74,7 +64,6 @@
    `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
    aqui em cima deixa de conseguir se esconder. */
 .recrutamento__botao[hidden],
-.recrutamento__valor[hidden],
-.recrutamento__guarnicao[hidden] {
+.recrutamento__valor[hidden] {
   display: none;
 }

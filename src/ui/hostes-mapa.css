@@ -1,0 +1,53 @@
+/* Marcadores de hoste sobre o mapa. Medidas em pixels do palco 1920x1080 — ver escala.ts.
+
+   A camada é transparente a ponteiro; só as peças escutam clique. É o que deixa arrastar
+   o mapa passando por cima delas sem prender o arrasto. */
+/* ⚠️ `#ui > .hostes` e não `.hostes`: `base.css` tem `#ui > * { pointer-events: auto }`,
+   e um seletor de id vence um de classe. Escrito só com a classe, esta camada — que cobre
+   a tela inteira — comia TODOS os cliques do mapa, e arrastar, dar zoom e selecionar
+   província paravam de funcionar sem erro nenhum no console. */
+#ui > .hostes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A peça: uma ficha de papel com o número de homens, na cor do poder DONO DA HOSTE —
+   que não é necessariamente a cor do chão onde ela está pisando. */
+.hostes__marca {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  min-width: 34px;
+  padding: 2px 6px;
+  border: 1px solid var(--tinta);
+  border-radius: 2px;
+  background: var(--cor-da-hoste, var(--papel));
+  color: var(--tinta);
+  font-family: var(--fonte-numero);
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  /* Sombra curta: separa a peça do terreno sem virar interface flutuante. */
+  box-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+}
+
+.hostes__marca:hover {
+  border-color: var(--papel-claro);
+}
+
+/* A hoste do jogador tem traço mais forte: num mapa com 148 poderes, achar a sua tem
+   que ser instantâneo. */
+.hostes__marca[data-minha='sim'] {
+  border-width: 2px;
+  font-weight: bold;
+}
+
+/* Selecionada: mesmo vocabulário da província escolhida, pra que "o que eu cliquei"
+   se leia igual em toda a tela. */
+.hostes__marca[data-selecionada='sim'] {
+  outline: 2px solid var(--papel-claro);
+  outline-offset: 1px;
+}

@@ -1,5 +1,11 @@
 /**
- * O bloco de recrutamento: pôr gente em armas nesta província.
+ * O bloco de recrutamento: pôr gente em armas nesta província. **Só isso.**
+ *
+ * Ver e dispensar tropa moravam aqui e saíram para `exercito-ficha.ts`, e a razão é
+ * estrutural: aquilo só funcionava enquanto a hoste e o Quartel estivessem na mesma
+ * província. Assim que a tropa marchar, comandá-la a partir de um painel chamado
+ * "Recrutar" deixa de fazer sentido. **Recrutar é ação da PROVÍNCIA; dispensar é ação da
+ * HOSTE** — seleções diferentes, painéis diferentes.
  *
  * Arquivo próprio, e não mais uma seção dentro de `acoes-provincia.ts`, porque é outra
  * mecânica: investir e construir mexem em dinheiro, recrutar mexe em **gente**. Juntar as
@@ -21,8 +27,6 @@ export type VistaDeRecrutamento =
       populacao: number;
       /** Quantos ainda cabem em armas. Zero quando a província já deu o que tinha. */
       teto: number;
-      /** Força parada aqui agora, de qualquer origem. */
-      emArmas: number;
       custoPorHomem: number;
       manutencaoPorHomem: number;
       avaliar: (
@@ -38,12 +42,9 @@ export class Recrutamento {
   private readonly campoHomens = document.createElement('input');
   private readonly previsao = document.createElement('p');
   private readonly botaoRecrutar = document.createElement('button');
-  private readonly guarnicao = document.createElement('p');
-  private readonly botaoDispensar = document.createElement('button');
   private vista: VistaDeRecrutamento | null = null;
 
   aoRecrutar: (idProvincia: string, homens: number) => void = () => {};
-  aoDispensar: (idProvincia: string, homens: number) => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'recrutamento';
@@ -79,30 +80,7 @@ export class Recrutamento {
       this.botaoRecrutar.blur();
     });
 
-    this.guarnicao.className = 'recrutamento__guarnicao';
-
-    this.botaoDispensar.className = 'botao recrutamento__botao';
-    this.botaoDispensar.type = 'button';
-    this.botaoDispensar.textContent = 'Dispensar';
-    this.botaoDispensar.title =
-      'Manda a tropa pra casa. Cada homem volta à província de onde saiu, e volta a ser ' +
-      'tributado ali.';
-    this.botaoDispensar.addEventListener('click', () => {
-      const vista = this.vista;
-      if (!vista?.pode || vista.emArmas <= 0) return;
-      this.aoDispensar(vista.provincia.id, vista.emArmas);
-      this.botaoDispensar.blur();
-    });
-
-    this.raiz.append(
-      this.titulo,
-      this.alvo,
-      this.campoHomens,
-      this.previsao,
-      this.botaoRecrutar,
-      this.guarnicao,
-      this.botaoDispensar,
-    );
+    this.raiz.append(this.titulo, this.alvo, this.campoHomens, this.previsao, this.botaoRecrutar);
     pai.appendChild(this.raiz);
   }
 
@@ -117,8 +95,6 @@ export class Recrutamento {
     if (!vista.pode) {
       this.alvo.textContent = vista.motivo;
       this.previsao.textContent = '';
-      this.guarnicao.hidden = true;
-      this.botaoDispensar.hidden = true;
       return;
     }
 
@@ -128,16 +104,6 @@ export class Recrutamento {
     this.alvo.title =
       'O teto é uma fração da população, e quem já está fora conta contra ele: uma ' +
       'província despovoada não vira exército por mais rico que o reino seja.';
-
-    // A guarnição só aparece quando existe. Botão de dispensar sem tropa nenhuma seria
-    // um controle que não faz nada.
-    const temTropa = vista.emArmas > 0;
-    this.guarnicao.hidden = !temTropa;
-    this.botaoDispensar.hidden = !temTropa;
-    if (temTropa) {
-      this.guarnicao.textContent = `${numero(vista.emArmas)} homens em armas aqui`;
-      this.botaoDispensar.textContent = `Dispensar ${numero(vista.emArmas)}`;
-    }
 
     this.avaliar();
   }

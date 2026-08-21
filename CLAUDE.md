@@ -487,7 +487,15 @@ geográfica real do gerador é `ne_10m_land.geojson`, ou seja, a **costa**. Medi
 varredura de `biomas.png` × `provincias.png`: Larissa, a planície da Tessália, sai como
 55% terreno alto; Mantineia e Tegeia, planaltos pelados da Arcádia, saem 100% floresta; a
 Ática sai com 0% de terreno alto, sem Himeto nem Láurion. **Litoral é dado verdadeiro e
-pode virar regra (161 províncias costeiras, 44 interiores); relevo e bioma não.** Bônus
+pode virar regra; relevo e bioma não.**
+
+⚠️ E o litoral tem uma pegadinha medida: as **26 primeiras linhas e as 26 últimas colunas**
+da moldura são 100% água — canal da moldura, não mar. Contando a água crua dão **161
+costeiras**; cortando a faixa dão **151 costeiras e 54 interiores**, e as dez que caem são
+Agrianes, Astas, Derríopo, Górdio, Licaônia, Medos, Odrisas, Penestas, Peônia e Pessinunte.
+Górdio e Pessinunte estão a 200 km de qualquer mar. **Quem for gerar o mar corta 26 px ao
+norte e a leste** — sem isso, o Ponto Euxino fica soldado ao Egeu pelo Bósforo e cidades do
+planalto anatólio viram candidatas a porto. Bônus
 de terreno em batalha, custo de marcha e vocação agrícola derivados de bioma seriam regra
 construída sobre ficção plausível — o pior tipo de bug, o que ninguém enxerga.
 
@@ -743,6 +751,63 @@ parar de crescer e não tem como saber que foi o exército que comeu.
 **População na ficha não é enfeite.** Ela saiu do esconderijo porque decide duas coisas: a
 Ágora multiplica imposto, que vem de população, e o teto de recrutamento é uma fração
 dela. Enquanto ficou invisível, escolher a Ágora era um chute informado.
+
+### A hoste no mapa
+
+**O exército existe no mundo, não só nas regras.** Um marcador por província com tropa,
+com o número de homens escrito, na cor do **dono da hoste** — que não é necessariamente a
+cor do chão sob ela.
+
+**É HTML por cima do canvas, não desenho no canvas**, e aqui a regra da casa paga bem: o
+marcador carrega o número em texto de verdade, com tooltip e foco de teclado, e muda de cor
+por variável CSS. Um sprite não daria nada disso, e o projeto não tem sprite pra dar. A cada
+quadro, `camera.mundoParaPalco` põe a peça onde a província está — ela pertence ao mundo;
+só quem desenha é que é HTML.
+
+⚠️ **`#ui > .hostes`, nunca `.hostes`.** `base.css` tem `#ui > * { pointer-events: auto }`,
+e seletor de id vence seletor de classe. Escrita só com a classe, a camada — que cobre a
+tela inteira — comia **todos** os cliques do mapa: arrastar, dar zoom e selecionar
+província paravam de funcionar **sem um erro sequer no console**. `testes/tela/hostes.spec.ts`
+guarda isso.
+
+### Quatro regiões, quatro perguntas
+
+| região | elemento | responde |
+|---|---|---|
+| topo | `.barra-turno` | em que pé a campanha está |
+| topo-direita | `.painel-lateral` | o que o jogador **aciona** (global) |
+| baixo-esquerda | `.coluna-provincia` | a **província** escolhida — ações em cima, ficha embaixo |
+| **baixo-centro** | `.exercito` | a **hoste** escolhida |
+
+A hoste ganhou região própria por dois motivos, e o segundo é estrutural: quatro painéis
+empilhados na coluna estouravam os 1080 e cortavam o de cima; e **a hoste não é a
+província** — assim que ela marchar, as duas deixam de coincidir, e um painel dentro da
+coluna da província estaria mentindo sobre o que descreve.
+
+⚠️ **Recrutar é ação da PROVÍNCIA; dispensar é ação da HOSTE.** Ver e dispensar tropa já
+moraram dentro do painel de recrutamento, e aquilo só funcionava enquanto exército e
+Quartel estivessem na mesma província. Seleções diferentes viram painéis diferentes.
+
+Clicar no marcador escolhe **as duas coisas** — a tropa e o chão sob ela —, e os dois
+painéis ficam verdadeiros ao mesmo tempo. Clicar no mapa é escolher chão, e solta a hoste.
+
+### O exílio, e o homem de terra perdida
+
+⚠️ **Perder o último chão não é morrer.** `vivo` é ter **chão OU hoste**. Antes era só
+território, e o poder era dado como eliminado enquanto o exército dele continuava de pé no
+mapa. Perder tudo é ficar **no exílio** (`noExilio`), e o exílio não precisa de
+temporizador: sem província não há renda, sem renda a folha não é paga, e a tropa deserta
+sozinha em poucos turnos. **A regra da deserção, que já existia, é quem dá o prazo.**
+
+⚠️ **Quem é dispensado volta pra terra dele, mesmo que ela seja do inimigo agora.** Uma
+regra só, sem exceção: gente pertence ao chão, não a quem manda no chão. A consequência é
+dura e é de propósito — dispensar tropa levantada em província perdida **entrega aqueles
+habitantes ao conquistador**, e por isso retomar a terra antes de desmobilizar vira
+decisão. A ficha do exército escreve isso em vermelho, província por província. A
+alternativa (fazê-los sumir do mundo) tornaria população uma catraca de sentido único.
+
+As duas se encaixam: o exército no exílio deserta de volta para a terra natal, que agora é
+do conquistador — e engorda exatamente quem o expulsou.
 
 ## Armadilhas conhecidas
 

@@ -1,0 +1,120 @@
+/* Ficha do exército, na coluna da seleção.
+   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
+
+/* Baixo-centro: a QUARTA região da interface.
+   Painel direita = o que se aciona · coluna baixo-esquerda = a província escolhida ·
+   barra topo = o estado da campanha · e aqui, a HOSTE escolhida.
+
+   Região própria e não mais um painel na coluna da província, por dois motivos: a hoste
+   não é a província (assim que ela marchar, as duas deixam de coincidir), e quatro painéis
+   empilhados estouravam os 1080 e cortavam o de cima.
+
+   Largura por CONTEÚDO e centrada por translate, nunca largura cheia: um painel largo
+   ancorado embaixo comeria clique de mapa de ponta a ponta. */
+.exercito {
+  position: absolute;
+  bottom: var(--gap-3);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  max-height: calc(100% - var(--gap-3) * 2 - 80px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: var(--gap-3);
+  background: var(--papel);
+  border: 1px solid var(--tinta-fraca);
+  color: var(--tinta);
+}
+
+.exercito[hidden] {
+  display: none;
+}
+
+.exercito__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 18px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: var(--gap-2);
+  border-bottom: 1px solid var(--papel-escuro);
+  margin-bottom: var(--gap-2);
+}
+
+.exercito__poder {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.exercito__tinta {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--tinta-fraca);
+}
+
+.exercito__forca {
+  margin-top: var(--gap-2);
+  font-family: var(--fonte-numero);
+  font-size: 20px;
+}
+
+.exercito__custo {
+  font-size: 12px;
+  color: var(--tinta-tenue);
+}
+
+/* Estar em terra alheia é fato, não erro: ouro, como a obra em curso. */
+.exercito__aviso {
+  margin-top: var(--gap-1);
+  font-size: 12px;
+  color: var(--ouro);
+}
+
+.exercito__aviso[hidden] {
+  display: none;
+}
+
+.exercito__grupo {
+  margin-top: var(--gap-3);
+  margin-bottom: var(--gap-1);
+  font-family: var(--fonte-titulo);
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  border-bottom: 1px solid var(--papel-escuro);
+}
+
+.exercito__origens {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--gap-2);
+  font-size: 13px;
+}
+
+.exercito__origens dd {
+  text-align: right;
+  font-family: var(--fonte-numero);
+}
+
+/* Terra natal perdida: em sangue, porque dispensar estes homens entrega gente ao
+   inimigo — é a informação que muda a decisão. */
+.exercito__perdida {
+  color: var(--sangue);
+}
+
+.exercito__botao {
+  display: block;
+  width: 100%;
+  margin-top: var(--gap-3);
+  text-align: left;
+}
+
+/* `display` explícito VENCE o atributo `hidden`. Ver acoes-provincia.css. */
+.exercito__botao[hidden] {
+  display: none;
+}
