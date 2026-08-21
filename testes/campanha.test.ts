@@ -99,8 +99,26 @@ describe('economia da Ática', () => {
 });
 
 describe('províncias sem economia configurada', () => {
-  it('só as três da Ática têm ficha', () => {
-    expect(Object.keys(economia.provincias).sort()).toEqual(['atenas', 'maratona', 'sounion']);
+  it('só a Ática e os dois vizinhos têm ficha', () => {
+    // Elêusis e Tanagra existem para haver contra quem jogar: são os dois poderes de uma
+    // província só que fazem fronteira com Atenas. O resto do mapa continua sem ficha, e
+    // continua dizendo isso com todas as letras em vez de inventar número.
+    expect(Object.keys(economia.provincias).sort()).toEqual([
+      'atenas',
+      'eleusis',
+      'maratona',
+      'sounion',
+      'tanagra',
+    ]);
+  });
+
+  it('conquistar os dois vizinhos PAGA — é o laço central do jogo fechando', () => {
+    const c = nova();
+    c.comecar('atenas');
+    const antes = c.renda;
+    for (const id of ['eleusis', 'tanagra']) c.trocarDono(id, 'atenas');
+    // Sem isto, tomar terra não muda nada e o jogo não tem para onde ir.
+    expect(c.renda).toBeGreaterThan(antes * 1.3);
   });
 
   it('não recebem economia inventada nem arrecadam', () => {

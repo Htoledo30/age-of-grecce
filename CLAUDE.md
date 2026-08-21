@@ -529,18 +529,37 @@ O **valor de cada produto mora no catálogo**, não nas províncias: balancear t
 territórios de um produto é mudar um número só. Grão vale 15 por nível e metal precioso
 28 — é o que faz o Láurion importar.
 
-⚠️ **Só a Ática está configurada.** As outras 202 províncias **não recebem economia
-inventada**: `economiaDe()` devolve `null`, elas não arrecadam, não são simuladas, e a
-ficha diz "Economia ainda não configurada" com todas as letras. Um teste garante que
-continue assim.
+⚠️ **Cinco províncias estão configuradas: as três da Ática e os dois vizinhos.** As outras
+200 **não recebem economia inventada**: `economiaDe()` devolve `null`, elas não arrecadam,
+não são simuladas, e a ficha diz "Economia ainda não configurada" com todas as letras. Um
+teste garante que continue assim.
 
-| província | produto          | nível | impostos | produção | comércio |   total |
-| --------- | ---------------- | ----: | -------: | -------: | -------: | ------: |
-| Atenas    | Azeite           |     4 |      175 |      100 |       55 | **330** |
-| Maratona  | Grãos            |     3 |       90 |       45 |       11 | **146** |
-| Sunião    | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
+| província | dono     | produto          | nível | impostos | produção | comércio |   total |
+| --------- | -------- | ---------------- | ----: | -------: | -------: | -------: | ------: |
+| Atenas    | Atenas   | Azeite           |     4 |      175 |      100 |       55 | **330** |
+| Maratona  | Atenas   | Grãos            |     3 |       90 |       45 |       11 | **146** |
+| Sunião    | Atenas   | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
+| Elêusis   | Elêusis  | Grãos            |     4 |       60 |       60 |       18 | **138** |
+| Tanagra   | Tanagra  | Gado             |     3 |       45 |       48 |        9 | **102** |
 
-Atenas soma **708 por turno**, com **3.000** de tesouro inicial. Sunião é a lição do
+Atenas soma **708 por turno**, com **3.000** de tesouro inicial.
+
+**Elêusis e Tanagra existem para haver contra quem jogar**, e a escolha dos dois não é
+arbitrária: são os únicos poderes de **uma província só** que fazem fronteira direta com
+Atenas, então a primeira guerra é alcançável no turno 1. Esparta ficou de fora de
+propósito — são três províncias na Lacônia, e pra chegar lá se atravessa um corredor de
+províncias sem economia.
+
+E os dois são diferentes em natureza, que é o que faz haver decisão: **Elêusis** é a
+planície Triásia e o santuário de Deméter, toca só Atenas, e rende 138; **Tanagra** é
+encosta beócia, pobre e mal escoada, rende 102 — mas toca **Atenas e Maratona**, ou seja,
+é duas frentes. Tomar os dois leva a renda de 708 a 948, e é isso que fecha o laço central
+do jogo: conquistar passa a pagar.
+
+⚠️ **Eles têm economia, não têm vontade.** Não existe IA: nem Elêusis nem Tanagra recrutam,
+marcham ou reagem. E a renda deles não vai a lugar nenhum, porque `estado.tesouro` é **um
+número só, o do jogador** — quando a IA existir, isso tem que virar tesouro por poder,
+senão ela recruta de graça. A defesa deles hoje é só a milícia: 144 e 108 homens. Sunião é a lição do
 sistema: menos gente e menos terra que Maratona, e rende 60% mais — nível e produto
 decidem, tamanho não.
 
@@ -669,6 +688,11 @@ investir são decisões de mouse: barra deslizante, botões de proporção e lim
 pela própria regra. Um controle nunca oferece uma quantidade que o jogador não pode pagar
 ou usar para depois responder “faltam moedas”. Digitação fica reservada a texto autoral,
 como nome de campanha ou de exército.
+
+⚠️ **Detalhe sob demanda, não painel permanentemente aberto.** Uma ação com vários números
+e controles, como recrutamento, aparece primeiro como uma linha clara e minimizável. O
+jogador abre quando quer decidir e fecha quando terminou. Descobrir que a ação existe não
+exige carregar todos os seus detalhes na tela o tempo inteiro.
 
 ⚠️ **População é ESTADO, e a linha anterior deste arquivo estava errada.** Ela dizia que
 população era dado autoral fixo "por decisão" — mas isso descrevia uma conveniência da

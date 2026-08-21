@@ -26,6 +26,20 @@
       "comercioBase": 0.25,
       "motivo": "A planicie de Maratona e a terra de cereal da Atica. Costa aberta e sem porto de peso: escoa pouco."
     },
+    "eleusis": {
+      "populacao": 12000,
+      "produto": "graos",
+      "nivel": 4,
+      "comercioBase": 0.3,
+      "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 4 e nao 5: o 5 de Suniao e o caso excepcional, nao a regra da terra boa. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso."
+    },
+    "tanagra": {
+      "populacao": 9000,
+      "produto": "gado",
+      "nivel": 3,
+      "comercioBase": 0.18,
+      "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso."
+    },
     "sounion": {
       "populacao": 10000,
       "produto": "metais-preciosos",
