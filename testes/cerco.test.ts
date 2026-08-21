@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/dados/esquema';
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
-import { avancoDoCerco, defesaNoAssalto, milicianosPerdidos } from '../src/combate/cerco';
+import { defesaNoAssalto, milicianosPerdidos } from '../src/combate/cerco';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -34,18 +34,7 @@ function contraEleusis(homens: number): Campanha {
   return c;
 }
 
-describe('as contas do cerco', () => {
-  it('mais gente cercando aperta mais depressa', () => {
-    const devagar = avancoDoCerco(100, 200, cercoAjustes);
-    const depressa = avancoDoCerco(400, 200, cercoAjustes);
-    expect(depressa).toBeCloseTo(devagar * 4, 10);
-  });
-
-  it('cidade sem defensor abre no mesmo turno, e ninguém aperta sozinho', () => {
-    expect(avancoDoCerco(100, 0, cercoAjustes)).toBe(1);
-    expect(avancoDoCerco(0, 200, cercoAjustes)).toBe(0);
-  });
-
+describe('a conta do assalto', () => {
   it('a muralha multiplica a milícia, e desfazer a conta devolve HOMENS', () => {
     const defesa = defesaNoAssalto(300, cercoAjustes);
     expect(defesa).toBe(300 * cercoAjustes.bonusDeMuralha);
@@ -57,50 +46,26 @@ describe('as contas do cerco', () => {
   });
 });
 
-describe('o cerco leva turnos, e é essa demora que cria a guerra', () => {
-  it('acumula até abrir os portões, sem batalha nenhuma', () => {
-    const c = contraEleusis(400);
-    c.ordenarMarcha('atenas', 'eleusis', 400, 'atenas');
+describe('SITIAR NUNCA TOMA A CIDADE — quem toma é o assalto', () => {
+  it('o exército acampa e fica, turno após turno, sem nada acontecer', () => {
+    const c = contraEleusis(3000);
+    c.ordenarMarcha('atenas', 'eleusis', 3000, 'atenas');
 
-    const passos: number[] = [];
-    let turnos = 0;
-    while (c.donoDe('eleusis') === 'eleusis' && turnos < 12) {
-      c.passarTurno();
-      turnos++;
-      const cerco = c.cercoEm('eleusis');
-      if (cerco) passos.push(cerco.progresso);
-    }
+    // 3.000 homens contra 141 milicianos: passariam por cima num assalto. Sitiando, não
+    // tomam nunca — e é essa separação que dá sentido a haver duas posturas.
+    for (let i = 0; i < 15; i++) c.passarTurno();
 
-    expect(turnos).toBeGreaterThan(1); // a cidade não abriu no primeiro turno
-    // Monotônico: cada turno aperta mais que o anterior, e o progresso não reinicia.
-    for (let i = 1; i < passos.length; i++) {
-      expect(passos[i]).toBeGreaterThan(passos[i - 1] ?? 0);
-    }
-    expect(c.donoDe('eleusis')).toBe('atenas');
-    expect(c.cercoEm('eleusis')).toBeUndefined();
-    // A cidade abriu os portões: não houve assalto, e o sitiante saiu inteiro.
-    expect(c.forcaEm('eleusis')).toBe(400);
+    expect(c.donoDe('eleusis')).toBe('eleusis');
+    expect(c.cercoEm('eleusis')).toMatchObject({ sitiante: 'atenas', postura: 'sitiar' });
+    expect(c.forcaEm('eleusis')).toBe(3000); // ninguém morreu: cerco não é batalha
+    expect(c.rodada.batalhas).toEqual([]);
   });
 
-  it('exército maior toma mais depressa: é por isso que se traz o exército todo', () => {
-    const turnosPara = (homens: number): number => {
-      const c = contraEleusis(homens);
-      c.ordenarMarcha('atenas', 'eleusis', homens, 'atenas');
-      let turnos = 0;
-      while (c.donoDe('eleusis') === 'eleusis' && turnos < 40) {
-        c.passarTurno();
-        turnos++;
-      }
-      return turnos;
-    };
-    expect(turnosPara(600)).toBeLessThan(turnosPara(200));
-  });
-
-  it('o sitiante que vai embora solta a cidade, e o progresso não fica guardado', () => {
+  it('o sitiante que vai embora solta a cidade', () => {
     const c = contraEleusis(300);
     c.ordenarMarcha('atenas', 'eleusis', 300, 'atenas');
     c.passarTurno();
-    expect(c.cercoEm('eleusis')?.progresso).toBeGreaterThan(0);
+    expect(c.cercoEm('eleusis')).toBeDefined();
 
     c.ordenarMarcha('eleusis', 'atenas', 300, 'atenas');
     c.passarTurno();
@@ -110,19 +75,33 @@ describe('o cerco leva turnos, e é essa demora que cria a guerra', () => {
     expect(c.donoDe('eleusis')).toBe('eleusis');
   });
 
-  it('a postura troca no meio do cerco: sentar hoje e ir pra cima amanhã', () => {
-    // 400 homens passam por cima da muralha num assalto e NÃO abrem a cidade num turno de
-    // cerco: é a faixa em que trocar de postura muda o resultado.
+  it('sentar hoje e ir pra cima amanhã: é o assalto que abre os portões', () => {
     const c = contraEleusis(400);
     c.ordenarMarcha('atenas', 'eleusis', 400, 'atenas');
     c.passarTurno();
     expect(c.cercoEm('eleusis')?.postura).toBe('sitiar');
+    expect(c.donoDe('eleusis')).toBe('eleusis');
 
     c.mudarPostura('eleusis', 'assaltar');
     c.passarTurno();
 
     expect(c.donoDe('eleusis')).toBe('atenas');
     expect(c.rodada.batalhas[0]).toMatchObject({ provincia: 'eleusis', vencedor: 'atenas' });
+  });
+
+  it('província alheia VAZIA continua caindo ao primeiro pisão, mesmo sitiando', () => {
+    const c = nova();
+    c.comecar('atenas');
+    c.darOuro(200_000);
+    // Tebas não tem economia configurada, logo não tem população nem milícia. Chegar a
+    // ela exige uma base vizinha: a Ática só faz fronteira com Elêusis e Tanagra.
+    c.trocarDono('tanagra', 'atenas');
+    c.plantarHoste('tanagra', 'atenas', 300);
+    c.ordenarMarcha('tanagra', 'tebas', 300, 'atenas');
+    c.passarTurno();
+    // Sem gente não há quem feche portão nenhum, e não há cerco a fazer.
+    expect(c.donoDe('tebas')).toBe('atenas');
+    expect(c.cercoEm('tebas')).toBeUndefined();
   });
 });
 

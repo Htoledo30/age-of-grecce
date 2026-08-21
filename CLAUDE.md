@@ -424,7 +424,7 @@ por quadro**: vinte conquistas numa virada de turno viram um envio de 256 KB, n�
 | `npm run app`                | Electron apontando pro servidor de dev                                      |
 | `npm run capturar`           | **print automático do jogo** — salva em `capturas/`                         |
 | `npm run verificar`          | tipos + lint + código morto + testes + dados, tudo junto                    |
-| `npm run teste-tela`         | testes de interface com Playwright, em série por causa do mapa WebGL pesado |
+| `npm run teste-tela`         | testes de interface com Playwright, limitados a 2 workers pelo mapa WebGL   |
 | `npm run sitios`             | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem          |
 | `npm run build`              | compila pra `dist/`                                                         |
 | `npm run empacotar`          | gera o instalador em `dist-app/`                                            |
@@ -458,26 +458,25 @@ desenho visto numa captura oculta, repita com `--visivel`.
 
 ## Estado atual
 
-**O tabuleiro está de pé e vazio.** O mapa do mundo grego desenha em panorâmica 16:9 sem
-tarja nenhuma, a câmera de estratégia sobrevoa (arrastar com o botão esquerdo ou o do
-meio, WASD/setas, roda pra zoom), e `npm run verificar` passa inteiro.
+**O patch atual é `0.0.1`.** O mapa fixo da Grécia arcaica abre recortado em 205
+províncias, 53 regiões e 148 poderes, com preenchimento pelo dono atual e fronteiras
+desenhadas. A câmera sobrevoa com arrasto, WASD/setas e roda de zoom; o zoom máximo de
+aproximação é 0,4.
 
-**O tabuleiro político está na tela e roda a 144 fps.** O mapa da Grécia arcaica abre
-inteiro, recortado em 205 províncias de 148 poderes, com preenchimento por dono e
-fronteira desenhada. `npm run verificar` passa inteiro.
-
-**O esqueleto do jogo começou.** Clicar numa província a destaca e abre a ficha dela no
-painel da direita (nome, dono, povo, região, área, fronteiras), e o painel tem o
-interruptor que liga e desliga a cor dos reinos mantendo o recorte desenhado.
+**Já existe um ciclo terrestre local jogável.** Clicar numa província abre a coluna
+contextual à esquerda; clicar fora da terra limpa a seleção e esconde ficha, ações e
+recrutamento. Hostes podem ser recrutadas, divididas, movidas uma fronteira, enfrentar
+batalha e milícia, sitiar, assaltar e conquistar. Ainda não existem IA, diplomacia, zonas
+marítimas, salvamento nem fim de campanha.
 
 O jogo agora abre em um menu com **Iniciar jogo**. A tela seguinte permite examinar os
 poderes no mapa, mas neste protótipo somente Atenas pode ser escolhida. Confirmar Atenas
 inicia a campanha e devolve ao mapa a seleção normal de províncias.
 
-Já existe o estado mínimo da campanha: poder do jogador, ano, turno, tesouro, renda e
-**a tabela de donos das 205 províncias**. `src/nucleo/tempo.ts` continua sendo apenas o
-relógio de quadro; o tempo da campanha avança explicitamente quando o jogador passa o
-turno.
+Já existe o estado da campanha: poder do jogador, ano, turno, tesouro, **a tabela de donos
+das 205 províncias**, população, hostes, levas em formação, ordens, cercos, investimentos,
+construções e obras. `src/nucleo/tempo.ts` continua sendo apenas o relógio de quadro; o
+tempo da campanha avança explicitamente quando o jogador passa o turno.
 
 **Território já troca de mãos.** `trocarDono` move a província nas regras e o mapa
 repinta no mesmo instante, a ficha mostra o dono novo, a barra conta as províncias do
@@ -516,13 +515,11 @@ planalto anatólio viram candidatas a porto. Bônus
 de terreno em batalha, custo de marcha e vocação agrícola derivados de bioma seriam regra
 construída sobre ficção plausível — o pior tipo de bug, o que ninguém enxerga.
 
-**Primeiro pedaço do ciclo já roda:** menu → escolher Atenas no mapa → campanha começa no
-turno 1, ano 700 a.C., com 50 moedas e renda 15; passar o turno leva a 699 a.C. e 65
-moedas. As regras vivem em `src/campanha/` e **não importam Pixi nem tocam no DOM**, o que
-deixa o turno e a renda inteiros sob teste no vitest, contra o `provincias.json` de
-verdade. A barra de turno é a terceira região da interface: painel da direita é o que se
-**aciona**, ficha embaixo à esquerda é o que se **escolheu**, barra no topo é **em que pé a
-campanha está**.
+**O começo do ciclo:** menu → escolher Atenas no mapa → campanha no turno 1, ano 700 a.C.,
+com 3.000 moedas e renda 690. Passar o turno arrecada, paga manutenção, resolve ordens e
+combates, cresce a população, avança incentivos e obras e então muda o calendário. As
+regras não importam Pixi nem tocam no DOM; a barra superior mostra em que pé a campanha
+está, a coluna esquerda descreve a província e o painel direito guarda controles globais.
 
 ## A economia
 
@@ -548,8 +545,8 @@ teste garante que continue assim.
 | Atenas    | Atenas  | Azeite           |     4 |      175 |      100 |       55 | **330** |
 | Maratona  | Atenas  | Grãos            |     2 |       90 |       30 |        8 | **128** |
 | Sunião    | Atenas  | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
-| Elêusis   | Elêusis | Grãos            |     3 |       60 |       45 |       14 | **119** |
-| Tanagra   | Tanagra | Gado             |     2 |       45 |       32 |        6 |  **83** |
+| Elêusis   | Elêusis | Grãos            |     3 |       58 |       45 |       14 | **117** |
+| Tânagra   | Tânagra | Gado             |     2 |       43 |       32 |        6 |  **81** |
 
 Atenas soma **690 por turno**, com **3.000** de tesouro inicial.
 
@@ -578,9 +575,10 @@ propósito — são três províncias na Lacônia, e pra chegar lá se atravessa
 províncias sem economia.
 
 E os dois são diferentes em natureza, que é o que faz haver decisão: **Elêusis** é a
-planície Triásia e o santuário de Deméter, toca só Atenas, e rende 138; **Tanagra** é
-encosta beócia, pobre e mal escoada, rende 102 — mas toca **Atenas e Maratona**, ou seja,
-é duas frentes. Tomar os dois leva a renda de 690 a 892, e é isso que fecha o laço central
+planície Triásia e o santuário de Deméter, toca só Atenas, e abre rendendo 117; **Tânagra**
+é encosta beócia, pobre e mal escoada, rende 81 — mas toca **Atenas e Maratona**, ou seja,
+é duas frentes. Tomar os dois, antes de novas perdas populacionais, leva a renda de 690 a
+888, e é isso que fecha o laço central
 do jogo: conquistar passa a pagar.
 
 **Os dois abrem a partida com 500 homens em pé**, escritos em `dados/exercitos.json` e
@@ -611,23 +609,27 @@ o que importa é `+X por turno · +Y em 20 turnos · paga-se em Z turnos`, com o
 vermelho quando o incentivo não devolve o que custou. Foi essa conta que revelou que a
 versão anterior (máximo 30.000) era pura armadilha — 30.000 devolviam 156.
 
-### Construções econômicas
+### Construções econômicas e de capacidade
 
-**Três construções, uma por parcela da renda** — e é isso que faz a melhor escolha mudar
-de província em vez de ser sempre a mesma:
+**Seis construções** disputam o mesmo tesouro. Três especializam as parcelas da renda;
+três compram capacidades militares ou demográficas:
 
 | construção | melhora         | custo | melhor em                                           |
 | ---------- | --------------- | ----: | --------------------------------------------------- |
 | Ágora      | impostos (×1,4) | 3.000 | Atenas (+70/t, 43 turnos) e Maratona (+36/t)        |
 | Oficina    | produção (×1,3) | 2.500 | Sunião (+55/t, 46 turnos)                           |
 | Mercado    | comércio (×1,6) | 3.000 | fraca em toda parte hoje (91 turnos no melhor caso) |
+| Celeiro público | crescimento populacional (×1,5) | 3.500 | províncias que precisam recompor gente |
+| Quartel | permite recrutar | 1.500 | onde o poder quer formar novas hostes |
+| Muralha | milícia defensora (×2) | 2.000 | fronteiras e cidades ameaçadas |
 
 `npm run checar` imprime essa tabela toda vez, então desequilíbrio aparece como número em
 vez de virar folclore. O alvo é obra se pagando em algumas dezenas de turnos — retorno de
 150 a 200 é justamente o defeito do Age of History II que
 `documentacao/design/referencias-economicas.md` registra.
 
-**Obra leva tempo, e o prazo varia por construção** (Oficina 2 turnos, Ágora e Mercado 3),
+**Obra leva tempo, e o prazo varia por construção** (Quartel 1 turno, Oficina 2; as
+demais 3),
 vindo do catálogo junto com o custo. Prazo igual pra todas não informaria nada e seria só
 atrito; variando, ele vira mais um eixo da escolha — barata e rápida contra cara e lenta —
 e acompanhar o custo faz isso ler sem explicação.
@@ -662,17 +664,15 @@ comprados; o `comercioBase` continua sendo a vantagem natural do sítio. E **nen
 construção paga só em ouro** — porto paga em alcance marítimo, estrada em comércio e
 marcha, torre em informação. Se todas pagassem em ouro, escolher seria aritmética.
 
-⚠️ **Porto está bloqueado até o modelo de movimentação existir**, de propósito: mexer em
-porto é mexer em como tropa anda, e "como a tropa passa da terra pra água" não tem
-resposta antes de "como a tropa anda em terra". Rome Total War, CK3 e Age of History II
-levariam a portos completamente diferentes. **Não comece o dado de costa nem o porto sem
-essa decisão** — o foco atual é economia.
+⚠️ **Porto está bloqueado até existir o modelo marítimo**, de propósito. O movimento em
+terra já está implementado; falta decidir como a tropa embarca, ocupa zonas de mar e
+desembarca. **Não adicione porto apenas como bônus de renda antes dessa decisão.**
 
-⚠️ **Todo poder marítimo começa com porto.** Sem isso os **34 poderes insulares** (de 148)
-nasceriam congelados: sem porto não saem da ilha, e sem sair não conquistam nada pra pagar
-o porto. Isso substitui a ideia antiga de derivar adjacência marítima por proximidade —
-navio sai de onde há porto, e a ilha deixa de ser exceção do motor. **Falta o dado de
-província costeira**, que o gerador ainda não produz. Ver
+⚠️ **Todo poder que nasce isolado do continente precisa de acesso naval inicial.** Há 43
+poderes sem província no componente continental; 34 deles ocupam componentes onde nenhum
+outro poder está presente. Sem porto ou frota inicial, eles começariam congelados. Isso
+substitui a ideia antiga de derivar adjacência marítima por proximidade. **Falta o dado de
+província costeira** e falta decidir a distribuição de portos e frotas. Ver
 `documentacao/design/economia-e-produtos-regionais.md`.
 
 ⚠️ **Nenhum bônus temporário absorve tesouro de late game, e isso é aritmética.** O
@@ -716,10 +716,10 @@ o que ela faz, o prazo e o retorno vivem no tooltip.
 esconder justamente o que impede a armadilha. O detalhe (`+20 por turno durante 20
 turnos, 400 ao todo`) é que vira tooltip.
 
-⚠️ **Nada de sumir em silêncio.** A seção "Investir" fica na tela durante a campanha
-inteira, mesmo quando não dá pra investir, dizendo o motivo (`Mantineia: esta província
-não tem economia configurada`). Esconder o controle esconde a existência da mecânica, e o
-jogador não tem como adivinhar que ela existe.
+⚠️ **Painel contextual não existe sem contexto.** Sem província selecionada, ficha, ações e
+recrutamento ficam escondidos para o mapa respirar. Com uma província selecionada, a ação
+continua visível mesmo quando bloqueada e explica o motivo (`Mantineia: esta província não
+tem economia configurada`). Assim a interface não vira ruído e também não esconde regras.
 
 ⚠️ **Ações frequentes não exigem digitar números.** Recrutar, dividir hoste, movimentar e
 investir são decisões de mouse: barra deslizante, botões de proporção e limites calculados
@@ -772,17 +772,17 @@ não existe `realcar` em lugar nenhum do código. Se você encontrar outra afirm
 província**. As regras vivem em `src/combate/`, uma mecânica por arquivo:
 `exercito.ts` (o que é uma força), `recrutamento.ts` (o que custa e por que é recusado)
 e `mobilizacao.ts` (reunir, dispensar, manter e desertar). Posse vive em
-`src/campanha/territorios.ts`; cálculos e incentivos vivem em `src/economia/`; obras vivem
-em `src/construcoes/`. `Campanha` coordena as transações entre esses sistemas e o estado
+`src/campanha/territorios.ts`; cálculos econômicos vivem em `src/campanha/economia.ts`;
+obras ainda são coordenadas por `src/campanha/campanha.ts`. `Campanha` coordena as transações entre esses sistemas e o estado
 que um dia vai para o disco.
 
 ### O Quartel é a primeira construção que não paga em ouro
 
 O documento de economia já exigia isso — _"nenhuma construção deve pagar somente em ouro;
 se todas pagarem, escolher vira aritmética"_ — e nenhuma cumpria: Ágora, Oficina e Mercado
-rendem todas moeda, em parcelas diferentes da mesma conta. O Quartel custa **5.000**, leva
-**4 turnos** e **rende zero**. Comparar 5.000 por um exército com 3.000 por +70 moedas por
-turno não é uma conta: é uma decisão.
+rendem todas moeda, em parcelas diferentes da mesma conta. O Quartel custa **1.500**, leva
+**1 turno** e **rende zero**. Comparar capacidade militar com renda futura não é uma conta
+única: é uma decisão.
 
 Por isso o catálogo usa `efeito` como **união discriminada** — `renda` (parcela + fator),
 `capacidade` ou `populacao`. União e não campos opcionais: assim o compilador obriga quem lê a
@@ -887,8 +887,8 @@ câmera e assenta o que cria; e o que ainda não tem coordenada não se pinta, p
 | ---------------- | ------------------- | -------------------------------------------------------- |
 | topo             | `.barra-turno`      | em que pé a campanha está                                |
 | topo-direita     | `.painel-lateral`   | o que o jogador **aciona** (global)                      |
-| baixo-esquerda   | `.coluna-provincia` | a **província** escolhida — ações em cima, ficha embaixo |
-| **baixo-centro** | `.exercito`         | a **hoste** escolhida                                    |
+| esquerda         | `.coluna-provincia` | a **província** escolhida — ficha, ações e recrutamento   |
+| **baixo-direita** | `.exercito`        | a **hoste** escolhida                                    |
 
 A hoste ganhou região própria por dois motivos, e o segundo é estrutural: quatro painéis
 empilhados na coluna estouravam os 1080 e cortavam o de cima; e **a hoste não é a
@@ -958,10 +958,11 @@ alternativa (fazê-los sumir do mundo) tornaria população uma catraca de senti
 As duas se encaixam: o exército no exílio deserta de volta para a terra natal, que agora é
 do conquistador — e engorda exatamente quem o expulsou.
 
-⚠️ **O cerco endureceu o exílio, e a regra nova é mais justa.** O exilado está pisando na
-própria terra, mas a cidade tem gente dentro e não abre o portão porque a bandeira mudou:
-ele tem que **sitiar a própria capital de volta**, e o relógio da deserção corre enquanto
-ele sitia. É a única corrida do jogo em que o jogador está dos dois lados.
+⚠️ **O cerco endureceu o exílio, e a regra nova é mais dura.** O exilado está pisando na
+própria terra, mas a cidade tem gente dentro e não abre o portão porque a bandeira mudou —
+e sentar na porta não devolve nada. Ele tem que **ASSALTAR a própria capital de volta**,
+com o relógio da deserção correndo. É a única corrida do jogo em que o jogador está dos
+dois lados.
 
 ### A milícia, e por que ela é fraca de propósito
 
@@ -1001,22 +1002,24 @@ Antes disto, província alheia com gente dentro caía no instante em que alguém
 existia estado intermediário, e por isso não existia guerra — existia uma sequência de
 trocas de dono. As regras vivem em `src/combate/cerco.ts`.
 
-| postura      | resolve   | custo em homens | contra                                   |
-| ------------ | --------- | --------------- | ---------------------------------------- |
-| **Assaltar** | no turno  | alto            | a milícia com o bônus da muralha          |
-| **Sitiar**   | em turnos | nenhum          | o tempo, e o exército de socorro que vem  |
+| postura      | toma a cidade? | custo em homens | o que faz                            |
+| ------------ | -------------- | --------------- | ------------------------------------ |
+| **Assaltar** | sim, no turno  | alto            | briga com a milícia atrás da muralha |
+| **Sitiar**   | **nunca**      | nenhum          | corta produção e comércio, e espera  |
 
-Nenhuma das duas é a certa sempre, e é isso que faz haver decisão: assaltar troca homens
-por tempo, sitiar troca tempo por exposição.
+⚠️ **SITIAR NUNCA TOMA A CIDADE, e isto já esteve errado.** A primeira versão acumulava
+progresso e abria os portões sozinha — o que fazia do cerco um assalto lento em vez de
+outra coisa, e escolher postura virava escolher a velocidade da mesma conquista. Sitiar é
+**ficar na porta**: aperta o inimigo, empobrece-o, e espera enquanto se junta uma leva
+atrás da outra até valer o assalto. Não há progresso guardado porque não há progresso.
 
-O avanço do cerco é `sitiantes / (defensores × turnosBase)`, acumulado entre turnos. **O
-dobro de gente toma na metade do tempo** — trazer o exército inteiro compra tempo. É
-acumulado e não um contador de turnos de propósito: reforço que chega acelera o que já foi
-feito em vez de reiniciar a conta.
-
-⚠️ **`turnosBase` decide o RITMO da guerra inteira**, e já foi corrigido uma vez: com 4, a
-milícia sendo 1,2% da população fazia a razão sitiante/defensor ficar enorme e toda cidade
-caía em um ou dois turnos. Está em **6**.
+⚠️ **Quem sitia ACAMPA NA DIVISA, e a peça é desenhada lá.** Desenhá-la no centro da
+província diria que ela já tomou o lugar — exatamente o que sitiar não faz. A divisa é
+aproximada pelo meio do caminho entre os dois centros, o da província sitiada e o da
+vizinha de onde o exército veio (0,55, um fio para dentro, pra ler como "pressionando"). Não
+é a fronteira geométrica exata e não precisa ser. `pontoDaHoste` em `main.ts` é quem decide,
+e a marcha animada termina no MESMO ponto — senão a peça andaria até o centro e saltaria
+pra divisa no quadro seguinte.
 
 ⚠️ **A postura viaja com a ORDEM, não com a hoste**, porque é decisão do destino: a mesma
 tropa assalta uma cidade pequena e senta na frente de uma grande. Uma vez o cerco de pé,
@@ -1030,12 +1033,11 @@ campo está tomado e a estrada cortada, mas a cidade continua cobrando de quem e
 dela. Cortar o imposto deixaria sem saída quem tem uma província só, que é a situação de
 120 dos 148 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
 
-⚠️ **Província alheia realmente VAZIA continua caindo ao primeiro pisão.** Sem gente não há
-quem feche portão nenhum. As 200 sem economia configurada caem assim.
+⚠️ **Província alheia realmente VAZIA continua caindo ao primeiro pisão**, sitiando ou não.
+Sem gente não há quem feche portão nenhum. As 200 sem economia configurada caem assim.
 
 ⚠️ **Levantar o cerco é consequência, não regra.** O sitiante que marcha embora ou morre
-solta a cidade, e o progresso não fica guardado — senão bastaria ir e vir pra apertar de
-graça. Se o dono retoma a província, o cerco some pelo mesmo caminho.
+solta a cidade. Se o dono retoma a província, o cerco some pelo mesmo caminho.
 
 ⚠️ **A milícia perdida num assalto é contada em HOMENS, não em unidades de defesa.** A
 defesa é gente multiplicada pela muralha; sem desfazer a multiplicação, um assalto
@@ -1043,7 +1045,7 @@ rechaçado faria a população encolher pelo dobro do que de fato caiu.
 
 **Na tela:** a pergunta aparece **depois** de o alvo hostil ser apontado — clicar em
 "Mover", clicar na província inimiga, e só então o painel pergunta *"Elêusis: o que fazer
-ao chegar?"* com ⚔ Assaltar e ⛨ Sitiar. Destino do próprio território registra a ordem no
+ao chegar?"* com os ícones próprios de **Assaltar** e **Sitiar**. Destino do próprio território registra a ordem no
 clique, porque ali não há decisão nenhuma a tomar. Cerco em curso aparece na ficha da
 província sitiada (**a metade que acontece COM o jogador**, e que explica a renda que
 minguou) e no painel da hoste que sitia, com o botão de passar ao assalto.

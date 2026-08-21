@@ -27,7 +27,6 @@ import type { Ajustes } from '@/dados/esquema';
 import {
   type Cerco,
   type Postura,
-  avancoDoCerco,
   defesaNoAssalto,
   milicianosPerdidos,
 } from '@/combate/cerco';
@@ -102,12 +101,7 @@ export interface RelatorioDaRodada {
    */
   milicianosMortos: readonly { provincia: string; mortos: number }[];
   /** Cidades sob cerco ao fim da rodada, com o quanto já foi feito e a postura. */
-  cercos: readonly {
-    provincia: string;
-    sitiante: string;
-    progresso: number;
-    postura: Postura;
-  }[];
+  cercos: readonly { provincia: string; sitiante: string; postura: Postura }[];
 }
 
 export function resolverRodada(
@@ -465,16 +459,14 @@ function resolverCidades(
       continue;
     }
 
-    const progresso =
-      (cerco && cerco.sitiante === hoste.poder ? cerco.progresso : 0) +
-      avancoDoCerco(forcaDe(hoste), milicianos, ajustes.cerco);
-    if (progresso >= 1) {
-      tomar(provincia, hoste.poder);
-      continue;
-    }
-    const atual: Cerco = { sitiante: hoste.poder, progresso, postura: 'sitiar' };
+    // ⚠️ **Sitiar NUNCA toma a cidade.** O exército acampa na divisa e fica. Enquanto
+    // estiver ali a província não produz nem comercia — e é só isso que o cerco faz. Quem
+    // toma é o assalto, e é essa separação que dá sentido a ter duas posturas: antes o
+    // cerco acumulava progresso e abria os portões sozinho, o que fazia dele um assalto
+    // lento em vez de outra coisa.
+    const atual: Cerco = { sitiante: hoste.poder, postura: 'sitiar' };
     estado.cercos[provincia] = atual;
-    relatorio.cercos.push({ provincia, sitiante: hoste.poder, progresso, postura: 'sitiar' });
+    relatorio.cercos.push({ provincia, sitiante: hoste.poder, postura: 'sitiar' });
   }
 
   // Cerco sem sitiante em cima não existe: quem marchou embora ou morreu soltou a cidade.

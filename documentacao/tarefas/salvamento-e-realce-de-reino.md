@@ -94,7 +94,8 @@ puramente visual e independente das regras.
 
 Essa disciplina foi mantida desde o começo, e é o que faz esta fatia ser barata: não há
 caça a estado escondido. Hoje o estado tem jogador, ano, turno, tesouro, **dono das 205
-províncias**, população, exércitos, investimentos, construções e obras.
+províncias**, população, exércitos, levas em formação, ordens, cercos, investimentos,
+construções e obras.
 
 ### Onde mora
 
@@ -149,5 +150,5 @@ ano e o mesmo número de províncias** — é o passo que prova a fatia de ponta
 
 ## Fora destas duas peças
 
-Movimento, batalha, cerco, IA e o mar. Ver
-[Combate, exército e o mar](../design/combate-e-mar.md).
+Este documento não redesenha movimento, batalha ou cerco, que já existem, nem inclui IA,
+diplomacia ou o mar. Ver [Combate, exército e o mar](../design/combate-e-mar.md).

@@ -8,6 +8,9 @@ poderes ainda são uma escala pequena para operações simples. Primeiro se impl
 regra corretamente e de forma determinística; depois um perfil identifica onde o tempo é
 realmente gasto.
 
+No patch `0.0.1`, a resolução terrestre é síncrona e ainda não existe IA. Isso é adequado
+enquanto passar o turno permanece imediato; Web Worker não é requisito preventivo.
+
 ## Objetivo
 
 Ao clicar em **Passar o turno**, a simulação pode demorar sem congelar a interface. O mapa,

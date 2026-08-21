@@ -127,14 +127,15 @@ grande passa a valer por gente, não só por renda.
 
 ### A ordem das fatias, escolhida pelo dono
 
-1. marcador e seleção — **feito**
-2. recrutamento com uma rodada de preparo
-3. ordens de movimento entre províncias amigas, com divisão e reunião
-4. resolução simultânea das ordens e entrada em território inimigo
-5. batalha provisória e conquista
+1. marcador e seleção — **feito**;
+2. recrutamento com uma rodada de preparo — **feito**;
+3. ordens de movimento, divisão e reunião — **feito**;
+4. resolução simultânea e entrada em território inimigo — **feito**;
+5. batalha provisória, milícia, cerco e conquista — **feito**.
 
-**Batalha é a última.** Antes dela é preciso olhar para Atenas e ver que mil homens estão
-ali.
+Essa sequência registra como o sistema foi construído. Ela não é mais uma lista de tarefas.
+As próximas expansões terrestres devem nascer de testes do ciclo atual; IA, diplomacia e
+mar continuam sistemas futuros.
 
 ---
 
@@ -149,12 +150,16 @@ ali.
 | dispensar devolve cada homem à terra dele                                          | `src/combate/mobilizacao.ts`                                    | feito      |
 | marcador da hoste no mapa, seleção e ficha                                         | `src/ui/hostes-mapa.ts`, `src/ui/exercito-ficha.ts`             | feito      |
 | propriedade mutável e eliminação de poder                                          | `src/campanha/territorios.ts`                                   | feito      |
-| movimento, batalha, cerco, IA militar, naval                                       | —                                                               | não existe |
+| movimento terrestre e resolução simultânea                                         | `src/movimento/`                                                 | feito      |
+| batalha determinística                                                             | `src/combate/batalha.ts`                                        | feito      |
+| milícia, muralha, assalto e cerco                                                   | `src/combate/milicia.ts`, `src/combate/cerco.ts`                | feito      |
+| conquista e exílio                                                                 | `src/campanha/territorios.ts`, `src/campanha/campanha.ts`       | feito      |
+| IA estratégica e militar                                                           | —                                                               | não existe |
+| zonas marítimas, frota e guerra naval                                              | —                                                               | não existe |
 
-O balanço que a estrutura produziu sozinha, e que um teste fixa: **Atenas mobilizada ao
-teto põe 3.500 homens em campo, que custam 700 por turno contra 691 de renda** — porque os
-mesmos 3.500 deixaram de ser tributados. Guerra total é insustentável por construção, sem
-nenhuma regra dizendo isso.
+O balanço que a estrutura produziu sozinha: recrutar reduz a população tributável e ainda
+cria manutenção por rodada. Mobilização excessiva, portanto, enfraquece as duas pontas do
+orçamento sem precisar de um limite artificial de tropas.
 
 ---
 
@@ -215,31 +220,19 @@ Distribuição, não contagem.
 
 ### A composição da hoste
 
-Hoplitas (a linha), psiloi (escaramuça) e cavaleiros (envolvimento e perseguição), como
-registro fechado de três campos. Cavalaria só onde a semente disser que há cavalos.
-
-### A milícia
-
-Defesa de província derivada da população, calculada na hora e nunca guardada. Três
-propriedades que valem o preço: manancial humano **um só**; perder uma batalha em casa
-custa imposto e custa leva; e **mobilizar esvazia a muralha** — recrutar 2.000 em Atenas
-derruba a milícia junto. Nasce da estrutura, sem regra escrita.
-
-### A batalha
-
-Resolução por conta transparente, saindo como **relatório em HTML** — tabela do que cada
-lado tinha, do que pesou e do que morreu. Nunca renderizada: o projeto não tem arte de
-unidade nenhuma, e é essa restrição que torna o relatório a mecânica em vez de um consolo.
+Hoje a hoste guarda somente homens e suas origens populacionais. Uma composição futura
+poderá usar hoplitas (linha), psiloi (escaramuça) e cavaleiros (envolvimento e perseguição),
+como registro fechado de três campos. Cavalaria só onde a economia futura sustentar cavalos.
 
 ---
 
 ## Perguntas em aberto que precisam de resposta do dono
 
-1. **Ordem de resolução dos conflitos.** Falta decidir hostes que cruzam em sentidos
-   opostos, dois atacantes chegando ao mesmo destino e qual atributo desempata iniciativa.
-   A regra precisa ser determinística e visível, nunca sorteio escondido.
-2. **Quantas zonas de mar**, e onde ficam as sementes.
-3. **`jogo.anosPorTurno`** continua em aberto, e decide o ritmo da campanha inteira.
+1. **Quantas zonas de mar**, e onde ficam as sementes.
+2. **Composição futura das hostes**, se os testes mostrarem que homens como número único
+   deixam a guerra rasa demais.
+3. **`jogo.anosPorTurno`** está configurado como 1, mas ainda pode mudar porque decide o
+   ritmo da campanha inteira.
 
 ## Dívida conhecida que a guerra vai cobrar
 

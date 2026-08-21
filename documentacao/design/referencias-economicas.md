@@ -15,9 +15,9 @@ As referências possuem pesos diferentes:
 3. **Crusader Kings III** — referência pontual para controle de território conquistado.
 
 O _Age of Grecce_ não pretende reproduzir a campanha militar de _Total War_ nem a
-simulação feudal e de personagens de _Crusader Kings_. O futuro sistema de combate será
-próprio e poderá mudar quais despesas e consequências econômicas realmente fazem
-sentido.
+simulação feudal e de personagens de _Crusader Kings_. O combate terrestre básico já é
+funcional, mas seguirá um desenho próprio e ainda poderá mudar quais despesas e
+consequências econômicas realmente fazem sentido.
 
 ## Síntese para o Age of Grecce
 

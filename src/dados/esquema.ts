@@ -122,19 +122,13 @@ export const Ajustes = z.object({
        * alheia cai no instante em que alguém pisa nela.
        */
       /**
-       * O cerco: o que custa tomar uma cidade que não se entrega.
+       * O cerco.
        *
-       * ⚠️ Estes dois números decidem o RITMO da guerra inteira. `turnosBase` baixo faz
-       * cidade cair depressa e o mapa virar corrida; alto faz todo cerco virar espera.
+       * ⚠️ Um número só, e é de propósito: **sitiar não toma a cidade**, então não existe
+       * velocidade de cerco para ajustar. Quem toma é o assalto, e o que decide o assalto
+       * é a muralha.
        */
       cerco: z.object({
-        /**
-         * Dureza da cidade. Um sitiante do tamanho exato da defesa leva estes turnos.
-         *
-         * O avanço é `sitiantes / (defensores × turnosBase)`, então o dobro de gente toma
-         * na metade do tempo — trazer o exército inteiro compra tempo, e é essa a decisão.
-         */
-        turnosBase: z.number().positive(),
         /**
          * Quanto a milícia vale atrás da muralha, no assalto.
          *

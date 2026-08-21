@@ -62,7 +62,7 @@ export interface VistaDoExercito {
    * Fica na ficha da hoste e não na da província porque quem decide assaltar ou continuar
    * sentado é o comandante, não a cidade.
    */
-  cerco: { progresso: number; postura: Postura } | null;
+  cerco: { postura: Postura } | null;
 }
 
 export class ExercitoFicha {
@@ -393,10 +393,9 @@ export class ExercitoFicha {
     this.linhaCerco.hidden = cerco === null;
     this.botaoTrocarPostura.hidden = cerco === null || !vista.minha;
     if (cerco) {
-      const feito = Math.min(99, Math.floor(cerco.progresso * 100));
       this.linhaCerco.textContent =
         cerco.postura === 'sitiar'
-          ? `Sitiando ${vista.provincia.nome} — ${feito}% dos portões cedidos`
+          ? `Acampado diante de ${vista.provincia.nome} — sem produção nem comércio lá dentro`
           : `Assaltando ${vista.provincia.nome} na próxima virada`;
       rotularComIcone(
         this.botaoTrocarPostura,
@@ -406,8 +405,8 @@ export class ExercitoFicha {
       definirTooltip(this.botaoTrocarPostura, {
         titulo: cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
         corpo:
-          'A troca vale na próxima virada, como toda ordem. Sentar é barato e demorado; ' +
-          'assaltar resolve no turno e custa homens.',
+          'A troca vale na próxima virada, como toda ordem. O cerco não toma a cidade por ' +
+          'si: ele aperta e espera. Quem toma é o assalto, e ele custa homens.',
       });
     }
 

@@ -2,7 +2,7 @@
 
 ## Decisão de escopo
 
-O sistema econômico será inspirado no primeiro _Rome: Total War_: ao conquistar uma
+O sistema econômico é inspirado no primeiro _Rome: Total War_: ao conquistar uma
 província, o jogador passa a controlar o produto comercial característico daquele
 território.
 
@@ -122,7 +122,7 @@ ganha uma decisão recorrente sobre onde concentrar o dinheiro disponível.
 
 ### Composição da renda e escala monetária
 
-A renda provincial será composta por três parcelas legíveis:
+A renda provincial é composta por três parcelas legíveis:
 
 ```text
 renda da província = impostos da população + produção do produto + comércio
@@ -135,7 +135,7 @@ renda da província = impostos da população + produção do produto + comérci
   agrícola e movimentação, mas uma província enorme e montanhosa não é rica só por ser
   grande.
 
-Cada tipo de produto terá uma força econômica própria num catálogo central. Grãos comuns,
+Cada tipo de produto tem uma força econômica própria num catálogo central. Grãos comuns,
 vinho, ferro, mármore e metais preciosos não rendem o mesmo por nível. O valor não fica
 repetido nas 205 províncias: a província aponta para o produto, e o produto define seu
 valor básico. Isso também permite balancear todos os territórios daquele produto mudando
@@ -468,7 +468,25 @@ natural da província, sem gerar ouro direto e sem elevar sua capacidade. Na Ate
 isso muda a previsão de +175 para +262 habitantes por turno. Uma obra concluída numa
 passagem de turno só beneficia o crescimento da passagem seguinte.
 
-## Próximo passo quando as províncias estiverem prontas
+## Conteúdo autoral atual
+
+A primeira fatia cobre cinco províncias e existe para testar o ciclo completo antes de
+preencher o mapa:
+
+| província | produto | nível natural | população inicial | comércio-base |
+| --- | --- | ---: | ---: | ---: |
+| Atenas | azeite | 4 | 35.000 | 0,55 |
+| Maratona | grãos | 2 | 18.000 | 0,25 |
+| Sunião | metais preciosos | 5 | 10.000 | 0,30 |
+| Elêusis | grãos | 3 | 12.000 | 0,30 |
+| Tânagra | gado | 2 | 9.000 | 0,18 |
+
+Elêusis e Tânagra começam com 500 homens mobilizados cada. Como soldados saem da
+população, sua população tributável inicial em campanha já aparece 500 habitantes menor.
+As outras 200 províncias ainda não têm economia autoral; isso é conteúdo futuro, não erro
+de carregamento.
+
+## Próximo passo de conteúdo econômico
 
 Criar uma tabela definitiva com uma linha por província contendo:
 
@@ -483,8 +501,9 @@ Criar uma tabela definitiva com uma linha por província contendo:
 | comércio-base     | vantagem natural de posição e escoamento   |
 | característica    | cavalos ou outra exceção rara              |
 
-A distribuição deve ser feita depois que o recorte provincial estiver estabilizado para
-evitar retrabalho.
+A distribuição deve ser feita gradualmente e validada por região. O recorte provincial já
+está estável; o cuidado agora é não preencher 200 linhas antes de as regras atuais provarem
+que os campos escolhidos são suficientes.
 
 ## Referências históricas consultadas
 

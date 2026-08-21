@@ -371,7 +371,7 @@ describe('perder o chão não é o mesmo que morrer', () => {
     expect(c.poderesVivos()).toContain('atenas');
   });
 
-  it('o exilado não fica parado: ele SITIA a própria capital de volta', () => {
+  it('o exilado tem que ASSALTAR a própria capital de volta, e o relógio corre', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
     c.passarTurno(); // a leva leva uma rodada pra virar hoste
@@ -379,17 +379,17 @@ describe('perder o chão não é o mesmo que morrer', () => {
     expect(c.renda).toBe(0); // sem província, sem arrecadação
     expect(c.noExilio('atenas')).toBe(true);
 
-    // ⚠️ O CERCO mudou isto, e a regra nova é mais dura e mais justa: a hoste está pisando
-    // na própria terra, mas a cidade tem gente dentro e não abre o portão porque a bandeira
-    // mudou. O exilado tem que sitiar de volta — e o relógio da deserção corre enquanto ele
-    // sitia. É a única corrida do jogo em que o jogador está dos dois lados.
-    let turnos = 0;
-    while (c.noExilio('atenas') && turnos < 12) {
-      c.passarTurno();
-      turnos++;
-    }
+    // ⚠️ O CERCO endureceu o exílio, e a regra nova é mais dura e mais interessante: a
+    // hoste está pisando na própria terra, mas a cidade tem gente dentro e não abre o
+    // portão porque a bandeira mudou. Sentar na porta não devolve nada — e sem renda a
+    // deserção já está comendo o exército.
+    c.passarTurno();
+    expect(c.noExilio('atenas')).toBe(true);
+    expect(c.cercoEm('atenas')).toMatchObject({ sitiante: 'atenas', postura: 'sitiar' });
 
-    expect(turnos).toBeGreaterThan(1); // não foi instantâneo
+    c.mudarPostura('atenas', 'assaltar');
+    c.passarTurno();
+
     expect(c.donoDe('atenas')).toBe('atenas');
     expect(c.noExilio('atenas')).toBe(false);
     expect(c.vivo('atenas')).toBe(true);

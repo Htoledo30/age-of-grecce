@@ -179,9 +179,7 @@ async function iniciar(): Promise<void> {
       milicia: campanha.miliciaEm(id),
       cerco: (() => {
         const cerco = campanha.cercoEm(id);
-        return cerco
-          ? { sitiante: campanha.poder(cerco.sitiante).nome, progresso: cerco.progresso }
-          : null;
+        return cerco ? { sitiante: campanha.poder(cerco.sitiante).nome } : null;
       })(),
     };
   }
@@ -351,13 +349,13 @@ async function iniciar(): Promise<void> {
       const formacao = campanha.formacaoEm(provincia);
       const idPoder = exercito?.poder ?? formacao?.poder;
       if (!idPoder) return [];
-      const p = atlas.provincia(provincia);
+      const onde = pontoDaHoste(provincia, idPoder);
       const poder = campanha.poder(idPoder);
       return [
         {
           provincia,
-          x: p.centro.x,
-          y: p.centro.y,
+          x: onde.x,
+          y: onde.y,
           forca: campanha.forcaEm(provincia),
           emFormacao: formacao?.homens ?? 0,
           // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra
@@ -383,8 +381,50 @@ async function iniciar(): Promise<void> {
     return campanha.rodada.marchas.flatMap((marcha) => {
       const destino = marcha.trilha.at(-1);
       if (destino === undefined) return [];
-      return [{ destino, pontos: marcha.trilha.map(pontoDe) }];
+      const poder = campanha.exercitoEm(destino)?.poder;
+      // A última parada é onde a PEÇA vai ficar, não o centro da província: quem chega
+      // sitiando acampa na divisa, e a marcha tem que terminar exatamente ali — senão a
+      // peça anda até o centro e salta pra divisa no quadro seguinte.
+      const pontos = marcha.trilha.map((id, i) =>
+        i === marcha.trilha.length - 1 && poder !== undefined
+          ? pontoDaHoste(id, poder)
+          : pontoDe(id),
+      );
+      return [{ destino, pontos }];
     });
+  }
+
+  /**
+   * Onde a PEÇA de uma hoste fica desenhada.
+   *
+   * Normalmente o centro da província. Mas **quem sitia acampa na divisa**, não dentro da
+   * cidade: o exército está do lado de fora dos muros, e desenhá-lo no centro diria que ele
+   * já tomou o lugar — que é exatamente o que sitiar não faz.
+   *
+   * A divisa é aproximada pelo meio do caminho entre os dois centros, o da província
+   * sitiada e o da província vizinha de onde ele veio. Não é a fronteira geométrica exata,
+   * e não precisa ser: o que a peça tem que dizer é "estou na porta, vindo dali".
+   */
+  function pontoDaHoste(idProvincia: string, idPoder: string): PontoDeMarcha {
+    const centro = atlas.provincia(idProvincia).centro;
+    const cerco = campanha.cercoEm(idProvincia);
+    if (!cerco || cerco.sitiante !== idPoder) return { x: centro.x, y: centro.y };
+
+    // Ordenado por id: sem isso a peça pularia de uma divisa pra outra conforme a ordem
+    // em que as vizinhas aparecem.
+    const daBase = atlas
+      .provincia(idProvincia)
+      .vizinhas.filter((v) => campanha.donoDe(v) === idPoder)
+      .sort()[0];
+    if (daBase === undefined) return { x: centro.x, y: centro.y };
+
+    const base = atlas.provincia(daBase).centro;
+    // 0,55 e não 0,5: um fio para dentro do território sitiado, pra ler como "pressionando
+    // esta província" em vez de "parado em cima da linha".
+    return {
+      x: base.x + (centro.x - base.x) * 0.55,
+      y: base.y + (centro.y - base.y) * 0.55,
+    };
   }
 
   function pontoDe(idProvincia: string): PontoDeMarcha {
@@ -468,9 +508,7 @@ async function iniciar(): Promise<void> {
         const cerco = campanha.cercoEm(onde);
         // Só é O cerco desta hoste se for ela quem está sentada: uma tropa de passagem por
         // uma cidade que outro poder sitia não comanda coisa nenhuma.
-        return cerco && cerco.sitiante === exercito.poder
-          ? { progresso: cerco.progresso, postura: cerco.postura }
-          : null;
+        return cerco && cerco.sitiante === exercito.poder ? { postura: cerco.postura } : null;
       })(),
       ordem: (() => {
         const ordem = campanha.ordemEm(onde);

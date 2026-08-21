@@ -9,8 +9,9 @@ Esta ideia transforma os produtos provinciais em mercadorias físicas. Em vez de
 produto existir somente como uma parcela abstrata de dinheiro, cada província gera uma
 quantidade de unidades do produto que pode ser armazenada, utilizada ou vendida.
 
-A implementação deverá acontecer somente quando o combate básico mostrar quais recursos
-e consumos realmente fazem sentido.
+O combate terrestre básico já existe. A implementação ainda deve esperar testes de
+campanha e uma necessidade concreta de abastecimento; existir combate não autoriza, por si
+só, uma segunda economia inteira.
 
 ## Objetivo
 
@@ -64,9 +65,9 @@ durante determinado número de arrecadações.
 ```text
 Produto: Grãos
 Quantidade-base: 8
-Nível: 3
-Produção normal: 24 unidades de alimento
-Produção com +25%: 30 unidades de alimento
+Nível: 2
+Produção normal: 16 unidades de alimento
+Produção com +25%: 20 unidades de alimento
 ```
 
 ### Sunião

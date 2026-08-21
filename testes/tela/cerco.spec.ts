@@ -64,7 +64,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   ).toBe('eleusis');
 
   await page.locator('.hostes__marca[data-provincia="eleusis"]').click();
-  await expect(page.locator('.exercito__cerco')).toContainText('Sitiando Elêusis');
+  await expect(page.locator('.exercito__cerco')).toContainText('Acampado diante de Elêusis');
   // A classe vai no `dt` e no `dd`: o valor é o `dd`.
   await expect(page.locator('dd.ficha__cerco')).toContainText('por Atenas');
 

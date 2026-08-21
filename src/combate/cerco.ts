@@ -11,16 +11,21 @@
  * vence fica com o CAMPO, e a cidade continua sendo um problema por resolver. São duas
  * perguntas em vez de uma, e é da segunda que nascem cerco, bloqueio e socorro.
  *
- * O sitiante escolhe entre duas coisas, e pode trocar a cada turno:
+ * ⚠️ **SITIAR NUNCA TOMA A CIDADE.** Só o assalto toma. Esta é a regra central e ela já
+ * esteve errada: o cerco acumulava progresso e abria os portões sozinho, o que fazia dele
+ * um assalto lento em vez de outra coisa — e então escolher postura era só escolher a
+ * velocidade da mesma conquista.
  *
- * | postura      | resolve   | custo em homens | contra                                  |
- * | ------------ | --------- | --------------- | --------------------------------------- |
- * | **Assaltar** | no turno  | alto            | a milícia com o bônus da muralha         |
- * | **Sitiar**   | em turnos | nenhum          | o tempo, e o exército de socorro que vem |
+ * Sitiar é **ficar na porta**. O exército acampa na divisa, não entra, e enquanto estiver
+ * ali a província não produz nem comercia. É o que se faz quando não se tem gente para
+ * tomar a praça: aperta o inimigo, empobrece-o, e espera — juntando uma leva atrás da
+ * outra até valer o assalto. Quem senta paga por isso ficando parado em terra alheia
+ * enquanto o dono junta gente para o socorro.
  *
- * Nenhuma das duas é a certa sempre, e é isso que faz haver decisão: assaltar troca homens
- * por tempo, sitiar troca tempo por exposição. Quem sitia fica parado em terra alheia
- * enquanto o dono junta gente.
+ * | postura      | toma a cidade? | custo em homens | o que faz                             |
+ * | ------------ | -------------- | --------------- | ------------------------------------- |
+ * | **Assaltar** | sim, no turno  | alto            | briga com a milícia atrás da muralha  |
+ * | **Sitiar**   | **nunca**      | nenhum          | corta produção e comércio, e espera   |
  */
 
 import type { Ajustes } from '@/dados/esquema';
@@ -35,29 +40,12 @@ export interface Cerco {
   /** Quem sitia. Não é o dono da província — é quem está sentado em cima dela. */
   sitiante: string;
   /**
-   * Quanto do cerco já foi feito, de 0 a 1. Em 1 a cidade abre os portões.
+   * A postura desta rodada. Trocável enquanto o cerco estiver de pé.
    *
-   * Acumulado e não um contador de turnos: assim reforço que chega acelera o que já foi
-   * feito, em vez de reiniciar a conta.
+   * Não há progresso guardado porque não há progresso: o cerco não anda em direção a nada.
+   * Ele dura enquanto o exército ficar ali, e acaba quando ele sai, morre ou assalta.
    */
-  progresso: number;
-  /** A postura desta rodada. Trocável enquanto o cerco estiver de pé. */
   postura: Postura;
-}
-
-/**
- * Quanto o cerco avança num turno.
- *
- * É a razão entre quem está fora e quem está dentro, dividida pela dureza. Mais gente
- * cercando aperta mais depressa — e é assim que trazer o exército inteiro para uma cidade
- * pequena vira uma decisão de verdade em vez de aritmética.
- *
- * Sem defensor o cerco não existe: a cidade abre no mesmo turno.
- */
-export function avancoDoCerco(sitiantes: number, defensores: number, ajustes: AjustesCerco): number {
-  if (sitiantes <= 0) return 0;
-  if (defensores <= 0) return 1;
-  return sitiantes / (defensores * ajustes.turnosBase);
 }
 
 /**

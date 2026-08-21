@@ -7,8 +7,9 @@ recursos externos.
 
 | onde | o que é | quando confiar |
 | --- | --- | --- |
-| `CLAUDE.md`, na raiz | **o retrato do jogo agora** — o que existe, como funciona, e as armadilhas já pagas | sempre; é a memória operacional |
-| esta pasta | **o desenho e o porquê** — especificações, referências, propostas e o raciocínio por trás das decisões | para entender *por que* algo é assim, ou para desenhar o que ainda não existe |
+| `CLAUDE.md`, na raiz | **o retrato técnico do jogo agora** — o que existe, como funciona e as armadilhas já pagas | para trabalhar no código atual |
+| `CHANGELOG.md`, na raiz | **o histórico de versões** — o que entrou em cada patch e o que ainda não foi lançado | para acompanhar a evolução do jogo |
+| esta pasta | **o desenho e o porquê** — decisões, especificações, referências e propostas futuras | para entender uma regra ou planejar o que ainda não existe |
 
 Regra que mantém os dois honestos: **documento de tarefa cumprido é apagado**, e o que
 sobrou de vivo dele migra. O resultado e o motivo vão para o `CLAUDE.md`; a orientação
@@ -20,9 +21,8 @@ existe mais é pior que documento nenhum, porque parece verdade.
 - [Combate, exército e o mar](design/combate-e-mar.md) — o que está decidido sobre guerra,
   movimento e o recorte do mar em zonas; o que já está no jogo; o que foi medido no mapa
   real; e o que ainda é proposta. As quatro coisas separadas de propósito.
-- [Resolução da rodada](design/resolucao-da-rodada.md) — **proposta, para revisão.** As
-  regras de adjudicação da resolução simultânea: o princípio dos passos, quem defende, os
-  seis casos de encontro e os testes que os provam.
+- [Resolução da rodada](design/resolucao-da-rodada.md) — regra **implementada** de resolução
+  simultânea: princípio dos passos, quem defende, encontros e determinismo.
 - [Economia e produtos regionais](design/economia-e-produtos-regionais.md) — especificação
   do sistema econômico, vocações do mapa e referência regional para a distribuição por
   província.
@@ -40,6 +40,8 @@ existe mais é pior que documento nenhum, porque parece verdade.
 - [Desempenho futuro da simulação](design/desempenho-da-simulacao.md) — diretrizes para
   fases de rodada, cortes de alcance, dados orientados à simulação, cache de rotas e Web
   Workers, adotadas somente depois de medir um gargalo real.
+- [Versionamento](versionamento.md) — como manter `Não lançado`, fechar um patch e avançar
+  de `0.0.1` para `0.0.2` sem perder mudanças.
 
 ## Créditos
 
@@ -51,17 +53,10 @@ existe mais é pior que documento nenhum, porque parece verdade.
 - [Salvamento e realce de reino](tarefas/salvamento-e-realce-de-reino.md) — as duas peças
   pequenas que sobraram do plano do esqueleto de campanha. **A fazer.**
 
-Dois documentos de tarefa foram **removidos** por já não descreverem o jogo:
-
-- *Esqueleto: estado de partida e o turno* — o turno, a economia, a propriedade mutável e a
-  eliminação de poderes foram implementados; a adjacência marítima derivada que ele propunha
-  foi descartada pelo recorte do mar em zonas; e os nomes de módulo que ele usava
-  (`src/jogo/`) nunca existiram. O que sobrou de vivo virou *Salvamento e realce de reino*.
-- *Revisão das ilhas e províncias insulares* — aplicada. O resultado e o raciocínio vivem na
-  seção "Ilhas" do `CLAUDE.md`, e a orientação técnica virou comentário em
-  `gerador/gerar-provincias.ts`.
-
 ## Arquivo mantido na raiz
 
 `CLAUDE.md` permanece na raiz porque é um arquivo operacional lido automaticamente
 pela Claude. Ele não deve ser movido para esta pasta.
+
+`CHANGELOG.md` também permanece na raiz para que a versão atual e as mudanças não lançadas
+fiquem visíveis logo ao abrir o projeto.

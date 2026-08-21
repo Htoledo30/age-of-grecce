@@ -1,14 +1,14 @@
 # Resolução da rodada — as regras de adjudicação
 
-## Situação: aprovada pelo dono, com uma correção no caso 1
+## Situação: implementada e protegida por testes
 
-Este documento não decide nada sozinho. Ele existe porque
+Este documento registra a regra que o código executa em `src/movimento/resolucao.ts`.
 [Combate, exército e o mar](combate-e-mar.md) decidiu que **as ordens são registradas
-durante o turno e resolvidas juntas ao passar**, e essa decisão está certa — mas ela abre
-uma família de casos que precisa de resposta **escrita antes da primeira linha de código**.
+durante o turno e resolvidas juntas ao passar**, e essa decisão abre uma família de casos
+cujas respostas precisam continuar explícitas.
 
-O motivo de escrever antes: em resolução simultânea os bugs não estão no código, estão nas
-**interações**. Cada caso não previsto vira uma partida em que o jogador viu algo
+O motivo de manter a tabela: em resolução simultânea os bugs não estão apenas no código,
+estão nas **interações**. Cada caso não previsto vira uma partida em que o jogador viu algo
 impossível e não tem como saber se foi regra ou defeito. O _Diplomacy_ levou décadas para
 formalizar a sua adjudicação, e a comunidade mantém uma suíte de testes só para isso.
 Não é motivo para recuar — é motivo para escrever a tabela primeiro.
@@ -162,6 +162,8 @@ export interface OrdemDeMarcha {
   rota: readonly string[];
   /** Quantos homens marcham. O resto fica defendendo a origem. */
   homens: number;
+  /** Sitiar ou assaltar caso o destino tenha uma cidade inimiga defendida. */
+  postura: 'sitiar' | 'assaltar';
 }
 
 interface EstadoCampanha {
@@ -205,10 +207,12 @@ mexer na resolução por outro motivo, é ela que avisa.
 
 ## 8. O que este documento NÃO decide
 
-- **Como a batalha se resolve.** Aqui só se decide _onde_ e _entre quem_ ela acontece.
-  A conta é da fatia 5.
-- **Cerco e conquista.** Chegar numa província inimiga sem defensor entrega o chão; com
-  cidade, muralha ou guarnição, não. Fica para a mesma fatia.
+- **O balanceamento da batalha.** A resolução atual é determinística e vive em
+  `src/combate/batalha.ts`; este documento continua responsável apenas por _onde_, _quando_
+  e _entre quem_ cada choque acontece.
+- **A escolha entre cerco e assalto.** A postura viaja com a ordem e é resolvida pelo
+  sistema de combate. Sitiar bloqueia produção e comércio, mas nunca toma a cidade;
+  somente o assalto pode conquistá-la.
 - **O mar.** Zonas marítimas e frota são outro grafo, com os mesmos princípios e casos
   próprios (bloqueio, tempestade, transporte afundado com a carga dentro).
 - **Bônus de movimento.** A regra-base está fechada em um salto por rodada. Estradas ou

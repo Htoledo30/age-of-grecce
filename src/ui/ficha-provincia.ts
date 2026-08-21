@@ -42,7 +42,7 @@ export interface VistaDaProvincia {
    * cai e ele precisa saber por quê. Sem isto o número mingua na barra e a causa fica
    * invisível.
    */
-  cerco: { sitiante: string; progresso: number } | null;
+  cerco: { sitiante: string } | null;
 }
 
 export class FichaProvincia {
@@ -113,13 +113,13 @@ export class FichaProvincia {
       ...(provincia.cerco
         ? campo(
             'sitiada',
-            `por ${provincia.cerco.sitiante} · ${Math.min(99, Math.floor(provincia.cerco.progresso * 100))}%`,
+            `por ${provincia.cerco.sitiante}`,
             'ficha__cerco',
             {
               titulo:
-                'Enquanto durar o cerco esta província não produz nem comercia. O imposto ' +
-                'continua, e ela ainda pode levantar tropa — sitiado e sem dinheiro seria ' +
-                'derrota anunciada, não decisão.',
+                'Há exército inimigo acampado na divisa. Enquanto ele ficar, esta província ' +
+                'não produz nem comercia. O cerco não toma a cidade por si — o imposto ' +
+                'continua e ela ainda pode levantar tropa para expulsá-lo.',
             },
           )
         : []),

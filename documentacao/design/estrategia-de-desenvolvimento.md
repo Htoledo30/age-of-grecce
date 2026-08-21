@@ -44,20 +44,40 @@ Quando esse ciclo existir, haverá um jogo funcional. Ele ainda poderá ser simp
 ou desbalanceado, mas será possível jogar uma campanha e descobrir quais sistemas
 merecem profundidade.
 
+### Situação no patch 0.0.1
+
+| parte do ciclo | situação |
+| --- | --- |
+| iniciar campanha e escolher Atenas | feito |
+| navegar, selecionar e inspecionar o mapa | feito |
+| turno, economia, construções e população | feito na primeira fatia de cinco províncias |
+| recrutar, mover, combater, sitiar e conquistar | feito com regras terrestres provisórias |
+| propriedade mutável, perda de terra e eliminação | feito |
+| escolher qualquer um dos 148 poderes | a fazer |
+| IA sob as mesmas regras | a fazer |
+| guerra, paz e diplomacia mínimas | a fazer |
+| derrota, domínio e fim da campanha | a fazer |
+| salvar e continuar | a fazer |
+
+O esqueleto, portanto, já possui um **ciclo local testável**, mas ainda não uma campanha
+completa. O próximo trabalho deve fechar as linhas ausentes, sem aprofundar todos os
+sistemas que já funcionam ao mesmo tempo.
+
 ## Sistemas provisórios são permitidos
 
 Durante a construção do esqueleto, uma solução simples é preferível a um sistema grande
 e incompleto.
 
-Exemplos:
+Exemplos que orientaram a construção — alguns já foram substituídos por sistemas reais:
 
-- renda pode ser um valor genérico por província;
+- renda pode começar em poucas províncias autoradas;
 - exércitos podem ser representados apenas por quantidade de homens;
-- combate pode usar força, terreno e uma pequena variação aleatória;
+- combate pode usar uma conta determinística simples, sem terreno enquanto o relevo for
+  apenas visual;
 - guerra e paz podem usar regras mínimas;
 - IA pode avaliar somente vizinhos, força relativa e oportunidades;
-- produtos comerciais podem permanecer apenas documentados;
-- construções, tecnologias e personagens podem não existir.
+- produtos comerciais podem ser preenchidos região por região;
+- tecnologias e personagens podem não existir.
 
 Essas soluções não representam necessariamente o design final. Elas existem para fechar
 o ciclo jogável e permitir testes reais.
@@ -89,7 +109,7 @@ práticas:
 - Qual parte está impedindo a campanha de ser divertida?
 - Qual sistema produz mais decisões interessantes para o jogador?
 - O que está repetitivo ou superficial?
-- O que o mapa e as 150 potências estão pedindo naturalmente?
+- O que o mapa e os 148 poderes estão pedindo naturalmente?
 - Qual melhoria pode ser concluída e testada sem exigir cinco outros sistemas?
 - O que o desenvolvedor está mais motivado a aprofundar naquele momento?
 
