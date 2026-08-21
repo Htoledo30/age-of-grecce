@@ -1,4 +1,5 @@
 import type { Investimento } from './economia';
+import type { Exercito } from '@/combate/exercito';
 
 /**
  * O estado mínimo de uma campanha — e nada além do mínimo.
@@ -39,11 +40,29 @@ export interface EstadoCampanha {
    */
   dono: Record<string, string>;
   /**
+   * Habitantes de cada província AGORA, por id. Só as que têm economia configurada.
+   *
+   * ⚠️ **População é estado, não dado fixo.** O `dados/economia.json` guarda a população
+   * INICIAL, de 700 a.C.; esta tabela é a de agora, e ela encolhe quando o poder põe
+   * gente em armas — quem marcha deixa de ser tributado e deixa de lavrar. É o que faz
+   * mobilizar ter preço contínuo em vez de só preço de entrada.
+   */
+  populacao: Record<string, number>;
+  /**
+   * Exércitos em pé, pela província onde estão.
+   *
+   * Um por província: é o modelo que o mapa pede — tropa salta de vizinha em vizinha, sem
+   * peça com pontos de movimento. Entrar numa província onde já há tropa sua junta as
+   * duas, e por isso não existe pilha de exércitos no mesmo lugar pra gerenciar.
+   */
+  exercitos: Record<string, Exercito>;
+  /**
    * Incentivos de exploração em curso, por id de província.
    *
-   * É a única parte mutável da economia. Produto, nível, população e comércio-base
-   * são autorais e ficam nos dados — investir compra trabalho temporário, não muda o que
-   * a terra tem. Uma província some daqui quando o incentivo dela acaba.
+   * Produto, nível e comércio-base são autorais e ficam nos dados — investir compra
+   * trabalho temporário, não muda o que a terra tem. Uma província some daqui quando o
+   * incentivo dela acaba. (População já foi autoral também, e deixou de ser: ela é
+   * estado desde que recrutar passou a custá-la.)
    */
   investimentos: Record<string, Investimento>;
   /**

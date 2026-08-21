@@ -69,6 +69,33 @@ export const Ajustes = z.object({
         arrecadacoes: z.number().int().positive(),
       }),
     }),
+    /**
+     * O que custa pôr e manter gente em armas.
+     *
+     * **Soldado sai da população da província**, não do nada: recrutar tira habitante de
+     * onde se recruta, e por isso encolhe o imposto dali e aperta o próprio teto de
+     * recrutamento. É o que impede exército de brotar de um tesouro grande.
+     */
+    combate: z.object({
+      /** Ouro por homem, pago à vista no recrutamento. */
+      custoPorHomem: z.number().positive(),
+      /**
+       * Ouro por homem por turno, enquanto ele estiver em armas.
+       *
+       * É o ralo que a economia não tinha: incentivo e construção não absorvem tesouro
+       * grande, exército sim, porque cobra todo turno e não expira.
+       */
+      manutencaoPorHomem: z.number().positive(),
+      /**
+       * Maior fatia da população de uma província que pode estar em armas ao mesmo tempo.
+       *
+       * É este número, e não o ouro, que torna população um recurso estratégico: uma
+       * província despovoada não vira exército por mais rico que seja o reino.
+       */
+      fracaoRecrutavel: z.number().gt(0).max(1),
+      /** Lote mínimo de recrutamento. Impede recrutar de um em um. */
+      minimoPorLeva: z.number().int().positive(),
+    }),
   }),
   camera: z.object({
     /** Teto de aproximação. O piso não se ajusta: é o zoom em que o mapa inteiro cabe. */
@@ -227,15 +254,40 @@ export const Construcoes = z.object({
        */
       turnos: z.number().int().positive(),
       /**
-       * Qual das três parcelas da renda esta construção melhora.
+       * Em que moeda esta construção paga.
        *
-       * É `enum` e não `string` de propósito: aponta pra uma parcela que não existe e o
-       * carregamento falha com o caminho do campo, em vez de a construção silenciosamente
-       * não fazer nada.
+       * **Nem toda construção paga em ouro, e é isso que faz a lista ser uma escolha.**
+       * Se todas rendessem moeda, escolher seria aritmética: bastaria pegar a de maior
+       * retorno. O Quartel não rende nada e mesmo assim é a obra mais cara do catálogo,
+       * porque o que ele compra é a capacidade de recrutar — e isso não se compara com
+       * "+70 por turno" numa conta só.
+       *
+       * União discriminada e não campos opcionais: assim o compilador obriga quem lê a
+       * decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined`
+       * atravessar a fórmula da renda em silêncio.
        */
-      parcela: z.enum(['impostos', 'producao', 'comercio']),
-      /** Multiplica a parcela. 1,4 é mais 40%. */
-      fator: z.number().gt(1),
+      efeito: z.discriminatedUnion('tipo', [
+        z.object({
+          tipo: z.literal('renda'),
+          /**
+           * Qual das três parcelas da renda esta construção melhora.
+           *
+           * É `enum` e não `string` de propósito: aponta pra uma parcela que não existe e
+           * o carregamento falha com o caminho do campo, em vez de a construção
+           * silenciosamente não fazer nada.
+           */
+          parcela: z.enum(['impostos', 'producao', 'comercio']),
+          /** Multiplica a parcela. 1,4 é mais 40%. */
+          fator: z.number().gt(1),
+        }),
+        z.object({
+          tipo: z.literal('capacidade'),
+          /** O que a província passa a poder fazer. */
+          capacidade: z.enum(['recrutar']),
+          /** A promessa, escrita pro jogador. Fica no dado, não no código da interface. */
+          promessa: z.string().min(1),
+        }),
+      ]),
       /** Por que ela existe e onde ela vale. Documentação junto do dado. */
       motivo: z.string().min(1),
     }),

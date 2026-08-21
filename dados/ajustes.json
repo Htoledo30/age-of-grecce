@@ -12,6 +12,12 @@
         "expoente": 1,
         "arrecadacoes": 20
       }
+    },
+    "combate": {
+      "custoPorHomem": 2,
+      "manutencaoPorHomem": 0.2,
+      "fracaoRecrutavel": 0.1,
+      "minimoPorLeva": 100
     }
   },
   "camera": {

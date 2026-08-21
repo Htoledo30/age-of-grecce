@@ -83,9 +83,21 @@ export class FichaProvincia {
 
     // Área e número de fronteiras saíram: são verdadeiros e não servem pra decidir nada.
     // A ficha mostra o que muda uma escolha; o resto é ruído competindo por atenção.
+    //
+    // População FICA, e pela mesma régua: ela decide. É a base do imposto, e portanto é
+    // ela que diz se a Ágora vale — a construção existe pra multiplicar imposto, e sem
+    // esse número na tela o jogador não tinha como fazer a conta que a escolha exige.
+    // Ficou escondida até agora, o que tornava a decisão da Ágora um chute informado.
     this.lista.replaceChildren(
       ...campo('povo', provincia.poder.povo),
       ...campo('região', provincia.regiao),
+      ...(renda
+        ? campo('população', `${moeda(renda.populacao)} habitantes`, 'ficha__populacao', {
+            titulo:
+              `É a base do imposto: ${moeda(renda.populacao)} habitantes rendem ` +
+              `${moeda(renda.impostos)} por turno.`,
+          })
+        : []),
     );
     this.mostrarEconomia(renda);
     this.raiz.hidden = false;

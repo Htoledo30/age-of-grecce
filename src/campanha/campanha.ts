@@ -20,7 +20,16 @@ import {
   retornoDaConstrucao,
   retornoDoInvestimento,
 } from './economia';
-import type { RendaDaProvincia, RetornoDaConstrucao, RetornoDoInvestimento } from './economia';
+import type {
+  BaseDaProvincia,
+  RendaDaProvincia,
+  RetornoDaConstrucao,
+  RetornoDoInvestimento,
+} from './economia';
+import { exercitoVazio, forcaDe, retirar, somarLeva } from '@/combate/exercito';
+import type { Exercito } from '@/combate/exercito';
+import { avaliarLeva, manutencaoDe, tetoDeRecrutamento } from '@/combate/recrutamento';
+import type { RecusaDeLeva } from '@/combate/recrutamento';
 
 type AjustesJogo = Ajustes['jogo'];
 type Poder = Provincias['poderes'][number];
@@ -62,12 +71,20 @@ export class Campanha {
     const dono: Record<string, string> = {};
     for (const p of atlas.provincias) dono[p.id] = p.dono;
 
+    // População inicial: a de 700 a.C., copiada dos dados pro estado. A partir daqui ela
+    // é da partida — recrutar a encolhe. Província sem economia configurada não entra e
+    // continua sem população, como não tem renda.
+    const populacao: Record<string, number> = {};
+    for (const [id, ficha] of Object.entries(economia.provincias)) populacao[id] = ficha.populacao;
+
     this.estado = {
       jogador: null,
       ano: ajustes.anoInicial,
       turno: 0,
       tesouro: ajustes.tesouroInicial,
       dono,
+      populacao,
+      exercitos: {},
       investimentos: {},
       construcoes: {},
       obras: {},
@@ -212,10 +229,28 @@ export class Campanha {
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.economia,
       {
-        construcoes: this.construcoesEm(idProvincia),
+        ...this.baseDe(idProvincia),
         investimento: this.estado.investimentos[idProvincia],
       },
     );
+  }
+
+  /** O que a província é agora, tirando o incentivo: o que as contas comparam. */
+  private baseDe(idProvincia: string): BaseDaProvincia {
+    return {
+      construcoes: this.construcoesEm(idProvincia),
+      populacao: this.populacaoDe(idProvincia),
+    };
+  }
+
+  /**
+   * Habitantes que ainda estão na província.
+   *
+   * Zero quando ela não tem economia configurada — mesma resposta honesta que
+   * `economiaDe` dá, em vez de um número inventado.
+   */
+  populacaoDe(idProvincia: string): number {
+    return this.estado.populacao[idProvincia] ?? 0;
   }
 
   /** Soma só o que está configurado. O resto do mapa não arrecada nada. */
@@ -248,7 +283,7 @@ export class Campanha {
       this.economia.produtos,
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.economia,
-      this.construcoesEm(idProvincia),
+      this.baseDe(idProvincia),
       valor,
     );
   }
@@ -261,6 +296,174 @@ export class Campanha {
   /** A obra em andamento nesta província, se houver. */
   obraEm(idProvincia: string): Obra | undefined {
     return this.estado.obras[idProvincia];
+  }
+
+  /**
+   * O que as construções erguidas ali destravaram.
+   *
+   * Separado da renda de propósito: uma construção paga em ouro **ou** em capacidade, e
+   * misturar as duas numa conta só é exatamente o que faria a escolha virar aritmética.
+   */
+  capacidadesEm(idProvincia: string): readonly string[] {
+    const capacidades: string[] = [];
+    for (const id of this.construcoesEm(idProvincia)) {
+      const efeito = this.catalogoDeConstrucoes.construcoes[id]?.efeito;
+      if (efeito?.tipo === 'capacidade') capacidades.push(efeito.capacidade);
+    }
+    return capacidades;
+  }
+
+  /** Dá pra pôr gente em armas aqui? Exige o Quartel erguido e a província ser sua. */
+  podeRecrutarEm(idProvincia: string): boolean {
+    return this.podeAgirEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar');
+  }
+
+  /** O exército parado nesta província, se houver. */
+  exercitoEm(idProvincia: string): Exercito | undefined {
+    return this.estado.exercitos[idProvincia];
+  }
+
+  /** Quantos homens estão parados nesta província. */
+  forcaEm(idProvincia: string): number {
+    return forcaDe(this.estado.exercitos[idProvincia]);
+  }
+
+  /**
+   * Quantos homens NASCIDOS nesta província estão em armas, onde quer que estejam.
+   *
+   * Conta contra o teto de recrutamento dela. Sem isso bastaria recrutar, marchar pra
+   * fora e recrutar de novo pra esvaziar a cidade inteira em rodadas.
+   */
+  homensEmArmasDe(idProvincia: string): number {
+    let total = 0;
+    for (const exercito of Object.values(this.estado.exercitos)) {
+      total += exercito.origem[idProvincia] ?? 0;
+    }
+    return total;
+  }
+
+  /** Quantos homens esta província ainda comporta pôr em armas. */
+  tetoDeLevaEm(idProvincia: string): number {
+    return tetoDeRecrutamento(
+      this.populacaoDe(idProvincia),
+      this.homensEmArmasDe(idProvincia),
+      this.ajustes.combate,
+    );
+  }
+
+  /**
+   * Pode levantar esta leva aqui, e por quanto?
+   *
+   * O portão da PROVÍNCIA vem primeiro (é minha? tem economia?), e só depois as regras da
+   * leva — assim a recusa diz a coisa mais externa que está errada, em vez de reclamar de
+   * ouro numa província que nem é do jogador.
+   */
+  podeRecrutar(idProvincia: string, homens: number): RecusaDeLeva {
+    const naProvincia = this.podeAgirEm(idProvincia);
+    if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
+    return avaliarLeva(
+      homens,
+      {
+        populacao: this.populacaoDe(idProvincia),
+        jaEmArmas: this.homensEmArmasDe(idProvincia),
+        tesouro: this.estado.tesouro,
+        temQuartel: this.capacidadesEm(idProvincia).includes('recrutar'),
+      },
+      this.ajustes.combate,
+    );
+  }
+
+  /**
+   * Põe gente em armas: cobra o ouro e **tira os homens da população da província**.
+   *
+   * A população cai na mesma hora, e com ela o imposto dali — mobilizar não é só uma
+   * despesa de entrada, é uma cidade produzindo menos enquanto os seus estão no campo.
+   * Junta-se ao exército que já estiver ali, em vez de criar um segundo: não existe pilha
+   * de exércitos no mesmo lugar pra gerenciar.
+   */
+  recrutar(idProvincia: string, homens: number): void {
+    const r = this.podeRecrutar(idProvincia, homens);
+    if (!r.pode) throw new Error(r.motivo);
+
+    this.estado.tesouro -= r.ouro;
+    this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - r.homens;
+
+    const dono = this.donoDe(idProvincia);
+    const exercito = this.estado.exercitos[idProvincia] ?? exercitoVazio(dono);
+    somarLeva(exercito, idProvincia, r.homens);
+    this.estado.exercitos[idProvincia] = exercito;
+    this.aoMudar();
+  }
+
+  /**
+   * Manda gente pra casa: cada um volta à SUA província de origem.
+   *
+   * É o contrário exato de recrutar, e existe desde já porque sem ele a população seria
+   * uma catraca de sentido único — cada guerra encolheria o reino para sempre, e a única
+   * estratégia possível seria nunca mobilizar.
+   */
+  dispensar(idProvincia: string, homens: number): void {
+    const exercito = this.estado.exercitos[idProvincia];
+    if (!exercito) throw new Error(`não há exército em ${this.nomeDe(idProvincia)}`);
+    const devolvidos = retirar(exercito, homens);
+    for (const [origem, quantos] of Object.entries(devolvidos)) {
+      this.estado.populacao[origem] = (this.estado.populacao[origem] ?? 0) + quantos;
+    }
+    if (forcaDe(exercito) === 0) delete this.estado.exercitos[idProvincia];
+    this.aoMudar();
+  }
+
+  /** O que este poder paga por turno pra manter os seus em armas. */
+  manutencaoDe(idPoder: string): number {
+    let homens = 0;
+    for (const exercito of Object.values(this.estado.exercitos)) {
+      if (exercito.poder === idPoder) homens += forcaDe(exercito);
+    }
+    return manutencaoDe(homens, this.ajustes.combate);
+  }
+
+  /** Manutenção do jogador por turno. Zero antes de a campanha começar. */
+  get manutencao(): number {
+    return this.estado.jogador === null ? 0 : this.manutencaoDe(this.estado.jogador);
+  }
+
+  /** O que sobra da renda depois de pagar a tropa. Pode ser negativo, e isso é o aviso. */
+  get saldoPorTurno(): number {
+    return this.renda - this.manutencao;
+  }
+
+  /**
+   * Paga a manutenção do turno. O que não for pago, deserta.
+   *
+   * ⚠️ **Deserção proporcional, nunca colapso.** Quem não consegue pagar perde a fatia
+   * não paga da tropa, e ela volta pra casa — não some do mapa nem leva o reino junto.
+   * Espiral de morte não é decisão: é o jogo terminando sozinho enquanto o jogador
+   * assiste. O sinal fica claro (o exército encolhe todo turno) e a saída existe
+   * (dispensar antes, ou tomar mais renda).
+   *
+   * ⚠️ Cobra DEPOIS da arrecadação, pelo mesmo motivo do incentivo e das obras: quem
+   * recruta neste turno paga a manutenção deste turno, e não do que vem.
+   */
+  private pagarTropa(): void {
+    const devido = this.manutencao;
+    if (devido <= 0) return;
+
+    if (devido <= this.estado.tesouro) {
+      this.estado.tesouro -= devido;
+      return;
+    }
+
+    const pago = Math.max(0, this.estado.tesouro);
+    this.estado.tesouro -= pago;
+    const naoPaga = (devido - pago) / devido;
+
+    const jogador = this.estado.jogador;
+    if (jogador === null) return;
+    for (const [idProvincia, exercito] of Object.entries(this.estado.exercitos)) {
+      if (exercito.poder !== jogador) continue;
+      const desertores = Math.ceil(forcaDe(exercito) * naoPaga);
+      if (desertores > 0) this.dispensar(idProvincia, desertores);
+    }
   }
 
   /** O catálogo inteiro, pra interface montar a lista de opções. */
@@ -282,7 +485,7 @@ export class Campanha {
       this.economia.produtos,
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.economia,
-      this.construcoesEm(idProvincia),
+      this.baseDe(idProvincia),
       idConstrucao,
     );
   }
@@ -417,6 +620,7 @@ export class Campanha {
   passarTurno(): void {
     if (!this.iniciada) throw new Error('a campanha ainda não começou');
     this.estado.tesouro += this.renda;
+    this.pagarTropa();
 
     for (const [id, investimento] of Object.entries(this.estado.investimentos)) {
       investimento.arrecadacoesRestantes -= 1;

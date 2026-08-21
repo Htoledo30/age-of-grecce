@@ -31,6 +31,13 @@ export interface OpcaoDeConstrucao {
   motivo: string;
   ganhoPorTurno: number;
   turnosParaPagar: number;
+  /**
+   * O que ela destrava, escrito, quando não paga em ouro.
+   *
+   * `null` nas que rendem moeda. Uma construção de capacidade não tem "paga-se em N
+   * turnos" — e mostrar "nunca se paga" no Quartel seria mentir sobre o que ele é.
+   */
+  promessa: string | null;
 }
 
 /** O que o bloco precisa saber pra oferecer — ou recusar com motivo — cada ação. */

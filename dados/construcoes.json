@@ -1,30 +1,38 @@
 {
   "versao": 1,
-  "comentario": "Construcoes economicas: permanentes, caras, e cada uma melhora UMA parcela da renda. O efeito mora aqui e nao se repete nas provincias, entao balancear todas as Agoras do mapa e mudar um numero so. Como as parcelas pesam diferente em cada provincia, a melhor construcao muda de lugar pra lugar - e e isso que faz a escolha ser uma decisao. O prazo acompanha o custo: obra maior demora mais, e isso le sozinho sem explicacao. Porto, estrada e torre NAO estao aqui: dependem do modelo de movimentacao de tropas, ainda nao decidido.",
+  "comentario": "Construcoes: permanentes, caras, pagas a vista e entregues depois. Cada uma paga numa MOEDA diferente, e e isso que faz a lista ser escolha em vez de aritmetica: Agora, Oficina e Mercado rendem ouro em parcelas diferentes da renda, e o Quartel nao rende nada - ele compra a capacidade de recrutar. Comparar 5.000 por um exercito com 3.000 por +70 moedas/turno nao e uma conta, e uma decisao. Como as parcelas pesam diferente em cada provincia, a melhor construcao muda de lugar pra lugar. O prazo acompanha o custo: obra maior demora mais, e isso le sozinho sem explicacao. Porto, estrada e torre NAO estao aqui: dependem do modelo de movimentacao de tropas.",
   "construcoes": {
     "agora": {
       "nome": "Ágora",
       "custo": 3000,
       "turnos": 3,
-      "parcela": "impostos",
-      "fator": 1.4,
+      "efeito": { "tipo": "renda", "parcela": "impostos", "fator": 1.4 },
       "motivo": "A praca onde se cobra, se pesa e se registra. Rende onde ha muita gente pra tributar, e quase nada num sitio despovoado."
     },
     "oficina": {
       "nome": "Oficina",
       "custo": 2500,
       "turnos": 2,
-      "parcela": "producao",
-      "fator": 1.3,
+      "efeito": { "tipo": "renda", "parcela": "producao", "fator": 1.3 },
       "motivo": "Prensa, forja, fornalha. Multiplica o que a terra ja da, entao vale onde o nivel do produto e alto - e e desperdicio onde e baixo."
     },
     "mercado": {
       "nome": "Mercado",
       "custo": 3000,
       "turnos": 3,
-      "parcela": "comercio",
-      "fator": 1.6,
+      "efeito": { "tipo": "renda", "parcela": "comercio", "fator": 1.6 },
       "motivo": "Nao produz nada: vende melhor o que existe. So compensa onde ja ha escoamento, porque multiplica o comercio e nao a producao."
+    },
+    "quartel": {
+      "nome": "Quartel",
+      "custo": 5000,
+      "turnos": 4,
+      "efeito": {
+        "tipo": "capacidade",
+        "capacidade": "recrutar",
+        "promessa": "Permite reunir e recrutar exercitos nesta provincia."
+      },
+      "motivo": "Patio de treino, deposito de armas e alojamento. Nao rende moeda nenhuma: o que ele compra e o direito de por gente em armas aqui, e por isso e a obra mais cara do catalogo. Um reino sem Quartel nenhum e rico e indefeso."
     }
   }
 }

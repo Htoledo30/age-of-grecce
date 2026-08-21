@@ -36,11 +36,30 @@ type CatalogoDeConstrucoes = Construcoes['construcoes'];
  * quatro, e ordem de argumento posicional é o tipo de coisa que se troca sem o
  * compilador reclamar quando os dois são do mesmo tipo.
  */
-export interface EstadoDaProvincia {
-  /** Ids de construções já erguidas ali. */
-  construcoes: readonly string[];
+export interface EstadoDaProvincia extends BaseDaProvincia {
   /** Incentivo em curso, se houver. */
   investimento: Investimento | undefined;
+}
+
+/**
+ * O que a província é AGORA, tirando o incentivo.
+ *
+ * Separado porque as contas de retorno precisam comparar "com e sem incentivo" sobre a
+ * mesma base — e porque acrescentar `populacao` como mais um parâmetro solto ao lado de
+ * `valor` daria dois `number` adjacentes que o compilador deixaria trocar em silêncio.
+ */
+export interface BaseDaProvincia {
+  /** Ids de construções já erguidas ali. */
+  construcoes: readonly string[];
+  /**
+   * Habitantes que ainda estão na província.
+   *
+   * ⚠️ **Não é `ficha.populacao`.** Aquela é a população INICIAL, dado autoral de 700
+   * a.C.; esta é a de agora, e ela encolhe quando o poder põe gente em armas. Usar a da
+   * ficha aqui faria a cidade continuar pagando imposto por gente que está no campo de
+   * batalha.
+   */
+  populacao: number;
 }
 
 /** Um investimento em curso numa província. Vive no estado da campanha. */
@@ -113,7 +132,10 @@ function fatorDasConstrucoes(
   for (const id of construcoes) {
     const construcao = catalogo[id];
     if (!construcao) throw new Error(`construção inexistente no catálogo: ${id}`);
-    if (construcao.parcela === parcela) fator *= construcao.fator;
+    // Construção de capacidade não entra na renda: o Quartel não rende moeda nenhuma, e
+    // é justamente por isso que ele não é comparável com a Ágora numa conta só.
+    const efeito = construcao.efeito;
+    if (efeito.tipo === 'renda' && efeito.parcela === parcela) fator *= efeito.fator;
   }
   return fator;
 }
@@ -137,7 +159,7 @@ export function rendaDaProvincia(
 
   // Arredonda cada parcela, e não só o total: é o que faz a soma das três linhas da ficha
   // bater exata com o número da barra de turno, sem sobra de centavo em canto nenhum.
-  const impostos = Math.round(ficha.populacao * ajustes.impostoPorHabitante * fator('impostos'));
+  const impostos = Math.round(estado.populacao * ajustes.impostoPorHabitante * fator('impostos'));
 
   // A construção entra ANTES do incentivo, e é isso que faz os dois se comporem: quem
   // ergue a Oficina primeiro tem uma produção maior pro incentivo multiplicar depois.
@@ -149,7 +171,7 @@ export function rendaDaProvincia(
   return {
     produto: { id: ficha.produto, nome: produto.nome, valor: produto.valor },
     nivel: ficha.nivel,
-    populacao: ficha.populacao,
+    populacao: estado.populacao,
     impostos,
     producao,
     producaoSemIncentivo,
@@ -185,17 +207,17 @@ export function retornoDoInvestimento(
   catalogo: Economia['produtos'],
   construcoes: CatalogoDeConstrucoes,
   ajustes: AjustesEconomia,
-  erguidas: readonly string[],
+  base: BaseDaProvincia,
   valor: number,
 ): RetornoDoInvestimento {
   const bonus = bonusDoInvestimento(valor, ajustes);
   const arrecadacoes = ajustes.investimento.arrecadacoes;
   const sem = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
-    construcoes: erguidas,
+    ...base,
     investimento: undefined,
   }).total;
   const com = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
-    construcoes: erguidas,
+    ...base,
     investimento: { percentual: bonus, arrecadacoesRestantes: arrecadacoes },
   }).total;
 
@@ -235,7 +257,7 @@ export function retornoDaConstrucao(
   catalogo: Economia['produtos'],
   construcoes: CatalogoDeConstrucoes,
   ajustes: AjustesEconomia,
-  erguidas: readonly string[],
+  base: BaseDaProvincia,
   idConstrucao: string,
 ): RetornoDaConstrucao {
   const construcao = construcoes[idConstrucao];
@@ -244,15 +266,18 @@ export function retornoDaConstrucao(
   // Duas perguntas diferentes, mesma conta: pra construção que ainda não existe, "quanto
   // ela ACRESCENTARIA"; pra que já existe, "quanto ela ESTÁ dando". Sem essa distinção a
   // linha de uma Ágora construída mostrava o efeito de uma segunda Ágora por cima dela.
+  const erguidas = base.construcoes;
   const jaErguida = erguidas.includes(idConstrucao);
   const sem = jaErguida ? erguidas.filter((id) => id !== idConstrucao) : erguidas;
   const com = jaErguida ? erguidas : [...erguidas, idConstrucao];
 
   const antes = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
+    ...base,
     construcoes: sem,
     investimento: undefined,
   }).total;
   const depois = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
+    ...base,
     construcoes: com,
     investimento: undefined,
   }).total;

@@ -184,6 +184,7 @@ async function iniciar(): Promise<void> {
           motivo: c.motivo,
           ganhoPorTurno: conta?.ganhoPorTurno ?? 0,
           turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
+          promessa: c.efeito.tipo === 'capacidade' ? c.efeito.promessa : null,
         };
       }),
       bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,

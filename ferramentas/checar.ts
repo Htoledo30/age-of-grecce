@@ -214,6 +214,7 @@ function checarEconomia(): void {
     }
     const renda = rendaDaProvincia(ficha, economia.produtos, {}, ajustes.data.jogo.economia, {
       construcoes: [],
+      populacao: ficha.populacao,
       investimento: undefined,
     });
     porPoder.set(provincia.dono, (porPoder.get(provincia.dono) ?? 0) + renda.total);
@@ -267,20 +268,24 @@ function checarConstrucoes(): void {
   );
   if (!economia.success || !ajustes.success) return; // já reclamado
 
-  console.log('construções — ganho por turno e turnos até se pagar:');
-  const cabecalho = Object.values(catalogo)
-    .map((c) => `${c.nome} (${c.custo})`.padStart(20))
-    .join('');
+  // Só as que rendem moeda entram na tabela de retorno. O Quartel não tem "paga-se em N
+  // turnos" — ele paga em capacidade, e enfiá-lo aqui imprimiria "nunca", que é verdade
+  // aritmética e mentira sobre o que ele é. Ele sai listado à parte.
+  const deRenda = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'renda');
+  const deCapacidade = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'capacidade');
+
+  console.log('construções que rendem moeda — ganho por turno e turnos até se pagar:');
+  const cabecalho = deRenda.map(([, c]) => `${c.nome} (${c.custo})`.padStart(20)).join('');
   console.log(`  ${''.padEnd(12)}${cabecalho}`);
 
   for (const [id, ficha] of Object.entries(economia.data.provincias)) {
-    const celulas = Object.keys(catalogo).map((idConstrucao) => {
+    const celulas = deRenda.map(([idConstrucao]) => {
       const c = retornoDaConstrucao(
         ficha,
         economia.data.produtos,
         catalogo,
         ajustes.data.jogo.economia,
-        [],
+        { construcoes: [], populacao: ficha.populacao },
         idConstrucao,
       );
       const turnos = Number.isFinite(c.turnosParaPagar)
@@ -289,6 +294,14 @@ function checarConstrucoes(): void {
       return `+${c.ganhoPorTurno}/turno em ${turnos}`.padStart(20);
     });
     console.log(`  ${id.padEnd(12)}${celulas.join('')}`);
+  }
+
+  if (deCapacidade.length > 0) {
+    console.log('construções que pagam em capacidade:');
+    for (const [, c] of deCapacidade) {
+      const promessa = c.efeito.tipo === 'capacidade' ? c.efeito.promessa : '';
+      console.log(`  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`);
+    }
   }
 }
 
