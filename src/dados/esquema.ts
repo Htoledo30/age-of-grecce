@@ -94,6 +94,26 @@ export const Ajustes = z.object({
        */
       manutencaoPorHomem: z.number().positive(),
       /**
+       * Habitantes que uma província **nunca** cede. Abaixo disso ela não levanta leva.
+       *
+       * A mesma ideia do mínimo de população de _Rome: Total War_: existe um resto de
+       * gente — mulheres, crianças, velhos, quem lavra — que não vira soldado por mais
+       * dinheiro que haja.
+       *
+       * ⚠️ **É piso no que SOBRA, não porteiro na entrada.** "Recusar quando a população
+       * está abaixo do mínimo" deixaria uma cidade de 2.001 habitantes ceder os 2.001 de
+       * uma vez. A conta é `população − mínimo`.
+       *
+       * ⚠️ **O que ele protege de verdade é a província pequena, e a razão está no
+       * crescimento.** `calcularCrescimentoPopulacional` faz `Math.floor(bruto)`, e com
+       * `taxaNatural` de 1% isso significa que **abaixo de ~100 habitantes o crescimento
+       * arredonda para zero e a província morre para sempre.** Sem o piso, um império rico
+       * paga para raspar uma vila até esse ponto e ela nunca mais volta.
+       *
+       * Em Atenas ele nem chega a agir: o custo da tropa trava a mobilização muito antes.
+       */
+      populacaoMinima: z.number().int().nonnegative(),
+      /**
        * Trechos que uma hoste planeja por rodada. Dois hoje.
        *
        * ⚠️ **É este número que obriga a resolução a ter PASSOS.** Com um salto, a rodada

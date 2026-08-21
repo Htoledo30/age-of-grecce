@@ -102,8 +102,9 @@ export class Recrutamento {
       `${vista.provincia.nome} · ${numero(vista.populacao)} habitantes · ` +
       `${numero(vista.disponivel)} disponíveis para recrutar`;
     this.alvo.title =
-      'Não existe fração recrutável nem lote mínimo. O limite local é toda a população ' +
-      'que ainda vive aqui, além do ouro necessário para reunir a leva.';
+      'Não existe fração recrutável nem lote mínimo. O limite local é a população que ' +
+      'ainda vive aqui, menos os habitantes que a província nunca cede — mulheres, ' +
+      'crianças, velhos e quem lavra —, além do ouro para reunir a leva.';
 
     this.avaliar();
   }

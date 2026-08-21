@@ -8,9 +8,9 @@
  *
  *     recrutar custa OURO e custa POPULAÇÃO da província onde se recruta
  *
- * ⚠️ **Não existe fração recrutável nem lote mínimo.** A população atual é o
- * limite físico: pode-se tentar levantar qualquer quantidade inteira positiva, desde que
- * ainda haja aquela gente na província e ouro para reunir a leva.
+ * ⚠️ **Não existe fração recrutável nem lote mínimo.** O limite é a população atual
+ * **menos o piso que a província nunca cede** — pode-se levantar qualquer quantidade
+ * inteira positiva dentro disso, havendo ouro para reunir a leva.
  *
  * ⚠️ **Quem vai pras armas sai da população**, e por isso o imposto daquela província cai
  * na mesma hora e reduz quantos habitantes ainda estão disponíveis. Mobilizar tem preço contínuo,
@@ -42,11 +42,12 @@ export function custoDaLeva(homens: number, ajustes: AjustesCombate): number {
 /**
  * Quantos habitantes esta província ainda cede a uma leva.
  *
- * É a população atual inteira, nunca um teto escondido. Uma função só é usada pela
- * recusa e pela tela para que ambas ofereçam exatamente o mesmo número.
+ * `população − piso`, nunca negativo. Uma função só, usada pela recusa e pela tela: se
+ * cada lado fizesse a própria conta, um dia o painel ofereceria uma leva que a regra
+ * recusa, e o jogador leria isso como defeito do jogo — que é o que seria.
  */
-export function disponivelParaLeva(populacao: number): number {
-  return Math.max(0, Math.floor(populacao));
+export function disponivelParaLeva(populacao: number, ajustes: AjustesCombate): number {
+  return Math.max(0, Math.floor(populacao) - ajustes.populacaoMinima);
 }
 
 /** Manutenção por turno de um contingente. Inteiro, pelo mesmo motivo. */
@@ -72,14 +73,20 @@ export function avaliarLeva(
   if (!Number.isInteger(homens) || homens <= 0) {
     return { pode: false, motivo: 'o número de homens precisa ser inteiro' };
   }
-  const disponivel = disponivelParaLeva(situacao.populacao);
+  const disponivel = disponivelParaLeva(situacao.populacao, ajustes);
+  const piso = ajustes.populacaoMinima.toLocaleString('pt-BR');
   if (disponivel <= 0) {
-    return { pode: false, motivo: 'há apenas 0 habitantes disponíveis' };
+    return {
+      pode: false,
+      motivo: `esta província não cede mais gente: ela precisa manter ${piso} habitantes`,
+    };
   }
   if (homens > disponivel) {
     return {
       pode: false,
-      motivo: `há apenas ${disponivel.toLocaleString('pt-BR')} habitantes disponíveis`,
+      motivo:
+        `há apenas ${disponivel.toLocaleString('pt-BR')} habitantes disponíveis — ` +
+        `${piso} nunca saem daqui`,
     };
   }
 

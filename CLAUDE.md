@@ -726,11 +726,25 @@ O Celeiro custa **3.500**, leva **3 turnos** e multiplica em **1,5** somente o c
 natural da província. Não dá dinheiro direto e não aumenta a capacidade da terra. Na
 Atenas inicial a interface mostra o efeito concreto: `+175 → +262 habitantes por turno`.
 
-### Soldado sai da população; não existe fração nem lote mínimo
+### Soldado sai da população; não existe fração nem lote mínimo, mas existe um PISO
 
-Pode-se recrutar **qualquer quantidade inteira positiva até a população atual**, desde
-que haja Quartel e ouro. `fracaoRecrutavel` e `minimoPorLeva` foram removidos: não existe
-teto artificial de 10%, e uma leva de um homem é válida.
+Pode-se recrutar **qualquer quantidade inteira positiva até `população − populacaoMinima`**,
+desde que haja Quartel e ouro. `fracaoRecrutavel` e `minimoPorLeva` foram removidos: não
+existe teto artificial de 10%, e uma leva de um homem é válida.
+
+⚠️ **O que existe é um piso: `populacaoMinima`, hoje 2.000, que a província nunca cede.**
+É a mesma ideia do mínimo de população de *Rome: Total War*. E é **piso no que sobra, não
+porteiro na entrada** — se fosse "recusar quando a população está abaixo do mínimo", uma
+cidade de 2.001 habitantes cederia os 2.001 de uma vez.
+
+⚠️ **O motivo do piso está no crescimento, e é um número.** `calcularCrescimentoPopulacional`
+faz `Math.floor(bruto)`, e com `taxaNatural` de 1% isso significa que **abaixo de ~101
+habitantes o crescimento arredonda pra zero e a província morre pra sempre.** Sem o piso,
+um império rico paga pra raspar uma vila até esse ponto e ela nunca mais volta.
+
+Em Atenas o piso nem chega a agir: com 35.000 habitantes ele libera 33.000, e o custo da
+tropa trava a mobilização muito antes disso. **Ele é apólice contra império rico raspando
+província pequena, não um limite que se sente todo turno.**
 
 Quem vai pras armas **sai da população na mesma hora**, então o imposto daquela província
 cai junto. População disponível, preço de entrada e manutenção são os freios naturais.

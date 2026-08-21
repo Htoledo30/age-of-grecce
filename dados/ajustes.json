@@ -20,7 +20,8 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": 0.3,
-      "saltosPorRodada": 2
+      "saltosPorRodada": 2,
+      "populacaoMinima": 2000
     }
   },
   "camera": {

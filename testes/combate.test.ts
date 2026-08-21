@@ -6,7 +6,12 @@ import { Ajustes, Construcoes, Economia, Provincias } from '../src/dados/esquema
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from '../src/combate/exercito';
-import { avaliarLeva, custoDaLeva, manutencaoDe } from '../src/combate/recrutamento';
+import {
+  avaliarLeva,
+  custoDaLeva,
+  disponivelParaLeva,
+  manutencaoDe,
+} from '../src/combate/recrutamento';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -92,11 +97,26 @@ describe('recrutamento: as contas', () => {
     expect(Number.isInteger(manutencaoDe(777, combate))).toBe(true);
   });
 
-  it('não impõe fração nem lote mínimo: a população atual é o limite', () => {
+  it('não impõe fração nem lote mínimo: o limite é a população MENOS o piso', () => {
+    const piso = combate.populacaoMinima;
     const situacao = { populacao: 35_000, tesouro: 200_000, temQuartel: true };
+    const cabe = 35_000 - piso;
     expect(avaliarLeva(1, situacao, combate)).toMatchObject({ pode: true, homens: 1 });
-    expect(avaliarLeva(35_000, situacao, combate)).toMatchObject({ pode: true, homens: 35_000 });
-    expect(avaliarLeva(35_001, situacao, combate)).toMatchObject({ motivo: /35\.000 habitantes/ });
+    expect(avaliarLeva(cabe, situacao, combate)).toMatchObject({ pode: true, homens: cabe });
+    expect(avaliarLeva(cabe + 1, situacao, combate)).toMatchObject({
+      motivo: /nunca saem daqui/,
+    });
+  });
+
+  it('no piso, a província para de ceder gente e diz por quê', () => {
+    const piso = combate.populacaoMinima;
+    const noPiso = { populacao: piso, tesouro: 200_000, temQuartel: true };
+    expect(avaliarLeva(1, noPiso, combate)).toMatchObject({
+      motivo: `esta província não cede mais gente: ela precisa manter ${piso.toLocaleString('pt-BR')} habitantes`,
+    });
+    // E abaixo do piso também — a conta nunca fica negativa.
+    expect(disponivelParaLeva(piso - 500, combate)).toBe(0);
+    expect(disponivelParaLeva(piso + 500, combate)).toBe(500);
   });
 });
 
@@ -158,15 +178,22 @@ describe('recrutar custa ouro E população', () => {
     expect(c.economiaDe('atenas')?.populacao).toBe(populacao - 2000);
   });
 
-  it('permite mobilizar toda a população, mas nunca inventa habitantes', () => {
+  it('mobiliza até o piso, e ali para — a província nunca fica vazia', () => {
     const c = comQuartel();
     c.darOuro(200_000);
+    const piso = combate.populacaoMinima;
     const populacao = c.populacaoDe('atenas');
-    expect(c.podeRecrutar('atenas', populacao)).toMatchObject({ pode: true });
-    expect(c.podeRecrutar('atenas', populacao + 1)).toMatchObject({ pode: false });
-    c.recrutar('atenas', populacao);
-    expect(c.populacaoDe('atenas')).toBe(0);
-    expect(c.podeRecrutar('atenas', 1)).toMatchObject({ motivo: /0 habitantes/ });
+    const cabe = populacao - piso;
+
+    expect(c.podeRecrutar('atenas', cabe)).toMatchObject({ pode: true });
+    expect(c.podeRecrutar('atenas', cabe + 1)).toMatchObject({ pode: false });
+
+    c.recrutar('atenas', cabe);
+
+    // O que protege de verdade: sem o piso, um império rico raspa a província até
+    // abaixo de ~100 habitantes, e ali `Math.floor` no crescimento a mata para sempre.
+    expect(c.populacaoDe('atenas')).toBe(piso);
+    expect(c.podeRecrutar('atenas', 1)).toMatchObject({ motivo: /precisa manter/ });
   });
 
   it('aceita uma pessoa e recusa somente valor quebrado ou não positivo', () => {

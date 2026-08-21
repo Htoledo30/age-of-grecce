@@ -79,7 +79,7 @@ export class Mobilizacao {
 
   /** Quantos habitantes esta província ainda cede a uma leva. */
   disponivelParaLevaEm(idProvincia: string): number {
-    return disponivelParaLeva(this.populacaoDe(idProvincia));
+    return disponivelParaLeva(this.populacaoDe(idProvincia), this.ajustes);
   }
 
   avaliarLevaEm(idProvincia: string, homens: number, temQuartel: boolean): RecusaDeLeva {
