@@ -1,0 +1,15 @@
+appId: com.henry.ageofgrecce
+productName: Age of Grecce
+directories:
+  output: dist-app
+  buildResources: assets
+files:
+  - dist/**
+  - electron/**
+  - package.json
+win:
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

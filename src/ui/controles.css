@@ -1,0 +1,34 @@
+/* Vocabulário de botão, compartilhado por todos os painéis.
+   O `.interruptor` do painel lateral tem forma própria e fica onde está. */
+
+.botao {
+  padding: var(--gap-2) var(--gap-3);
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-escuro);
+  color: var(--tinta);
+  font-family: var(--fonte-corpo);
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.botao:hover:not([disabled]) {
+  background: var(--papel-claro);
+}
+
+.botao[disabled] {
+  color: var(--tinta-tenue);
+  cursor: default;
+}
+
+/* A ação principal da tela. Mesmo par de cores do interruptor ligado, pra que "isto está
+   aceso" e "clique aqui" não briguem por dois verdes diferentes. */
+.botao--principal {
+  background: var(--verdete);
+  border-color: var(--tinta);
+  color: var(--papel-claro);
+}
+
+.botao--principal:hover:not([disabled]) {
+  background: var(--tinta-fraca);
+}

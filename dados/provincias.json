@@ -1,0 +1,2791 @@
+{
+  "versao": 1,
+  "epoca": "700 a.C.",
+  "comentario": "Sementes de provincia do mundo grego arcaico. Cada uma e um lugar REAL, em longitude e latitude de verdade: o gerador projeta o ponto e faz a provincia crescer dali ate encontrar a vizinha, custando caro pra subir serra. Nenhum ponto e sorteado, e mover uma fronteira e mover a semente.",
+  "poderes": [
+    {
+      "id": "abido",
+      "nome": "Abido",
+      "povo": "eolio",
+      "cor": "#6b648f"
+    },
+    {
+      "id": "acaia",
+      "nome": "Acaia",
+      "povo": "aqueu",
+      "cor": "#ab8f65"
+    },
+    {
+      "id": "acarnanios",
+      "nome": "Acarnanios",
+      "povo": "etolio",
+      "cor": "#658f5c"
+    },
+    {
+      "id": "adramitio",
+      "nome": "Adramitio",
+      "povo": "eolio",
+      "cor": "#73659d"
+    },
+    {
+      "id": "agrianes",
+      "nome": "Agrianes",
+      "povo": "trace",
+      "cor": "#8381b9"
+    },
+    {
+      "id": "almopes",
+      "nome": "Almopes",
+      "povo": "macedonio",
+      "cor": "#8f647f"
+    },
+    {
+      "id": "amantes",
+      "nome": "Amantes",
+      "povo": "ilirio",
+      "cor": "#ab659b"
+    },
+    {
+      "id": "amorgos",
+      "nome": "Amorgos",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "andros",
+      "nome": "Andros",
+      "povo": "jonio",
+      "cor": "#65869d"
+    },
+    {
+      "id": "apsintios",
+      "nome": "Apsintios",
+      "povo": "trace",
+      "cor": "#8381b9"
+    },
+    {
+      "id": "argos",
+      "nome": "Argos",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "assos",
+      "nome": "Assos",
+      "povo": "eolio",
+      "cor": "#7b65ab"
+    },
+    {
+      "id": "astas",
+      "nome": "Astas",
+      "povo": "trace",
+      "cor": "#615c8f"
+    },
+    {
+      "id": "astipaleia",
+      "nome": "Astipaleia",
+      "povo": "dorio",
+      "cor": "#9d6865"
+    },
+    {
+      "id": "atenas",
+      "nome": "Atenas",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "bisaltas",
+      "nome": "Bisaltas",
+      "povo": "trace",
+      "cor": "#646c8f"
+    },
+    {
+      "id": "bistones",
+      "nome": "Bistones",
+      "povo": "trace",
+      "cor": "#6568ab"
+    },
+    {
+      "id": "bitinos",
+      "nome": "Bitinos",
+      "povo": "bitinio",
+      "cor": "#6e5c8f"
+    },
+    {
+      "id": "botieus",
+      "nome": "Botieus",
+      "povo": "trace",
+      "cor": "#656b9d"
+    },
+    {
+      "id": "bulinos",
+      "nome": "Bulinos",
+      "povo": "ilirio",
+      "cor": "#b981a9"
+    },
+    {
+      "id": "calcis",
+      "nome": "Calcis",
+      "povo": "jonio",
+      "cor": "#64808f"
+    },
+    {
+      "id": "calimno",
+      "nome": "Calimno",
+      "povo": "dorio",
+      "cor": "#ab6d65"
+    },
+    {
+      "id": "caones",
+      "nome": "Caones",
+      "povo": "epirota",
+      "cor": "#8c5c8f"
+    },
+    {
+      "id": "caria",
+      "nome": "Caria",
+      "povo": "cario",
+      "cor": "#65939d"
+    },
+    {
+      "id": "caristo",
+      "nome": "Caristo",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "carpatos",
+      "nome": "Carpatos",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "cefalenia",
+      "nome": "Cefalenia",
+      "povo": "aqueu",
+      "cor": "#ab8f65"
+    },
+    {
+      "id": "cicones",
+      "nome": "Cicones",
+      "povo": "trace",
+      "cor": "#615c8f"
+    },
+    {
+      "id": "cidonia",
+      "nome": "Cidonia",
+      "povo": "cretense",
+      "cor": "#9d7565"
+    },
+    {
+      "id": "cime",
+      "nome": "Cime",
+      "povo": "eolio",
+      "cor": "#9781b9"
+    },
+    {
+      "id": "cipriotas",
+      "nome": "Cipriotas",
+      "povo": "cipriota",
+      "cor": "#8f7a64"
+    },
+    {
+      "id": "citera",
+      "nome": "Citera",
+      "povo": "dorio",
+      "cor": "#ab6d65"
+    },
+    {
+      "id": "citnos",
+      "nome": "Citnos",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "cizico",
+      "nome": "Cizico",
+      "povo": "jonio",
+      "cor": "#65869d"
+    },
+    {
+      "id": "clazomenas",
+      "nome": "Clazomenas",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "cnido",
+      "nome": "Cnido",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "cnossos",
+      "nome": "Cnossos",
+      "povo": "cretense",
+      "cor": "#ab7e65"
+    },
+    {
+      "id": "colofao",
+      "nome": "Colofao",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "corcira",
+      "nome": "Corcira",
+      "povo": "dorio",
+      "cor": "#9d6865"
+    },
+    {
+      "id": "corinto",
+      "nome": "Corinto",
+      "povo": "dorio",
+      "cor": "#b98c81"
+    },
+    {
+      "id": "cos",
+      "nome": "Cos",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "crestones",
+      "nome": "Crestones",
+      "povo": "trace",
+      "cor": "#6568ab"
+    },
+    {
+      "id": "dassaretios",
+      "nome": "Dassaretios",
+      "povo": "ilirio",
+      "cor": "#8f5c7c"
+    },
+    {
+      "id": "delfos",
+      "nome": "Delfos",
+      "povo": "focio",
+      "cor": "#659d6a"
+    },
+    {
+      "id": "dolonces",
+      "nome": "Dolonces",
+      "povo": "trace",
+      "cor": "#8381b9"
+    },
+    {
+      "id": "dorios",
+      "nome": "Dorios",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "edones",
+      "nome": "Edones",
+      "povo": "trace",
+      "cor": "#6568ab"
+    },
+    {
+      "id": "efeso",
+      "nome": "Efeso",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "egina",
+      "nome": "Egina",
+      "povo": "dorio",
+      "cor": "#9d6865"
+    },
+    {
+      "id": "eleusis",
+      "nome": "Eleusis",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "eleuterna",
+      "nome": "Eleuterna",
+      "povo": "cretense",
+      "cor": "#8f6d64"
+    },
+    {
+      "id": "elide",
+      "nome": "Elide",
+      "povo": "aqueu",
+      "cor": "#ab8f65"
+    },
+    {
+      "id": "elimeia",
+      "nome": "Elimeia",
+      "povo": "macedonio",
+      "cor": "#8f5c6d"
+    },
+    {
+      "id": "enqueleos",
+      "nome": "Enqueleos",
+      "povo": "ilirio",
+      "cor": "#9d6595"
+    },
+    {
+      "id": "eordaia",
+      "nome": "Eordaia",
+      "povo": "macedonio",
+      "cor": "#b98198"
+    },
+    {
+      "id": "epidauro",
+      "nome": "Epidauro",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "eretria",
+      "nome": "Eretria",
+      "povo": "jonio",
+      "cor": "#6589ab"
+    },
+    {
+      "id": "eritras",
+      "nome": "Eritras",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "esciros",
+      "nome": "Esciros",
+      "povo": "pelasgo",
+      "cor": "#65799d"
+    },
+    {
+      "id": "esmirna",
+      "nome": "Esmirna",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "esparta",
+      "nome": "Esparta",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "esporades",
+      "nome": "Esporades",
+      "povo": "jonio",
+      "cor": "#6589ab"
+    },
+    {
+      "id": "etolos",
+      "nome": "Etolos",
+      "povo": "etolio",
+      "cor": "#658f5c"
+    },
+    {
+      "id": "farsalo",
+      "nome": "Farsalo",
+      "povo": "tessalio",
+      "cor": "#659d99"
+    },
+    {
+      "id": "feras",
+      "nome": "Feras",
+      "povo": "tessalio",
+      "cor": "#81b5b9"
+    },
+    {
+      "id": "festo",
+      "nome": "Festo",
+      "povo": "cretense",
+      "cor": "#8f6d64"
+    },
+    {
+      "id": "figalia",
+      "nome": "Figalia",
+      "povo": "arcadio",
+      "cor": "#aba065"
+    },
+    {
+      "id": "foceia",
+      "nome": "Foceia",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "focida",
+      "nome": "Focida",
+      "povo": "focio",
+      "cor": "#659d6a"
+    },
+    {
+      "id": "frigia",
+      "nome": "Frigia",
+      "povo": "frigio",
+      "cor": "#a0b981"
+    },
+    {
+      "id": "gortina",
+      "nome": "Gortina",
+      "povo": "cretense",
+      "cor": "#8f6d64"
+    },
+    {
+      "id": "hereia",
+      "nome": "Hereia",
+      "povo": "arcadio",
+      "cor": "#aba065"
+    },
+    {
+      "id": "hermione",
+      "nome": "Hermione",
+      "povo": "dorio",
+      "cor": "#8f695c"
+    },
+    {
+      "id": "icaria",
+      "nome": "Icaria",
+      "povo": "jonio",
+      "cor": "#65869d"
+    },
+    {
+      "id": "ilion",
+      "nome": "Ilion",
+      "povo": "eolio",
+      "cor": "#9781b9"
+    },
+    {
+      "id": "imbros",
+      "nome": "Imbros",
+      "povo": "pelasgo",
+      "cor": "#64768f"
+    },
+    {
+      "id": "iolco",
+      "nome": "Iolco",
+      "povo": "tessalio",
+      "cor": "#65abab"
+    },
+    {
+      "id": "ios",
+      "nome": "Ios",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "itaca",
+      "nome": "Itaca",
+      "povo": "aqueu",
+      "cor": "#9d8365"
+    },
+    {
+      "id": "keos",
+      "nome": "Keos",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "lampsaco",
+      "nome": "Lampsaco",
+      "povo": "jonio",
+      "cor": "#64808f"
+    },
+    {
+      "id": "larissa",
+      "nome": "Larissa",
+      "povo": "tessalio",
+      "cor": "#65abab"
+    },
+    {
+      "id": "lemnos",
+      "nome": "Lemnos",
+      "povo": "pelasgo",
+      "cor": "#5c638f"
+    },
+    {
+      "id": "licaones",
+      "nome": "Licaones",
+      "povo": "frigio",
+      "cor": "#8c9d65"
+    },
+    {
+      "id": "licia",
+      "nome": "Licia",
+      "povo": "licio",
+      "cor": "#81b9b6"
+    },
+    {
+      "id": "lidia",
+      "nome": "Lidia",
+      "povo": "lidio",
+      "cor": "#8f8f64"
+    },
+    {
+      "id": "lincestis",
+      "nome": "Lincestis",
+      "povo": "macedonio",
+      "cor": "#ab6586"
+    },
+    {
+      "id": "lito",
+      "nome": "Lito",
+      "povo": "cretense",
+      "cor": "#8f765c"
+    },
+    {
+      "id": "locros-opuntios",
+      "nome": "Locros Opuntios",
+      "povo": "locrio",
+      "cor": "#6e9d65"
+    },
+    {
+      "id": "locros-ozolios",
+      "nome": "Locros Ozolios",
+      "povo": "locrio",
+      "cor": "#82b981"
+    },
+    {
+      "id": "macedonia",
+      "nome": "Macedonia",
+      "povo": "macedonio",
+      "cor": "#8f647f"
+    },
+    {
+      "id": "malieus",
+      "nome": "Malieus",
+      "povo": "etolio",
+      "cor": "#7bab65"
+    },
+    {
+      "id": "mantineia",
+      "nome": "Mantineia",
+      "povo": "arcadio",
+      "cor": "#8f8e5c"
+    },
+    {
+      "id": "mariandinos",
+      "nome": "Mariandinos",
+      "povo": "bitinio",
+      "cor": "#6c659d"
+    },
+    {
+      "id": "medos",
+      "nome": "Medos",
+      "povo": "trace",
+      "cor": "#8381b9"
+    },
+    {
+      "id": "megara",
+      "nome": "Megara",
+      "povo": "dorio",
+      "cor": "#8f6465"
+    },
+    {
+      "id": "melos",
+      "nome": "Melos",
+      "povo": "dorio",
+      "cor": "#ab6d65"
+    },
+    {
+      "id": "messenia",
+      "nome": "Messenia",
+      "povo": "dorio",
+      "cor": "#8f695c"
+    },
+    {
+      "id": "metimna",
+      "nome": "Metimna",
+      "povo": "eolio",
+      "cor": "#73659d"
+    },
+    {
+      "id": "miconos",
+      "nome": "Miconos",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "migdones",
+      "nome": "Migdones",
+      "povo": "trace",
+      "cor": "#646c8f"
+    },
+    {
+      "id": "mileto",
+      "nome": "Mileto",
+      "povo": "jonio",
+      "cor": "#6589ab"
+    },
+    {
+      "id": "misos",
+      "nome": "Misos",
+      "povo": "misio",
+      "cor": "#805c8f"
+    },
+    {
+      "id": "mitilene",
+      "nome": "Mitilene",
+      "povo": "eolio",
+      "cor": "#73659d"
+    },
+    {
+      "id": "molossos",
+      "nome": "Molossos",
+      "povo": "epirota",
+      "cor": "#b281b9"
+    },
+    {
+      "id": "naxos",
+      "nome": "Naxos",
+      "povo": "jonio",
+      "cor": "#64808f"
+    },
+    {
+      "id": "odomantes",
+      "nome": "Odomantes",
+      "povo": "trace",
+      "cor": "#6568ab"
+    },
+    {
+      "id": "odrisas",
+      "nome": "Odrisas",
+      "povo": "trace",
+      "cor": "#615c8f"
+    },
+    {
+      "id": "orcomeno",
+      "nome": "Orcomeno",
+      "povo": "beocio",
+      "cor": "#659d85"
+    },
+    {
+      "id": "orcomeno-arcadio",
+      "nome": "Orcomeno Arcadio",
+      "povo": "arcadio",
+      "cor": "#b9b481"
+    },
+    {
+      "id": "orestis",
+      "nome": "Orestis",
+      "povo": "macedonio",
+      "cor": "#8f647f"
+    },
+    {
+      "id": "panfilios",
+      "nome": "Panfilios",
+      "povo": "panfilio",
+      "cor": "#aba865"
+    },
+    {
+      "id": "paros",
+      "nome": "Paros",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "partinos",
+      "nome": "Partinos",
+      "povo": "ilirio",
+      "cor": "#9d6595"
+    },
+    {
+      "id": "penestas",
+      "nome": "Penestas",
+      "povo": "ilirio",
+      "cor": "#b981a9"
+    },
+    {
+      "id": "peones",
+      "nome": "Peones",
+      "povo": "peonio",
+      "cor": "#8f6477"
+    },
+    {
+      "id": "perrebos",
+      "nome": "Perrebos",
+      "povo": "tessalio",
+      "cor": "#65abab"
+    },
+    {
+      "id": "pisa",
+      "nome": "Pisa",
+      "povo": "aqueu",
+      "cor": "#8f825c"
+    },
+    {
+      "id": "pisidas",
+      "nome": "Pisidas",
+      "povo": "pisidio",
+      "cor": "#659d77"
+    },
+    {
+      "id": "pitane",
+      "nome": "Pitane",
+      "povo": "eolio",
+      "cor": "#9781b9"
+    },
+    {
+      "id": "plateia",
+      "nome": "Plateia",
+      "povo": "beocio",
+      "cor": "#648f79"
+    },
+    {
+      "id": "praisos",
+      "nome": "Praisos",
+      "povo": "eteocretense",
+      "cor": "#ab656d"
+    },
+    {
+      "id": "priene",
+      "nome": "Priene",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "quios",
+      "nome": "Quios",
+      "povo": "jonio",
+      "cor": "#65869d"
+    },
+    {
+      "id": "rodes",
+      "nome": "Rodes",
+      "povo": "dorio",
+      "cor": "#b98c81"
+    },
+    {
+      "id": "samos",
+      "nome": "Samos",
+      "povo": "jonio",
+      "cor": "#64808f"
+    },
+    {
+      "id": "samotracia",
+      "nome": "Samotracia",
+      "povo": "pelasgo",
+      "cor": "#6578ab"
+    },
+    {
+      "id": "sapeus",
+      "nome": "Sapeus",
+      "povo": "trace",
+      "cor": "#615c8f"
+    },
+    {
+      "id": "sicion",
+      "nome": "Sicion",
+      "povo": "dorio",
+      "cor": "#9d6865"
+    },
+    {
+      "id": "sifnos",
+      "nome": "Sifnos",
+      "povo": "jonio",
+      "cor": "#819ab9"
+    },
+    {
+      "id": "sinti",
+      "nome": "Sinti",
+      "povo": "trace",
+      "cor": "#646c8f"
+    },
+    {
+      "id": "sitones",
+      "nome": "Sitones",
+      "povo": "trace",
+      "cor": "#6568ab"
+    },
+    {
+      "id": "tanagra",
+      "nome": "Tanagra",
+      "povo": "beocio",
+      "cor": "#5c8f84"
+    },
+    {
+      "id": "tasos",
+      "nome": "Tasos",
+      "povo": "trace",
+      "cor": "#656b9d"
+    },
+    {
+      "id": "taulantios",
+      "nome": "Taulantios",
+      "povo": "ilirio",
+      "cor": "#b981a9"
+    },
+    {
+      "id": "tebas",
+      "nome": "Tebas",
+      "povo": "beocio",
+      "cor": "#648f79"
+    },
+    {
+      "id": "tegeia",
+      "nome": "Tegeia",
+      "povo": "arcadio",
+      "cor": "#aba065"
+    },
+    {
+      "id": "tenedos",
+      "nome": "Tenedos",
+      "povo": "eolio",
+      "cor": "#745c8f"
+    },
+    {
+      "id": "teos",
+      "nome": "Teos",
+      "povo": "jonio",
+      "cor": "#65869d"
+    },
+    {
+      "id": "tera",
+      "nome": "Tera",
+      "povo": "dorio",
+      "cor": "#b98c81"
+    },
+    {
+      "id": "tespias",
+      "nome": "Tespias",
+      "povo": "beocio",
+      "cor": "#648f79"
+    },
+    {
+      "id": "tesprotos",
+      "nome": "Tesprotos",
+      "povo": "epirota",
+      "cor": "#9d65ab"
+    },
+    {
+      "id": "tinos",
+      "nome": "Tinos",
+      "povo": "jonio",
+      "cor": "#5c6f8f"
+    },
+    {
+      "id": "tinos-tracios",
+      "nome": "Tinos Tracios",
+      "povo": "trace",
+      "cor": "#656b9d"
+    },
+    {
+      "id": "trezena",
+      "nome": "Trezena",
+      "povo": "dorio",
+      "cor": "#b98c81"
+    },
+    {
+      "id": "trica",
+      "nome": "Trica",
+      "povo": "tessalio",
+      "cor": "#648f89"
+    },
+    {
+      "id": "trifilia",
+      "nome": "Trifilia",
+      "povo": "aqueu",
+      "cor": "#ab8f65"
+    },
+    {
+      "id": "zacinto",
+      "nome": "Zacinto",
+      "povo": "aqueu",
+      "cor": "#8f825c"
+    }
+  ],
+  "provincias": [
+    {
+      "id": "atenas",
+      "nome": "Atenas",
+      "regiao": "atica",
+      "lon": 23.73,
+      "lat": 37.98,
+      "dono": "atenas"
+    },
+    {
+      "id": "maratona",
+      "nome": "Maratona",
+      "regiao": "atica",
+      "lon": 23.96,
+      "lat": 38.13,
+      "dono": "atenas"
+    },
+    {
+      "id": "sounion",
+      "nome": "Sunião",
+      "regiao": "atica",
+      "lon": 23.95,
+      "lat": 37.78,
+      "dono": "atenas",
+      "anexos": [
+        {
+          "lon": 24.127,
+          "lat": 37.716
+        }
+      ]
+    },
+    {
+      "id": "eleusis",
+      "nome": "Elêusis",
+      "regiao": "atica",
+      "lon": 23.54,
+      "lat": 38.04,
+      "dono": "eleusis"
+    },
+    {
+      "id": "megara",
+      "nome": "Mégara",
+      "regiao": "megarida",
+      "lon": 23.34,
+      "lat": 37.99,
+      "dono": "megara"
+    },
+    {
+      "id": "salamina",
+      "nome": "Salamina",
+      "regiao": "atica",
+      "lon": 23.49,
+      "lat": 37.96,
+      "dono": "megara"
+    },
+    {
+      "id": "egina",
+      "nome": "Egina",
+      "regiao": "saronico",
+      "lon": 23.43,
+      "lat": 37.75,
+      "dono": "egina"
+    },
+    {
+      "id": "tebas",
+      "nome": "Tebas",
+      "regiao": "beocia",
+      "lon": 23.32,
+      "lat": 38.32,
+      "dono": "tebas"
+    },
+    {
+      "id": "tanagra",
+      "nome": "Tanagra",
+      "regiao": "beocia",
+      "lon": 23.53,
+      "lat": 38.31,
+      "dono": "tanagra"
+    },
+    {
+      "id": "tespias",
+      "nome": "Téspias",
+      "regiao": "beocia",
+      "lon": 23.14,
+      "lat": 38.31,
+      "dono": "tespias"
+    },
+    {
+      "id": "plateia",
+      "nome": "Plateia",
+      "regiao": "beocia",
+      "lon": 23.27,
+      "lat": 38.22,
+      "dono": "plateia"
+    },
+    {
+      "id": "orcomeno",
+      "nome": "Orcômeno",
+      "regiao": "beocia",
+      "lon": 22.98,
+      "lat": 38.49,
+      "dono": "orcomeno"
+    },
+    {
+      "id": "queroneia",
+      "nome": "Queroneia",
+      "regiao": "beocia",
+      "lon": 22.85,
+      "lat": 38.49,
+      "dono": "orcomeno"
+    },
+    {
+      "id": "calcis",
+      "nome": "Cálcis",
+      "regiao": "eubeia",
+      "lon": 23.6,
+      "lat": 38.46,
+      "dono": "calcis"
+    },
+    {
+      "id": "histiea",
+      "nome": "Histieia",
+      "regiao": "eubeia",
+      "lon": 23.15,
+      "lat": 38.92,
+      "dono": "calcis"
+    },
+    {
+      "id": "eretria",
+      "nome": "Erétria",
+      "regiao": "eubeia",
+      "lon": 23.79,
+      "lat": 38.4,
+      "dono": "eretria"
+    },
+    {
+      "id": "caristo",
+      "nome": "Cáristo",
+      "regiao": "eubeia",
+      "lon": 24.42,
+      "lat": 38.02,
+      "dono": "caristo",
+      "anexos": [
+        {
+          "lon": 24.255,
+          "lat": 37.999
+        }
+      ]
+    },
+    {
+      "id": "delfos",
+      "nome": "Delfos",
+      "regiao": "focida",
+      "lon": 22.5,
+      "lat": 38.48,
+      "dono": "delfos"
+    },
+    {
+      "id": "elateia",
+      "nome": "Elateia",
+      "regiao": "focida",
+      "lon": 22.77,
+      "lat": 38.63,
+      "dono": "focida"
+    },
+    {
+      "id": "opunte",
+      "nome": "Opunte",
+      "regiao": "locrida",
+      "lon": 23.09,
+      "lat": 38.55,
+      "dono": "locros-opuntios"
+    },
+    {
+      "id": "anfissa",
+      "nome": "Anfissa",
+      "regiao": "locrida",
+      "lon": 22.37,
+      "lat": 38.53,
+      "dono": "locros-ozolios"
+    },
+    {
+      "id": "doride",
+      "nome": "Dóride",
+      "regiao": "doride",
+      "lon": 22.3,
+      "lat": 38.75,
+      "dono": "dorios"
+    },
+    {
+      "id": "calidao",
+      "nome": "Calidão",
+      "regiao": "etolia",
+      "lon": 21.53,
+      "lat": 38.37,
+      "dono": "etolos"
+    },
+    {
+      "id": "termo",
+      "nome": "Termo",
+      "regiao": "etolia",
+      "lon": 21.66,
+      "lat": 38.57,
+      "dono": "etolos"
+    },
+    {
+      "id": "estrato",
+      "nome": "Estrato",
+      "regiao": "acarnania",
+      "lon": 21.31,
+      "lat": 38.67,
+      "dono": "acarnanios"
+    },
+    {
+      "id": "astaco",
+      "nome": "Astaco",
+      "regiao": "acarnania",
+      "lon": 21.1,
+      "lat": 38.53,
+      "dono": "acarnanios",
+      "anexos": [
+        {
+          "lon": 20.908,
+          "lat": 38.626
+        }
+      ]
+    },
+    {
+      "id": "lamia",
+      "nome": "Lâmia",
+      "regiao": "malide",
+      "lon": 22.43,
+      "lat": 38.9,
+      "dono": "malieus"
+    },
+    {
+      "id": "larissa",
+      "nome": "Larissa",
+      "regiao": "tessalia",
+      "lon": 22.42,
+      "lat": 39.64,
+      "dono": "larissa"
+    },
+    {
+      "id": "feras",
+      "nome": "Feras",
+      "regiao": "tessalia",
+      "lon": 22.71,
+      "lat": 39.44,
+      "dono": "feras"
+    },
+    {
+      "id": "farsalo",
+      "nome": "Farsalo",
+      "regiao": "tessalia",
+      "lon": 22.38,
+      "lat": 39.29,
+      "dono": "farsalo"
+    },
+    {
+      "id": "trica",
+      "nome": "Trica",
+      "regiao": "tessalia",
+      "lon": 21.77,
+      "lat": 39.55,
+      "dono": "trica"
+    },
+    {
+      "id": "iolco",
+      "nome": "Iolco",
+      "regiao": "magnesia",
+      "lon": 22.95,
+      "lat": 39.36,
+      "dono": "iolco"
+    },
+    {
+      "id": "olooson",
+      "nome": "Ólooson",
+      "regiao": "perrebia",
+      "lon": 22.2,
+      "lat": 39.9,
+      "dono": "perrebos"
+    },
+    {
+      "id": "dodona",
+      "nome": "Dodona",
+      "regiao": "epiro",
+      "lon": 20.79,
+      "lat": 39.55,
+      "dono": "molossos"
+    },
+    {
+      "id": "passarao",
+      "nome": "Passarão",
+      "regiao": "epiro",
+      "lon": 20.72,
+      "lat": 39.92,
+      "dono": "molossos"
+    },
+    {
+      "id": "tesprotia",
+      "nome": "Tesprótia",
+      "regiao": "epiro",
+      "lon": 20.51,
+      "lat": 39.42,
+      "dono": "tesprotos",
+      "anexos": [
+        {
+          "lon": 20.16,
+          "lat": 39.21
+        }
+      ]
+    },
+    {
+      "id": "cassopia",
+      "nome": "Cassópia",
+      "regiao": "epiro",
+      "lon": 20.8,
+      "lat": 39.1,
+      "dono": "tesprotos"
+    },
+    {
+      "id": "butroto",
+      "nome": "Butroto",
+      "regiao": "epiro",
+      "lon": 20.02,
+      "lat": 39.75,
+      "dono": "caones"
+    },
+    {
+      "id": "caonia",
+      "nome": "Caônia",
+      "regiao": "epiro",
+      "lon": 20.32,
+      "lat": 40.05,
+      "dono": "caones"
+    },
+    {
+      "id": "corcira",
+      "nome": "Córcira",
+      "regiao": "ionio",
+      "lon": 19.85,
+      "lat": 39.62,
+      "dono": "corcira"
+    },
+    {
+      "id": "cefalenia",
+      "nome": "Cefalênia",
+      "regiao": "ionio",
+      "lon": 20.6,
+      "lat": 38.2,
+      "dono": "cefalenia"
+    },
+    {
+      "id": "itaca",
+      "nome": "Ítaca",
+      "regiao": "ionio",
+      "lon": 20.71,
+      "lat": 38.4,
+      "dono": "itaca"
+    },
+    {
+      "id": "zacinto",
+      "nome": "Zacinto",
+      "regiao": "ionio",
+      "lon": 20.75,
+      "lat": 37.79,
+      "dono": "zacinto"
+    },
+    {
+      "id": "leucade",
+      "nome": "Lêucade",
+      "regiao": "ionio",
+      "lon": 20.68,
+      "lat": 38.72,
+      "dono": "acarnanios",
+      "anexos": [
+        {
+          "lon": 20.766,
+          "lat": 38.654
+        }
+      ]
+    },
+    {
+      "id": "amantes",
+      "nome": "Amantes",
+      "regiao": "iliria",
+      "lon": 19.7,
+      "lat": 40.32,
+      "dono": "amantes"
+    },
+    {
+      "id": "bulinos",
+      "nome": "Bulinos",
+      "regiao": "iliria",
+      "lon": 19.42,
+      "lat": 40.6,
+      "dono": "bulinos"
+    },
+    {
+      "id": "partinos",
+      "nome": "Partinos",
+      "regiao": "iliria",
+      "lon": 19.78,
+      "lat": 41.0,
+      "dono": "partinos"
+    },
+    {
+      "id": "taulantios",
+      "nome": "Taulântios",
+      "regiao": "iliria",
+      "lon": 19.58,
+      "lat": 41.35,
+      "dono": "taulantios"
+    },
+    {
+      "id": "dassaretios",
+      "nome": "Dassarétios",
+      "regiao": "iliria",
+      "lon": 20.6,
+      "lat": 40.85,
+      "dono": "dassaretios"
+    },
+    {
+      "id": "enqueleos",
+      "nome": "Enquéleos",
+      "regiao": "iliria",
+      "lon": 20.68,
+      "lat": 41.22,
+      "dono": "enqueleos"
+    },
+    {
+      "id": "penestas",
+      "nome": "Penestas",
+      "regiao": "iliria",
+      "lon": 20.95,
+      "lat": 41.52,
+      "dono": "penestas"
+    },
+    {
+      "id": "egas",
+      "nome": "Egas",
+      "regiao": "macedonia",
+      "lon": 22.13,
+      "lat": 40.48,
+      "dono": "macedonia"
+    },
+    {
+      "id": "pieria",
+      "nome": "Piéria",
+      "regiao": "macedonia",
+      "lon": 22.42,
+      "lat": 40.18,
+      "dono": "macedonia"
+    },
+    {
+      "id": "elimeia",
+      "nome": "Elimeia",
+      "regiao": "alta-macedonia",
+      "lon": 21.78,
+      "lat": 40.22,
+      "dono": "elimeia"
+    },
+    {
+      "id": "orestis",
+      "nome": "Oréstide",
+      "regiao": "alta-macedonia",
+      "lon": 21.25,
+      "lat": 40.52,
+      "dono": "orestis"
+    },
+    {
+      "id": "lincestis",
+      "nome": "Lincéstide",
+      "regiao": "alta-macedonia",
+      "lon": 21.35,
+      "lat": 40.9,
+      "dono": "lincestis"
+    },
+    {
+      "id": "eordaia",
+      "nome": "Eordeia",
+      "regiao": "alta-macedonia",
+      "lon": 21.78,
+      "lat": 40.65,
+      "dono": "eordaia"
+    },
+    {
+      "id": "almopia",
+      "nome": "Almópia",
+      "regiao": "macedonia",
+      "lon": 22.05,
+      "lat": 40.95,
+      "dono": "almopes"
+    },
+    {
+      "id": "peonia",
+      "nome": "Peônia",
+      "regiao": "peonia",
+      "lon": 22.05,
+      "lat": 41.35,
+      "dono": "peones"
+    },
+    {
+      "id": "derriopo",
+      "nome": "Derríopo",
+      "regiao": "peonia",
+      "lon": 21.55,
+      "lat": 41.35,
+      "dono": "peones"
+    },
+    {
+      "id": "migdonia",
+      "nome": "Mígdon",
+      "regiao": "tracia",
+      "lon": 23.0,
+      "lat": 40.75,
+      "dono": "migdones"
+    },
+    {
+      "id": "crestonia",
+      "nome": "Crestônia",
+      "regiao": "tracia",
+      "lon": 23.15,
+      "lat": 41.05,
+      "dono": "crestones"
+    },
+    {
+      "id": "bisaltia",
+      "nome": "Bisáltia",
+      "regiao": "tracia",
+      "lon": 23.5,
+      "lat": 40.9,
+      "dono": "bisaltas"
+    },
+    {
+      "id": "sintice",
+      "nome": "Síntica",
+      "regiao": "tracia",
+      "lon": 23.45,
+      "lat": 41.32,
+      "dono": "sinti"
+    },
+    {
+      "id": "odomantes",
+      "nome": "Odomantes",
+      "regiao": "tracia",
+      "lon": 23.9,
+      "lat": 41.15,
+      "dono": "odomantes"
+    },
+    {
+      "id": "botica",
+      "nome": "Bótica",
+      "regiao": "calcidica",
+      "lon": 23.2,
+      "lat": 40.32,
+      "dono": "botieus"
+    },
+    {
+      "id": "palene",
+      "nome": "Palene",
+      "regiao": "calcidica",
+      "lon": 23.35,
+      "lat": 40.03,
+      "dono": "botieus"
+    },
+    {
+      "id": "sitonia",
+      "nome": "Sitônia",
+      "regiao": "calcidica",
+      "lon": 23.85,
+      "lat": 40.1,
+      "dono": "sitones"
+    },
+    {
+      "id": "acte",
+      "nome": "Acte",
+      "regiao": "calcidica",
+      "lon": 24.28,
+      "lat": 40.25,
+      "dono": "sitones"
+    },
+    {
+      "id": "edones",
+      "nome": "Édones",
+      "regiao": "tracia",
+      "lon": 23.98,
+      "lat": 40.92,
+      "dono": "edones"
+    },
+    {
+      "id": "pieres",
+      "nome": "Pieres",
+      "regiao": "tracia",
+      "lon": 24.32,
+      "lat": 40.88,
+      "dono": "edones"
+    },
+    {
+      "id": "sapeus",
+      "nome": "Sápeos",
+      "regiao": "tracia",
+      "lon": 24.62,
+      "lat": 41.05,
+      "dono": "sapeus"
+    },
+    {
+      "id": "bistones",
+      "nome": "Bístones",
+      "regiao": "tracia",
+      "lon": 25.0,
+      "lat": 41.0,
+      "dono": "bistones"
+    },
+    {
+      "id": "cicones",
+      "nome": "Cícones",
+      "regiao": "tracia",
+      "lon": 25.52,
+      "lat": 40.95,
+      "dono": "cicones"
+    },
+    {
+      "id": "apsintios",
+      "nome": "Apsíntios",
+      "regiao": "tracia",
+      "lon": 26.1,
+      "lat": 41.0,
+      "dono": "apsintios"
+    },
+    {
+      "id": "dolonces",
+      "nome": "Quersoneso",
+      "regiao": "tracia",
+      "lon": 26.5,
+      "lat": 40.35,
+      "dono": "dolonces"
+    },
+    {
+      "id": "odrisas",
+      "nome": "Odrisas",
+      "regiao": "tracia",
+      "lon": 26.4,
+      "lat": 41.55,
+      "dono": "odrisas"
+    },
+    {
+      "id": "medos",
+      "nome": "Medos",
+      "regiao": "tracia",
+      "lon": 24.6,
+      "lat": 41.55,
+      "dono": "medos"
+    },
+    {
+      "id": "agrianes",
+      "nome": "Agrianes",
+      "regiao": "tracia",
+      "lon": 23.1,
+      "lat": 41.58,
+      "dono": "agrianes"
+    },
+    {
+      "id": "astas",
+      "nome": "Astas",
+      "regiao": "tracia",
+      "lon": 27.4,
+      "lat": 41.55,
+      "dono": "astas"
+    },
+    {
+      "id": "tinos-tracios",
+      "nome": "Tinos",
+      "regiao": "tracia",
+      "lon": 28.0,
+      "lat": 41.35,
+      "dono": "tinos-tracios"
+    },
+    {
+      "id": "bizantes",
+      "nome": "Bizantes",
+      "regiao": "tracia",
+      "lon": 28.8,
+      "lat": 41.1,
+      "dono": "tinos-tracios"
+    },
+    {
+      "id": "perinto",
+      "nome": "Perinto",
+      "regiao": "tracia",
+      "lon": 27.85,
+      "lat": 40.95,
+      "dono": "tinos-tracios"
+    },
+    {
+      "id": "tasos",
+      "nome": "Tasos",
+      "regiao": "egeu-norte",
+      "lon": 24.7,
+      "lat": 40.68,
+      "dono": "tasos"
+    },
+    {
+      "id": "samotracia",
+      "nome": "Samotrácia",
+      "regiao": "egeu-norte",
+      "lon": 25.53,
+      "lat": 40.47,
+      "dono": "samotracia"
+    },
+    {
+      "id": "imbros",
+      "nome": "Imbros",
+      "regiao": "egeu-norte",
+      "lon": 25.85,
+      "lat": 40.15,
+      "dono": "imbros"
+    },
+    {
+      "id": "lemnos",
+      "nome": "Lemnos",
+      "regiao": "egeu-norte",
+      "lon": 25.25,
+      "lat": 39.9,
+      "dono": "lemnos",
+      "anexos": [
+        {
+          "lon": 25.008,
+          "lat": 39.526
+        }
+      ]
+    },
+    {
+      "id": "tenedos",
+      "nome": "Tenedos",
+      "regiao": "egeu-norte",
+      "lon": 26.06,
+      "lat": 39.82,
+      "dono": "tenedos"
+    },
+    {
+      "id": "esporades",
+      "nome": "Espórades",
+      "regiao": "esporades",
+      "lon": 23.73,
+      "lat": 39.12,
+      "dono": "esporades",
+      "anexos": [
+        {
+          "lon": 23.49,
+          "lat": 39.16
+        },
+        {
+          "lon": 23.91,
+          "lat": 39.215
+        },
+        {
+          "lon": 24.067,
+          "lat": 39.332
+        },
+        {
+          "lon": 24.164,
+          "lat": 39.394
+        }
+      ]
+    },
+    {
+      "id": "esciros",
+      "nome": "Escíros",
+      "regiao": "esporades",
+      "lon": 24.55,
+      "lat": 38.9,
+      "dono": "esciros"
+    },
+    {
+      "id": "corinto",
+      "nome": "Corinto",
+      "regiao": "corintia",
+      "lon": 22.93,
+      "lat": 37.91,
+      "dono": "corinto"
+    },
+    {
+      "id": "sicion",
+      "nome": "Sícion",
+      "regiao": "sicionia",
+      "lon": 22.71,
+      "lat": 37.98,
+      "dono": "sicion"
+    },
+    {
+      "id": "egio",
+      "nome": "Egio",
+      "regiao": "acaia",
+      "lon": 22.08,
+      "lat": 38.25,
+      "dono": "acaia"
+    },
+    {
+      "id": "patras",
+      "nome": "Patras",
+      "regiao": "acaia",
+      "lon": 21.73,
+      "lat": 38.24,
+      "dono": "acaia"
+    },
+    {
+      "id": "dime",
+      "nome": "Dime",
+      "regiao": "acaia",
+      "lon": 21.5,
+      "lat": 38.13,
+      "dono": "acaia"
+    },
+    {
+      "id": "elide",
+      "nome": "Élide",
+      "regiao": "elida",
+      "lon": 21.37,
+      "lat": 37.89,
+      "dono": "elide"
+    },
+    {
+      "id": "olimpia",
+      "nome": "Olímpia",
+      "regiao": "pisatide",
+      "lon": 21.63,
+      "lat": 37.64,
+      "dono": "pisa"
+    },
+    {
+      "id": "trifilia",
+      "nome": "Trifília",
+      "regiao": "trifilia",
+      "lon": 21.63,
+      "lat": 37.42,
+      "dono": "trifilia"
+    },
+    {
+      "id": "argos",
+      "nome": "Argos",
+      "regiao": "argolida",
+      "lon": 22.72,
+      "lat": 37.63,
+      "dono": "argos"
+    },
+    {
+      "id": "micenas",
+      "nome": "Micenas",
+      "regiao": "argolida",
+      "lon": 22.76,
+      "lat": 37.75,
+      "dono": "argos"
+    },
+    {
+      "id": "cinuria",
+      "nome": "Cinúria",
+      "regiao": "argolida",
+      "lon": 22.75,
+      "lat": 37.3,
+      "dono": "argos"
+    },
+    {
+      "id": "epidauro",
+      "nome": "Epidauro",
+      "regiao": "argolida",
+      "lon": 23.15,
+      "lat": 37.63,
+      "dono": "epidauro"
+    },
+    {
+      "id": "trezena",
+      "nome": "Trezena",
+      "regiao": "argolida",
+      "lon": 23.36,
+      "lat": 37.51,
+      "dono": "trezena",
+      "anexos": [
+        {
+          "lon": 23.466,
+          "lat": 37.336
+        }
+      ]
+    },
+    {
+      "id": "hermione",
+      "nome": "Hermíone",
+      "regiao": "argolida",
+      "lon": 23.25,
+      "lat": 37.38,
+      "dono": "hermione",
+      "anexos": [
+        {
+          "lon": 23.132,
+          "lat": 37.265
+        }
+      ]
+    },
+    {
+      "id": "tegeia",
+      "nome": "Tegeia",
+      "regiao": "arcadia",
+      "lon": 22.42,
+      "lat": 37.46,
+      "dono": "tegeia"
+    },
+    {
+      "id": "mantineia",
+      "nome": "Mantineia",
+      "regiao": "arcadia",
+      "lon": 22.4,
+      "lat": 37.63,
+      "dono": "mantineia"
+    },
+    {
+      "id": "orcomeno-arcadio",
+      "nome": "Orcômeno da Arcádia",
+      "regiao": "arcadia",
+      "lon": 22.32,
+      "lat": 37.75,
+      "dono": "orcomeno-arcadio"
+    },
+    {
+      "id": "hereia",
+      "nome": "Hereia",
+      "regiao": "arcadia",
+      "lon": 21.85,
+      "lat": 37.62,
+      "dono": "hereia"
+    },
+    {
+      "id": "figalia",
+      "nome": "Figália",
+      "regiao": "arcadia",
+      "lon": 21.77,
+      "lat": 37.4,
+      "dono": "figalia"
+    },
+    {
+      "id": "esparta",
+      "nome": "Esparta",
+      "regiao": "laconia",
+      "lon": 22.43,
+      "lat": 37.07,
+      "dono": "esparta"
+    },
+    {
+      "id": "gitio",
+      "nome": "Gítio",
+      "regiao": "laconia",
+      "lon": 22.57,
+      "lat": 36.76,
+      "dono": "esparta"
+    },
+    {
+      "id": "maleia",
+      "nome": "Epidauro Limera",
+      "regiao": "laconia",
+      "lon": 22.98,
+      "lat": 36.78,
+      "dono": "esparta",
+      "anexos": [
+        {
+          "lon": 22.956,
+          "lat": 36.487
+        }
+      ]
+    },
+    {
+      "id": "itome",
+      "nome": "Ítome",
+      "regiao": "messenia",
+      "lon": 21.92,
+      "lat": 37.18,
+      "dono": "messenia"
+    },
+    {
+      "id": "pilos",
+      "nome": "Pilos",
+      "regiao": "messenia",
+      "lon": 21.7,
+      "lat": 36.94,
+      "dono": "messenia"
+    },
+    {
+      "id": "citera",
+      "nome": "Citera",
+      "regiao": "laconia",
+      "lon": 22.99,
+      "lat": 36.24,
+      "dono": "citera",
+      "anexos": [
+        {
+          "lon": 23.307,
+          "lat": 35.865
+        }
+      ]
+    },
+    {
+      "id": "cnossos",
+      "nome": "Cnossos",
+      "regiao": "creta",
+      "lon": 25.16,
+      "lat": 35.3,
+      "dono": "cnossos",
+      "anexos": [
+        {
+          "lon": 25.218,
+          "lat": 35.448
+        }
+      ]
+    },
+    {
+      "id": "lito",
+      "nome": "Lito",
+      "regiao": "creta",
+      "lon": 25.35,
+      "lat": 35.15,
+      "dono": "lito"
+    },
+    {
+      "id": "gortina",
+      "nome": "Górtina",
+      "regiao": "creta",
+      "lon": 24.95,
+      "lat": 35.06,
+      "dono": "gortina"
+    },
+    {
+      "id": "festo",
+      "nome": "Festo",
+      "regiao": "creta",
+      "lon": 24.81,
+      "lat": 35.05,
+      "dono": "festo",
+      "anexos": [
+        {
+          "lon": 24.093,
+          "lat": 34.845
+        }
+      ]
+    },
+    {
+      "id": "eleuterna",
+      "nome": "Eleuterna",
+      "regiao": "creta",
+      "lon": 24.67,
+      "lat": 35.32,
+      "dono": "eleuterna"
+    },
+    {
+      "id": "cidonia",
+      "nome": "Cidônia",
+      "regiao": "creta",
+      "lon": 24.02,
+      "lat": 35.51,
+      "dono": "cidonia"
+    },
+    {
+      "id": "praisos",
+      "nome": "Praisos",
+      "regiao": "creta",
+      "lon": 26.1,
+      "lat": 35.13,
+      "dono": "praisos",
+      "anexos": [
+        {
+          "lon": 26.301,
+          "lat": 35.301
+        }
+      ]
+    },
+    {
+      "id": "ierapitna",
+      "nome": "Ierápitna",
+      "regiao": "creta",
+      "lon": 25.74,
+      "lat": 35.01,
+      "dono": "praisos"
+    },
+    {
+      "id": "naxos",
+      "nome": "Naxos",
+      "regiao": "cicladas",
+      "lon": 25.53,
+      "lat": 37.1,
+      "dono": "naxos",
+      "anexos": [
+        {
+          "lon": 25.453,
+          "lat": 36.846
+        },
+        {
+          "lon": 25.813,
+          "lat": 37.115
+        },
+        {
+          "lon": 25.647,
+          "lat": 36.894
+        }
+      ]
+    },
+    {
+      "id": "paros",
+      "nome": "Paros",
+      "regiao": "cicladas",
+      "lon": 25.15,
+      "lat": 37.08,
+      "dono": "paros",
+      "anexos": [
+        {
+          "lon": 25.054,
+          "lat": 37.007
+        }
+      ]
+    },
+    {
+      "id": "andros",
+      "nome": "Andros",
+      "regiao": "cicladas",
+      "lon": 24.93,
+      "lat": 37.83,
+      "dono": "andros",
+      "anexos": [
+        {
+          "lon": 24.713,
+          "lat": 37.613
+        }
+      ]
+    },
+    {
+      "id": "tinos",
+      "nome": "Tinos",
+      "regiao": "cicladas",
+      "lon": 25.16,
+      "lat": 37.56,
+      "dono": "tinos",
+      "anexos": [
+        {
+          "lon": 24.917,
+          "lat": 37.436
+        }
+      ]
+    },
+    {
+      "id": "miconos",
+      "nome": "Míconos",
+      "regiao": "cicladas",
+      "lon": 25.35,
+      "lat": 37.45,
+      "dono": "miconos"
+    },
+    {
+      "id": "keos",
+      "nome": "Ceos",
+      "regiao": "cicladas",
+      "lon": 24.34,
+      "lat": 37.62,
+      "dono": "keos"
+    },
+    {
+      "id": "citnos",
+      "nome": "Cítnos",
+      "regiao": "cicladas",
+      "lon": 24.42,
+      "lat": 37.41,
+      "dono": "citnos"
+    },
+    {
+      "id": "sifnos",
+      "nome": "Sifnos",
+      "regiao": "cicladas",
+      "lon": 24.71,
+      "lat": 36.98,
+      "dono": "sifnos",
+      "anexos": [
+        {
+          "lon": 24.49,
+          "lat": 37.15
+        }
+      ]
+    },
+    {
+      "id": "melos",
+      "nome": "Melos",
+      "regiao": "cicladas",
+      "lon": 24.42,
+      "lat": 36.72,
+      "dono": "melos",
+      "anexos": [
+        {
+          "lon": 24.562,
+          "lat": 36.817
+        },
+        {
+          "lon": 24.64,
+          "lat": 36.773
+        }
+      ]
+    },
+    {
+      "id": "tera",
+      "nome": "Tera",
+      "regiao": "cicladas",
+      "lon": 25.43,
+      "lat": 36.42,
+      "dono": "tera",
+      "anexos": [
+        {
+          "lon": 25.782,
+          "lat": 36.375
+        }
+      ]
+    },
+    {
+      "id": "ios",
+      "nome": "Íos",
+      "regiao": "cicladas",
+      "lon": 25.29,
+      "lat": 36.72,
+      "dono": "ios",
+      "anexos": [
+        {
+          "lon": 25.125,
+          "lat": 36.684
+        },
+        {
+          "lon": 24.901,
+          "lat": 36.633
+        }
+      ]
+    },
+    {
+      "id": "amorgos",
+      "nome": "Amorgos",
+      "regiao": "cicladas",
+      "lon": 25.9,
+      "lat": 36.83,
+      "dono": "amorgos"
+    },
+    {
+      "id": "rodes",
+      "nome": "Rodes",
+      "regiao": "rodes",
+      "lon": 28.07,
+      "lat": 36.26,
+      "dono": "rodes",
+      "anexos": [
+        {
+          "lon": 27.567,
+          "lat": 36.23
+        },
+        {
+          "lon": 27.362,
+          "lat": 36.43
+        }
+      ]
+    },
+    {
+      "id": "cos",
+      "nome": "Cós",
+      "regiao": "dodecaneso",
+      "lon": 27.29,
+      "lat": 36.89,
+      "dono": "cos",
+      "anexos": [
+        {
+          "lon": 27.166,
+          "lat": 36.589
+        },
+        {
+          "lon": 27.142,
+          "lat": 36.94
+        }
+      ]
+    },
+    {
+      "id": "calimno",
+      "nome": "Calimno",
+      "regiao": "dodecaneso",
+      "lon": 26.98,
+      "lat": 36.99,
+      "dono": "calimno",
+      "anexos": [
+        {
+          "lon": 26.83,
+          "lat": 37.153
+        },
+        {
+          "lon": 26.751,
+          "lat": 37.303
+        },
+        {
+          "lon": 26.557,
+          "lat": 37.334
+        }
+      ]
+    },
+    {
+      "id": "astipaleia",
+      "nome": "Astipaleia",
+      "regiao": "dodecaneso",
+      "lon": 26.35,
+      "lat": 36.55,
+      "dono": "astipaleia"
+    },
+    {
+      "id": "carpatos",
+      "nome": "Cárpatos",
+      "regiao": "dodecaneso",
+      "lon": 27.15,
+      "lat": 35.6,
+      "dono": "carpatos",
+      "anexos": [
+        {
+          "lon": 26.926,
+          "lat": 35.397
+        }
+      ]
+    },
+    {
+      "id": "pafos",
+      "nome": "Pafos",
+      "regiao": "chipre",
+      "lon": 32.3,
+      "lat": 34.9,
+      "dono": "cipriotas"
+    },
+    {
+      "id": "samos",
+      "nome": "Samos",
+      "regiao": "egeu-leste",
+      "lon": 26.99,
+      "lat": 37.75,
+      "dono": "samos",
+      "anexos": [
+        {
+          "lon": 26.493,
+          "lat": 37.571
+        },
+        {
+          "lon": 26.518,
+          "lat": 37.623
+        }
+      ]
+    },
+    {
+      "id": "quios",
+      "nome": "Quios",
+      "regiao": "egeu-leste",
+      "lon": 26.05,
+      "lat": 38.37,
+      "dono": "quios",
+      "anexos": [
+        {
+          "lon": 26.229,
+          "lat": 38.521
+        },
+        {
+          "lon": 25.577,
+          "lat": 38.578
+        }
+      ]
+    },
+    {
+      "id": "icaria",
+      "nome": "Icária",
+      "regiao": "egeu-leste",
+      "lon": 26.1,
+      "lat": 37.6,
+      "dono": "icaria"
+    },
+    {
+      "id": "mitilene",
+      "nome": "Mitilene",
+      "regiao": "lesbos",
+      "lon": 26.55,
+      "lat": 39.11,
+      "dono": "mitilene"
+    },
+    {
+      "id": "metimna",
+      "nome": "Metimna",
+      "regiao": "lesbos",
+      "lon": 26.17,
+      "lat": 39.35,
+      "dono": "metimna"
+    },
+    {
+      "id": "mileto",
+      "nome": "Mileto",
+      "regiao": "jonia",
+      "lon": 27.28,
+      "lat": 37.53,
+      "dono": "mileto"
+    },
+    {
+      "id": "priene",
+      "nome": "Priene",
+      "regiao": "jonia",
+      "lon": 27.3,
+      "lat": 37.66,
+      "dono": "priene",
+      "anexos": [
+        {
+          "lon": 26.966,
+          "lat": 37.463
+        }
+      ]
+    },
+    {
+      "id": "efeso",
+      "nome": "Éfeso",
+      "regiao": "jonia",
+      "lon": 27.34,
+      "lat": 37.94,
+      "dono": "efeso"
+    },
+    {
+      "id": "colofao",
+      "nome": "Colofão",
+      "regiao": "jonia",
+      "lon": 27.14,
+      "lat": 38.12,
+      "dono": "colofao"
+    },
+    {
+      "id": "teos",
+      "nome": "Teos",
+      "regiao": "jonia",
+      "lon": 26.78,
+      "lat": 38.18,
+      "dono": "teos"
+    },
+    {
+      "id": "clazomenas",
+      "nome": "Clazômenas",
+      "regiao": "jonia",
+      "lon": 26.77,
+      "lat": 38.36,
+      "dono": "clazomenas"
+    },
+    {
+      "id": "eritras",
+      "nome": "Eritras",
+      "regiao": "jonia",
+      "lon": 26.48,
+      "lat": 38.38,
+      "dono": "eritras",
+      "anexos": [
+        {
+          "lon": 26.717,
+          "lat": 38.496
+        }
+      ]
+    },
+    {
+      "id": "esmirna",
+      "nome": "Esmirna",
+      "regiao": "jonia",
+      "lon": 27.14,
+      "lat": 38.42,
+      "dono": "esmirna"
+    },
+    {
+      "id": "foceia",
+      "nome": "Foceia",
+      "regiao": "jonia",
+      "lon": 26.75,
+      "lat": 38.67,
+      "dono": "foceia"
+    },
+    {
+      "id": "cime",
+      "nome": "Cime",
+      "regiao": "eolida",
+      "lon": 26.93,
+      "lat": 38.75,
+      "dono": "cime"
+    },
+    {
+      "id": "pitane",
+      "nome": "Pitane",
+      "regiao": "eolida",
+      "lon": 26.93,
+      "lat": 38.98,
+      "dono": "pitane"
+    },
+    {
+      "id": "adramitio",
+      "nome": "Adramítio",
+      "regiao": "eolida",
+      "lon": 26.94,
+      "lat": 39.5,
+      "dono": "adramitio"
+    },
+    {
+      "id": "assos",
+      "nome": "Assos",
+      "regiao": "troade",
+      "lon": 26.34,
+      "lat": 39.49,
+      "dono": "assos"
+    },
+    {
+      "id": "ilion",
+      "nome": "Ílion",
+      "regiao": "troade",
+      "lon": 26.24,
+      "lat": 39.96,
+      "dono": "ilion"
+    },
+    {
+      "id": "abido",
+      "nome": "Abido",
+      "regiao": "troade",
+      "lon": 26.4,
+      "lat": 40.19,
+      "dono": "abido"
+    },
+    {
+      "id": "lampsaco",
+      "nome": "Lampsaco",
+      "regiao": "troade",
+      "lon": 26.7,
+      "lat": 40.35,
+      "dono": "lampsaco"
+    },
+    {
+      "id": "cizico",
+      "nome": "Cízico",
+      "regiao": "misia",
+      "lon": 27.89,
+      "lat": 40.39,
+      "dono": "cizico",
+      "anexos": [
+        {
+          "lon": 27.619,
+          "lat": 40.626
+        },
+        {
+          "lon": 27.612,
+          "lat": 40.479
+        }
+      ]
+    },
+    {
+      "id": "dascilio",
+      "nome": "Dascílio",
+      "regiao": "misia",
+      "lon": 28.1,
+      "lat": 40.12,
+      "dono": "misos"
+    },
+    {
+      "id": "pergamo",
+      "nome": "Pérgamo",
+      "regiao": "misia",
+      "lon": 27.18,
+      "lat": 39.13,
+      "dono": "misos"
+    },
+    {
+      "id": "miletopolis",
+      "nome": "Miletópolis",
+      "regiao": "misia",
+      "lon": 28.4,
+      "lat": 39.95,
+      "dono": "misos"
+    },
+    {
+      "id": "calcedonia",
+      "nome": "Calcedônia",
+      "regiao": "bitinia",
+      "lon": 29.03,
+      "lat": 40.98,
+      "dono": "bitinos"
+    },
+    {
+      "id": "cios",
+      "nome": "Cios",
+      "regiao": "bitinia",
+      "lon": 29.15,
+      "lat": 40.42,
+      "dono": "bitinos"
+    },
+    {
+      "id": "prusa",
+      "nome": "Prusa",
+      "regiao": "bitinia",
+      "lon": 29.06,
+      "lat": 40.19,
+      "dono": "bitinos"
+    },
+    {
+      "id": "astaco-bitinia",
+      "nome": "Astaco",
+      "regiao": "bitinia",
+      "lon": 29.6,
+      "lat": 40.72,
+      "dono": "bitinos"
+    },
+    {
+      "id": "bitinia-leste",
+      "nome": "Bitínia Interior",
+      "regiao": "bitinia",
+      "lon": 30.6,
+      "lat": 40.65,
+      "dono": "bitinos"
+    },
+    {
+      "id": "mariandinos",
+      "nome": "Mariandinos",
+      "regiao": "bitinia",
+      "lon": 31.7,
+      "lat": 41.05,
+      "dono": "mariandinos"
+    },
+    {
+      "id": "sardes",
+      "nome": "Sardes",
+      "regiao": "lidia",
+      "lon": 28.04,
+      "lat": 38.49,
+      "dono": "lidia"
+    },
+    {
+      "id": "magnesia-sipilo",
+      "nome": "Magnésia do Sípilo",
+      "regiao": "lidia",
+      "lon": 27.4,
+      "lat": 38.61,
+      "dono": "lidia"
+    },
+    {
+      "id": "tiatira",
+      "nome": "Tiatira",
+      "regiao": "lidia",
+      "lon": 27.84,
+      "lat": 38.92,
+      "dono": "lidia"
+    },
+    {
+      "id": "hipepa",
+      "nome": "Hipepa",
+      "regiao": "lidia",
+      "lon": 27.98,
+      "lat": 38.1,
+      "dono": "lidia"
+    },
+    {
+      "id": "filadelfia",
+      "nome": "Filadélfia",
+      "regiao": "lidia",
+      "lon": 28.55,
+      "lat": 38.35,
+      "dono": "lidia"
+    },
+    {
+      "id": "tripolis",
+      "nome": "Trípolis",
+      "regiao": "lidia",
+      "lon": 29.05,
+      "lat": 38.05,
+      "dono": "lidia"
+    },
+    {
+      "id": "cotieu",
+      "nome": "Cotieu",
+      "regiao": "frigia",
+      "lon": 29.98,
+      "lat": 39.42,
+      "dono": "frigia"
+    },
+    {
+      "id": "dorileu",
+      "nome": "Dorileu",
+      "regiao": "frigia",
+      "lon": 30.52,
+      "lat": 39.78,
+      "dono": "frigia"
+    },
+    {
+      "id": "mideu",
+      "nome": "Mídeo",
+      "regiao": "frigia",
+      "lon": 30.62,
+      "lat": 39.35,
+      "dono": "frigia"
+    },
+    {
+      "id": "gordio",
+      "nome": "Gordio",
+      "regiao": "frigia",
+      "lon": 31.99,
+      "lat": 39.65,
+      "dono": "frigia"
+    },
+    {
+      "id": "pessinunte",
+      "nome": "Pessinunte",
+      "regiao": "frigia",
+      "lon": 31.6,
+      "lat": 39.3,
+      "dono": "frigia"
+    },
+    {
+      "id": "celenas",
+      "nome": "Célenas",
+      "regiao": "frigia",
+      "lon": 30.17,
+      "lat": 38.06,
+      "dono": "frigia"
+    },
+    {
+      "id": "apameia",
+      "nome": "Apameia",
+      "regiao": "frigia",
+      "lon": 30.2,
+      "lat": 38.6,
+      "dono": "frigia"
+    },
+    {
+      "id": "licaonia",
+      "nome": "Licaônia",
+      "regiao": "licaonia",
+      "lon": 32.05,
+      "lat": 37.85,
+      "dono": "licaones"
+    },
+    {
+      "id": "halicarnasso",
+      "nome": "Halicarnasso",
+      "regiao": "caria",
+      "lon": 27.42,
+      "lat": 37.04,
+      "dono": "caria"
+    },
+    {
+      "id": "milasa",
+      "nome": "Milasa",
+      "regiao": "caria",
+      "lon": 27.78,
+      "lat": 37.3,
+      "dono": "caria"
+    },
+    {
+      "id": "alabanda",
+      "nome": "Alabanda",
+      "regiao": "caria",
+      "lon": 27.98,
+      "lat": 37.6,
+      "dono": "caria"
+    },
+    {
+      "id": "estratoniceia",
+      "nome": "Estratoniceia",
+      "regiao": "caria",
+      "lon": 28.07,
+      "lat": 37.31,
+      "dono": "caria"
+    },
+    {
+      "id": "caunos",
+      "nome": "Caunos",
+      "regiao": "caria",
+      "lon": 28.62,
+      "lat": 36.83,
+      "dono": "caria",
+      "anexos": [
+        {
+          "lon": 27.845,
+          "lat": 36.638
+        }
+      ]
+    },
+    {
+      "id": "afrodisias",
+      "nome": "Afrodísias",
+      "regiao": "caria",
+      "lon": 28.72,
+      "lat": 37.71,
+      "dono": "caria"
+    },
+    {
+      "id": "cnido",
+      "nome": "Cnido",
+      "regiao": "caria",
+      "lon": 27.37,
+      "lat": 36.68,
+      "dono": "cnido",
+      "anexos": [
+        {
+          "lon": 27.828,
+          "lat": 36.584
+        }
+      ]
+    },
+    {
+      "id": "telmesso",
+      "nome": "Telmesso",
+      "regiao": "licia",
+      "lon": 29.12,
+      "lat": 36.65,
+      "dono": "licia"
+    },
+    {
+      "id": "xanto",
+      "nome": "Xanto",
+      "regiao": "licia",
+      "lon": 29.32,
+      "lat": 36.36,
+      "dono": "licia"
+    },
+    {
+      "id": "tlos",
+      "nome": "Tlos",
+      "regiao": "licia",
+      "lon": 29.42,
+      "lat": 36.55,
+      "dono": "licia"
+    },
+    {
+      "id": "mira",
+      "nome": "Mira",
+      "regiao": "licia",
+      "lon": 29.98,
+      "lat": 36.26,
+      "dono": "licia"
+    },
+    {
+      "id": "limira",
+      "nome": "Limira",
+      "regiao": "licia",
+      "lon": 30.15,
+      "lat": 36.4,
+      "dono": "licia"
+    },
+    {
+      "id": "termesso",
+      "nome": "Termesso",
+      "regiao": "pisidia",
+      "lon": 30.47,
+      "lat": 36.98,
+      "dono": "pisidas"
+    },
+    {
+      "id": "sagalasso",
+      "nome": "Sagalasso",
+      "regiao": "pisidia",
+      "lon": 30.52,
+      "lat": 37.68,
+      "dono": "pisidas"
+    },
+    {
+      "id": "selge",
+      "nome": "Selge",
+      "regiao": "pisidia",
+      "lon": 31.13,
+      "lat": 37.23,
+      "dono": "pisidas"
+    },
+    {
+      "id": "faselis",
+      "nome": "Faselis",
+      "regiao": "panfilia",
+      "lon": 30.55,
+      "lat": 36.53,
+      "dono": "panfilios"
+    },
+    {
+      "id": "perge",
+      "nome": "Perge",
+      "regiao": "panfilia",
+      "lon": 30.85,
+      "lat": 36.96,
+      "dono": "panfilios"
+    },
+    {
+      "id": "aspendo",
+      "nome": "Aspendo",
+      "regiao": "panfilia",
+      "lon": 31.17,
+      "lat": 36.94,
+      "dono": "panfilios"
+    },
+    {
+      "id": "side",
+      "nome": "Side",
+      "regiao": "panfilia",
+      "lon": 31.39,
+      "lat": 36.77,
+      "dono": "panfilios"
+    }
+  ]
+}

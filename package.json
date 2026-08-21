@@ -1,0 +1,50 @@
+{
+  "name": "age-of-grecce",
+  "version": "0.0.1",
+  "description": "Jogo de estratégia por província na Grécia antiga",
+  "scripts": {
+    "gerar-mapa": "tsx gerador/gerar-mapa.ts",
+    "dev": "vite",
+    "app": "node ferramentas/app.mjs",
+    "build": "tsc --noEmit && vite build",
+    "empacotar": "npm run build && electron-builder",
+    "capturar": "tsx ferramentas/captura.ts",
+    "checar": "tsx ferramentas/checar.ts",
+    "tipos": "tsc --noEmit",
+    "lint": "eslint .",
+    "formatar": "prettier --write .",
+    "codigo-morto": "knip",
+    "teste": "vitest run",
+    "teste-tela": "playwright test",
+    "verificar": "npm run tipos && npm run lint && npm run codigo-morto && npm run teste && npm run checar",
+    "sitios": "tsx ferramentas/sitios.ts",
+    "gerar-provincias": "tsx --max-old-space-size=8192 gerador/gerar-provincias.ts",
+    "ver-provincias": "python ferramentas/ver-provincias.py",
+    "calibrar-fronteira": "node ferramentas/calibrar-fronteira.mjs"
+  },
+  "type": "module",
+  "dependencies": {
+    "pixi.js": "8.19.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@types/node": "26.2.0",
+    "@types/pngjs": "6.0.5",
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3",
+    "eslint": "10.8.1",
+    "globals": "17.11.0",
+    "knip": "6.32.2",
+    "pngjs": "7.0.0",
+    "prettier": "3.9.6",
+    "simplex-noise": "4.0.3",
+    "tsx": "4.23.12",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.67.0",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  },
+  "private": true
+}

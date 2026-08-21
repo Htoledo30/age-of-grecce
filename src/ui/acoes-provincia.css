@@ -1,0 +1,147 @@
+/* Bloco de ações da província, empilhado logo acima da ficha.
+   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
+
+/* A coluna é quem ancora os dois no canto. Empilhar por posição absoluta obrigaria a
+   saber a altura da ficha, que muda com o conteúdo — a ficha de uma província sem
+   economia é bem mais baixa que a de Atenas. */
+.coluna-provincia {
+  position: absolute;
+  left: var(--gap-3);
+  bottom: var(--gap-3);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--gap-2);
+  width: 320px;
+}
+
+.acoes {
+  padding: var(--gap-3);
+  background: var(--papel);
+  border: 1px solid var(--tinta-fraca);
+  color: var(--tinta);
+}
+
+.acoes[hidden] {
+  display: none;
+}
+
+.acoes__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 18px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: var(--gap-2);
+  border-bottom: 1px solid var(--papel-escuro);
+  margin-bottom: var(--gap-2);
+}
+
+/* Rótulo de categoria. Discreto de propósito: separa sem competir com as opções. */
+.acoes__grupo {
+  margin-top: var(--gap-3);
+  margin-bottom: var(--gap-1);
+  font-family: var(--fonte-titulo);
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinta-tenue);
+  border-bottom: 1px solid var(--papel-escuro);
+}
+
+.acoes__grupo[hidden],
+.acoes__lista[hidden] {
+  display: none;
+}
+
+.acoes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-1);
+}
+
+/* Uma linha por construção: nome e o que ela custa agora. O resto vive no tooltip —
+   a lista tem que dar pra varrer com o olho. */
+.acoes__construcao {
+  display: block;
+  width: 100%;
+  font-size: 14px;
+  padding: var(--gap-2);
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-escuro);
+  color: var(--tinta);
+  font-family: var(--fonte-corpo);
+  text-align: left;
+  cursor: pointer;
+}
+
+.acoes__construcao:hover:not([disabled]) {
+  background: var(--papel-claro);
+}
+
+.acoes__construcao[disabled] {
+  cursor: default;
+  color: var(--tinta-tenue);
+}
+
+/* Já construída não é erro: é conquista. Verde, não cinza de recusa. */
+.acoes__construcao[data-estado='erguida'] {
+  background: var(--papel);
+  border-color: var(--verdete);
+  color: var(--tinta-fraca);
+}
+
+/* Em obra: o dinheiro já saiu e o benefício ainda não chegou. Ouro, porque é
+   investimento em curso — nem recusa nem conquista. */
+.acoes__construcao[data-estado='obra'] {
+  background: var(--papel);
+  border-color: var(--ouro);
+  border-style: dashed;
+  color: var(--tinta-fraca);
+}
+
+.acoes__alvo {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+}
+
+.acoes__valor {
+  width: 100%;
+  margin-top: var(--gap-2);
+  padding: var(--gap-2);
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-claro);
+  color: var(--tinta);
+  font-family: var(--fonte-numero);
+  font-size: 16px;
+}
+
+.acoes__previsao {
+  margin-top: var(--gap-1);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tinta-tenue);
+}
+
+/* Investimento que não se paga fica marcado em sangue: é a informação mais importante
+   da caixa, e o jogador não deveria ter que fazer a conta de cabeça pra vê-la. */
+.acoes__previsao[data-vale='nao'] {
+  color: var(--sangue);
+}
+
+.acoes__botao {
+  display: block;
+  width: 100%;
+  margin-top: var(--gap-2);
+  text-align: left;
+}
+
+/* `display` explícito VENCE o atributo `hidden`, que só funciona por causa de um
+   `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
+   aqui em cima deixa de conseguir se esconder. */
+.acoes__botao[hidden],
+.acoes__valor[hidden] {
+  display: none;
+}

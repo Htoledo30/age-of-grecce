@@ -1,0 +1,67 @@
+/* Barra de turno, topo-centro. Medidas em pixels do palco 1920x1080 — ver escala.ts. */
+
+.barra-turno {
+  position: absolute;
+  top: var(--gap-3);
+  /* Centrada pelo CONTEÚDO, nunca largura cheia: #ui > * liga pointer-events, e uma
+     barra larga comeria o clique do mapa na faixa inteira do topo. */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--gap-3);
+  height: 52px;
+  padding: 0 var(--gap-2) 0 var(--gap-3);
+  background: var(--papel);
+  border: 1px solid var(--tinta-fraca);
+  color: var(--tinta);
+}
+
+.barra-turno[hidden] {
+  display: none;
+}
+
+.barra-turno__tinta {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--tinta);
+}
+
+.barra-turno__linha {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-3);
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+/* O separador é desenhado, não digitado: assim nenhum trecho precisa saber se é o
+   último da fila. */
+.barra-turno__linha > * + *::before {
+  content: '·';
+  margin-right: var(--gap-3);
+  color: var(--tinta-tenue);
+}
+
+.barra-turno__poder {
+  font-family: var(--fonte-titulo);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.barra-turno__dado {
+  font-family: var(--fonte-numero);
+  font-size: 14px;
+  color: var(--tinta-fraca);
+}
+
+.barra-turno__ouro {
+  font-family: var(--fonte-numero);
+  font-size: 14px;
+  color: var(--ouro);
+}
+
+.barra-turno__governo {
+  padding: var(--gap-2) var(--gap-3);
+}

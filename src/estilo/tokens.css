@@ -1,0 +1,36 @@
+/* Paleta e tipografia do jogo.
+   Direção de arte: documento de papel — tinta, sépia, pouca saturação.
+   Nenhuma cor deve ser escrita direto em outro arquivo; sempre usar estas variáveis. */
+:root {
+  /* superfícies */
+  --papel: #ded0b0;
+  --papel-claro: #ece1c8;
+  --papel-escuro: #c2b18d;
+  --mar: #9fb0ac;
+  --mar-fundo: #7d918e;
+
+  /* tinta */
+  --tinta: #2a2118;
+  --tinta-fraca: #5c4d3c;
+  --tinta-tenue: #8a7860;
+
+  /* acentos */
+  --sangue: #8c2f22;
+  --ouro: #a8802c;
+  --verdete: #4a6b5a;
+
+  /* letreiro fora do palco (barras pretas) */
+  --vazio: #000000;
+
+  /* tipografia */
+  --fonte-titulo: 'Georgia', 'Times New Roman', serif;
+  --fonte-corpo: 'Georgia', 'Times New Roman', serif;
+  --fonte-numero: 'Consolas', 'Courier New', monospace;
+
+  /* espaçamento — em pixels do palco 1920x1080 */
+  --gap-1: 4px;
+  --gap-2: 8px;
+  --gap-3: 16px;
+  --gap-4: 24px;
+  --gap-5: 40px;
+}

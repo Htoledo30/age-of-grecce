@@ -1,0 +1,24 @@
+{
+  "versao": 1,
+  "fixo": true,
+  "dimensoes": {
+    "largura": 12288,
+    "altura": 8256
+  },
+  "resolucaoTerreno": 6144,
+  "regiaoReferencia": "Mundo grego: de Corcira a Sardes, da Macedonia a Creta",
+  "limitesReferencia": {
+    "oeste": 18.7,
+    "leste": 32.4,
+    "sul": 34.5,
+    "norte": 41.7
+  },
+  "fonteCosta": "Natural Earth 1:10m (dominio publico)",
+  "arquivosDeDados": {
+    "navegacao": "navegacao.png",
+    "biomas": "biomas.png",
+    "altitudeVisual": "altitude.png",
+    "altitudeLinear": "altitude.f32",
+    "hidrologia": "hidrologia.json"
+  }
+}

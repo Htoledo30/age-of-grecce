@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dist-app/
+capturas/*.png
+gerador/cache/
+.vite/
+*.log
+test-results/
+playwright-report/
+documentacao/.obsidian/workspace*.json
+
+# 101 MB de altitude linear: saida regeneravel por `npm run gerar-mapa` e acima do
+# limite de 100 MB por arquivo do GitHub. O resto de assets/mundo/ fica versionado
+# para que um clone novo jogue sem regerar o mapa, que demora.
+assets/mundo/altitude.f32

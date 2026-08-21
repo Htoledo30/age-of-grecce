@@ -1,0 +1,37 @@
+{
+  "versao": 1,
+  "comentario": "Economia autoral por provincia. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
+  "produtos": {
+    "graos": { "nome": "Grãos", "valor": 15 },
+    "gado": { "nome": "Gado", "valor": 16 },
+    "madeira": { "nome": "Madeira", "valor": 18 },
+    "ferro": { "nome": "Ferro", "valor": 22 },
+    "vinho": { "nome": "Vinho", "valor": 24 },
+    "azeite": { "nome": "Azeite", "valor": 25 },
+    "marmore": { "nome": "Mármore", "valor": 27 },
+    "metais-preciosos": { "nome": "Metais preciosos", "valor": 28 }
+  },
+  "provincias": {
+    "atenas": {
+      "populacao": 35000,
+      "produto": "azeite",
+      "nivel": 4,
+      "comercioBase": 0.55,
+      "motivo": "A Atica vive de azeite, e a cidade tem o Pireu: o comercio-base mais alto da Grecia arcaica vem da posicao e do porto, nao do produto."
+    },
+    "maratona": {
+      "populacao": 18000,
+      "produto": "graos",
+      "nivel": 3,
+      "comercioBase": 0.25,
+      "motivo": "A planicie de Maratona e a terra de cereal da Atica. Costa aberta e sem porto de peso: escoa pouco."
+    },
+    "sounion": {
+      "populacao": 10000,
+      "produto": "metais-preciosos",
+      "nivel": 5,
+      "comercioBase": 0.3,
+      "motivo": "O Lourion fica aqui: a prata que pagou a frota de Salamina. Pouca gente, nivel maximo - e a prova de que area e populacao nao decidem riqueza."
+    }
+  }
+}

@@ -1,0 +1,88 @@
+/* Painel da direita. Medidas em pixels do palco 1920x1080 — ver escala.ts. */
+
+.painel-lateral {
+  --largura-painel: 330px;
+  position: absolute;
+  top: var(--gap-3);
+  right: 0;
+  width: var(--largura-painel);
+  display: flex;
+  align-items: flex-start;
+  /* o deslize é do painel inteiro; a aba anda junto e continua na tela */
+  transform: translateX(var(--largura-painel));
+  transition: transform 180ms ease-out;
+}
+
+.painel-lateral[data-aberto='sim'] {
+  transform: translateX(0);
+}
+
+.painel-lateral__aba {
+  flex: none;
+  width: 26px;
+  height: 52px;
+  margin-left: -26px;
+  border: 1px solid var(--tinta-fraca);
+  border-right: none;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.painel-lateral__aba:hover {
+  background: var(--papel-claro);
+}
+
+.painel-lateral__corpo {
+  flex: 1;
+  padding: var(--gap-3);
+  background: var(--papel);
+  border: 1px solid var(--tinta-fraca);
+  border-right: none;
+  color: var(--tinta);
+}
+
+.painel-lateral__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: var(--gap-2);
+  border-bottom: 1px solid var(--papel-escuro);
+  margin-bottom: var(--gap-3);
+}
+
+.painel-lateral__dica {
+  margin-top: var(--gap-2);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tinta-tenue);
+}
+
+/* Interruptor: o estado mora em aria-pressed, não numa classe. Assim a marcação já diz
+   a verdade pra tecnologia assistiva, e o CSS só reage a ela. */
+.interruptor {
+  width: 100%;
+  padding: var(--gap-2) var(--gap-3);
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-escuro);
+  color: var(--tinta-fraca);
+  font-family: var(--fonte-corpo);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.interruptor:hover {
+  background: var(--papel-claro);
+}
+
+.interruptor[aria-pressed='true'] {
+  background: var(--verdete);
+  border-color: var(--tinta);
+  color: var(--papel-claro);
+}

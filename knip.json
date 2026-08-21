@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "electron/main.cjs",
+    "electron/preload.cjs",
+    "ferramentas/*.ts",
+    "ferramentas/*.mjs",
+    "testes/**/*.{test,spec}.ts"
+  ],
+  "project": [
+    "src/**/*.ts",
+    "ferramentas/**/*.{ts,mjs}",
+    "testes/**/*.ts",
+    "gerador/**/*.ts"
+  ]
+}
