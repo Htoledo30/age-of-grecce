@@ -26,10 +26,11 @@ import type {
   RetornoDaConstrucao,
   RetornoDoInvestimento,
 } from './economia';
-import { exercitoVazio, forcaDe, retirar, somarLeva } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
-import { avaliarLeva, manutencaoDe, tetoDeRecrutamento } from '@/combate/recrutamento';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
+import { Mobilizacao } from '@/combate/mobilizacao';
+import type { HosteEmProvincia } from '@/combate/mobilizacao';
+import { Territorios } from './territorios';
 
 type AjustesJogo = Ajustes['jogo'];
 type Poder = Provincias['poderes'][number];
@@ -42,14 +43,14 @@ export type Recusa =
 export class Campanha {
   private readonly estado: EstadoCampanha;
   /**
-   * Índice reverso de `estado.dono`, mantido em pé a cada troca.
+   * Os dois módulos que a campanha coordena — e não reimplementa.
    *
-   * É derivado, nunca gravado: a verdade é `estado.dono`, e este mapa só existe pra que
-   * "quais são as províncias de Atenas?" não custe uma varredura das 205 a cada
-   * redesenho. Quem muda dono é obrigado a passar por `trocarDono`, que conserta os dois
-   * lados juntos.
+   * A regra que separa: **transação é da campanha; coleção é do módulo.** Recrutar mexe em
+   * ouro, população e tropa ao mesmo tempo e as três têm que acontecer juntas, então é da
+   * campanha. "Quais províncias são de Atenas" e "junte esta leva" são do módulo.
    */
-  private readonly provinciasPorPoder = new Map<string, string[]>();
+  private readonly territorios: Territorios;
+  private readonly mobilizacao: Mobilizacao;
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
@@ -90,26 +91,8 @@ export class Campanha {
       obras: {},
     };
 
-    this.reindexar();
-  }
-
-  /**
-   * Remonta o índice reverso inteiro a partir de `estado.dono`.
-   *
-   * Usado na abertura e em qualquer carga de estado. Custa 205 iterações e é idempotente
-   * de propósito: retomar um salvamento tem que produzir exatamente o mesmo índice que
-   * jogar até ali produziria.
-   */
-  private reindexar(): void {
-    this.provinciasPorPoder.clear();
-    for (const poder of this.atlas.poderes) this.provinciasPorPoder.set(poder.id, []);
-    for (const p of this.atlas.provincias) {
-      const dono = this.estado.dono[p.id];
-      if (dono === undefined) throw new Error(`província sem dono na tabela: ${p.id}`);
-      const lista = this.provinciasPorPoder.get(dono);
-      if (!lista) throw new Error(`província "${p.nome}" tem dono inexistente: ${dono}`);
-      lista.push(p.id);
-    }
+    this.territorios = new Territorios(atlas, this.estado.dono);
+    this.mobilizacao = new Mobilizacao(this.estado, ajustes.combate);
   }
 
   get iniciada(): boolean {
@@ -147,29 +130,36 @@ export class Campanha {
   }
 
   provinciasDe(idPoder: string): readonly string[] {
-    const lista = this.provinciasPorPoder.get(idPoder);
-    if (!lista) throw new Error(`poder inexistente: ${idPoder}`);
-    return lista;
+    return this.territorios.provinciasDe(idPoder);
   }
 
   /** De quem é esta província AGORA. Não é o dono assado: é o dono corrente. */
   donoDe(idProvincia: string): string {
-    const dono = this.estado.dono[idProvincia];
-    if (dono === undefined) throw new Error(`província inexistente: ${idProvincia}`);
-    return dono;
+    return this.territorios.donoDe(idProvincia);
   }
 
   /**
-   * Um poder está vivo enquanto tiver ao menos uma província.
+   * Um poder está vivo enquanto tiver **chão OU hoste**.
    *
-   * Derivado, nunca gravado: perder a última província É a eliminação, e não existe um
-   * segundo lugar onde alguém possa marcar "morto" e discordar da tabela de donos.
+   * ⚠️ Já foi só "tem província", e estava errado: o poder era dado como eliminado
+   * enquanto o exército dele continuava de pé no mapa, gastando manutenção e ocupando
+   * terra. Perder o último chão é ficar **no exílio**, não morrer.
+   *
+   * O exílio não precisa de temporizador nenhum: sem província não há renda, sem renda a
+   * folha não é paga, e a tropa deserta sozinha em poucos turnos. A regra da deserção, que
+   * já existia, é quem dá o prazo — e os desertores voltam pra terra deles, que agora é do
+   * conquistador.
    */
   vivo(idPoder: string): boolean {
-    return this.provinciasDe(idPoder).length > 0;
+    return this.territorios.temTerritorio(idPoder) || this.mobilizacao.temTropa(idPoder);
   }
 
-  /** Quem ainda tem território. Começa com 148 e só encolhe. */
+  /** Perdeu todo o chão mas ainda tem gente em armas. */
+  noExilio(idPoder: string): boolean {
+    return !this.territorios.temTerritorio(idPoder) && this.mobilizacao.temTropa(idPoder);
+  }
+
+  /** Quem ainda está no jogo, por chão ou por tropa. Começa com 148 e só encolhe. */
   poderesVivos(): readonly string[] {
     return this.atlas.poderes.filter((p) => this.vivo(p.id)).map((p) => p.id);
   }
@@ -186,20 +176,7 @@ export class Campanha {
    * jogo acabaria morando.
    */
   trocarDono(idProvincia: string, idPoder: string): void {
-    const anterior = this.donoDe(idProvincia);
-    if (!this.atlas.existePoder(idPoder)) throw new Error(`poder inexistente: ${idPoder}`);
-    if (anterior === idPoder) return;
-
-    const listaAnterior = this.provinciasPorPoder.get(anterior);
-    if (listaAnterior) {
-      const posicao = listaAnterior.indexOf(idProvincia);
-      if (posicao >= 0) listaAnterior.splice(posicao, 1);
-    }
-    const listaNova = this.provinciasPorPoder.get(idPoder);
-    if (!listaNova) throw new Error(`poder inexistente: ${idPoder}`);
-    listaNova.push(idProvincia);
-
-    this.estado.dono[idProvincia] = idPoder;
+    if (!this.territorios.trocarDono(idProvincia, idPoder)) return;
 
     // O incentivo em curso morre junto com a posse: quem pagou pra explorar mais uma
     // terra não continua colhendo dela depois de perdê-la. A construção FICA — ela é da
@@ -320,35 +297,27 @@ export class Campanha {
 
   /** O exército parado nesta província, se houver. */
   exercitoEm(idProvincia: string): Exercito | undefined {
-    return this.estado.exercitos[idProvincia];
+    return this.mobilizacao.exercitoEm(idProvincia);
   }
 
   /** Quantos homens estão parados nesta província. */
   forcaEm(idProvincia: string): number {
-    return forcaDe(this.estado.exercitos[idProvincia]);
+    return this.mobilizacao.forcaEm(idProvincia);
   }
 
-  /**
-   * Quantos homens NASCIDOS nesta província estão em armas, onde quer que estejam.
-   *
-   * Conta contra o teto de recrutamento dela. Sem isso bastaria recrutar, marchar pra
-   * fora e recrutar de novo pra esvaziar a cidade inteira em rodadas.
-   */
+  /** Toda hoste em pé no mundo. É o que o mapa desenha. */
+  hostes(): readonly HosteEmProvincia[] {
+    return this.mobilizacao.todas();
+  }
+
+  /** Quantos homens NASCIDOS nesta província estão em armas, onde quer que estejam. */
   homensEmArmasDe(idProvincia: string): number {
-    let total = 0;
-    for (const exercito of Object.values(this.estado.exercitos)) {
-      total += exercito.origem[idProvincia] ?? 0;
-    }
-    return total;
+    return this.mobilizacao.homensEmArmasDe(idProvincia);
   }
 
   /** Quantos homens esta província ainda comporta pôr em armas. */
   tetoDeLevaEm(idProvincia: string): number {
-    return tetoDeRecrutamento(
-      this.populacaoDe(idProvincia),
-      this.homensEmArmasDe(idProvincia),
-      this.ajustes.combate,
-    );
+    return this.mobilizacao.tetoDeLevaEm(idProvincia);
   }
 
   /**
@@ -361,15 +330,10 @@ export class Campanha {
   podeRecrutar(idProvincia: string, homens: number): RecusaDeLeva {
     const naProvincia = this.podeAgirEm(idProvincia);
     if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
-    return avaliarLeva(
+    return this.mobilizacao.avaliarLevaEm(
+      idProvincia,
       homens,
-      {
-        populacao: this.populacaoDe(idProvincia),
-        jaEmArmas: this.homensEmArmasDe(idProvincia),
-        tesouro: this.estado.tesouro,
-        temQuartel: this.capacidadesEm(idProvincia).includes('recrutar'),
-      },
-      this.ajustes.combate,
+      this.capacidadesEm(idProvincia).includes('recrutar'),
     );
   }
 
@@ -384,14 +348,7 @@ export class Campanha {
   recrutar(idProvincia: string, homens: number): void {
     const r = this.podeRecrutar(idProvincia, homens);
     if (!r.pode) throw new Error(r.motivo);
-
-    this.estado.tesouro -= r.ouro;
-    this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - r.homens;
-
-    const dono = this.donoDe(idProvincia);
-    const exercito = this.estado.exercitos[idProvincia] ?? exercitoVazio(dono);
-    somarLeva(exercito, idProvincia, r.homens);
-    this.estado.exercitos[idProvincia] = exercito;
+    this.mobilizacao.recrutar(idProvincia, this.donoDe(idProvincia), r);
     this.aoMudar();
   }
 
@@ -403,23 +360,13 @@ export class Campanha {
    * estratégia possível seria nunca mobilizar.
    */
   dispensar(idProvincia: string, homens: number): void {
-    const exercito = this.estado.exercitos[idProvincia];
-    if (!exercito) throw new Error(`não há exército em ${this.nomeDe(idProvincia)}`);
-    const devolvidos = retirar(exercito, homens);
-    for (const [origem, quantos] of Object.entries(devolvidos)) {
-      this.estado.populacao[origem] = (this.estado.populacao[origem] ?? 0) + quantos;
-    }
-    if (forcaDe(exercito) === 0) delete this.estado.exercitos[idProvincia];
+    this.mobilizacao.dispensar(idProvincia, homens);
     this.aoMudar();
   }
 
   /** O que este poder paga por turno pra manter os seus em armas. */
   manutencaoDe(idPoder: string): number {
-    let homens = 0;
-    for (const exercito of Object.values(this.estado.exercitos)) {
-      if (exercito.poder === idPoder) homens += forcaDe(exercito);
-    }
-    return manutencaoDe(homens, this.ajustes.combate);
+    return this.mobilizacao.manutencaoDe(idPoder);
   }
 
   /** Manutenção do jogador por turno. Zero antes de a campanha começar. */
@@ -445,25 +392,9 @@ export class Campanha {
    * recruta neste turno paga a manutenção deste turno, e não do que vem.
    */
   private pagarTropa(): void {
-    const devido = this.manutencao;
-    if (devido <= 0) return;
-
-    if (devido <= this.estado.tesouro) {
-      this.estado.tesouro -= devido;
-      return;
-    }
-
-    const pago = Math.max(0, this.estado.tesouro);
-    this.estado.tesouro -= pago;
-    const naoPaga = (devido - pago) / devido;
-
     const jogador = this.estado.jogador;
     if (jogador === null) return;
-    for (const [idProvincia, exercito] of Object.entries(this.estado.exercitos)) {
-      if (exercito.poder !== jogador) continue;
-      const desertores = Math.ceil(forcaDe(exercito) * naoPaga);
-      if (desertores > 0) this.dispensar(idProvincia, desertores);
-    }
+    this.mobilizacao.pagarManutencao(jogador);
   }
 
   /** O catálogo inteiro, pra interface montar a lista de opções. */
