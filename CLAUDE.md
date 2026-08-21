@@ -356,6 +356,51 @@ O destaque é uniforme no shader (`uSelecionada`): a província ganha cobertura 
 traço 2,4× mais grosso. A cobertura própria é o que a mantém visível **com as cores dos
 reinos desligadas**, quando não existe preenchimento nenhum pra diferenciá-la.
 
+## De quem é a província: o assado, o atlas e o estado
+
+Três coisas diferentes, e confundi-las foi o bug que já custou um conserto de raiz:
+
+| o quê | onde | significa |
+|---|---|---|
+| `dono` em `assets/mundo/provincias.json` | assado, imutável | **dono INICIAL**, a condição de 700 a.C. |
+| `Atlas` (`src/mundo/atlas.ts`) | derivado do assado, imutável | geografia e identidade: nome, região, vizinhança, componentes |
+| `estado.dono` (`src/campanha/`) | mutável, vai pro disco | **de quem é AGORA** |
+
+`Atlas` existe separado porque campanha, combate e diplomacia fazem todos as mesmas
+perguntas de geografia. Se cada um montar o próprio índice, a mesma verdade passa a viver
+em três lugares e um dia dois discordam. Ele também confere o recorte na carga — dono ou
+vizinha inexistente estoura com o nome do culpado — e carrega a **impressão digital**
+(época, nº de províncias, nº de poderes) que um dia vai recusar salvamento feito noutro
+mapa.
+
+⚠️ **A tabela de donos é CHEIA — as 205 —, não um diff contra o assado.** O diff é menor
+e é armadilha: com o `provincias.json` reassado com uma fronteira movida, ele mistura dois
+recortes em silêncio e a partida segue rodando errada.
+
+⚠️ **`trocarDono` é primitiva sem regra de guerra nenhuma.** Não pergunta se há fronteira,
+exército ou paz — quem decide se pode é quem chama. Misturar as duas coisas faria dela o
+lugar onde toda regra do jogo acabaria morando.
+
+**Conquistar mata o incentivo e a obra em andamento, e preserva a construção.** A
+construção é da PROVÍNCIA, não de quem mandava nela — e é isso que faz tomar uma cidade
+rica valer mais que tomar uma pobre. O incentivo é de quem pagou; a obra paga e não
+entregue não vai de presente pro inimigo.
+
+**Eliminação é derivada**: um poder está vivo enquanto tiver ao menos uma província. Não
+existe um segundo lugar onde alguém possa marcar "morto" e discordar da tabela de donos.
+
+⚠️ **A camada de mapa NÃO sabe de quem é a província.** `provinciaEm()` devolve o
+**índice**; quem monta a ficha junta `Atlas` (o que ela é) e `Campanha` (de quem ela é
+hoje). Já foi diferente: `ProvinciasMapa` montava a ficha com o dono assado, no
+construtor, e a primeira província a trocar de mãos passava a mentir para sempre — com um
+nome de poder plausível, que é o erro que ninguém vê. `testes/tela/conquista.spec.ts`
+guarda isso.
+
+**Repintar é `pintarDonos`, e é idempotente de propósito.** Repintar as 205 custa menos
+que descobrir quais mudaram, e é o que faz retomar um salvamento produzir exatamente a
+mesma tela que jogar até ali produziria. A paleta é marcada como suja e drenada **uma vez
+por quadro**: vinte conquistas numa virada de turno viram um envio de 256 KB, não vinte.
+
 ## Comandos
 
 | comando | o que faz |
@@ -383,6 +428,12 @@ fechado: mudar → rodar → olhar → corrigir, sem depender de screenshot do u
 mostra o mapa inteiro, e `--clicar=x,y` clica numa posição da tela — **pode repetir**, e
 os cliques saem na ordem escrita, que é como se testa painel: um clique liga o botão, o
 seguinte escolhe no mapa.
+
+`--executar='<javascript>'` roda um trecho na página antes dos cliques, com `inspecao` à
+mão. É o que deixa uma captura **montar cenário** em vez de só olhar o estado inicial —
+conquistar províncias, dar ouro, pular turnos. Foi assim que a conquista foi conferida no
+olho: `--executar` tomando o Peloponeso inteiro pra Atenas, e as 25 províncias virando uma
+cor só com as fronteiras internas preservadas.
 
 ⚠️ **O FPS da captura oculta é mentira.** Sem `--visivel` o navegador renderiza por
 software (SwiftShader) e trava o `requestAnimationFrame` em ~20/s. Pra layout e erro,
@@ -412,11 +463,33 @@ O jogo agora abre em um menu com **Iniciar jogo**. A tela seguinte permite exami
 poderes no mapa, mas neste protótipo somente Atenas pode ser escolhida. Confirmar Atenas
 inicia a campanha e devolve ao mapa a seleção normal de províncias.
 
-Já existe o estado mínimo da campanha: poder do jogador, ano, turno, tesouro e renda.
-`src/nucleo/tempo.ts` continua sendo apenas o relógio de quadro; o tempo da campanha
-avança explicitamente quando o jogador passa o turno. Ainda não existem cidade,
-exército, alteração de dono, guerra ou IA. `assets/mundo/provincias.json` continua sendo
-dado **assado e imutável** e, nesta etapa, representa também os donos iniciais.
+Já existe o estado mínimo da campanha: poder do jogador, ano, turno, tesouro, renda e
+**a tabela de donos das 205 províncias**. `src/nucleo/tempo.ts` continua sendo apenas o
+relógio de quadro; o tempo da campanha avança explicitamente quando o jogador passa o
+turno.
+
+**Território já troca de mãos.** `trocarDono` move a província nas regras e o mapa
+repinta no mesmo instante, a ficha mostra o dono novo, a barra conta as províncias do
+jogador e quem perde a última é eliminado — tudo derivado da mesma tabela. Falta o que
+decide *se pode*: exército, guerra, batalha e IA não existem. Ver
+"De quem é a província: o assado, o atlas e o estado".
+
+⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
+terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
+andando de zona em zona. Isso substitui as duas ideias anteriores do projeto: "alcance
+naval a partir do porto" e "adjacência marítima derivada por proximidade". As duas estão
+**descartadas**. Medido no spike: a água é 56% do mapa (14,2 milhões de pixels) e o mesmo
+Dijkstra multi-origem do gerador de províncias a recorta em **1,1 s com 216 MB**, deixando
+0,01% sem dono — o algoritmo não é o problema, a distribuição das sementes é.
+
+⚠️ **O relevo do mapa é ruído procedural e NÃO sustenta mecânica.** A única fonte
+geográfica real do gerador é `ne_10m_land.geojson`, ou seja, a **costa**. Medido por
+varredura de `biomas.png` × `provincias.png`: Larissa, a planície da Tessália, sai como
+55% terreno alto; Mantineia e Tegeia, planaltos pelados da Arcádia, saem 100% floresta; a
+Ática sai com 0% de terreno alto, sem Himeto nem Láurion. **Litoral é dado verdadeiro e
+pode virar regra (161 províncias costeiras, 44 interiores); relevo e bioma não.** Bônus
+de terreno em batalha, custo de marcha e vocação agrícola derivados de bioma seriam regra
+construída sobre ficção plausível — o pior tipo de bug, o que ninguém enxerga.
 
 **Primeiro pedaço do ciclo já roda:** menu → escolher Atenas no mapa → campanha começa no
 turno 1, ano 700 a.C., com 50 moedas e renda 15; passar o turno leva a 699 a.C. e 65
