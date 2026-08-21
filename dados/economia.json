@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "Economia autoral por provincia. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
+  "comentario": "Economia autoral por provincia. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. A REGUA, para nao inflacionar quando as outras 200 forem escritas: 5 = o melhor do mundo grego naquele produto, um punhado no mapa inteiro (a prata do Lourion); 4 = famoso e exportado, um nome que se conhecia fora da regiao (o azeite atico); 3 = bom, alimenta a propria terra e ainda sobra pra vender; 2 = comum, alimenta a propria terra; 1 = magro, a terra da aquilo a contragosto. Se tudo que se escreve cai em 3, 4 e 5, a regua deixou de medir. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
   "produtos": {
     "graos": { "nome": "Grãos", "valor": 15 },
     "gado": { "nome": "Gado", "valor": 16 },
@@ -22,23 +22,23 @@
     "maratona": {
       "populacao": 18000,
       "produto": "graos",
-      "nivel": 3,
+      "nivel": 2,
       "comercioBase": 0.25,
-      "motivo": "A planicie de Maratona e a terra de cereal da Atica. Costa aberta e sem porto de peso: escoa pouco."
+      "motivo": "A planicie de Maratona e a terra de cereal da Atica - o que nao e elogio: a Atica era POBRE em cereal, e Atenas importava grao do Ponto Euxino. Nivel 2 e o que diz isso. Ela e provincia de gente e de imposto, nao de producao. Costa aberta e sem porto de peso: escoa pouco."
     },
     "eleusis": {
       "populacao": 12000,
       "produto": "graos",
-      "nivel": 4,
+      "nivel": 3,
       "comercioBase": 0.3,
-      "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 4 e nao 5: o 5 de Suniao e o caso excepcional, nao a regra da terra boa. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso."
+      "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 3: e a melhor terra de cereal da Atica, e a melhor da Atica ainda nao e a Tessalia nem a Messenia - o 4 e o 5 ficam guardados pra elas. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso."
     },
     "tanagra": {
       "populacao": 9000,
       "produto": "gado",
-      "nivel": 3,
+      "nivel": 2,
       "comercioBase": 0.18,
-      "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso."
+      "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica, mas o rebanho de peso estava na bacia do Copais, nao aqui: nivel 2. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso."
     },
     "sounion": {
       "populacao": 10000,

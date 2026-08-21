@@ -74,7 +74,7 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
 
-  await expect(page.locator('.barra-turno')).toContainText('3000 moedas (+708)');
+  await expect(page.locator('.barra-turno')).toContainText('3000 moedas (+690)');
   // o detalhe agora vive no tooltip, pra lista dar pra varrer com o olho
   await expect(page.getByRole('button', { name: /^Ágora/ })).toHaveAttribute(
     'title',
@@ -88,7 +88,7 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await page.getByRole('button', { name: /^Ágora/ }).click();
 
   // paga à vista e ENTREGA DEPOIS: o tesouro zerou, mas a renda ainda não subiu
-  await expect(page.locator('.barra-turno')).toContainText('0 moedas (+708)');
+  await expect(page.locator('.barra-turno')).toContainText('0 moedas (+690)');
   await expect(page.locator('.ficha__obra')).toContainText('Ágora em obra · 3 turnos');
   await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 3 turnos');
   // as outras continuam visíveis, dizendo por que não dá
@@ -98,7 +98,7 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: /Passar o turno/ }).click();
   }
-  await expect(page.locator('.barra-turno')).toContainText('(+784)');
+  await expect(page.locator('.barra-turno')).toContainText('(+766)');
   await expect(page.locator('.ficha__construcoes')).toHaveText('Ágora');
   await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('construída');
   // a ficha mostra UMA linha de dinheiro; a decomposição mora no Governo
@@ -132,7 +132,7 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
 
   // uma linha por província do jogador, mais o rodapé de totais
   await expect(page.locator('.balanco__tabela tbody tr')).toHaveCount(3);
-  await expect(page.locator('.balanco__tabela tfoot')).toContainText('708');
+  await expect(page.locator('.balanco__tabela tfoot')).toContainText('690');
   await expect(page.locator('.balanco__resumo')).toContainText('3.000 moedas');
 
   // Esc fecha

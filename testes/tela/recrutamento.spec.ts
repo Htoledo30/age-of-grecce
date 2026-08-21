@@ -37,8 +37,13 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await page.mouse.click(960, 540);
 
   // Nada de sumir em silêncio: o bloco fica na tela dizendo o que falta. É assim que o
-  // jogador descobre que existe Quartel, sem tutorial.
+  // jogador descobre que existe Quartel, sem tutorial — mas só depois de pedir os detalhes.
   await expect(page.locator('.recrutamento')).toBeVisible();
+  const abrir = page.getByRole('button', { name: 'Recrutar' });
+  await expect(abrir).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('.recrutamento__corpo')).toBeHidden();
+  await abrir.click();
+  await expect(abrir).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('.recrutamento__alvo')).toContainText('Quartel');
   await expect(page.locator('.recrutamento__valor')).toBeHidden();
 
@@ -93,6 +98,11 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
   // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.
   await expect(page.locator('.recrutamento')).not.toContainText('Dispensar');
+
+  // Pode ser recolhido outra vez sem esconder a existência da ação.
+  await abrir.click();
+  await expect(page.locator('.recrutamento__corpo')).toBeHidden();
+  await expect(abrir).toBeVisible();
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });

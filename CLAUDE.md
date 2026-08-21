@@ -534,15 +534,33 @@ territórios de um produto é mudar um número só. Grão vale 15 por nível e m
 não são simuladas, e a ficha diz "Economia ainda não configurada" com todas as letras. Um
 teste garante que continue assim.
 
-| província | dono     | produto          | nível | impostos | produção | comércio |   total |
-| --------- | -------- | ---------------- | ----: | -------: | -------: | -------: | ------: |
-| Atenas    | Atenas   | Azeite           |     4 |      175 |      100 |       55 | **330** |
-| Maratona  | Atenas   | Grãos            |     3 |       90 |       45 |       11 | **146** |
-| Sunião    | Atenas   | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
-| Elêusis   | Elêusis  | Grãos            |     4 |       60 |       60 |       18 | **138** |
-| Tanagra   | Tanagra  | Gado             |     3 |       45 |       48 |        9 | **102** |
+| província | dono    | produto          | nível | impostos | produção | comércio |   total |
+| --------- | ------- | ---------------- | ----: | -------: | -------: | -------: | ------: |
+| Atenas    | Atenas  | Azeite           |     4 |      175 |      100 |       55 | **330** |
+| Maratona  | Atenas  | Grãos            |     2 |       90 |       30 |        8 | **128** |
+| Sunião    | Atenas  | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
+| Elêusis   | Elêusis | Grãos            |     3 |       60 |       45 |       14 | **119** |
+| Tanagra   | Tanagra | Gado             |     2 |       45 |       32 |        6 |  **83** |
 
-Atenas soma **708 por turno**, com **3.000** de tesouro inicial.
+Atenas soma **690 por turno**, com **3.000** de tesouro inicial.
+
+⚠️ **O nível tem uma RÉGUA, e ela está escrita em `dados/economia.json`.** Sem âncora, tudo
+que se escreve cai em 3, 4 e 5 e o número deixa de medir — foi o que aconteceu na primeira
+leva: cinco províncias, média 3,8, nenhuma abaixo de 3.
+
+| nível | o que significa                                                            |
+| ----: | -------------------------------------------------------------------------- |
+|     5 | o melhor do mundo grego naquele produto — um punhado no mapa inteiro       |
+|     4 | famoso e exportado, um nome que se conhecia fora da região                 |
+|     3 | bom: alimenta a própria terra e ainda sobra pra vender                     |
+|     2 | comum: alimenta a própria terra                                            |
+|     1 | magro: a terra dá aquilo a contragosto                                     |
+
+⚠️ **A Ática era POBRE em cereal**, e a primeira versão desta tabela dizia o contrário.
+Atenas importava grão do Ponto Euxino — é um dos fatos econômicos mais consequentes da
+Grécia. Maratona é província de **gente e imposto** (90 de imposto contra 30 de produção),
+não de produção; e o 4 e o 5 em grãos ficam guardados pra Tessália e Messênia, que ainda
+não foram escritas.
 
 **Elêusis e Tanagra existem para haver contra quem jogar**, e a escolha dos dois não é
 arbitrária: são os únicos poderes de **uma província só** que fazem fronteira direta com
@@ -553,7 +571,7 @@ províncias sem economia.
 E os dois são diferentes em natureza, que é o que faz haver decisão: **Elêusis** é a
 planície Triásia e o santuário de Deméter, toca só Atenas, e rende 138; **Tanagra** é
 encosta beócia, pobre e mal escoada, rende 102 — mas toca **Atenas e Maratona**, ou seja,
-é duas frentes. Tomar os dois leva a renda de 708 a 948, e é isso que fecha o laço central
+é duas frentes. Tomar os dois leva a renda de 690 a 892, e é isso que fecha o laço central
 do jogo: conquistar passa a pagar.
 
 ⚠️ **Eles têm economia, não têm vontade.** Não existe IA: nem Elêusis nem Tanagra recrutam,

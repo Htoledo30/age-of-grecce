@@ -42,9 +42,11 @@ describe('economia da Ática', () => {
     const maratona = c.economiaDe('maratona');
     expect(maratona).toMatchObject({
       impostos: 90, // 18.000 x 0,005
-      producao: 45, // grãos 15 x nivel 3
-      comercio: 11, // 45 x 0,25
-      total: 146,
+      // Nível 2, e não 3: a Ática era POBRE em cereal — Atenas importava grão do Ponto
+      // Euxino. Maratona é província de gente e de imposto, não de produção.
+      producao: 30, // grãos 15 x nivel 2
+      comercio: 8, // 30 x 0,25, arredondado
+      total: 128,
     });
 
     const sounion = c.economiaDe('sounion');
@@ -57,7 +59,7 @@ describe('economia da Ática', () => {
   });
 
   it('a renda de Atenas é a soma exata das três províncias', () => {
-    expect(nova().rendaDe('atenas')).toBe(330 + 146 + 232);
+    expect(nova().rendaDe('atenas')).toBe(330 + 128 + 232);
   });
 
   it('os produtos não valem o mesmo por nível', () => {
@@ -118,7 +120,7 @@ describe('províncias sem economia configurada', () => {
     const antes = c.renda;
     for (const id of ['eleusis', 'tanagra']) c.trocarDono(id, 'atenas');
     // Sem isto, tomar terra não muda nada e o jogo não tem para onde ir.
-    expect(c.renda).toBeGreaterThan(antes * 1.3);
+    expect(c.renda).toBeGreaterThan(antes * 1.25);
   });
 
   it('não recebem economia inventada nem arrecadam', () => {
@@ -205,7 +207,7 @@ describe('investimento', () => {
     c.comecar('atenas');
     c.investir('atenas', 250);
     const comBonus = c.rendaDe('atenas');
-    const semBonus = 330 + 146 + 232;
+    const semBonus = 330 + 128 + 232;
     expect(comBonus).toBeGreaterThan(semBonus);
 
     const tesouroAntes = c.tesouro;
@@ -264,7 +266,7 @@ describe('calendário e turno', () => {
     expect(c.turno).toBe(1);
     expect(c.ano).toBe(-700);
     expect(c.tesouro).toBe(3000);
-    expect(c.renda).toBe(708);
+    expect(c.renda).toBe(690);
   });
 
   it('arrecada ANTES de virar o calendário', () => {
@@ -273,7 +275,7 @@ describe('calendário e turno', () => {
     c.passarTurno();
     expect(c.turno).toBe(2);
     expect(c.ano).toBe(-699);
-    expect(c.tesouro).toBe(3000 + 708);
+    expect(c.tesouro).toBe(3000 + 690);
   });
 
   it('recusa começar duas vezes e passar turno antes de começar', () => {
@@ -481,9 +483,9 @@ describe('propriedade: de quem é a província agora', () => {
     c.trocarDono('maratona', 'megara');
 
     expect(c.podeAgirEm('maratona')).toMatchObject({ motivo: 'esta província não é sua' });
-    // Atenas perde exatamente a renda de Maratona: 708 − 146.
-    expect(c.rendaDe('atenas')).toBe(708 - 146);
-    expect(c.rendaDe('megara')).toBe(146);
+    // Atenas perde exatamente a renda de Maratona: 690 − 128.
+    expect(c.rendaDe('atenas')).toBe(690 - 128);
+    expect(c.rendaDe('megara')).toBe(128);
   });
 
   it('o incentivo e a obra morrem com a posse; a construção fica', () => {

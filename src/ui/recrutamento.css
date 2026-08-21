@@ -2,7 +2,6 @@
    Medidas em pixels do palco 1920x1080 — ver escala.ts. */
 
 .recrutamento {
-  padding: var(--gap-3);
   background: var(--papel);
   border: 1px solid var(--tinta-fraca);
   color: var(--tinta);
@@ -12,15 +11,49 @@
   display: none;
 }
 
+.recrutamento__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--gap-3);
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  cursor: pointer;
+  text-align: left;
+}
+
+.recrutamento[data-aberto='sim'] .recrutamento__cabecalho {
+  border-bottom: 1px solid var(--papel-escuro);
+}
+
+.recrutamento__cabecalho:hover,
+.recrutamento__cabecalho:focus-visible {
+  background: var(--papel-claro);
+}
+
 .recrutamento__titulo {
   font-family: var(--fonte-titulo);
   font-size: 18px;
   font-weight: normal;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding-bottom: var(--gap-2);
-  border-bottom: 1px solid var(--papel-escuro);
-  margin-bottom: var(--gap-2);
+}
+
+.recrutamento__indicador {
+  font-family: var(--fonte-numero);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ouro);
+}
+
+.recrutamento__corpo {
+  padding: var(--gap-2) var(--gap-3) var(--gap-3);
+}
+
+.recrutamento__corpo[hidden] {
+  display: none;
 }
 
 .recrutamento__alvo {

@@ -39,7 +39,10 @@ export type VistaDeRecrutamento =
 
 export class Recrutamento {
   private readonly raiz = document.createElement('div');
-  private readonly titulo = document.createElement('h2');
+  private readonly cabecalho = document.createElement('button');
+  private readonly titulo = document.createElement('span');
+  private readonly indicador = document.createElement('span');
+  private readonly corpo = document.createElement('div');
   private readonly alvo = document.createElement('p');
   private readonly campoHomens = document.createElement('input');
   private readonly quantidade = document.createElement('p');
@@ -48,6 +51,7 @@ export class Recrutamento {
   private readonly previsao = document.createElement('p');
   private readonly botaoRecrutar = document.createElement('button');
   private vista: VistaDeRecrutamento | null = null;
+  private recolhido = true;
   /** Trocar de província reinicia a escolha; repintar a mesma preserva o arraste. */
   private provinciaDaQuantidade: string | null = null;
 
@@ -57,8 +61,23 @@ export class Recrutamento {
     this.raiz.className = 'recrutamento';
     this.raiz.hidden = true;
 
+    this.cabecalho.className = 'recrutamento__cabecalho';
+    this.cabecalho.type = 'button';
+    this.cabecalho.setAttribute('aria-controls', 'recrutamento-corpo');
+    this.cabecalho.addEventListener('click', () => {
+      this.recolhido = !this.recolhido;
+      this.atualizarAbertura();
+      this.cabecalho.blur();
+    });
+
     this.titulo.className = 'recrutamento__titulo';
     this.titulo.textContent = 'Recrutar';
+    this.indicador.className = 'recrutamento__indicador';
+    this.indicador.setAttribute('aria-hidden', 'true');
+
+    this.corpo.className = 'recrutamento__corpo';
+    this.corpo.id = 'recrutamento-corpo';
+    this.cabecalho.append(this.titulo, this.indicador);
 
     this.alvo.className = 'recrutamento__alvo';
 
@@ -117,8 +136,7 @@ export class Recrutamento {
       this.botaoRecrutar.blur();
     });
 
-    this.raiz.append(
-      this.titulo,
+    this.corpo.append(
       this.alvo,
       this.quantidade,
       this.campoHomens,
@@ -126,6 +144,8 @@ export class Recrutamento {
       this.previsao,
       this.botaoRecrutar,
     );
+    this.raiz.append(this.cabecalho, this.corpo);
+    this.atualizarAbertura();
     pai.appendChild(this.raiz);
   }
 
@@ -133,7 +153,11 @@ export class Recrutamento {
   mostrar(vista: VistaDeRecrutamento | null): void {
     this.vista = vista;
     this.raiz.hidden = vista === null;
-    if (!vista) return;
+    if (!vista) {
+      this.recolhido = true;
+      this.atualizarAbertura();
+      return;
+    }
 
     for (const el of [
       this.quantidade,
@@ -158,8 +182,13 @@ export class Recrutamento {
       'crianças, velhos e quem lavra —, além do ouro para reunir a leva.';
 
     if (this.provinciaDaQuantidade !== vista.provincia.id) {
+      const trocouDeProvincia = this.provinciaDaQuantidade !== null;
       this.provinciaDaQuantidade = vista.provincia.id;
       this.campoHomens.value = '0';
+      if (trocouDeProvincia) {
+        this.recolhido = true;
+        this.atualizarAbertura();
+      }
     }
     this.campoHomens.max = String(vista.maximo);
     this.campoHomens.value = String(Math.min(Number(this.campoHomens.value), vista.maximo));
@@ -167,6 +196,14 @@ export class Recrutamento {
     for (const botao of this.botoesDeAtalho) botao.disabled = vista.maximo === 0;
 
     this.avaliar();
+  }
+
+  /** Uma linha fechada por padrão; os detalhes só ocupam espaço quando solicitados. */
+  private atualizarAbertura(): void {
+    this.corpo.hidden = this.recolhido;
+    this.cabecalho.setAttribute('aria-expanded', String(!this.recolhido));
+    this.raiz.dataset['aberto'] = this.recolhido ? 'nao' : 'sim';
+    this.indicador.textContent = this.recolhido ? '+' : '−';
   }
 
   /**
