@@ -26,6 +26,14 @@ export interface VistaDaProvincia {
   nome: string;
   regiao: string;
   poder: { nome: string; povo: string; cor: string };
+  /**
+   * Quantos milicianos a província põe em pé se alguém vier.
+   *
+   * Fica na tela porque decide: é o número que diz se o vizinho consegue tomar isto, e é
+   * o que a Muralha compra. Zero onde não há população — e a ficha diz isso do mesmo jeito
+   * que já diz "economia não configurada".
+   */
+  milicia: number;
 }
 
 export class FichaProvincia {
@@ -93,6 +101,11 @@ export class FichaProvincia {
     this.lista.replaceChildren(
       ...campo('povo', provincia.poder.povo),
       ...campo('região', provincia.regiao),
+      ...campo('milícia', `${moeda(provincia.milicia)} homens`, 'ficha__milicia', {
+        titulo:
+          'Quem defende esta província sem ter sido recrutado. Sai da população, então ' +
+          'recrutar aqui esvazia a muralha — e milícia morta na defesa não volta.',
+      }),
       ...(renda
         ? campo('população', `${moeda(renda.populacao)} habitantes`, 'ficha__populacao', {
             titulo:

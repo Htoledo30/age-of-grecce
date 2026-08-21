@@ -21,7 +21,11 @@
       "custoPorHomem": 3,
       "manutencaoPorHomem": 0.3,
       "saltosPorRodada": 2,
-      "populacaoMinima": 2000
+      "populacaoMinima": 2000,
+      "milicia": {
+        "fracao": 0.012,
+        "fracaoMorta": 0.5
+      }
     }
   },
   "camera": {

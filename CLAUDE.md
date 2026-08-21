@@ -845,6 +845,35 @@ alternativa (fazê-los sumir do mundo) tornaria população uma catraca de senti
 As duas se encaixam: o exército no exílio deserta de volta para a terra natal, que agora é
 do conquistador — e engorda exatamente quem o expulsou.
 
+### A milícia, e por que ela é fraca de propósito
+
+**Toda província com população levanta milicianos quando alguém vem** — `1,2%` dela, e a
+**Muralha** (2.000, 3 turnos) dobra esse número. Atenas põe ~427 em pé; Maratona, 219;
+Esparta e as outras 201 sem economia configurada, zero.
+
+⚠️ **Derivada da população, calculada na hora e NUNCA guardada.** Um campo `guarnicao` no
+estado seria o segundo manancial humano que este arquivo proíbe. O manancial é um só.
+
+Três propriedades nascem disso, sem regra escrita pra nenhuma:
+
+1. **Perder em casa custa imposto E custa leva futura** — miliciano morto sai da mesma
+   população que tributa e que forneceria recruta.
+2. **Mobilizar esvazia a muralha.** Recrutar 5.000 em Atenas derruba a milícia em 60.
+3. **É ela que torna o CERCO possível.** Sem defensor, província alheia cai no instante em
+   que alguém pisa nela e não existe estado intermediário — com milícia, a cidade resiste
+   enquanto o invasor fica com o campo.
+
+⚠️ **Fraca de propósito, e o motivo é aritmético:** 120 dos 148 poderes começam com uma
+província só. Milícia forte tornaria a primeira conquista impossível pra 81% do mapa.
+
+⚠️ **Milícia derrotada DISPERSA; só metade dos perdidos morre.** Aniquilá-la inteira
+arruinaria a província pro resto da campanha — são os mesmos lavradores. A resolução avisa
+quantos se PERDERAM; quem aplica a fração é a campanha, que é onde os ajustes moram.
+
+⚠️ **Ela nunca vira hoste no mapa.** Entra no choque como qualquer outra força — é o que
+dispensa um caminho separado de "defesa da cidade" — e no fim se dissolve de volta na
+população em vez de pousar.
+
 ## Armadilhas conhecidas
 
 - ⚠️ **`ferramentas/sitios.ts` mente em silêncio.** Ele compila, roda e imprime números

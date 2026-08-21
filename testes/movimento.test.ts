@@ -37,12 +37,18 @@ function comHoste(homens = 1000, onde = 'atenas'): Campanha {
  * Um mundo mínimo pra resolução pura: só sabe de quem é cada província e deixa trocar.
  * Quem não está na tabela pertence a `ninguem`, que nunca é dono de hoste nenhuma.
  */
-function mundoDe(donos: Record<string, string> = {}) {
+function mundoDe(donos: Record<string, string> = {}, milicias: Record<string, number> = {}) {
+  const mortos: Record<string, number> = {};
   return {
     donos,
+    mortos,
     donoDe: (id: string) => donos[id] ?? 'ninguem',
     trocarDono: (id: string, poder: string) => {
       donos[id] = poder;
+    },
+    miliciaDe: (id: string) => milicias[id] ?? 0,
+    miliciaPerdida: (id: string, n: number) => {
+      mortos[id] = (mortos[id] ?? 0) + n;
     },
   };
 }

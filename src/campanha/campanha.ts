@@ -29,6 +29,7 @@ import type {
 import type { Exercito } from '@/combate/exercito';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
+import { miliciaDe, mortosDaMilicia } from '@/combate/milicia';
 import type { HosteEmProvincia } from '@/combate/mobilizacao';
 import { Territorios } from './territorios';
 import { rotasDe } from '@/movimento/alcance';
@@ -63,7 +64,12 @@ export class Campanha {
    * Efêmero de propósito — é notícia, não partida, e por isso NÃO entra no estado que vai
    * pro disco. Retomar um salvamento não deve reexibir a batalha do turno passado.
    */
-  private ultimaRodada: RelatorioDaRodada = { marchas: [], batalhas: [], conquistas: [] };
+  private ultimaRodada: RelatorioDaRodada = {
+    marchas: [],
+    batalhas: [],
+    conquistas: [],
+    milicianosMortos: [],
+  };
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
@@ -456,12 +462,17 @@ export class Campanha {
    * Devolve o MOTIVO da recusa, como todo o resto do jogo: a interface escreve o texto em
    * vez de esconder o controle.
    */
-  podeOrdenarMarcha(origem: string, destino: string, homens: number): RecusaDeOrdem {
+  podeOrdenarMarcha(
+    origem: string,
+    destino: string,
+    homens: number,
+    porPoder: string | null = this.estado.jogador,
+  ): RecusaDeOrdem {
     if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
     const hoste = this.mobilizacao.exercitoEm(origem);
     return avaliarOrdem(origem, destino, this.atlas.nomeDe(destino), homens, {
       forcaNaOrigem: this.mobilizacao.forcaEm(origem),
-      minha: hoste?.poder === this.estado.jogador,
+      minha: hoste?.poder === porPoder,
       rota: this.rotasDaHoste(origem).get(destino),
       jaTemOrdem: this.estado.ordens[origem] !== undefined,
     });
@@ -470,15 +481,39 @@ export class Campanha {
   /**
    * Registra a ordem. **Nada se move agora.**
    *
+   * `porPoder` existe porque a ordem pertence ao dono da HOSTE, não ao jogador: é assim
+   * que a IA vai mandar as dela, e é o que permite montar um inimigo no tabuleiro hoje.
+   * Omitir usa o jogador, que é o caso da interface.
+   *
    * É o ponto da resolução simultânea: enquanto o turno não vira, jogador e IA decidem
    * contra o MESMO mundo. Sem isso, quem age primeiro toma a fronteira vazia antes de o
    * outro lado ter chance de mandar reforço.
    */
-  ordenarMarcha(origem: string, destino: string, homens: number): void {
-    const r = this.podeOrdenarMarcha(origem, destino, homens);
+  ordenarMarcha(
+    origem: string,
+    destino: string,
+    homens: number,
+    porPoder: string | null = this.estado.jogador,
+  ): void {
+    const r = this.podeOrdenarMarcha(origem, destino, homens, porPoder);
     if (!r.pode) throw new Error(r.motivo);
     this.estado.ordens[origem] = { origem, rota: r.rota, homens };
     this.aoMudar();
+  }
+
+  /**
+   * Quantos milicianos esta província põe em pé para se defender.
+   *
+   * Derivada da população e das construções, calculada na hora e nunca guardada: um campo
+   * de guarnição no estado seria um segundo manancial humano escondido.
+   */
+  miliciaEm(idProvincia: string): number {
+    return miliciaDe(
+      this.populacaoDe(idProvincia),
+      this.construcoesEm(idProvincia),
+      this.catalogoDeConstrucoes.construcoes,
+      this.ajustes.combate,
+    );
   }
 
   /** O relatório da última virada. Vazio antes do primeiro turno. */
@@ -723,6 +758,14 @@ export class Campanha {
     // tomada, e a ordem aqui não dá erro nenhum — dá número torto em silêncio.
     this.ultimaRodada = resolverRodada(this.estado, this.ajustes.combate.saltosPorRodada, {
       donoDe: (id) => this.donoDe(id),
+      miliciaDe: (id) => this.miliciaEm(id),
+      miliciaPerdida: (id, perdidos) => {
+        // ⚠️ Só os MORTOS saem da população; o resto dispersa e volta pra casa. Aniquilar
+        // a milícia inteira arruinaria a província pro resto da campanha — são os mesmos
+        // lavradores que pagam tributo e que forneceriam recruta.
+        const mortos = mortosDaMilicia(perdidos, this.ajustes.combate);
+        this.estado.populacao[id] = Math.max(0, this.populacaoDe(id) - mortos);
+      },
       // A conquista passa pela MESMA primitiva de sempre: índice reverso e tabela de
       // donos consertados juntos, sem um segundo caminho que possa discordar.
       trocarDono: (id, poder) => {

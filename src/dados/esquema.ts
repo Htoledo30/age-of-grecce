@@ -114,6 +114,25 @@ export const Ajustes = z.object({
        */
       populacaoMinima: z.number().int().nonnegative(),
       /**
+       * Quem defende a província sem ter sido recrutado.
+       *
+       * ⚠️ **Fraca de propósito.** 120 dos 148 poderes começam com uma província só, e uma
+       * milícia forte tornaria a primeira conquista impossível pra 81% do mapa. Ela existe
+       * pra não ser ignorada e pra que o CERCO possa existir — sem defensor, província
+       * alheia cai no instante em que alguém pisa nela.
+       */
+      milicia: z.object({
+        /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */
+        fracao: z.number().gt(0).max(1),
+        /**
+         * Fatia da milícia que MORRE quando a defesa é derrotada; o resto dispersa.
+         *
+         * Aniquilar a milícia inteira arruinaria a província pro resto da campanha — são
+         * os mesmos lavradores que pagam tributo e que fornecem recruta.
+         */
+        fracaoMorta: z.number().gt(0).max(1),
+      }),
+      /**
        * Trechos que uma hoste planeja por rodada. Dois hoje.
        *
        * ⚠️ **É este número que obriga a resolução a ter PASSOS.** Com um salto, a rodada
@@ -313,6 +332,18 @@ export const Construcoes = z.object({
           /** O que a província passa a poder fazer. */
           capacidade: z.enum(['recrutar']),
           /** A promessa, escrita pro jogador. Fica no dado, não no código da interface. */
+          promessa: z.string().min(1),
+        }),
+        z.object({
+          tipo: z.literal('milicia'),
+          /**
+           * Multiplica a milícia da província. 2 é o dobro de defensores.
+           *
+           * Mesmo desenho do Celeiro sobre o crescimento: multiplica a DERIVAÇÃO. Não
+           * existe número de guarnição guardado em lugar nenhum pra isto somar.
+           */
+          fatorMilicia: z.number().gt(1),
+          /** A promessa genérica; a interface acrescenta os números da província. */
           promessa: z.string().min(1),
         }),
         z.object({

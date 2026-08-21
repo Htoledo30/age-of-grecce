@@ -34,6 +34,16 @@ export interface EstadoDaResolucao {
 export interface MundoDaResolucao {
   donoDe: (idProvincia: string) => string;
   trocarDono: (idProvincia: string, idPoder: string) => void;
+  /** Quantos milicianos esta província põe em pé. Zero onde não há população. */
+  miliciaDe: (idProvincia: string) => number;
+  /**
+   * Avisa quantos milicianos a província PERDEU no choque.
+   *
+   * ⚠️ Perdido não é o mesmo que morto: milícia derrotada **dispersa**, e quem decide a
+   * fatia que morreu é a campanha, que é onde os ajustes moram. A resolução não conhece
+   * essa fração — se conhecesse, o número de balanço estaria em dois lugares.
+   */
+  miliciaPerdida: (idProvincia: string, perdidos: number) => void;
 }
 
 /**
@@ -52,6 +62,14 @@ interface Forca {
   partiuDe: string;
   /** Morreu num choque. Não some da lista: sair no meio da varredura muda o resultado. */
   viva: boolean;
+  /**
+   * É milícia: derivada da população, defende só a própria província e **nunca pousa**.
+   *
+   * Ela entra no choque como qualquer outra força — é isso que dispensa um caminho
+   * separado de "defesa da cidade" — mas no fim se dissolve de volta na população em vez
+   * de virar hoste no mapa.
+   */
+  milicia?: { provincia: string; inicial: number };
 }
 
 /** O que aconteceu na rodada — pra crônica, pra interface e pros testes. */
@@ -65,6 +83,13 @@ export interface RelatorioDaRodada {
     sobreviventes: number;
   }[];
   conquistas: readonly { provincia: string; de: string; para: string }[];
+  /**
+   * Milicianos que a província PERDEU defendendo, por província.
+   *
+   * Perdidos, não mortos: parte dispersa e volta pra casa. Quem aplica a fração é a
+   * campanha.
+   */
+  milicianosMortos: readonly { provincia: string; mortos: number }[];
 }
 
 export function resolverRodada(
@@ -76,14 +101,16 @@ export function resolverRodada(
     marchas: RelatorioDaRodada['marchas'][number][];
     batalhas: RelatorioDaRodada['batalhas'][number][];
     conquistas: RelatorioDaRodada['conquistas'][number][];
-  } = { marchas: [], batalhas: [], conquistas: [] };
+    milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
+  } = { marchas: [], batalhas: [], conquistas: [], milicianosMortos: [] };
 
   const forcas = partir(estado);
   for (let passo = 0; passo < saltosPorRodada; passo++) {
     naEstrada(forcas, passo, relatorio.batalhas);
     chegar(forcas, passo);
-    naProvincia(forcas, relatorio.batalhas);
+    naProvincia(forcas, relatorio.batalhas, mundo);
   }
+  dispersarMilicia(forcas, mundo, relatorio.milicianosMortos);
   pousar(estado, forcas, relatorio.marchas);
   conquistar(estado, mundo, relatorio.conquistas);
 
@@ -178,6 +205,64 @@ function naEstrada(
   }
 }
 
+/**
+ * Chama a milícia quando aparece inimigo, uma vez por província por rodada.
+ *
+ * ⚠️ **Só é convocada se houver hostil de fato.** Levantá-la sempre encheria a resolução
+ * de forças que nunca lutam, e — pior — faria uma hoste amiga de passagem parecer um
+ * choque.
+ *
+ * ⚠️ **Ela só existe durante a resolução.** Não pousa, não vira hoste, não aparece no
+ * mapa: no fim, o que sobrou dela se dissolve de volta na população.
+ */
+function convocarMilicia(
+  provincia: string,
+  presentes: Forca[],
+  todas: Forca[],
+  mundo: MundoDaResolucao,
+): void {
+  if (presentes.some((f) => f.milicia)) return;
+  const dono = mundo.donoDe(provincia);
+  if (!presentes.some((f) => f.viva && f.poder !== dono)) return;
+
+  const milicianos = mundo.miliciaDe(provincia);
+  if (milicianos <= 0) return;
+
+  const forca: Forca = {
+    poder: dono,
+    origem: { [provincia]: milicianos },
+    rota: [],
+    posicao: provincia,
+    partiuDe: provincia,
+    viva: true,
+    milicia: { provincia, inicial: milicianos },
+  };
+  presentes.push(forca);
+  todas.push(forca);
+}
+
+/**
+ * A milícia se dissolve: quem sobrou volta pra casa, e só os MORTOS saem da população.
+ *
+ * Aniquilar a milícia inteira mataria de uma vez a fatia da cidade que pega em armas, e
+ * uma província que perdesse uma batalha ficaria arruinada pro resto da campanha. Ela
+ * dispersa; são os mesmos lavradores.
+ */
+function dispersarMilicia(
+  forcas: readonly Forca[],
+  mundo: MundoDaResolucao,
+  mortosPorProvincia: RelatorioDaRodada['milicianosMortos'][number][],
+): void {
+  for (const forca of forcas) {
+    if (!forca.milicia) continue;
+    const perdidos = forca.milicia.inicial - soma(forca.origem);
+    forca.viva = false; // nunca pousa
+    if (perdidos <= 0) continue;
+    mundo.miliciaPerdida(forca.milicia.provincia, perdidos);
+    mortosPorProvincia.push({ provincia: forca.milicia.provincia, mortos: perdidos });
+  }
+}
+
 /** FASE CHEGADA — todos os sobreviventes avançam um trecho. */
 function chegar(forcas: readonly Forca[], passo: number): void {
   for (const forca of forcas) {
@@ -196,8 +281,9 @@ function chegar(forcas: readonly Forca[], passo: number): void {
  * lados de verdade é assunto de diplomacia, que não existe.
  */
 function naProvincia(
-  forcas: readonly Forca[],
+  forcas: Forca[],
   batalhas: RelatorioDaRodada['batalhas'][number][],
+  mundo: MundoDaResolucao,
 ): void {
   const porProvincia = new Map<string, Forca[]>();
   for (const forca of forcas) {
@@ -209,6 +295,7 @@ function naProvincia(
 
   for (const provincia of [...porProvincia.keys()].sort()) {
     const presentes = porProvincia.get(provincia) ?? [];
+    convocarMilicia(provincia, presentes, forcas, mundo);
     for (;;) {
       const vivas = presentes.filter((f) => f.viva);
       const poderes = new Set(vivas.map((f) => f.poder));

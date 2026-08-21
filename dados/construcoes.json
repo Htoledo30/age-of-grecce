@@ -6,21 +6,33 @@
       "nome": "Ágora",
       "custo": 3000,
       "turnos": 3,
-      "efeito": { "tipo": "renda", "parcela": "impostos", "fator": 1.4 },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "impostos",
+        "fator": 1.4
+      },
       "motivo": "A praca onde se cobra, se pesa e se registra. Rende onde ha muita gente pra tributar, e quase nada num sitio despovoado."
     },
     "oficina": {
       "nome": "Oficina",
       "custo": 2500,
       "turnos": 2,
-      "efeito": { "tipo": "renda", "parcela": "producao", "fator": 1.3 },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fator": 1.3
+      },
       "motivo": "Prensa, forja, fornalha. Multiplica o que a terra ja da, entao vale onde o nivel do produto e alto - e e desperdicio onde e baixo."
     },
     "mercado": {
       "nome": "Mercado",
       "custo": 3000,
       "turnos": 3,
-      "efeito": { "tipo": "renda", "parcela": "comercio", "fator": 1.6 },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "comercio",
+        "fator": 1.6
+      },
       "motivo": "Nao produz nada: vende melhor o que existe. So compensa onde ja ha escoamento, porque multiplica o comercio e nao a producao."
     },
     "celeiro": {
@@ -36,14 +48,25 @@
     },
     "quartel": {
       "nome": "Quartel",
-      "custo": 5000,
-      "turnos": 4,
+      "custo": 1500,
+      "turnos": 1,
       "efeito": {
         "tipo": "capacidade",
         "capacidade": "recrutar",
         "promessa": "Permite reunir e recrutar exercitos nesta provincia."
       },
       "motivo": "Patio de treino, deposito de armas e alojamento. Nao rende moeda nenhuma: o que ele compra e o direito de por gente em armas aqui, e por isso e a obra mais cara do catalogo. Um reino sem Quartel nenhum e rico e indefeso."
+    },
+    "muralha": {
+      "nome": "Muralha",
+      "custo": 2000,
+      "turnos": 3,
+      "efeito": {
+        "tipo": "milicia",
+        "fatorMilicia": 2,
+        "promessa": "Dobra a milicia que esta provincia poe em pe para se defender."
+      },
+      "motivo": "Pedra em volta da cidade. Nao rende moeda nenhuma e nao cria gente: faz a mesma populacao valer o dobro na defesa. E a unica obra que so importa no dia em que alguem vier - e nesse dia importa mais que todas as outras."
     }
   }
 }

@@ -150,6 +150,7 @@ async function iniciar(): Promise<void> {
       nome: p.nome,
       regiao: p.regiao,
       poder: { nome: poder.nome, povo: poder.povo, cor: poder.cor },
+      milicia: campanha.miliciaEm(id),
     };
   }
 
@@ -600,14 +601,17 @@ async function iniciar(): Promise<void> {
       forcaEm: (idProvincia: string) => campanha.forcaEm(idProvincia),
       dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
       noExilio: (idPoder: string) => campanha.noExilio(idPoder),
-      ordenarMarcha: (origem: string, destino: string, homens: number) =>
-        campanha.ordenarMarcha(origem, destino, homens),
+      // `porPoder` opcional: a ordem pertence ao dono da HOSTE, e é assim que se monta
+      // um inimigo no tabuleiro enquanto a IA não existe.
+      ordenarMarcha: (origem: string, destino: string, homens: number, porPoder?: string) =>
+        campanha.ordenarMarcha(origem, destino, homens, porPoder ?? campanha.jogador?.id ?? null),
       cancelarOrdem: (origem: string) => campanha.cancelarOrdem(origem),
       // Põe uma hoste de qualquer poder no mapa, do nada. Só desenvolvimento: enquanto
       // não há IA, é assim que se monta um inimigo no tabuleiro pra ver a guerra rodar.
       plantarHoste: (idProvincia: string, idPoder: string, homens: number) =>
         campanha.plantarHoste(idProvincia, idPoder, homens),
       rodada: () => campanha.rodada,
+      miliciaEm: (idProvincia: string) => campanha.miliciaEm(idProvincia),
       ordens: () => campanha.ordens(),
       alcanceDaHoste: (idProvincia: string) => [...campanha.alcanceDaHoste(idProvincia)],
       populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),
