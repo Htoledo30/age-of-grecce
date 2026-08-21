@@ -19,6 +19,13 @@
   --ouro: #a8802c;
   --verdete: #4a6b5a;
 
+  /* metal e couro — superfícies da interface militar, não do mapa */
+  --ferro: #1d1a16;
+  --ferro-claro: #2c261e;
+  --marfim: #e7d8b0;
+  --bronze: #b58a3d;
+  --bronze-escuro: #65491f;
+
   /* letreiro fora do palco (barras pretas) */
   --vazio: #000000;
 

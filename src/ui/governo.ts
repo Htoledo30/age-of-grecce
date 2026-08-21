@@ -14,6 +14,8 @@
  * - governo (esta janela): **como o reino inteiro se sustenta**.
  */
 
+import { definirTooltip } from './tooltip';
+
 /** Uma aba da janela. Só precisa saber se desenhar num elemento próprio. */
 export interface AbaDoGoverno {
   readonly id: string;
@@ -57,7 +59,8 @@ export class Governo {
     fechar.className = 'governo__fechar';
     fechar.type = 'button';
     fechar.textContent = '×';
-    fechar.title = 'Fechar (Esc)';
+    fechar.setAttribute('aria-label', 'Fechar governo');
+    definirTooltip(fechar, { titulo: 'Fechar', corpo: 'Atalho: Esc' });
     fechar.addEventListener('click', () => this.fechar());
     barra.append(titulo, fechar);
 

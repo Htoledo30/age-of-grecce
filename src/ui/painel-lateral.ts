@@ -15,6 +15,8 @@
  * instantâneo e não perde estado.
  */
 
+import { definirTooltip } from './tooltip';
+
 export class PainelLateral {
   private readonly raiz = document.createElement('aside');
   private readonly corpo = document.createElement('div');
@@ -32,7 +34,10 @@ export class PainelLateral {
 
     this.aba.className = 'painel-lateral__aba';
     this.aba.type = 'button';
-    this.aba.title = 'Recolher ou abrir o painel';
+    definirTooltip(this.aba, {
+      titulo: 'Controles do mapa',
+      corpo: 'Recolha ou abra as opções de visualização.',
+    });
     this.aba.addEventListener('click', () => this.alternar());
     this.raiz.appendChild(this.aba);
 

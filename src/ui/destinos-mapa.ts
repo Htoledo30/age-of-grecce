@@ -16,6 +16,7 @@
  */
 
 import type { Camera } from '@/nucleo/camera';
+import { definirTooltip } from './tooltip';
 
 /** Um destino possível, já com o centro da província em unidades de mundo. */
 export interface Destino {
@@ -86,7 +87,13 @@ export class DestinosMapa {
       const nome = elemento.querySelector<HTMLElement>('.destinos__nome');
       if (nome) nome.textContent = destino.nome;
       const acao = destino.hostil ? 'Atacar' : 'Marchar para';
-      elemento.title = `${acao} ${destino.nome}`;
+      definirTooltip(elemento, {
+        titulo: `${acao} ${destino.nome}`,
+        corpo: destino.hostil
+          ? 'A entrada neste território inicia um ataque.'
+          : 'Destino válido para esta marcha.',
+        tom: destino.hostil ? 'perigo' : 'informacao',
+      });
       elemento.setAttribute('aria-label', `${acao} ${destino.nome}`);
     }
   }

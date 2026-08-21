@@ -13,6 +13,7 @@
 
 import type { RendaDaProvincia } from '@/campanha/economia';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
+import { definirTooltip } from './tooltip';
 
 /**
  * A província como a ficha precisa vê-la.
@@ -149,10 +150,14 @@ export class FichaProvincia {
     const titulo = document.createElement('h3');
     titulo.className = 'ficha__subtitulo';
     titulo.textContent = `Produção: ${renda.produto.nome} ${romano(renda.nivel)}`;
-    titulo.title =
-      `${renda.produto.valor} moedas por nível × nível ${renda.nivel} = ` +
-      `${Math.round(renda.producaoSemIncentivo)}` +
-      (renda.bonus > 0 ? `, com +${Math.round(renda.bonus * 100)}% de incentivo` : '');
+    definirTooltip(titulo, {
+      titulo: 'Produção local',
+      corpo:
+        `${renda.produto.valor} moedas por nível × nível ${renda.nivel} = ` +
+        `${Math.round(renda.producaoSemIncentivo)}` +
+        (renda.bonus > 0 ? `, com +${Math.round(renda.bonus * 100)}% de incentivo` : ''),
+      tom: 'custo',
+    });
 
     // Uma linha de dinheiro, não três. A decomposição em impostos, produção e comércio
     // mora na janela de Governo — aqui ela era informação de contador competindo com a
@@ -161,10 +166,15 @@ export class FichaProvincia {
     const renderimento = document.createElement('p');
     renderimento.className = 'ficha__renda';
     renderimento.textContent = `rende ${moeda(renda.total)} por turno`;
-    renderimento.title =
-      `${moeda(renda.impostos)} de impostos + ${moeda(renda.producao)} de produção + ` +
-      `${moeda(renda.comercio)} de comércio` +
-      (renda.bonus > 0 ? ` · incentivo de +${Math.round(renda.bonus * 100)}%` : '');
+    definirTooltip(renderimento, {
+      titulo: 'Renda provincial',
+      corpo:
+        `${moeda(renda.impostos)} de impostos\n` +
+        `${moeda(renda.producao)} de produção\n` +
+        `${moeda(renda.comercio)} de comércio` +
+        (renda.bonus > 0 ? `\nIncentivo de +${Math.round(renda.bonus * 100)}%` : ''),
+      tom: 'custo',
+    });
 
     const filhos: HTMLElement[] = [titulo, renderimento];
     if (this.obra) {
@@ -210,8 +220,9 @@ function campo(
     dd.className = classe;
   }
   if (extra) {
-    dt.title = extra.titulo;
-    dd.title = extra.titulo;
+    const conteudo = { titulo: rotulo, corpo: extra.titulo };
+    definirTooltip(dt, conteudo);
+    definirTooltip(dd, conteudo);
   }
   return [dt, dd];
 }

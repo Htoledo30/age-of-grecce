@@ -47,7 +47,8 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
 
   await campanhaComTropa(page, 1500);
 
-  const marca = page.locator('.hostes__marca');
+  // Por província: Elêusis e Tanagra já abrem armadas, então há três peças no mapa.
+  const marca = page.locator('.hostes__marca[data-provincia="atenas"]');
   await expect(marca).toHaveCount(1);
   await expect(marca).toHaveText('1.500');
   // Traço grosso é como o jogador acha a tropa dele num mapa de 148 poderes.
@@ -77,18 +78,18 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
 test('clicar no mapa solta a hoste, e dispensar tira o marcador do mundo', async ({ page }) => {
   await campanhaComTropa(page, 1000);
 
-  await page.locator('.hostes__marca').click();
+  await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await expect(page.locator('.exercito')).toBeVisible();
 
   // Clicar no mapa é escolher CHÃO: a ficha do exército sai.
   await page.mouse.click(500, 900);
   await expect(page.locator('.exercito')).toBeHidden();
 
-  await page.locator('.hostes__marca').click();
+  await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await page.getByRole('button', { name: /Dispensar/ }).click();
 
   // Sem hoste, sem marcador e sem ficha — e ninguém fica descrevendo tropa que não existe.
-  await expect(page.locator('.hostes__marca')).toHaveCount(0);
+  await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveCount(0);
   await expect(page.locator('.exercito')).toBeHidden();
   await expect(page.locator('dd.ficha__populacao')).toContainText('35.697');
   // E a manutenção some da barra junto com a tropa.

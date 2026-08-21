@@ -14,6 +14,8 @@
  * o controle esconde a existência da mecânica, e o jogador não tem como adivinhar.
  */
 
+import { definirTooltip, removerTooltip } from './tooltip';
+
 /** Uma construção oferecida nesta província, já avaliada. */
 export interface OpcaoDeConstrucao {
   id: string;
@@ -110,9 +112,13 @@ export class AcoesProvincia {
     this.campoValor.step = '1';
     this.campoValor.value = '0';
     this.campoValor.setAttribute('aria-label', 'Moedas para investir na produção');
-    this.campoValor.title =
-      'Arraste para escolher quanto pôr na produção. A barra respeita o tesouro e o ' +
-      'limite deste decreto.';
+    definirTooltip(this.campoValor, {
+      titulo: 'Incentivo à produção',
+      corpo:
+        'Escolha quanto destinar a esta província. A barra respeita o tesouro e o limite ' +
+        'deste decreto.',
+      tom: 'custo',
+    });
     this.campoValor.addEventListener('input', () => this.avaliar());
 
     this.atalhos.className = 'acoes__atalhos';
@@ -242,7 +248,11 @@ export class AcoesProvincia {
       botao.textContent = `${opcao.nome} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
     }
 
-    botao.title = this.explicacao(opcao);
+    definirTooltip(botao, {
+      titulo: opcao.nome,
+      corpo: this.explicacao(opcao),
+      tom: opcao.recusa ? 'bloqueio' : opcao.erguida ? 'informacao' : 'custo',
+    });
     botao.addEventListener('click', () => {
       if (botao.disabled) return;
       this.aoConstruir(idProvincia, opcao.id);
@@ -299,6 +309,7 @@ export class AcoesProvincia {
       this.previsao.dataset['vale'] = 'nao';
       this.botaoInvestir.textContent = 'Investir na produção';
       this.botaoInvestir.disabled = true;
+      removerTooltip(this.previsao);
       return;
     }
     const r = vista.avaliar(valor);
@@ -307,6 +318,7 @@ export class AcoesProvincia {
     if (!r.pode) {
       this.previsao.textContent = r.motivo;
       this.previsao.dataset['vale'] = 'nao';
+      removerTooltip(this.previsao);
       return;
     }
 
@@ -324,9 +336,13 @@ export class AcoesProvincia {
     // O veredito fica na tela; a conta que o sustenta fica no tooltip. Esconder o
     // "nunca se paga" seria esconder justamente o que impede a armadilha.
     this.previsao.textContent = `+${porcento}% · ${paga}`;
-    this.previsao.title =
-      `Mais ${conta.ganhoPorTurno} moedas por turno durante ${vista.duracao} turnos, ` +
-      `${conta.ganhoTotal} ao todo.`;
+    definirTooltip(this.previsao, {
+      titulo: 'Retorno estimado',
+      corpo:
+        `Mais ${conta.ganhoPorTurno} moedas por turno durante ${vista.duracao} turnos.\n` +
+        `${conta.ganhoTotal} moedas ao todo.`,
+      tom: conta.vale ? 'custo' : 'perigo',
+    });
     this.previsao.dataset['vale'] = conta.vale ? 'sim' : 'nao';
     this.botaoInvestir.textContent = `Investir ${valor.toLocaleString('pt-BR')}`;
   }

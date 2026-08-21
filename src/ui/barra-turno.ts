@@ -10,6 +10,7 @@
  */
 
 import { formatarAno } from '@/campanha/estado-campanha';
+import { definirTooltip } from './tooltip';
 
 export interface VistaDoTurno {
   poder: { nome: string; cor: string };
@@ -62,7 +63,10 @@ export class BarraTurno {
     this.botaoGoverno.className = 'botao barra-turno__governo';
     this.botaoGoverno.type = 'button';
     this.botaoGoverno.textContent = 'Governo';
-    this.botaoGoverno.title = 'Balanço do reino, província por província';
+    definirTooltip(this.botaoGoverno, {
+      titulo: 'Conselho de governo',
+      corpo: 'Abra o balanço do reino e examine cada província.',
+    });
     this.botaoGoverno.addEventListener('click', () => {
       this.aoAbrirGoverno();
       this.botaoGoverno.blur();

@@ -119,7 +119,7 @@ test('o Quartel promete capacidade, não retorno', async ({ page }) => {
   await page.mouse.click(960, 540);
 
   const quartel = page.locator('.acoes__construcao', { hasText: 'Quartel' });
-  const dica = await quartel.getAttribute('title');
+  const dica = await quartel.getAttribute('data-tooltip-corpo');
   expect(dica).toContain('Permite reunir e recrutar');
   // "nunca se paga" seria verdade aritmética e mentira sobre o que ele é
   expect(dica).not.toContain('paga-se em');

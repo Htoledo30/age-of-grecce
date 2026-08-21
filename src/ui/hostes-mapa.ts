@@ -18,6 +18,7 @@
 
 import type { Camera } from '@/nucleo/camera';
 import type { Ponto } from '@/ui/animacao-de-marcha';
+import { definirTooltip } from './tooltip';
 
 /** Uma hoste como o mapa precisa vê-la. */
 export interface MarcadorDeHoste {
@@ -107,7 +108,11 @@ export class HostesMapa {
       }
       if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
       elemento.textContent = hoste.forca.toLocaleString('pt-BR');
-      elemento.title = `${hoste.nomeDoPoder} · ${hoste.forca.toLocaleString('pt-BR')} homens`;
+      definirTooltip(elemento, {
+        titulo: `Hoste de ${hoste.nomeDoPoder}`,
+        corpo: `${hoste.forca.toLocaleString('pt-BR')} homens em armas.`,
+        tom: hoste.minha ? 'informacao' : 'perigo',
+      });
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
       elemento.dataset['minha'] = hoste.minha ? 'sim' : 'nao';
       elemento.dataset['selecionada'] = this.selecionada === hoste.provincia ? 'sim' : 'nao';

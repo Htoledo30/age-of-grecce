@@ -77,11 +77,11 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await expect(page.locator('.barra-turno')).toContainText('3000 moedas (+690)');
   // o detalhe agora vive no tooltip, pra lista dar pra varrer com o olho
   await expect(page.getByRole('button', { name: /^Ágora/ })).toHaveAttribute(
-    'title',
+    'data-tooltip-corpo',
     /paga-se em 43 turnos/,
   );
   await expect(page.getByRole('button', { name: /^Celeiro público/ })).toHaveAttribute(
-    'title',
+    'data-tooltip-corpo',
     /\+175 → \+262 habitantes por turno/,
   );
 

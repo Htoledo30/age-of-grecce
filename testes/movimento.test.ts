@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { Ajustes, Construcoes, Economia, Provincias } from '../src/dados/esquema';
+import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/dados/esquema';
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { alcanceDe, rotasDe } from '../src/movimento/alcance';
@@ -18,13 +18,14 @@ function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
 const provincias = ler(Provincias, 'assets/mundo/provincias.json');
 const economia = ler(Economia, 'dados/economia.json');
 const construcoes = ler(Construcoes, 'dados/construcoes.json');
+const exercitos = ler(Exercitos, 'dados/exercitos.json');
 const ajustes = ler(Ajustes, 'dados/ajustes.json').jogo;
 const atlas = new Atlas(provincias);
 const SALTOS = ajustes.combate.saltosPorRodada;
 
 /** Atenas com Quartel e tropa em pé. `darOuro` é o gancho de desenvolvimento. */
 function comHoste(homens = 1000, onde = 'atenas'): Campanha {
-  const c = new Campanha(new Atlas(provincias), economia, construcoes, ajustes);
+  const c = new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
   c.comecar('atenas');
   c.darOuro(60_000);
   c.construir(onde, 'quartel');

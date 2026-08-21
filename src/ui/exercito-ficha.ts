@@ -11,6 +11,8 @@
  * HOSTE.** São seleções diferentes e viram painéis diferentes.
  */
 
+import { definirTooltip } from './tooltip';
+
 /** De onde saiu um pedaço da hoste, e se aquela terra ainda é de quem a comanda. */
 interface OrigemDaHoste {
   provincia: string;
@@ -103,9 +105,13 @@ export class ExercitoFicha {
     this.campoHomens.min = '1';
     this.campoHomens.step = '1';
     this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para mover');
-    this.campoHomens.title =
-      'Quantos homens marcham. O resto fica defendendo esta província — mandar tudo é ' +
-      'apostar a casa.';
+    definirTooltip(this.campoHomens, {
+      titulo: 'Força da marcha',
+      corpo:
+        'Escolha quantos homens partem. O restante permanece na província — mandar todos ' +
+        'é deixar a retaguarda vazia.',
+      tom: 'perigo',
+    });
     this.campoHomens.addEventListener('input', () => {
       this.atualizarQuantidade();
       this.aoMudarQuantidade(Number(this.campoHomens.value));
@@ -136,7 +142,10 @@ export class ExercitoFicha {
     this.botaoCancelar.className = 'botao exercito__botao';
     this.botaoCancelar.type = 'button';
     this.botaoCancelar.textContent = 'Cancelar ordem';
-    this.botaoCancelar.title = 'Nada foi gasto ainda, então nada é devolvido.';
+    definirTooltip(this.botaoCancelar, {
+      titulo: 'Cancelar ordem',
+      corpo: 'A marcha ainda não foi resolvida; nenhum recurso precisa ser devolvido.',
+    });
     this.botaoCancelar.addEventListener('click', () => {
       const vista = this.vista;
       if (!vista?.ordem) return;
@@ -161,9 +170,13 @@ export class ExercitoFicha {
 
     this.botaoDispensar.className = 'botao exercito__botao';
     this.botaoDispensar.type = 'button';
-    this.botaoDispensar.title =
-      'Manda a hoste pra casa. Cada homem volta à província de onde saiu — e volta a ser ' +
-      'tributado por quem manda nela AGORA, mesmo que não seja mais você.';
+    definirTooltip(this.botaoDispensar, {
+      titulo: 'Dispensar hoste',
+      corpo:
+        'Cada homem retorna à província de origem e volta à população de quem controla ' +
+        'aquela terra agora.',
+      tom: 'perigo',
+    });
     this.botaoDispensar.addEventListener('click', () => {
       const vista = this.vista;
       if (!vista?.minha || vista.forca <= 0) return;
@@ -221,9 +234,13 @@ export class ExercitoFicha {
         if (o.perdida) {
           dt.className = 'exercito__perdida';
           dd.className = 'exercito__perdida';
-          dd.title =
-            'Esta província não é mais sua. Gente pertence ao chão: dispensados, estes ' +
-            'homens voltam pra terra deles e passam a ser tributados por quem a tomou.';
+          definirTooltip(dd, {
+            titulo: 'Terra natal perdida',
+            corpo:
+              'Dispensados, estes homens retornam para quem atualmente controla sua ' +
+              'província de origem.',
+            tom: 'perigo',
+          });
         }
         return [dt, dd];
       }),
@@ -268,9 +285,12 @@ export class ExercitoFicha {
       : vista.marchando
         ? 'Escolhendo destino — cancelar'
         : 'Mover';
-    this.botaoMover.title =
-      'A hoste marcha livre pelo seu território, mas só por ele: o caminho inteiro tem ' +
-      'que passar por províncias suas.';
+    definirTooltip(this.botaoMover, {
+      titulo: 'Ordenar marcha',
+      corpo:
+        'A hoste atravessa livremente seu território. Terra inimiga pode ser o destino ' +
+        'do ataque, nunca parte intermediária do caminho.',
+    });
 
     this.instrucao.hidden = !vista.marchando;
     this.instrucao.textContent = vista.marchando

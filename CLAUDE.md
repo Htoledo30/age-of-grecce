@@ -574,10 +574,21 @@ encosta beócia, pobre e mal escoada, rende 102 — mas toca **Atenas e Maratona
 é duas frentes. Tomar os dois leva a renda de 690 a 892, e é isso que fecha o laço central
 do jogo: conquistar passa a pagar.
 
+**Os dois abrem a partida com 500 homens em pé**, escritos em `dados/exercitos.json` e
+levantados por `src/combate/guarnicao-inicial.ts`. Sem isso a milícia era a única coisa
+entre o jogador e o mapa inteiro — 144 homens em Elêusis, que qualquer leva atropela.
+
+⚠️ **A guarnição inicial SAI da população da própria terra**, como qualquer leva. Elêusis
+abre com 11.500 habitantes e 500 soldados, não com 12.000 e 500. É a mesma regra do
+recrutamento, sem exceção: se a tropa de 700 a.C. viesse de fora do manancial, dispensá-la
+no primeiro turno criaria quinhentos habitantes do nada, e a província ficaria mais
+populosa por ter tido um exército. O piso de `populacaoMinima` vale aqui também, e o
+carregamento estoura com o nome da província se o arquivo pedir mais gente do que existe.
+
 ⚠️ **Eles têm economia, não têm vontade.** Não existe IA: nem Elêusis nem Tanagra recrutam,
 marcham ou reagem. E a renda deles não vai a lugar nenhum, porque `estado.tesouro` é **um
 número só, o do jogador** — quando a IA existir, isso tem que virar tesouro por poder,
-senão ela recruta de graça. A defesa deles hoje é só a milícia: 144 e 108 homens. Sunião é a lição do
+senão ela recruta de graça. A defesa deles é a guarnição de 500 mais a milícia — 138 em Elêusis, 102 em Tanagra —, e ela fica parada onde está. Sunião é a lição do
 sistema: menos gente e menos terra que Maratona, e rende 60% mais — nível e produto
 decidem, tamanho não.
 
@@ -711,6 +722,11 @@ como nome de campanha ou de exército.
 e controles, como recrutamento, aparece primeiro como uma linha clara e minimizável. O
 jogador abre quando quer decidir e fecha quando terminou. Descobrir que a ação existe não
 exige carregar todos os seus detalhes na tela o tempo inteiro.
+
+⚠️ **Nunca usar `title` nativo como tooltip.** Ele traz fonte, atraso e moldura do navegador
+para dentro do mapa e quebra a identidade do jogo. Toda explicação sob demanda passa por
+`src/ui/tooltip.ts`, usando `definirTooltip`; a camada central cuida de posição, bordas do
+palco, foco, fechamento e dos tons de informação, custo, perigo e bloqueio.
 
 ⚠️ **População é ESTADO, e a linha anterior deste arquivo estava errada.** Ela dizia que
 população era dado autoral fixo "por decisão" — mas isso descrevia uma conveniência da

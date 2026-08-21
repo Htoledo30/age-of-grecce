@@ -18,6 +18,8 @@
  * adivinhar que precisa de um Quartel se o painel simplesmente não aparece.
  */
 
+import { definirTooltip, removerTooltip } from './tooltip';
+
 /** O que o bloco precisa saber pra oferecer — ou recusar com motivo — uma leva. */
 export type VistaDeRecrutamento =
   | {
@@ -87,9 +89,11 @@ export class Recrutamento {
     this.campoHomens.step = '1';
     this.campoHomens.value = '0';
     this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para recrutar');
-    this.campoHomens.title =
-      'Arraste para escolher quantos homens levantar. A barra já respeita o ouro e a ' +
-      'reserva civil desta província.';
+    definirTooltip(this.campoHomens, {
+      titulo: 'Tamanho da leva',
+      corpo: 'A barra já respeita o tesouro e a reserva civil que a província nunca cede.',
+      tom: 'custo',
+    });
     this.campoHomens.addEventListener('input', () => this.avaliar());
 
     this.quantidade.className = 'recrutamento__quantidade';
@@ -169,6 +173,7 @@ export class Recrutamento {
 
     if (!vista.pode) {
       this.alvo.textContent = vista.motivo;
+      removerTooltip(this.alvo);
       this.previsao.textContent = '';
       return;
     }
@@ -176,10 +181,12 @@ export class Recrutamento {
     this.alvo.textContent =
       `${vista.provincia.nome} · ${numero(vista.populacao)} habitantes · ` +
       `${numero(vista.disponivel)} disponíveis para recrutar`;
-    this.alvo.title =
-      'Não existe fração recrutável nem lote mínimo. O limite local é a população que ' +
-      'ainda vive aqui, menos os habitantes que a província nunca cede — mulheres, ' +
-      'crianças, velhos e quem lavra —, além do ouro para reunir a leva.';
+    definirTooltip(this.alvo, {
+      titulo: 'Reserva civil',
+      corpo:
+        'O limite considera quem permanece para cultivar, comerciar e manter a vida ' +
+        'local, além do ouro necessário para reunir a leva.',
+    });
 
     if (this.provinciaDaQuantidade !== vista.provincia.id) {
       const trocouDeProvincia = this.provinciaDaQuantidade !== null;
@@ -230,6 +237,7 @@ export class Recrutamento {
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.textContent = 'Reunir leva';
       this.botaoRecrutar.disabled = true;
+      removerTooltip(this.previsao);
       return;
     }
 
@@ -238,6 +246,7 @@ export class Recrutamento {
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.textContent = 'Reunir leva';
       this.botaoRecrutar.disabled = true;
+      removerTooltip(this.previsao);
       return;
     }
     const r = vista.avaliar(homens);
@@ -246,6 +255,7 @@ export class Recrutamento {
       this.previsao.textContent = r.motivo;
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.disabled = true;
+      removerTooltip(this.previsao);
       return;
     }
 
@@ -254,10 +264,14 @@ export class Recrutamento {
       `${numero(r.homens)} homens · ${numero(r.ouro)} moedas agora · ` +
       `${numero(manutencao)} por turno`;
     this.previsao.dataset['pode'] = 'sim';
-    this.previsao.title =
-      `${vista.custoPorHomem} moedas por homem para reunir, e ` +
-      `${vista.manutencaoPorHomem} por homem a cada turno enquanto estiverem em armas. ` +
-      `A província perde ${numero(r.homens)} habitantes e o imposto dela cai junto.`;
+    definirTooltip(this.previsao, {
+      titulo: 'Custo da mobilização',
+      corpo:
+        `${vista.custoPorHomem} moedas por homem para reunir.\n` +
+        `${vista.manutencaoPorHomem} por homem a cada turno em armas.\n` +
+        `A província perde ${numero(r.homens)} habitantes e parte dos impostos.`,
+      tom: 'custo',
+    });
     this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)}`;
     this.botaoRecrutar.disabled = false;
   }

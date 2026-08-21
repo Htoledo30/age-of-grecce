@@ -12,6 +12,7 @@ import '@/ui/exercito-ficha.css';
 import '@/ui/marchas-mapa.css';
 import '@/ui/hostes-mapa.css';
 import '@/ui/destinos-mapa.css';
+import '@/ui/tooltip.css';
 
 import { iniciarEscala } from '@/estilo/escala';
 import { Entrada } from '@/nucleo/entrada';
@@ -20,6 +21,7 @@ import {
   carregarAjustes,
   carregarConstrucoes,
   carregarEconomia,
+  carregarExercitos,
   carregarMundo,
   carregarProvincias,
 } from '@/dados/carregar';
@@ -46,6 +48,7 @@ import { DestinosMapa } from '@/ui/destinos-mapa';
 import type { Destino } from '@/ui/destinos-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
+import { Tooltips } from '@/ui/tooltip';
 import { Campanha } from '@/campanha/campanha';
 import { Atlas } from '@/mundo/atlas';
 
@@ -61,6 +64,9 @@ async function iniciar(): Promise<void> {
   const ui = exigir<HTMLElement>('#ui');
 
   iniciarEscala(palco);
+  // Uma camada única substitui os balões nativos do navegador. Todo componente apenas
+  // declara o conteúdo; atraso, posição, moldura e fechamento pertencem a ela.
+  new Tooltips(ui);
 
   const mundo = carregarMundo();
   const ajustes = carregarAjustes();
@@ -115,7 +121,13 @@ async function iniciar(): Promise<void> {
   // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate
   // e diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.
   const atlas = new Atlas(provincias);
-  const campanha = new Campanha(atlas, carregarEconomia(), carregarConstrucoes(), ajustes.jogo);
+  const campanha = new Campanha(
+    atlas,
+    carregarEconomia(),
+    carregarConstrucoes(),
+    ajustes.jogo,
+    carregarExercitos(),
+  );
   let fase: 'menu' | 'escolha' | 'campanha' = 'menu';
   /** O ID da província escolhida — não uma ficha montada, que envelheceria. */
   let selecionada: string | null = null;

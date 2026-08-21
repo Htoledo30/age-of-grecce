@@ -10,7 +10,7 @@
  * isso basta; quando houver quatro, aí sim vira emissor de eventos.
  */
 
-import type { Ajustes, Construcoes, Economia, Provincias } from '@/dados/esquema';
+import type { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '@/dados/esquema';
 import type { Atlas } from '@/mundo/atlas';
 import { avancarAno } from './estado-campanha';
 import type { EstadoCampanha, Obra } from './estado-campanha';
@@ -29,6 +29,7 @@ import type {
 import type { Exercito } from '@/combate/exercito';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
+import { levantarGuarnicoes } from '@/combate/guarnicao-inicial';
 import { miliciaDe, mortosDaMilicia } from '@/combate/milicia';
 import type { HosteEmProvincia } from '@/combate/mobilizacao';
 import { Territorios } from './territorios';
@@ -79,6 +80,7 @@ export class Campanha {
     private readonly economia: Economia,
     private readonly catalogoDeConstrucoes: Construcoes,
     private readonly ajustes: AjustesJogo,
+    exercitosIniciais: Exercitos,
   ) {
     for (const id of Object.keys(economia.provincias)) {
       if (!atlas.existe(id)) {
@@ -94,8 +96,20 @@ export class Campanha {
     // População inicial: a de 700 a.C., copiada dos dados pro estado. A partir daqui ela
     // é da partida — recrutar a encolhe. Província sem economia configurada não entra e
     // continua sem população, como não tem renda.
-    const populacao: Record<string, number> = {};
-    for (const [id, ficha] of Object.entries(economia.provincias)) populacao[id] = ficha.populacao;
+    const populacaoAutoral: Record<string, number> = {};
+    for (const [id, ficha] of Object.entries(economia.provincias)) {
+      populacaoAutoral[id] = ficha.populacao;
+    }
+
+    // A tropa de 700 a.C. entra ANTES do estado existir, e os homens dela saem da
+    // população da própria terra. Ver `guarnicao-inicial.ts`: o manancial é um só, e uma
+    // guarnição que viesse de fora dele criaria gente ao ser dispensada.
+    const tabuleiro = levantarGuarnicoes(
+      exercitosIniciais.guarnicoes,
+      populacaoAutoral,
+      (id) => dono[id] ?? '',
+      ajustes.combate,
+    );
 
     this.estado = {
       jogador: null,
@@ -103,8 +117,8 @@ export class Campanha {
       turno: 0,
       tesouro: ajustes.tesouroInicial,
       dono,
-      populacao,
-      exercitos: {},
+      populacao: tabuleiro.populacao,
+      exercitos: tabuleiro.exercitos,
       ordens: {},
       investimentos: {},
       construcoes: {},

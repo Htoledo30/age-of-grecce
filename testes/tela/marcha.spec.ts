@@ -38,7 +38,9 @@ async function comHoste(page: Page, homens: number) {
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', quantos);
   }, homens);
-  await page.locator('.hostes__marca').click();
+  // ⚠️ Por província, e não `.hostes__marca` sozinho: Elêusis e Tanagra abrem a partida
+  // com 500 homens cada, então há três peças no mapa desde o turno 1.
+  await page.locator('.hostes__marca[data-provincia="atenas"]').click();
 }
 
 test('escolher destino registra a ordem, e a marcha só acontece na virada', async ({ page }) => {
@@ -204,7 +206,7 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
     i.conquistar('maratona', 'megara');
     i.conquistar('sounion', 'megara');
   });
-  await page.locator('.hostes__marca').click();
+  await page.locator('.hostes__marca[data-provincia="atenas"]').click();
 
   const mover = page.getByRole('button', { name: 'Mover' });
   await expect(mover).toBeEnabled();
@@ -231,14 +233,14 @@ test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page
   // Sair do lugar certo mata as duas: em (2) a peça começaria no canto, em (1) já
   // começaria no destino.
   await comHoste(page, 1500);
-  const emAtenas = await page.locator('.hostes__marca').boundingBox();
+  const emAtenas = await page.locator('.hostes__marca[data-provincia="atenas"]').boundingBox();
   if (!emAtenas) throw new Error('a hoste não apareceu em Atenas');
 
   const partida = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     i.ordenarMarcha('atenas', 'maratona', 1500);
     i.passarTurno();
-    const marca = document.querySelector<HTMLElement>('.hostes__marca');
+    const marca = document.querySelector<HTMLElement>('.hostes__marca[data-provincia="maratona"]');
     const caixa = marca?.getBoundingClientRect();
     return {
       provincia: marca?.dataset['provincia'] ?? '',
@@ -256,11 +258,14 @@ test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page
   expect(Math.abs(partida.y - emAtenas.y)).toBeLessThan(4);
 
   await page.waitForFunction(
-    () => document.querySelector<HTMLElement>('.hostes__marca')?.dataset['marchando'] === 'nao',
+    () =>
+      document.querySelector<HTMLElement>('.hostes__marca[data-provincia="maratona"]')?.dataset[
+        'marchando'
+      ] === 'nao',
     undefined,
     { timeout: 5000 },
   );
-  const chegada = await page.locator('.hostes__marca').boundingBox();
+  const chegada = await page.locator('.hostes__marca[data-provincia="maratona"]').boundingBox();
   if (!chegada) throw new Error('a hoste sumiu no caminho');
   // Andou de verdade: assentou longe de onde partiu, e não no canto do palco.
   expect(Math.hypot(chegada.x - emAtenas.x, chegada.y - emAtenas.y)).toBeGreaterThan(30);

@@ -12,6 +12,7 @@
 
 import { formatarAno } from '@/campanha/estado-campanha';
 import type { AbaDoGoverno } from './governo';
+import { definirTooltip } from './tooltip';
 
 /** Uma linha da tabela: uma província do jogador. */
 export interface LinhaDoBalanco {
@@ -142,7 +143,12 @@ export class Balanco implements AbaDoGoverno {
       moeda(e.comercio),
       moeda(e.total),
     ]);
-    if (linha.construcoes.length > 0) tr.title = `Construções: ${linha.construcoes.join(', ')}`;
+    if (linha.construcoes.length > 0) {
+      definirTooltip(tr, {
+        titulo: 'Construções erguidas',
+        corpo: linha.construcoes.join(' · '),
+      });
+    }
     return tr;
   }
 }

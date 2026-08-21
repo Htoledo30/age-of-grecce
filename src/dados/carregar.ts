@@ -3,8 +3,9 @@
 import brutoAjustes from '../../dados/ajustes.json';
 import brutoConstrucoes from '../../dados/construcoes.json';
 import brutoEconomia from '../../dados/economia.json';
+import brutoExercitos from '../../dados/exercitos.json';
 import brutoMundo from '../../dados/mundo.json';
-import { Ajustes, Construcoes, Economia, Mundo, Provincias } from './esquema';
+import { Ajustes, Construcoes, Economia, Exercitos, Mundo, Provincias } from './esquema';
 
 export function carregarMundo(): Mundo {
   return validar(Mundo, brutoMundo, 'dados/mundo.json');
@@ -16,6 +17,10 @@ export function carregarAjustes(): Ajustes {
 
 export function carregarEconomia(): Economia {
   return validar(Economia, brutoEconomia, 'dados/economia.json');
+}
+
+export function carregarExercitos(): Exercitos {
+  return validar(Exercitos, brutoExercitos, 'dados/exercitos.json');
 }
 
 export function carregarConstrucoes(): Construcoes {

@@ -198,6 +198,27 @@ export const Ajustes = z.object({
 export type Ajustes = z.infer<typeof Ajustes>;
 
 /**
+ * A tropa que já estava em pé em 700 a.C.
+ *
+ * Arquivo separado da economia de propósito: economia é o que a terra dá, isto é a
+ * situação militar em que o mapa abre. Enquanto não há IA, é o que faz existir alguém
+ * armado do outro lado da fronteira.
+ */
+export const Exercitos = z.object({
+  versao: z.literal(1),
+  comentario: z.string().optional(),
+  /**
+   * Homens em pé por província. A hoste é do dono dela no começo da partida.
+   *
+   * ⚠️ Eles **saem da população** escrita em `economia.json`. Ver
+   * `src/combate/guarnicao-inicial.ts` — o manancial humano é um só.
+   */
+  guarnicoes: z.record(z.string(), z.number().int().positive()),
+});
+
+export type Exercitos = z.infer<typeof Exercitos>;
+
+/**
  * O recorte político do mundo, assado por `npm run gerar-provincias`.
  *
  * Este arquivo é SAÍDA de ferramenta, não conteúdo escrito à mão — o conteúdo é
