@@ -270,49 +270,46 @@ não estiver visível. Torre não entra antes de existir aquilo que ela revela.
 ### Porto e o mar
 
 O porto é o que dá acesso ao mar, para mover tropas e para o comércio marítimo. Isso
-resolve, sem regra inventada, o problema das ilhas: **35 das 205 províncias não têm
-nenhuma vizinha terrestre, e 34 dos 148 poderes são inteiramente insulares** — Egina,
-Córcira, Rodes, Quios, Samos, Ítaca, entre outros.
+resolve, sem regra inventada, o problema das ilhas: **45 das 205 províncias estão fora do
+componente de terra continental, e 43 dos 148 poderes não têm nenhuma província no
+continente** — Egina, Córcira, Rodes, Quios, Samos, Ítaca, as sete cidades de Creta, as
+duas de Lesbos, entre outros.
 
-A alternativa que foi descartada era derivar um grafo de adjacência marítima por
-proximidade. Funcionava e era artificial. Com porto, a regra passa a ser do jogo: navio
-sai de onde há porto. A ilha deixa de ser exceção que o motor contorna e passa a ser o
-que uma ilha é — um lugar que depende de porto. De quebra, o porto vira alvo militar:
-tomar o porto de alguém tranca a ilha dele.
+⚠️ **A alternativa de derivar adjacência marítima por proximidade está DESCARTADA.** O mar
+passou a ser recortado em zonas, como a terra é recortada em províncias, e a frota navega
+de zona em zona. Ver [Combate, exército e o mar](combate-e-mar.md).
 
-**Decisão: todo poder marítimo começa com porto.** Sem isso os 34 poderes insulares
+Com porto, a regra passa a ser do jogo: navio sai de onde há porto. A ilha deixa de ser
+exceção que o motor contorna e passa a ser o que uma ilha é — um lugar que depende de
+porto. De quebra, o porto vira alvo militar: tomar o porto de alguém tranca a ilha dele.
+
+**Decisão: todo poder marítimo começa com porto.** Sem isso os 43 poderes insulares
 nasceriam congelados — sem porto não saem da ilha, e sem sair da ilha não conquistam nada
 para pagar o porto. A regra vale igualmente para jogador e IA.
 
-### O porto está bloqueado por uma decisão maior, e é de propósito
+### A decisão que bloqueava o porto já foi tomada
 
-**Porto não entra enquanto o modelo de movimentação de tropas não estiver decidido.**
-Não é adiamento por falta de tempo: mexer em porto é mexer em como tropa anda, e a
-pergunta "como uma tropa passa da terra para a água" não tem resposta antes de existir
-resposta para "como uma tropa anda em terra".
+**A tropa salta de província vizinha em província vizinha**, sem peça com pontos de
+movimento — o modelo mais simples e o mais próximo do mapa que já existe. E **o mar é
+recortado em zonas**, por onde a frota navega. Com isso, o porto tem forma: é o lugar onde
+a tropa embarca, e a ponte entre o grafo de terra e o grafo de mar.
 
-Os três modelos possíveis levam a portos completamente diferentes:
-
-| modelo | como a tropa anda | o que o porto precisaria ser |
-| --- | --- | --- |
-| _Rome: Total War_ | exércitos como peças no mapa, com alcance por turno | um lugar onde a peça embarca; navios viram unidades próprias |
-| _Crusader Kings III_ | levas que atravessam território, embarque quase automático | um permissor de travessia, com custo e tempo |
-| _Age of History II_ | tropa salta de província a província adjacente | mais uma adjacência, liberada pelo porto |
-
-O terceiro é o mais simples e o mais próximo do nosso mapa; os outros dois exigem
-posição de exército no mundo, que hoje não existe. **A escolha é do jogo, não do porto**,
-e por isso a economia continua sendo o foco até que ela seja feita.
+O porto continua sem entrar, mas agora por ordem de fatias e não por indecisão: movimento
+em terra vem antes de movimento no mar. Ver
+[Combate, exército e o mar](combate-e-mar.md).
 
 ### O que ainda falta para o porto existir
 
-1. **Saber quais províncias são costeiras.** O `provincias.json` conhece área, centro e
-   vizinhas por terra, mas não sabe quem toca o mar. É barato de acrescentar: o gerador
-   já tem a máscara de terra, e uma província é costeira quando algum pixel dela encosta
-   na água. Sem esse dado não dá para decidir onde um porto pode ser construído nem quem
-   é "poder marítimo".
-2. **Definir alcance.** De qual porto se chega a qual costa. O estudo de vizinhança
-   marítima por proximidade mútua continua útil aqui, mas como **raio de um porto**, e
-   não como regra geral do mapa.
+1. **Assar o dado de província costeira.** Já foi medido — **151 costeiras e 54
+   interiores** —, mas ainda não está em `assets/mundo/provincias.json`. O gerador tem a
+   máscara de terra e uma varredura resolve.
+
+   ⚠️ **A varredura tem que cortar 26 px ao norte e a leste da moldura.** Aquela faixa é
+   100% água e é borda, não mar: contando a água crua dão 161 costeiras, e as dez a mais
+   incluem Górdio e Pessinunte, que estão a 200 km de qualquer mar.
+2. **Recortar o mar em zonas** e derivar as duas adjacências: zona↔zona e
+   zona↔província costeira. Medido: a máquina que recorta a terra recorta a água em
+   **1,1 s**, deixando 0,01% sem dono.
 
 ## Efeitos estratégicos possíveis
 

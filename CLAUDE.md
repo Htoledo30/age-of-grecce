@@ -413,8 +413,8 @@ por quadro**: vinte conquistas numa virada de turno viram um envio de 256 KB, n�
 | `npm run app` | Electron apontando pro servidor de dev |
 | `npm run capturar` | **print automático do jogo** — salva em `capturas/` |
 | `npm run verificar` | tipos + lint + código morto + testes + dados, tudo junto |
-| `npm run teste-tela` | testes de interface com Playwright |
-| `npm run sitios` | lista foz de rio, enseada e passagem a partir do mapa gerado |
+| `npm run teste-tela` | testes de interface com Playwright, em série por causa do mapa WebGL pesado |
+| `npm run sitios` | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem |
 | `npm run build` | compila pra `dist/` |
 | `npm run empacotar` | gera o instalador em `dist-app/` |
 
@@ -470,9 +470,15 @@ turno.
 
 **Território já troca de mãos.** `trocarDono` move a província nas regras e o mapa
 repinta no mesmo instante, a ficha mostra o dono novo, a barra conta as províncias do
-jogador e quem perde a última é eliminado — tudo derivado da mesma tabela. Falta o que
-decide *se pode*: exército, guerra, batalha e IA não existem. Ver
-"De quem é a província: o assado, o atlas e o estado".
+jogador e quem perde a última fica no exílio enquanto ainda tiver uma hoste — tudo
+derivado da mesma tabela. Ver "De quem é a província: o assado, o atlas e o estado".
+
+**O exército existe e aparece no mundo.** Ergue-se um Quartel, reúne-se uma leva que custa
+ouro e população, e um marcador com o número de homens aparece sobre a província; clicar
+nele abre a ficha da hoste em baixo-centro. **A tropa fica parada onde foi levantada:**
+faltam movimento, declaração de guerra, batalha, cerco e IA — é isso que decide quando a
+troca de dono pode acontecer. Ver "O exército", "A hoste no mapa" e
+`documentacao/design/combate-e-mar.md`.
 
 ⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
 terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
@@ -670,26 +676,23 @@ devolve.
 ⚠️ **`jogo.anosPorTurno` é decisão em aberto**, exposta no arquivo de ajustes de propósito:
 um turno por ano funciona no protótipo, mas é o que decide o ritmo da campanha inteira.
 
-**O resto da fatia continua planejado e aprovado:** estado de partida e o turno — escolher um
-poder clicando no mapa, realce do reino, turno com data, tesouro alimentado por renda,
-uma anexação provisória e salvamento. Leia
-`documentacao/tarefas/esqueleto-estado-e-turno.md` **antes** de encostar em qualquer uma
-dessas coisas: ele traz o desenho do estado mutável, a descoberta de que 34 dos 148
-poderes são ilhados e ficariam injogáveis sem adjacência marítima, e a lista de
-armadilhas já mapeadas.
+**Estado de partida, menu de escolha, turno, data, tesouro e propriedade mutável estão
+implementados.** Faltam **salvamento** e **realce de reino** — os dois estão desenhados em
+`documentacao/tarefas/salvamento-e-realce-de-reino.md`.
 
-A revisão das ilhas descrita em
-`documentacao/tarefas/revisao-ilhas-e-provincias-insulares.md` **foi aplicada** — ver
-"Ilhas: desenhada, jogável e província são três coisas" acima. Leia aquele documento
-antes de mexer no recorte insular de novo: ele guarda o raciocínio, e este arquivo
-guarda só o resultado.
+⚠️ **Este arquivo já afirmou que o realce de reino estava implementado, e era mentira:**
+não existe `realcar` em lugar nenhum do código. Se você encontrar outra afirmação de
+"já está pronto" aqui, confira no código antes de confiar.
 
 ## O exército
 
 **Só se recruta onde há Quartel**, e a leva custa **ouro e população da própria
 província**. As regras vivem em `src/combate/`, uma mecânica por arquivo:
-`exercito.ts` (o que é uma força) e `recrutamento.ts` (o que custa e por que é recusado).
-O estado mora na campanha, como todo o resto que vai pro disco.
+`exercito.ts` (o que é uma força), `recrutamento.ts` (o que custa e por que é recusado)
+e `mobilizacao.ts` (reunir, dispensar, manter e desertar). Posse vive em
+`src/campanha/territorios.ts`; cálculos e incentivos vivem em `src/economia/`; obras vivem
+em `src/construcoes/`. `Campanha` coordena as transações entre esses sistemas e o estado
+que um dia vai para o disco.
 
 ### O Quartel é a primeira construção que não paga em ouro
 
@@ -810,6 +813,13 @@ As duas se encaixam: o exército no exílio deserta de volta para a terra natal,
 do conquistador — e engorda exatamente quem o expulsou.
 
 ## Armadilhas conhecidas
+
+- ⚠️ **`ferramentas/sitios.ts` mente em silêncio.** Ele compila, roda e imprime números
+  bonitos, mas suas constantes de mundo são as antigas — `8192 × 7168` a `0,14 km` por
+  unidade — contra o mundo atual de `12288 × 8256` a `0,098 km`. As coordenadas e as
+  distâncias que ele imprime estão num sistema que não existe mais. **Ou corrigir as três
+  constantes, ou apagar o arquivo com o script npm e a linha da tabela acima**; resposta
+  errada em silêncio é pior que ferramenta ausente. Nada no jogo depende dele.
 
 - **`ELECTRON_RUN_AS_NODE`** — se essa variável estiver no ambiente, o binário do Electron
   roda como Node puro e o processo principal quebra com `app` indefinido.

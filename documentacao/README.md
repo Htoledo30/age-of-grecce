@@ -3,8 +3,23 @@
 Esta pasta concentra a documentação de design, decisões de projeto e créditos de
 recursos externos.
 
+**A divisão de trabalho entre os dois lugares, para não procurar no errado:**
+
+| onde | o que é | quando confiar |
+| --- | --- | --- |
+| `CLAUDE.md`, na raiz | **o retrato do jogo agora** — o que existe, como funciona, e as armadilhas já pagas | sempre; é a memória operacional |
+| esta pasta | **o desenho e o porquê** — especificações, referências, propostas e o raciocínio por trás das decisões | para entender *por que* algo é assim, ou para desenhar o que ainda não existe |
+
+Regra que mantém os dois honestos: **documento de tarefa cumprido é apagado**, e o que
+sobrou de vivo dele migra. O resultado e o motivo vão para o `CLAUDE.md`; a orientação
+técnica vira comentário no código que a executa. Documento que descreve um jogo que não
+existe mais é pior que documento nenhum, porque parece verdade.
+
 ## Design
 
+- [Combate, exército e o mar](design/combate-e-mar.md) — o que está decidido sobre guerra,
+  movimento e o recorte do mar em zonas; o que já está no jogo; o que foi medido no mapa
+  real; e o que ainda é proposta. As quatro coisas separadas de propósito.
 - [Economia e produtos regionais](design/economia-e-produtos-regionais.md) — especificação
   do sistema econômico, vocações do mapa e referência regional para a distribuição por
   província.
@@ -27,13 +42,18 @@ recursos externos.
 
 ## Tarefas e análises
 
-- [Esqueleto: estado de partida e o turno](tarefas/esqueleto-estado-e-turno.md) — escolher
-  um poder no mapa, passar o turno, tesouro e renda, anexação provisória e salvamento.
-  **Em andamento:** o ciclo do turno e a economia de Atenas já rodam; faltam anexação,
-  salvamento e realce de reino.
-- [Revisão das ilhas e províncias insulares](tarefas/revisao-ilhas-e-provincias-insulares.md)
-  — diagnóstico das ilhotas sem dono, critérios para ilhas jogáveis e orientação para
-  consolidar microprovíncias como as três divisões atuais de Rodes. **Aplicada.**
+- [Salvamento e realce de reino](tarefas/salvamento-e-realce-de-reino.md) — as duas peças
+  pequenas que sobraram do plano do esqueleto de campanha. **A fazer.**
+
+Dois documentos de tarefa foram **removidos** por já não descreverem o jogo:
+
+- *Esqueleto: estado de partida e o turno* — o turno, a economia, a propriedade mutável e a
+  eliminação de poderes foram implementados; a adjacência marítima derivada que ele propunha
+  foi descartada pelo recorte do mar em zonas; e os nomes de módulo que ele usava
+  (`src/jogo/`) nunca existiram. O que sobrou de vivo virou *Salvamento e realce de reino*.
+- *Revisão das ilhas e províncias insulares* — aplicada. O resultado e o raciocínio vivem na
+  seção "Ilhas" do `CLAUDE.md`, e a orientação técnica virou comentário em
+  `gerador/gerar-provincias.ts`.
 
 ## Arquivo mantido na raiz
 

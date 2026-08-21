@@ -120,10 +120,12 @@ custam para ser reunidas e continuam gerando manutenção. Saquear uma provínci
 troca destruição econômica e populacional por dinheiro imediato. Somado à administração
 de territórios distantes, isso impede que guerra e economia sejam telas independentes.
 
-Essa relação é valiosa, mas não será copiada literalmente. Quando nosso combate estiver
-definido, decidiremos se soldados saem da população, como funciona manutenção, o que uma
-batalha destrói e se saque existe. A referência preservada é apenas esta: **mobilizar,
-manter e perder forças precisa ter consequência econômica compreensível**.
+Essa relação não foi copiada literalmente, mas a primeira decisão já foi tomada:
+**soldados saem da população atual, custam para ser reunidos e geram manutenção.** Quem
+é dispensado volta à província de origem; quem não recebe deserta. Ainda depende do
+futuro sistema de combate decidir o que uma batalha destrói e se saque existe. A regra
+preservada é: **mobilizar, manter e perder forças precisa ter consequência econômica
+compreensível**.
 
 ### O que devemos aproveitar
 
