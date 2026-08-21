@@ -1,135 +1,133 @@
-/* Marcadores de hoste sobre o mapa. Medidas em pixels do palco 1920x1080 — ver escala.ts.
-
-   A camada é transparente a ponteiro; só as peças escutam clique. É o que deixa arrastar
-   o mapa passando por cima delas sem prender o arrasto. */
-/* ⚠️ `#ui > .hostes` e não `.hostes`: `base.css` tem `#ui > * { pointer-events: auto }`,
-   e um seletor de id vence um de classe. Escrito só com a classe, esta camada — que cobre
-   a tela inteira — comia TODOS os cliques do mapa, e arrastar, dar zoom e selecionar
-   província paravam de funcionar sem erro nenhum no console. */
 #ui > .hostes {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-/* A peça: uma ficha de papel com o número de homens, na cor do poder DONO DA HOSTE —
-   que não é necessariamente a cor do chão onde ela está pisando. */
 .hostes__marca {
   position: absolute;
   top: 0;
   left: 0;
+  min-width: 42px;
+  min-height: 27px;
+  padding: 6px 8px 4px;
   pointer-events: auto;
-  min-width: 34px;
-  padding: 2px 6px;
-  border: 1px solid var(--tinta);
-  border-radius: 2px;
-  background: var(--cor-da-hoste, var(--papel));
-  color: var(--tinta);
+  border: 1px solid var(--cor-da-hoste, var(--ui-borda));
+  border-radius: 8px 8px 12px 12px;
+  background: linear-gradient(var(--ui-fundo-claro), var(--ui-fundo));
+  color: var(--ui-texto);
   font-family: var(--fonte-numero);
-  font-size: 12px;
-  line-height: 1.2;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
   text-align: center;
   cursor: pointer;
-  /* Sombra curta: separa a peça do terreno sem virar interface flutuante. */
-  box-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+  box-shadow:
+    inset 0 3px var(--cor-da-hoste, var(--ui-bronze)),
+    0 3px 8px var(--ui-sombra);
+  transition:
+    border-color 110ms ease,
+    filter 110ms ease,
+    scale 110ms ease;
 }
-
 .hostes__marca:hover {
-  border-color: var(--papel-claro);
+  border-color: var(--ui-texto);
+  filter: brightness(1.15);
+  scale: 1.05;
 }
-
-/* A hoste do jogador tem traço mais forte: num mapa com 148 poderes, achar a sua tem
-   que ser instantâneo. */
 .hostes__marca[data-minha='sim'] {
-  border-width: 2px;
-  font-weight: bold;
+  border-color: var(--ui-bronze-claro);
+  color: var(--ui-texto);
 }
-
-/* Selecionada: mesmo vocabulário da província escolhida, pra que "o que eu cliquei"
-   se leia igual em toda a tela. */
 .hostes__marca[data-selecionada='sim'] {
-  outline: 2px solid var(--papel-claro);
-  outline-offset: 1px;
-}
-
-/* A peça sob comando pulsa junto do anel desenhado pela camada de rotas. */
-.hostes__marca[data-escolhendo-destino='sim'] {
-  z-index: 3;
-  outline: 3px solid var(--ouro);
+  outline: 2px solid var(--ui-bronze-claro);
   outline-offset: 3px;
+  z-index: 3;
+}
+.hostes__marca[data-escolhendo-destino='sim'] {
+  z-index: 4;
+  outline: 2px solid var(--ui-bronze-claro);
+  outline-offset: 5px;
   animation: hoste-em-comando 650ms ease-in-out infinite alternate;
 }
-
-/* Ordem registrada: a peça ainda não se moveu, então precisa carregar um sinal de que
-   não está simplesmente parada. */
 .hostes__marca[data-ordem='sim']::after {
   content: '↗';
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 17px;
-  height: 17px;
-  border: 1px solid var(--tinta);
+  top: -9px;
+  right: -9px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ui-bronze-claro);
   border-radius: 50%;
-  background: var(--ouro);
-  color: var(--tinta);
-  font-family: sans-serif;
-  font-size: 11px;
-  line-height: 15px;
+  background: var(--ui-fundo);
+  color: var(--ui-bronze-claro);
+  font-family: var(--fonte-numero);
+  font-size: 10px;
+  line-height: 16px;
 }
-
+.hostes__marca[data-somente-formacao='sim'] {
+  border-style: dashed;
+  color: var(--ui-texto-fraco);
+  opacity: 0.72;
+  filter: grayscale(0.55);
+  box-shadow:
+    inset 0 3px var(--ui-inativo),
+    0 3px 8px var(--ui-sombra-leve);
+}
+.hostes__marca[data-em-formacao='sim'][data-somente-formacao='nao']::before {
+  content: attr(data-formacao-quantidade);
+  position: absolute;
+  right: -9px;
+  bottom: -11px;
+  padding: 1px 4px;
+  border: 1px dashed var(--ui-borda);
+  border-radius: 1px;
+  background: var(--ui-fundo);
+  color: var(--ui-texto-fraco);
+  font-size: 8px;
+  line-height: 11px;
+  font-weight: 600;
+}
 .hostes__marca[data-chegada='sim'] {
   z-index: 4;
   animation: hoste-chegou 850ms ease-out both;
+}
+.hostes__marca[data-posicionada='nao'] {
+  visibility: hidden;
+}
+.hostes__marca[data-marchando='sim'] {
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: 0 6px 12px var(--ui-sombra);
 }
 
 @keyframes hoste-em-comando {
   from {
     filter: brightness(1);
   }
-
   to {
     filter: brightness(1.35);
   }
 }
-
 @keyframes hoste-chegou {
   0% {
-    scale: 0.72;
-    box-shadow: 0 0 0 0 rgb(240 226 189 / 90%);
+    scale: 0.76;
+    box-shadow: 0 0 0 0 var(--ui-bronze-claro);
   }
-
   55% {
-    box-shadow: 0 0 0 13px rgb(240 226 189 / 0%);
+    box-shadow: 0 0 0 13px transparent;
   }
-
   100% {
     scale: 1;
-    box-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+    box-shadow:
+      inset 0 3px var(--cor-da-hoste),
+      0 3px 8px var(--ui-sombra);
   }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .hostes__marca[data-escolhendo-destino='sim'],
   .hostes__marca[data-chegada='sim'] {
     animation: none;
   }
-}
-
-/* ⚠️ Peça sem posição NÃO se pinta. `mostrar` é chamado na virada do turno, fora do laço
-   de quadro; um marcador recém-criado ficaria um quadro sem posição, ou seja, no
-   canto superior esquerdo do palco, e só iria pro lugar depois. O sintoma era a hoste
-   surgindo lá em cima e descendo até a província. */
-.hostes__marca[data-posicionada='nao'] {
-  visibility: hidden;
-}
-
-/* Tropa no meio do passo não se pega: durante a marcha a peça não aceita clique, senão
-   selecioná-la abriria a ficha de uma província onde ela ainda não está desenhada. */
-.hostes__marca[data-marchando='sim'] {
-  z-index: 4;
-  pointer-events: none;
-  /* Sombra mais longa enquanto anda: a peça se descola do terreno enquanto está a
-     caminho, e volta a assentar quando chega. */
-  box-shadow: 0 3px 4px rgb(0 0 0 / 40%);
 }

@@ -13,6 +13,8 @@
 import type { Ajustes } from '@/dados/esquema';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from './exercito';
 import type { Exercito } from './exercito';
+import { concluirFormacoes, iniciarFormacao } from './formacao-de-leva';
+import type { LevaEmFormacao, ResultadoDasFormacoes } from './formacao-de-leva';
 import { avaliarLeva, disponivelParaLeva, manutencaoDe, maximoDaLeva } from './recrutamento';
 import type { RecusaDeLeva } from './recrutamento';
 
@@ -29,6 +31,7 @@ export interface EstadoDeMobilizacao {
   tesouro: number;
   populacao: Record<string, number>;
   exercitos: Record<string, Exercito>;
+  formacoes: Record<string, LevaEmFormacao>;
 }
 
 export class Mobilizacao {
@@ -43,6 +46,18 @@ export class Mobilizacao {
 
   forcaEm(idProvincia: string): number {
     return forcaDe(this.exercitoEm(idProvincia));
+  }
+
+  formacaoEm(idProvincia: string): LevaEmFormacao | undefined {
+    return this.estado.formacoes[idProvincia];
+  }
+
+  /** Todas as levas que já aparecem no mundo, mas ainda não aceitam ordens. */
+  formacoes(): readonly { provincia: string; formacao: LevaEmFormacao }[] {
+    return Object.entries(this.estado.formacoes).map(([provincia, formacao]) => ({
+      provincia,
+      formacao,
+    }));
   }
 
   /** Toda hoste em pé no mundo, com o lugar dela. É o que o mapa desenha. */
@@ -65,7 +80,10 @@ export class Mobilizacao {
    * o último chão mas mantém uma hoste continua no jogo, no exílio.
    */
   temTropa(idPoder: string): boolean {
-    return this.doPoder(idPoder).length > 0;
+    return (
+      this.doPoder(idPoder).length > 0 ||
+      this.formacoes().some(({ formacao }) => formacao.poder === idPoder)
+    );
   }
 
   /** Quantos homens nascidos nesta província estão em armas em todo o mapa. */
@@ -73,6 +91,9 @@ export class Mobilizacao {
     let total = 0;
     for (const exercito of Object.values(this.estado.exercitos)) {
       total += exercito.origem[idProvincia] ?? 0;
+    }
+    for (const formacao of Object.values(this.estado.formacoes)) {
+      if (formacao.origem === idProvincia) total += formacao.homens;
     }
     return total;
   }
@@ -114,8 +135,16 @@ export class Mobilizacao {
     this.estado.exercitos[idProvincia] = exercito;
   }
 
-  /** Aplica uma leva que a campanha já autorizou: cobra o ouro e tira os homens da terra. */
-  recrutar(idProvincia: string, poder: string, leva: { ouro: number; homens: number }): void {
+  /**
+   * Aplica uma leva autorizada: cobra agora, tira os homens da terra e inicia a formação.
+   * Ela só entra em `exercitos` na próxima rodada.
+   */
+  recrutar(
+    idProvincia: string,
+    poder: string,
+    leva: { ouro: number; homens: number },
+    turnoAtual: number,
+  ): void {
     const existente = this.estado.exercitos[idProvincia];
     // Guarda contra o dia em que houver tropa alheia parada aqui: recrutar não pode
     // engordar o exército de outro poder por acidente de chave.
@@ -125,10 +154,15 @@ export class Mobilizacao {
 
     this.estado.tesouro -= leva.ouro;
     this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - leva.homens;
+    iniciarFormacao(this.estado.formacoes, idProvincia, poder, leva.homens, turnoAtual);
+  }
 
-    const exercito = existente ?? exercitoVazio(poder);
-    somarLeva(exercito, idProvincia, leva.homens);
-    this.estado.exercitos[idProvincia] = exercito;
+  /** Torna ativas as levas cujo turno chegou, depois de resolver as marchas da rodada. */
+  concluirFormacoes(
+    turnoAtual: number,
+    donoDe: (idProvincia: string) => string,
+  ): ResultadoDasFormacoes {
+    return concluirFormacoes(this.estado, turnoAtual, donoDe);
   }
 
   /**

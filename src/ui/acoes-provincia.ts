@@ -10,11 +10,13 @@
  * dois gastos que disputam o mesmo tesouro. Construção é cara e permanente; decreto é
  * barato e temporário. É essa disputa que faz investir virar decisão em vez de rotina.
  *
- * Nada some quando é impossível: a linha fica desabilitada com o motivo escrito. Esconder
- * o controle esconde a existência da mecânica, e o jogador não tem como adivinhar.
+ * Com uma província selecionada, nada some quando é impossível: a linha fica desabilitada
+ * com o motivo escrito. Sem seleção, o painel inteiro some porque não existe decisão nem
+ * contexto para mostrar.
  */
 
 import { definirTooltip, removerTooltip } from './tooltip';
+import { iconeDaConstrucao, rotularComIcone } from './icones-gregos';
 
 /** Uma construção oferecida nesta província, já avaliada. */
 export interface OpcaoDeConstrucao {
@@ -92,7 +94,7 @@ export class AcoesProvincia {
     this.raiz.hidden = true;
 
     this.titulo.className = 'acoes__titulo';
-    this.titulo.textContent = 'Ações';
+    rotularComIcone(this.titulo, 'martelo', 'Ações');
 
     this.alvo.className = 'acoes__alvo';
 
@@ -174,7 +176,7 @@ export class AcoesProvincia {
     pai.appendChild(this.raiz);
   }
 
-  /** `null` esconde o bloco — é o estado fora da campanha. */
+  /** `null` esconde o bloco — fora da campanha ou sem província selecionada. */
   mostrar(vista: VistaDeAcoes | null): void {
     this.vista = vista;
     this.raiz.hidden = vista === null;
@@ -237,16 +239,18 @@ export class AcoesProvincia {
     // Uma linha só: nome e o que ela custa AGORA. O que ela faz, quanto rende e em
     // quantos turnos se paga vão pro tooltip — a lista tem que dar pra varrer com o olho,
     // e quem quer conferir a conta passa o mouse.
-    if (opcao.erguida) botao.textContent = `${opcao.nome} · construída`;
+    let rotulo: string;
+    if (opcao.erguida) rotulo = `${opcao.nome} · construída`;
     else if (opcao.emObra !== null) {
-      botao.textContent = `${opcao.nome} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
+      rotulo = `${opcao.nome} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
     } else if (opcao.recusa) {
       // O impedimento fica NO LUGAR do custo, não escondido: opção desabilitada sem
       // explicação é exatamente o que não pode acontecer aqui.
-      botao.textContent = `${opcao.nome} · ${opcao.recusa}`;
+      rotulo = `${opcao.nome} · ${opcao.recusa}`;
     } else {
-      botao.textContent = `${opcao.nome} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
+      rotulo = `${opcao.nome} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
     }
+    rotularComIcone(botao, iconeDaConstrucao(opcao.id), rotulo);
 
     definirTooltip(botao, {
       titulo: opcao.nome,

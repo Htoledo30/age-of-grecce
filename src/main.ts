@@ -1,4 +1,5 @@
 import '@/estilo/base.css';
+import '@/ui/icones-gregos.css';
 import '@/ui/painel-fps.css';
 import '@/ui/painel-lateral.css';
 import '@/ui/ficha-provincia.css';
@@ -82,17 +83,17 @@ async function iniciar(): Promise<void> {
   const lateral = new PainelLateral(ui, cena.coresDosPoderes);
   lateral.aoTrocarCores = (ligadas) => cena.mostrarCoresDosPoderes(ligadas);
 
-  // Ação e informação sobre a MESMA província no mesmo canto: as ações empilhadas em
-  // cima da ficha. A coluna é quem ancora as duas, porque empilhar por posição absoluta
-  // obrigaria a saber a altura da ficha, que muda com o conteúdo.
+  // Identidade primeiro, decisões depois: a província selecionada abre a coluna e as
+  // ações seguem abaixo. É a ordem de leitura de uma interface de estratégia, não a
+  // ordem em que os sistemas foram implementados.
   const colunaProvincia = document.createElement('div');
   colunaProvincia.className = 'coluna-provincia';
   ui.appendChild(colunaProvincia);
+  const ficha = new FichaProvincia(colunaProvincia);
   const acoes = new AcoesProvincia(colunaProvincia);
   // Recrutar é outra mecânica de investir e construir: mexe em gente, não em dinheiro.
-  // Bloco próprio, entre o que se PAGA e o que a província É.
+  // Por isso permanece num bloco próprio, recolhível, depois das ações da província.
   const recrutamento = new Recrutamento(colunaProvincia);
-  const ficha = new FichaProvincia(colunaProvincia);
   ficha.usarCatalogo(
     Object.fromEntries(
       Object.entries(carregarConstrucoes().construcoes).map(([id, c]) => [id, c.nome]),
@@ -150,6 +151,14 @@ async function iniciar(): Promise<void> {
   /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
   let homensParaMarchar = 0;
   /** Destinos que acabaram de receber tropa; existem só durante o pulso de chegada. */
+  /**
+   * O destino HOSTIL já apontado, esperando o jogador dizer o que fazer ao chegar.
+   *
+   * ⚠️ Só existe para terra alheia. Destino amigo registra a ordem no clique, como sempre
+   * — perguntar "assaltar ou sitiar?" para uma marcha dentro do próprio território seria
+   * pedir uma decisão que não existe.
+   */
+  let alvoHostil: string | null = null;
   const chegadasRecentes = new Set<string>();
   let temporizadorDaChegada: number | undefined;
 
@@ -168,6 +177,12 @@ async function iniciar(): Promise<void> {
       regiao: p.regiao,
       poder: { nome: poder.nome, povo: poder.povo, cor: poder.cor },
       milicia: campanha.miliciaEm(id),
+      cerco: (() => {
+        const cerco = campanha.cercoEm(id);
+        return cerco
+          ? { sitiante: campanha.poder(cerco.sitiante).nome, progresso: cerco.progresso }
+          : null;
+      })(),
     };
   }
 
@@ -223,6 +238,8 @@ async function iniciar(): Promise<void> {
     if (marchando !== null && (marchando !== hosteSelecionada || !campanha.exercitoEm(marchando))) {
       marchando = null;
     }
+    // Sem marcha em composição não há alvo apontado: os dois vivem e morrem juntos.
+    if (marchando === null) alvoHostil = null;
 
     hostesMapa.mostrar(fase === 'campanha' ? marcadoresDasHostes() : []);
     hostesMapa.selecionar(hosteSelecionada);
@@ -240,14 +257,14 @@ async function iniciar(): Promise<void> {
   /**
    * O que o bloco de ações mostra agora.
    *
-   * Só devolve `null` fora da campanha. Dentro dela o bloco fica sempre na tela, mesmo
-   * quando não dá pra agir — dizendo o motivo. Sumir esconderia a existência da mecânica,
-   * e o jogador não teria como adivinhar que ela existe.
+   * Sem seleção, não existe alvo nem decisão: o bloco some para devolver o mapa ao
+   * jogador. Com uma província selecionada ele permanece visível mesmo quando não dá pra
+   * agir, explicando o impedimento em vez de esconder a existência da mecânica.
    */
   function vistaDeAcoes(): VistaDeAcoes | null {
     if (fase !== 'campanha') return null;
     const alvo = selecionada;
-    if (!alvo) return { pode: false, motivo: 'Clique numa província sua para investir nela.' };
+    if (!alvo) return null;
     const nomeDoAlvo = atlas.nomeDe(alvo);
     // O portão é a PROVÍNCIA, não uma ação: estar sem dinheiro não pode esconder a lista
     // de construções, senão o jogador quebrado deixa de ver o que existe pra comprar.
@@ -283,10 +300,7 @@ async function iniciar(): Promise<void> {
       }),
       bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,
       arrecadacoesRestantes: campanha.investimentoEm(alvo)?.arrecadacoesRestantes ?? 0,
-      maximo: Math.min(
-        campanha.tesouro,
-        ajustes.jogo.economia.investimento.maximo,
-      ),
+      maximo: Math.min(campanha.tesouro, ajustes.jogo.economia.investimento.maximo),
       avaliar: (valor) => campanha.podeInvestir(alvo, valor),
       duracao: ajustes.jogo.economia.investimento.arrecadacoes,
       retorno: (valor) => campanha.retornoDe(alvo, valor),
@@ -296,13 +310,13 @@ async function iniciar(): Promise<void> {
   /**
    * O que o bloco de recrutamento mostra agora.
    *
-   * Mesma regra do bloco de ações: dentro da campanha ele fica sempre na tela, e quando
-   * não dá pra recrutar diz o motivo — é assim que o jogador descobre que existe Quartel.
+   * Mesma regra do bloco de ações: sem província selecionada, some. Quando há alvo, mas
+   * não dá pra recrutar, diz o motivo — é assim que o jogador descobre que existe Quartel.
    */
   function vistaDeRecrutamento(): VistaDeRecrutamento | null {
     if (fase !== 'campanha') return null;
     const alvo = selecionada;
-    if (!alvo) return { pode: false, motivo: 'Clique numa província sua para reunir tropa.' };
+    if (!alvo) return null;
     const naProvincia = campanha.podeAgirEm(alvo);
     if (!naProvincia.pode)
       return { pode: false, motivo: `${atlas.nomeDe(alvo)}: ${naProvincia.motivo}.` };
@@ -318,6 +332,7 @@ async function iniciar(): Promise<void> {
       populacao: campanha.populacaoDe(alvo),
       disponivel: campanha.disponivelParaLevaEm(alvo),
       maximo: campanha.maximoParaLevaEm(alvo),
+      emFormacao: campanha.formacaoEm(alvo)?.homens ?? 0,
       custoPorHomem: ajustes.jogo.combate.custoPorHomem,
       manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
       avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
@@ -327,23 +342,34 @@ async function iniciar(): Promise<void> {
   /** Onde desenhar cada hoste, e de que cor. O centro da província é a âncora. */
   function marcadoresDasHostes(): MarcadorDeHoste[] {
     const meu = campanha.jogador?.id ?? null;
-    return campanha.hostes().map(({ provincia, exercito }) => {
+    const provincias = new Set([
+      ...campanha.hostes().map(({ provincia }) => provincia),
+      ...campanha.formacoes().map(({ provincia }) => provincia),
+    ]);
+    return [...provincias].sort().flatMap((provincia) => {
+      const exercito = campanha.exercitoEm(provincia);
+      const formacao = campanha.formacaoEm(provincia);
+      const idPoder = exercito?.poder ?? formacao?.poder;
+      if (!idPoder) return [];
       const p = atlas.provincia(provincia);
-      const poder = campanha.poder(exercito.poder);
-      return {
-        provincia,
-        x: p.centro.x,
-        y: p.centro.y,
-        forca: campanha.forcaEm(provincia),
-        // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra
-        // alheia as duas deixam de coincidir, e é aí que a cor passa a informar.
-        cor: poder.cor,
-        nomeDoPoder: poder.nome,
-        minha: exercito.poder === meu,
-        escolhendoDestino: marchando === provincia,
-        temOrdem: campanha.ordemEm(provincia) !== undefined,
-        chegadaRecente: chegadasRecentes.has(provincia),
-      };
+      const poder = campanha.poder(idPoder);
+      return [
+        {
+          provincia,
+          x: p.centro.x,
+          y: p.centro.y,
+          forca: campanha.forcaEm(provincia),
+          emFormacao: formacao?.homens ?? 0,
+          // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra
+          // alheia as duas deixam de coincidir, e é aí que a cor passa a informar.
+          cor: poder.cor,
+          nomeDoPoder: poder.nome,
+          minha: idPoder === meu,
+          escolhendoDestino: marchando === provincia,
+          temOrdem: campanha.ordemEm(provincia) !== undefined,
+          chegadaRecente: chegadasRecentes.has(provincia),
+        },
+      ];
     });
   }
 
@@ -437,6 +463,15 @@ async function iniciar(): Promise<void> {
       minha: campanha.jogador?.id === exercito.poder,
       destinos: campanha.alcanceDaHoste(onde).length,
       marchando: marchando === onde,
+      alvo: alvoHostil === null ? null : { nome: atlas.nomeDe(alvoHostil) },
+      cerco: (() => {
+        const cerco = campanha.cercoEm(onde);
+        // Só é O cerco desta hoste se for ela quem está sentada: uma tropa de passagem por
+        // uma cidade que outro poder sitia não comanda coisa nenhuma.
+        return cerco && cerco.sitiante === exercito.poder
+          ? { progresso: cerco.progresso, postura: cerco.postura }
+          : null;
+      })(),
       ordem: (() => {
         const ordem = campanha.ordemEm(onde);
         if (!ordem) return null;
@@ -542,10 +577,30 @@ async function iniciar(): Promise<void> {
     homensParaMarchar = homens;
   };
   exercitoFicha.aoCancelarOrdem = (idProvincia) => campanha.cancelarOrdem(idProvincia);
+  // Confirma a ordem contra o alvo já apontado. É aqui que assaltar e sitiar deixam de
+  // ser um ajuste e viram a decisão que fecha a ordem.
+  exercitoFicha.aoEscolherPostura = (postura) => {
+    if (marchando === null || alvoHostil === null) return;
+    campanha.ordenarMarcha(marchando, alvoHostil, homensParaMarchar, undefined, postura);
+    marchando = null;
+    alvoHostil = null;
+    repintar();
+  };
+  exercitoFicha.aoTrocarPosturaDoCerco = (idProvincia, postura) => {
+    campanha.mudarPostura(idProvincia, postura);
+  };
   destinosMapa.aoEscolher = (destino) => {
     if (marchando === null) return;
-    // Registra a ORDEM. Nada se move agora: a marcha acontece na virada do turno, junto
-    // com as de todo mundo. A seleção fica onde está, porque a tropa também fica.
+    // Terra alheia não vira ordem no clique: primeiro o jogador diz o que fazer ao
+    // chegar. Apontar de novo troca o alvo, e clicar fora cancela tudo.
+    const poder = campanha.exercitoEm(marchando)?.poder;
+    if (poder !== undefined && campanha.donoDe(destino) !== poder) {
+      alvoHostil = destino;
+      repintar();
+      return;
+    }
+    // Destino amigo: registra a ORDEM. Nada se move agora — a marcha acontece na virada
+    // do turno, junto com as de todo mundo.
     campanha.ordenarMarcha(marchando, destino, homensParaMarchar);
     marchando = null;
     repintar();
@@ -606,6 +661,7 @@ async function iniciar(): Promise<void> {
     // Clicar fora dos destinos cancela a marcha em vez de recusar com mensagem: os alvos
     // legais estão desenhados, e reclamar de cada clique errado seria ruído.
     marchando = null;
+    alvoHostil = null;
     selecionada = provincia?.id ?? null;
     // Clicar no mapa é escolher CHÃO: solta a hoste. Sem isto, a ficha do exército
     // ficaria em pé descrevendo uma tropa que o jogador não está mais olhando.
@@ -659,6 +715,7 @@ async function iniciar(): Promise<void> {
         campanha.construir(idProvincia, idConstrucao),
       recrutar: (idProvincia: string, homens: number) => campanha.recrutar(idProvincia, homens),
       forcaEm: (idProvincia: string) => campanha.forcaEm(idProvincia),
+      formacaoEm: (idProvincia: string) => campanha.formacaoEm(idProvincia),
       dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
       noExilio: (idPoder: string) => campanha.noExilio(idPoder),
       // `porPoder` opcional: a ordem pertence ao dono da HOSTE, e é assim que se monta

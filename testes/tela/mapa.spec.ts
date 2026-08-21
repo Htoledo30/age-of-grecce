@@ -45,5 +45,16 @@ test('inicia uma campanha escolhendo Atenas no mapa', async ({ page }) => {
   await expect(page.locator('body')).toHaveAttribute('data-fase-jogo', 'campanha');
   await expect(page.locator('body')).toHaveAttribute('data-poder-jogador', 'atenas');
   await expect(page.locator('.inicio-jogo')).toBeHidden();
-  await expect(page.locator('.painel-diagnostico')).toBeVisible();
+  // Diagnóstico continua disponível em F3, mas nunca suja a campanha por padrão.
+  await expect(page.locator('.painel-diagnostico')).toBeHidden();
+
+  // Comandos provinciais só existem quando há uma província selecionada.
+  await expect(page.locator('.acoes')).toBeHidden();
+  await expect(page.locator('.recrutamento')).toBeHidden();
+  await page.locator('#mundo').click({ position: { x: 960, y: 540 } });
+  await expect(page.locator('.acoes')).toBeVisible();
+  await expect(page.locator('.recrutamento')).toBeVisible();
+  await page.locator('#mundo').click({ position: { x: 1500, y: 800 } });
+  await expect(page.locator('.acoes')).toBeHidden();
+  await expect(page.locator('.recrutamento')).toBeHidden();
 });

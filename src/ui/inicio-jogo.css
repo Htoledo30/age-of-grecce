@@ -1,151 +1,158 @@
-/* Menu e escolha de poder. O mapa continua vivo atrás das duas telas. */
-
 #ui > .inicio-jogo {
   position: absolute;
   inset: 0;
+  z-index: 100;
   pointer-events: none;
 }
-
 .inicio-jogo__tela-menu {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   pointer-events: auto;
-  background: color-mix(in srgb, var(--tinta) 62%, transparent);
-}
-
-.inicio-jogo__tela-menu[hidden],
-.inicio-jogo__escolha[hidden],
-.inicio-jogo[hidden] {
-  display: none;
+  background: linear-gradient(var(--ui-overlay-menu), var(--ui-overlay));
+  backdrop-filter: saturate(0.65) blur(1px);
 }
 
 .inicio-jogo__cartao-menu {
-  width: 540px;
-  padding: var(--gap-5);
+  position: relative;
+  width: 650px;
+  padding: 64px 68px 58px;
+  overflow: hidden;
   text-align: center;
-  background: var(--papel);
-  border: 2px solid var(--tinta);
-  box-shadow: 0 12px 0 color-mix(in srgb, var(--tinta) 35%, transparent);
+  border: 1px solid var(--ui-borda);
+  background: linear-gradient(145deg, var(--ui-fundo-elevado), var(--ui-fundo));
+  color: var(--ui-texto);
+  box-shadow: 0 24px 70px var(--ui-sombra);
 }
-
+.inicio-jogo__cartao-menu::after {
+  content: 'Α  Ω';
+  display: block;
+  margin: 26px auto 0;
+  color: var(--ui-borda);
+  font-family: var(--fonte-titulo);
+  font-size: 13px;
+  letter-spacing: 0.7em;
+}
 .inicio-jogo__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 54px;
-  font-weight: normal;
-  line-height: 1;
-  letter-spacing: 0.04em;
+  font-size: 66px;
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: 0.025em;
+  color: var(--ui-texto);
+  text-shadow: 0 3px 18px var(--ui-sombra);
 }
-
 .inicio-jogo__subtitulo {
-  margin: var(--gap-3) 0 var(--gap-5);
-  color: var(--tinta-fraca);
-  font-size: 18px;
+  margin: 18px 0 38px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+}
+.inicio-jogo__acao,
+.inicio-jogo__voltar {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-1);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.inicio-jogo__acao {
+  border-color: var(--ui-bronze-claro);
+  background: var(--ui-bronze);
+  color: var(--ui-fundo);
+}
+.inicio-jogo__acao:hover:not(:disabled) {
+  background: var(--ui-bronze-claro);
+}
+.inicio-jogo__acao:disabled {
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-tenue);
+  cursor: not-allowed;
+}
+.inicio-jogo__voltar {
+  margin-top: 10px;
+  background: transparent;
+  color: var(--ui-texto-fraco);
+}
+.inicio-jogo__voltar:hover {
+  border-color: var(--ui-bronze);
+  color: var(--ui-texto);
 }
 
 .inicio-jogo__escolha {
   position: absolute;
-  top: var(--gap-3);
-  left: var(--gap-3);
-  width: 360px;
-  padding: var(--gap-3);
+  top: 106px;
+  left: 24px;
+  width: 410px;
+  padding: 24px;
   pointer-events: auto;
-  background: var(--papel);
-  border: 1px solid var(--tinta-fraca);
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-vidro);
+  color: var(--ui-texto);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
 }
-
 .inicio-jogo__titulo-escolha {
-  padding-bottom: var(--gap-2);
-  border-bottom: 1px solid var(--papel-escuro);
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
   font-size: 28px;
-  font-weight: normal;
+  font-weight: 500;
+  color: var(--ui-texto);
 }
-
 .inicio-jogo__instrucao {
-  margin: var(--gap-3) 0;
-  color: var(--tinta-fraca);
-  font-size: 14px;
-  line-height: 1.4;
+  margin: 14px 0 18px;
+  color: var(--ui-texto-fraco);
+  font-size: 13px;
+  line-height: 1.5;
 }
-
 .inicio-jogo__poder {
   min-height: 116px;
-  padding: var(--gap-3);
-  background: var(--papel-claro);
-  border: 1px solid var(--papel-escuro);
+  padding: 16px;
+  border: 1px solid var(--ui-borda-fraca);
+  background: var(--ui-fundo-suave);
 }
-
 .inicio-jogo__cabecalho-poder {
   display: flex;
   align-items: center;
-  gap: var(--gap-2);
+  gap: 10px;
 }
-
 .inicio-jogo__cor {
   flex: none;
-  width: 18px;
-  height: 18px;
-  border: 1px solid var(--tinta-fraca);
+  width: 22px;
+  height: 32px;
+  border: 1px solid var(--ui-texto-fraco);
+  border-radius: 8px 8px 11px 11px;
+  clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
 }
-
 .inicio-jogo__nome-poder {
   font-family: var(--fonte-titulo);
   font-size: 24px;
-  font-weight: normal;
+  font-weight: 500;
 }
-
 .inicio-jogo__detalhes,
 .inicio-jogo__disponibilidade {
-  margin-top: var(--gap-2);
-  color: var(--tinta-fraca);
-  font-size: 13px;
+  margin-top: 8px;
+  color: var(--ui-texto-fraco);
+  font-size: 12px;
 }
-
 .inicio-jogo__disponibilidade[data-disponivel='sim'] {
-  color: var(--verdete);
+  color: var(--ui-verde-claro);
 }
-
 .inicio-jogo__disponibilidade[data-disponivel='nao'] {
-  color: var(--sangue);
+  color: var(--ui-sangue-claro);
 }
-
-.inicio-jogo__acao,
-.inicio-jogo__voltar {
-  width: 100%;
-  padding: 12px var(--gap-3);
-  border: 1px solid var(--tinta);
-  font-family: var(--fonte-corpo);
-  font-size: 17px;
-  cursor: pointer;
-}
-
-.inicio-jogo__acao {
-  margin-top: var(--gap-3);
-  background: var(--verdete);
-  color: var(--papel-claro);
-}
-
-.inicio-jogo__acao:hover:not(:disabled) {
-  background: var(--tinta-fraca);
-}
-
-.inicio-jogo__acao:disabled {
-  border-color: var(--tinta-tenue);
-  background: var(--papel-escuro);
-  color: var(--tinta-tenue);
-  cursor: not-allowed;
-}
-
-.inicio-jogo__voltar {
-  margin-top: var(--gap-2);
-  background: var(--papel-claro);
-  color: var(--tinta-fraca);
-}
-
-.inicio-jogo__voltar:hover {
-  color: var(--tinta);
+.inicio-jogo__escolha .inicio-jogo__acao {
+  margin-top: 16px;
 }
 
 body[data-fase-jogo='menu'] .painel-lateral,
@@ -154,4 +161,22 @@ body[data-fase-jogo='escolha'] .painel-lateral,
 body[data-fase-jogo='escolha'] .painel-diagnostico,
 body[data-fase-jogo='escolha'] .ficha {
   display: none;
+}
+
+@media (max-width: 760px), (max-height: 620px) {
+  .inicio-jogo__cartao-menu {
+    width: min(650px, calc(100% - 40px));
+    padding: 42px 36px 36px;
+  }
+
+  .inicio-jogo__titulo {
+    font-size: clamp(42px, 9vw, 60px);
+  }
+
+  .inicio-jogo__escolha {
+    top: 92px;
+    left: 14px;
+    width: min(380px, calc(100% - 28px));
+    padding: 18px;
+  }
 }

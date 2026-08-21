@@ -20,8 +20,12 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": 0.3,
-      "saltosPorRodada": 2,
+      "saltosPorRodada": 1,
       "populacaoMinima": 2000,
+      "cerco": {
+        "turnosBase": 6,
+        "bonusDeMuralha": 2
+      },
       "milicia": {
         "fracao": 0.012,
         "fracaoMorta": 0.5

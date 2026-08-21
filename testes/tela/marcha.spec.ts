@@ -37,6 +37,7 @@ async function comHoste(page: Page, homens: number) {
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', quantos);
+    i.passarTurno(); // recrutas só recebem ordens a partir da rodada seguinte
   }, homens);
   // ⚠️ Por província, e não `.hostes__marca` sozinho: Elêusis e Tanagra abrem a partida
   // com 500 homens cada, então há três peças no mapa desde o turno 1.

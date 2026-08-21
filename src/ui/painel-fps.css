@@ -1,12 +1,14 @@
 .painel-diagnostico {
   position: absolute;
-  top: var(--gap-3);
-  left: var(--gap-3);
-  padding: var(--gap-2) var(--gap-3);
-  background: rgba(42, 33, 24, 0.75);
-  color: var(--papel-claro);
+  top: 8px;
+  left: 8px;
+  z-index: 200;
+  padding: 5px 8px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-overlay);
+  color: var(--ui-texto-tenue);
   font-family: var(--fonte-numero);
-  font-size: 18px;
+  font-size: 11px;
   letter-spacing: 0.03em;
-  border: 1px solid rgba(236, 225, 200, 0.25);
 }

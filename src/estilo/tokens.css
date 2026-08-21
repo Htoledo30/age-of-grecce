@@ -1,43 +1,68 @@
-/* Paleta e tipografia do jogo.
-   Direção de arte: documento de papel — tinta, sépia, pouca saturação.
-   Nenhuma cor deve ser escrita direto em outro arquivo; sempre usar estas variáveis. */
+/* Sistema visual do jogo.
+   Direção: mesa de comando helênica contemporânea — pedra escura, bronze, marfim e
+   pouquíssima ornamentação. O mapa é colorido; a interface cria uma moldura neutra. */
 :root {
-  /* superfícies */
-  --papel: #ded0b0;
-  --papel-claro: #ece1c8;
-  --papel-escuro: #c2b18d;
+  --papel: #d8c9a5;
+  --papel-claro: #f0e5c9;
+  --papel-escuro: #a9956d;
   --mar: #9fb0ac;
   --mar-fundo: #7d918e;
+  --tinta: #171b1c;
+  --tinta-fraca: #4e5552;
+  --tinta-tenue: #7e837b;
+  --sangue: #a8493d;
+  --ouro: #c69a4a;
+  --verdete: #4f7768;
 
-  /* tinta */
-  --tinta: #2a2118;
-  --tinta-fraca: #5c4d3c;
-  --tinta-tenue: #8a7860;
+  --ui-fundo: #111719;
+  --ui-fundo-elevado: #192124;
+  --ui-fundo-suave: #232d30;
+  --ui-fundo-claro: #303b3d;
+  --ui-borda: #756a52;
+  --ui-borda-fraca: #3d4746;
+  --ui-texto: #eee4cd;
+  --ui-texto-fraco: #b8b3a4;
+  --ui-texto-tenue: #858b84;
+  --ui-bronze: #bd8f42;
+  --ui-bronze-claro: #d9b66e;
+  --ui-bronze-escuro: #6f5128;
+  --ui-verde: #426b5c;
+  --ui-verde-claro: #6f9b86;
+  --ui-sangue: #a94c40;
+  --ui-sangue-claro: #d27a68;
+  --ui-inativo: #5f6662;
 
-  /* acentos */
-  --sangue: #8c2f22;
-  --ouro: #a8802c;
-  --verdete: #4a6b5a;
+  --ui-vidro: rgb(17 23 25 / 94%);
+  --ui-vidro-suave: rgb(25 33 36 / 92%);
+  --ui-overlay: rgb(6 10 11 / 72%);
+  --ui-overlay-menu: rgb(7 12 13 / 68%);
+  --ui-hover: rgb(238 228 205 / 8%);
+  --ui-pressionado: rgb(198 154 74 / 14%);
+  --ui-sombra: rgb(0 0 0 / 52%);
+  --ui-sombra-leve: rgb(0 0 0 / 28%);
+  --ui-luz: rgb(255 255 255 / 7%);
+  --ui-marca: rgb(198 154 74 / 20%);
+  --ui-perigo-fundo: rgb(169 76 64 / 18%);
+  --ui-sucesso-fundo: rgb(66 107 92 / 20%);
 
-  /* metal e couro — superfícies da interface militar, não do mapa */
-  --ferro: #1d1a16;
-  --ferro-claro: #2c261e;
-  --marfim: #e7d8b0;
-  --bronze: #b58a3d;
-  --bronze-escuro: #65491f;
+  --ferro: var(--ui-fundo);
+  --ferro-claro: var(--ui-fundo-suave);
+  --marfim: var(--ui-texto);
+  --bronze: var(--ui-bronze);
+  --bronze-escuro: var(--ui-bronze-escuro);
+  --vazio: #050708;
 
-  /* letreiro fora do palco (barras pretas) */
-  --vazio: #000000;
+  --fonte-titulo: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  --fonte-corpo: 'Segoe UI', Tahoma, Arial, sans-serif;
+  --fonte-numero: Bahnschrift, 'Segoe UI Variable', 'Segoe UI', sans-serif;
 
-  /* tipografia */
-  --fonte-titulo: 'Georgia', 'Times New Roman', serif;
-  --fonte-corpo: 'Georgia', 'Times New Roman', serif;
-  --fonte-numero: 'Consolas', 'Courier New', monospace;
-
-  /* espaçamento — em pixels do palco 1920x1080 */
-  --gap-1: 4px;
-  --gap-2: 8px;
+  --gap-1: 5px;
+  --gap-2: 10px;
   --gap-3: 16px;
   --gap-4: 24px;
   --gap-5: 40px;
+  --raio-1: 2px;
+  --raio-2: 4px;
+  --altura-controle: 38px;
+  --sombra-painel: 0 14px 36px var(--ui-sombra), 0 2px 6px var(--ui-sombra-leve);
 }

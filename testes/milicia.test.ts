@@ -78,66 +78,93 @@ describe('a milícia é derivada da população, nunca guardada', () => {
   });
 });
 
-describe('a milícia defende, e é ela que torna o cerco possível', () => {
-  it('invasor menor que a milícia é rechaçado, e a província não muda de dono', () => {
+describe('a milícia segura a CIDADE, e não sai a campo', () => {
+  it('quem chega sem dizer nada SENTA: a província não troca de dono no mesmo turno', () => {
     const c = comQuartel();
-    // A milícia acompanha a população, que cresce: deriva em vez de cravar.
+    // ⚠️ A mudança de fundo do cerco. Antes, sobrar de pé numa província alheia era ser
+    // dono dela. Agora é ficar com o CAMPO — a cidade continua sendo um problema.
     const milicia = c.miliciaEm('atenas');
     expect(milicia).toBe(Math.floor(c.populacaoDe('atenas') * combate.milicia.fracao));
-    c.plantarHoste('tanagra', 'tanagra', Math.floor(milicia * 0.7));
-    c.ordenarMarcha('tanagra', 'atenas', Math.floor(milicia * 0.7), 'tanagra');
+    // Gente o bastante pra vencer a milícia num assalto, e pouca demais pra abrir a
+    // cidade num turno só de cerco: é a faixa em que a escolha de postura decide.
+    c.plantarHoste('tanagra', 'tanagra', 800);
+    c.ordenarMarcha('tanagra', 'atenas', 800, 'tanagra');
 
     c.passarTurno();
 
     expect(c.donoDe('atenas')).toBe('atenas');
-    expect(c.forcaEm('atenas')).toBe(0); // a milícia não vira hoste no mapa
-    expect(c.forcaEm('tanagra')).toBe(0); // o invasor foi destruído
-    expect(c.rodada.batalhas[0]).toMatchObject({ provincia: 'atenas', vencedor: 'atenas' });
+    expect(c.forcaEm('atenas')).toBe(800); // o invasor está lá, inteiro, sentado
+    expect(c.cercoEm('atenas')).toMatchObject({ sitiante: 'tanagra', postura: 'sitiar' });
+    // Sitiar não é batalha: ninguém morreu.
+    expect(c.rodada.batalhas).toEqual([]);
   });
 
-  it('antes da milícia, 300 homens tomavam uma cidade de 35.000 sem resistência', () => {
+  it('província SEM gente continua caindo ao primeiro pisão', () => {
     const c = comQuartel();
-    // A mesma leva contra uma província SEM economia configurada continua entrando de
-    // graça — é o que a milícia conserta onde existe gente.
+    // Sem população não há quem feche portão nenhum. É fronteira desprotegida, e é o que
+    // as 200 sem economia configurada continuam sendo.
     c.plantarHoste('tanagra', 'tanagra', 300);
     c.ordenarMarcha('tanagra', 'tebas', 300, 'tanagra');
     c.passarTurno();
     expect(c.donoDe('tebas')).toBe('tanagra');
+    expect(c.cercoEm('tebas')).toBeUndefined();
   });
 
-  it('invasor maior vence, mas paga — e a província cai', () => {
+  it('assalto menor que a muralha é rechaçado, e o exército se desfaz nela', () => {
     const c = comQuartel();
     const milicia = c.miliciaEm('atenas');
-    const invasor = milicia * 3;
+    const invasor = Math.floor(milicia * 1.5); // maior que a milícia, menor que a muralha
+    expect(invasor).toBeLessThan(milicia * combate.cerco.bonusDeMuralha);
     c.plantarHoste('tanagra', 'tanagra', invasor);
-    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra');
+    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
-    // Lei quadrada: o invasor vence e PAGA. Não sai inteiro do outro lado.
+    expect(c.donoDe('atenas')).toBe('atenas');
+    expect(c.forcaEm('atenas')).toBe(0); // o assalto se desfez diante da muralha
+    expect(c.rodada.batalhas[0]).toMatchObject({ provincia: 'atenas', vencedor: 'atenas' });
+  });
+
+  it('assalto maior que a muralha entra, mas paga caro', () => {
+    const c = comQuartel();
+    const milicia = c.miliciaEm('atenas');
+    const invasor = milicia * 3;
+    expect(invasor).toBeGreaterThan(milicia * combate.cerco.bonusDeMuralha);
+    c.plantarHoste('tanagra', 'tanagra', invasor);
+    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
+
+    c.passarTurno();
+
     expect(c.rodada.batalhas[0]).toMatchObject({ vencedor: 'tanagra' });
     expect(c.donoDe('atenas')).toBe('tanagra');
-    // Não sai inteiro do outro lado, e não é aniquilado: é o meio da lei quadrada.
+    // Lei quadrada: não sai inteiro do outro lado, e não é aniquilado.
     expect(c.forcaEm('atenas')).toBeLessThan(invasor);
     expect(c.forcaEm('atenas')).toBeGreaterThan(invasor / 2);
   });
 
-  it('a milícia soma com o exército que estiver defendendo', () => {
+  it('o exército defende o CAMPO e a milícia a CIDADE: são dois choques em sequência', () => {
     const c = comQuartel();
     c.recrutar('atenas', 600);
-    const milicia = c.miliciaEm('atenas'); // já descontados os 600 recrutados
-    // O invasor é maior que o exército sozinho e menor que exército + milícia: é
-    // exatamente a faixa em que a milícia decide.
-    const invasor = 600 + Math.floor(milicia / 2);
+    c.passarTurno(); // ⚠️ a leva leva uma rodada pra virar hoste: ver formacao-de-leva.ts
+    expect(c.forcaEm('atenas')).toBe(600);
+    const milicia = c.miliciaEm('atenas');
+    // O invasor é maior que o exército de campo e — depois de pagar por essa vitória —
+    // menor que a muralha. Ganha o campo e perde a cidade, que é a faixa nova que o cerco
+    // criou e que antes não existia.
+    const invasor = 700;
     c.plantarHoste('tanagra', 'tanagra', invasor);
-    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra');
+    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
-    expect(invasor).toBeGreaterThan(600);
-    expect(invasor).toBeLessThan(600 + milicia);
-    expect(c.rodada.batalhas[0]).toMatchObject({ vencedor: 'atenas' });
+    const sobrouDoCampo = Math.round(Math.sqrt(invasor * invasor - 600 * 600));
+    expect(sobrouDoCampo).toBeGreaterThan(0);
+    expect(sobrouDoCampo).toBeLessThan(milicia * combate.cerco.bonusDeMuralha);
     expect(c.donoDe('atenas')).toBe('atenas');
+    // Duas batalhas na mesma província e no mesmo turno: o campo e a muralha.
+    expect(c.rodada.batalhas).toHaveLength(2);
+    expect(c.rodada.batalhas[0]).toMatchObject({ vencedor: 'tanagra' });
+    expect(c.rodada.batalhas[1]).toMatchObject({ vencedor: 'atenas' });
   });
 });
 
@@ -151,7 +178,7 @@ describe('milícia derrotada dispersa: só os mortos saem da população', () =>
     const c = comQuartel();
     const milicia = c.miliciaEm('atenas');
     c.plantarHoste('tanagra', 'tanagra', milicia * 3);
-    c.ordenarMarcha('tanagra', 'atenas', milicia * 3, 'tanagra');
+    c.ordenarMarcha('tanagra', 'atenas', milicia * 3, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
@@ -163,13 +190,19 @@ describe('milícia derrotada dispersa: só os mortos saem da população', () =>
   });
 
   it('perder em casa custa imposto E custa leva futura', () => {
+    // Contra um controle que só passou o turno, e não contra o número de antes: a
+    // população cresce na virada, e o crescimento sozinho esconderia a perda.
+    const controle = comQuartel();
+    controle.passarTurno();
+
     const c = comQuartel();
-    const impostos = c.economiaDe('atenas')?.impostos ?? 0;
     c.plantarHoste('tanagra', 'tanagra', 20_000);
-    c.ordenarMarcha('tanagra', 'atenas', 20_000, 'tanagra');
+    c.ordenarMarcha('tanagra', 'atenas', 20_000, 'tanagra', 'assaltar');
     c.passarTurno();
+
     // Menos gente na província: menos imposto pra quem ficar com ela, e menos milícia da
     // próxima vez. O manancial humano é um só.
-    expect(c.economiaDe('atenas')?.impostos).toBeLessThan(impostos);
+    expect(c.populacaoDe('atenas')).toBeLessThan(controle.populacaoDe('atenas'));
+    expect(c.miliciaEm('atenas')).toBeLessThan(controle.miliciaEm('atenas'));
   });
 });

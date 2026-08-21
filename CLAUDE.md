@@ -55,8 +55,9 @@ arquivo) no empacotamento; o Vite avisa, e o aviso passa batido no meio do log. 
 escrito à mão vive em `dados/` e é importado; saída assada de ferramenta vive em
 `assets/mundo/` e é buscada com `fetch` em tempo de execução, como a arte.
 
-**Cores só via variáveis CSS** de `src/estilo/tokens.css`. Direção de arte: documento de
-papel — tinta, sépia, pouca saturação.
+**Cores só via variáveis CSS** de `src/estilo/tokens.css`. Direção de arte: mesa de
+comando helênica contemporânea — pedra escura, bronze e marfim, com ornamentação grega
+discreta. O mapa permanece colorido e a interface funciona como moldura neutra.
 
 **Nomes de pasta, arquivo, função e variável em português.**
 
@@ -290,6 +291,13 @@ leitor de tela e ajuste de estilo sem recompilar shader — nada disso se ganha 
 botão na placa de vídeo. Tudo vive dentro de `#ui`, que é transparente a ponteiro por
 padrão; cada painel liga o seu.
 
+**A iconografia grega tem uma fonte única.** Formas vetoriais e o vínculo entre conceito
+e símbolo vivem em `src/ui/icones-gregos.ts`; tamanho, cor e aplicação vivem em
+`src/ui/icones-gregos.css`. Painéis reutilizam esse vocabulário — templo é governo, moeda
+é tesouro, elmo é recrutamento, escudo é hoste — em vez de espalhar emoji, SVG avulso ou
+desenhos incompatíveis. Os SVGs são decorativos (`aria-hidden`) e o texto continua sendo
+o nome acessível do controle.
+
 ⚠️ **Clique fantasma: o aperto é escutado no canvas e a soltura na janela.** A soltura
 precisa ser na janela pra não se perder quando o jogador arrasta o mapa e solta fora
 dela — mas isso fazia um clique em QUALQUER painel gerar uma soltura sem aperto, que a
@@ -324,18 +332,21 @@ intercepta o que é dele e o resto passa direto.
   Ela se redesenha junto com o resto, **mas só quando está aberta**: fechada, montar a
   tabela a cada turno seria trabalho jogado fora.
 
-- **Canto inferior esquerdo — a província selecionada**, numa coluna (`.coluna-provincia`)
-  que empilha dois blocos:
-  - `src/ui/acoes-provincia.ts` em cima — **o que dá pra FAZER** com ela (hoje, investir).
-  - `src/ui/ficha-provincia.ts` embaixo — **o que ela É**: dono, povo, região, produto
+- **Lado esquerdo — a província selecionada**, numa coluna (`.coluna-provincia`) que
+  preserva a ordem natural de leitura:
+  - `src/ui/ficha-provincia.ts` primeiro — **o que ela É**: dono, povo, região, produto
     e nível, e **uma** linha de dinheiro (`rende 350 por turno`). A decomposição fica no
     Governo; clicar numa província e não saber quanto ela vale seria pior que o excesso.
+  - `src/ui/acoes-provincia.ts` depois — **o que dá pra FAZER** com ela (construir e
+    investir), com opções compactadas para o mapa continuar dominante.
+  - `src/ui/recrutamento.ts` por último — uma mecânica própria e recolhível, para só
+    ocupar espaço quando o jogador decidir reunir tropas.
 
   Ação e informação sobre a mesma província no mesmo canto: o jogador clica no mapa e
   encontra ali as duas coisas. O investimento já morou no painel da direita e saiu de
   lá — aquele painel é controle de MAPA, não fala de província nenhuma em particular.
 
-  ⚠️ **A coluna é quem ancora os dois.** Empilhar por posição absoluta exigiria saber a
+  ⚠️ **A coluna é quem ancora os três.** Empilhar por posição absoluta exigiria saber a
   altura da ficha, que muda com o conteúdo: a de uma província sem economia é bem mais
   baixa que a de Atenas.
 
@@ -473,14 +484,12 @@ repinta no mesmo instante, a ficha mostra o dono novo, a barra conta as provínc
 jogador e quem perde a última fica no exílio enquanto ainda tiver uma hoste — tudo
 derivado da mesma tabela. Ver "De quem é a província: o assado, o atlas e o estado".
 
-**O exército existe e aparece no mundo.** Ergue-se um Quartel, reúne-se uma leva que custa
-ouro e população, e um marcador com o número de homens aparece sobre a província; clicar
-nele abre a ficha da hoste em baixo-centro. **A tropa fica parada onde foi levantada:**
-faltam movimento, declaração de guerra, batalha, cerco e IA — é isso que decide quando a
-troca de dono pode acontecer. **Já está decidido, mas ainda não implementado:** recrutamento
-leva uma rodada; movimento é ordem planejada e resolvida ao passar o turno; cada hoste tem
-dois pontos, pode mandar somente parte dos homens e emite uma ordem por rodada. Ver "O
-exército", "A hoste no mapa" e `documentacao/design/combate-e-mar.md`.
+**O exército existe e aparece no mundo.** Ergue-se um Quartel e reúne-se uma leva que custa
+ouro e população. Ela aparece imediatamente como **em formação**, mas só vira hoste ativa
+na rodada seguinte. Movimento é ordem planejada e resolvida ao passar o turno; cada hoste
+atravessa **uma fronteira por rodada**, pode mandar somente parte dos homens e emite uma
+ordem por rodada. Ver "O exército", "A hoste no mapa" e
+`documentacao/design/combate-e-mar.md`.
 
 ⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
 terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
@@ -548,13 +557,13 @@ Atenas soma **690 por turno**, com **3.000** de tesouro inicial.
 que se escreve cai em 3, 4 e 5 e o número deixa de medir — foi o que aconteceu na primeira
 leva: cinco províncias, média 3,8, nenhuma abaixo de 3.
 
-| nível | o que significa                                                            |
-| ----: | -------------------------------------------------------------------------- |
-|     5 | o melhor do mundo grego naquele produto — um punhado no mapa inteiro       |
-|     4 | famoso e exportado, um nome que se conhecia fora da região                 |
-|     3 | bom: alimenta a própria terra e ainda sobra pra vender                     |
-|     2 | comum: alimenta a própria terra                                            |
-|     1 | magro: a terra dá aquilo a contragosto                                     |
+| nível | o que significa                                                      |
+| ----: | -------------------------------------------------------------------- |
+|     5 | o melhor do mundo grego naquele produto — um punhado no mapa inteiro |
+|     4 | famoso e exportado, um nome que se conhecia fora da região           |
+|     3 | bom: alimenta a própria terra e ainda sobra pra vender               |
+|     2 | comum: alimenta a própria terra                                      |
+|     1 | magro: a terra dá aquilo a contragosto                               |
 
 ⚠️ **A Ática era POBRE em cereal**, e a primeira versão desta tabela dizia o contrário.
 Atenas importava grão do Ponto Euxino — é um dos fatos econômicos mais consequentes da
@@ -797,7 +806,7 @@ desde que haja Quartel e ouro. `fracaoRecrutavel` e `minimoPorLeva` foram removi
 existe teto artificial de 10%, e uma leva de um homem é válida.
 
 ⚠️ **O que existe é um piso: `populacaoMinima`, hoje 2.000, que a província nunca cede.**
-É a mesma ideia do mínimo de população de *Rome: Total War*. E é **piso no que sobra, não
+É a mesma ideia do mínimo de população de _Rome: Total War_. E é **piso no que sobra, não
 porteiro na entrada** — se fosse "recusar quando a população está abaixo do mínimo", uma
 cidade de 2.001 habitantes cederia os 2.001 de uma vez.
 
@@ -911,13 +920,13 @@ do marcador é a província de CHEGADA. `src/ui/animacao-de-marcha.ts` só atras
 caminho: se a animação for pulada, o estado do jogo é exatamente o mesmo. Ela anda em
 unidades de MUNDO, então arrastar o mapa ou dar zoom no meio da marcha continua funcionando.
 
-O prazo é **por salto** (`animacao.segundosPorSaltoDeMarcha`, hoje 0,55 s), não por marcha:
-uma marcha de dois saltos leva o dobro, e é assim que a distância percorrida se lê na tela.
+O prazo é **por salto** (`animacao.segundosPorSaltoDeMarcha`, hoje 0,55 s), não por marcha.
+Hoje toda marcha-base tem um salto; a medida continua correta para bônus futuros.
 Cada hoste chega no seu tempo, e o pulso dispara quando ela ASSENTA — antes ele acontecia
 na virada do turno, confirmando uma chegada que o jogador ainda não tinha visto.
 
-⚠️ **O relatório da rodada guarda a `trilha`, não as pontas.** Com dois saltos por rodada,
-a reta entre origem e destino passa por fora do caminho que a seta prometeu. `trilha[0]` é
+⚠️ **O relatório da rodada guarda a `trilha`, não as pontas.** Se um bônus futuro permitir
+mais de um salto, a reta entre origem e destino pode passar fora do caminho. `trilha[0]` é
 de onde saiu e `trilha.at(-1)` é onde parou — guardar origem e destino ao lado dela seria
 guardar um resumo junto do detalhe, e um dia os dois discordariam.
 
@@ -949,6 +958,11 @@ alternativa (fazê-los sumir do mundo) tornaria população uma catraca de senti
 As duas se encaixam: o exército no exílio deserta de volta para a terra natal, que agora é
 do conquistador — e engorda exatamente quem o expulsou.
 
+⚠️ **O cerco endureceu o exílio, e a regra nova é mais justa.** O exilado está pisando na
+própria terra, mas a cidade tem gente dentro e não abre o portão porque a bandeira mudou:
+ele tem que **sitiar a própria capital de volta**, e o relógio da deserção corre enquanto
+ele sitia. É a única corrida do jogo em que o jogador está dos dois lados.
+
 ### A milícia, e por que ela é fraca de propósito
 
 **Toda província com população levanta milicianos quando alguém vem** — `1,2%` dela, e a
@@ -974,9 +988,70 @@ província só. Milícia forte tornaria a primeira conquista impossível pra 81%
 arruinaria a província pro resto da campanha — são os mesmos lavradores. A resolução avisa
 quantos se PERDERAM; quem aplica a fração é a campanha, que é onde os ajustes moram.
 
-⚠️ **Ela nunca vira hoste no mapa.** Entra no choque como qualquer outra força — é o que
-dispensa um caminho separado de "defesa da cidade" — e no fim se dissolve de volta na
-população em vez de pousar.
+⚠️ **Ela NÃO sai a campo — ela segura a cidade.** Foi assim que o cerco passou a ser
+possível: o choque em campo aberto é exército contra exército, e quem vence fica com o
+CAMPO. A cidade continua sendo um problema por resolver, e a milícia é quem está atrás do
+muro. São duas perguntas em vez de uma, e é da segunda que nascem cerco, bloqueio e
+socorro. **Ela nunca vira hoste no mapa**: no fim da resolução, o que sobrou dela se
+dissolve de volta na população.
+
+### O cerco: entrar na província deixou de ser ficar com ela
+
+Antes disto, província alheia com gente dentro caía no instante em que alguém chegava. Não
+existia estado intermediário, e por isso não existia guerra — existia uma sequência de
+trocas de dono. As regras vivem em `src/combate/cerco.ts`.
+
+| postura      | resolve   | custo em homens | contra                                   |
+| ------------ | --------- | --------------- | ---------------------------------------- |
+| **Assaltar** | no turno  | alto            | a milícia com o bônus da muralha          |
+| **Sitiar**   | em turnos | nenhum          | o tempo, e o exército de socorro que vem  |
+
+Nenhuma das duas é a certa sempre, e é isso que faz haver decisão: assaltar troca homens
+por tempo, sitiar troca tempo por exposição.
+
+O avanço do cerco é `sitiantes / (defensores × turnosBase)`, acumulado entre turnos. **O
+dobro de gente toma na metade do tempo** — trazer o exército inteiro compra tempo. É
+acumulado e não um contador de turnos de propósito: reforço que chega acelera o que já foi
+feito em vez de reiniciar a conta.
+
+⚠️ **`turnosBase` decide o RITMO da guerra inteira**, e já foi corrigido uma vez: com 4, a
+milícia sendo 1,2% da população fazia a razão sitiante/defensor ficar enorme e toda cidade
+caía em um ou dois turnos. Está em **6**.
+
+⚠️ **A postura viaja com a ORDEM, não com a hoste**, porque é decisão do destino: a mesma
+tropa assalta uma cidade pequena e senta na frente de uma grande. Uma vez o cerco de pé,
+`mudarPostura` troca a qualquer turno — e a troca vale na virada seguinte, como toda ordem.
+
+⚠️ **Sitiar é o padrão de quem chega sem dizer nada.** Quem apareceu na fronteira não joga
+o exército contra a muralha por conta própria.
+
+⚠️ **Sitiada perde produção e comércio, e NUNCA perde impostos** — nem o recrutamento. O
+campo está tomado e a estrada cortada, mas a cidade continua cobrando de quem está dentro
+dela. Cortar o imposto deixaria sem saída quem tem uma província só, que é a situação de
+120 dos 148 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
+
+⚠️ **Província alheia realmente VAZIA continua caindo ao primeiro pisão.** Sem gente não há
+quem feche portão nenhum. As 200 sem economia configurada caem assim.
+
+⚠️ **Levantar o cerco é consequência, não regra.** O sitiante que marcha embora ou morre
+solta a cidade, e o progresso não fica guardado — senão bastaria ir e vir pra apertar de
+graça. Se o dono retoma a província, o cerco some pelo mesmo caminho.
+
+⚠️ **A milícia perdida num assalto é contada em HOMENS, não em unidades de defesa.** A
+defesa é gente multiplicada pela muralha; sem desfazer a multiplicação, um assalto
+rechaçado faria a população encolher pelo dobro do que de fato caiu.
+
+**Na tela:** a pergunta aparece **depois** de o alvo hostil ser apontado — clicar em
+"Mover", clicar na província inimiga, e só então o painel pergunta *"Elêusis: o que fazer
+ao chegar?"* com ⚔ Assaltar e ⛨ Sitiar. Destino do próprio território registra a ordem no
+clique, porque ali não há decisão nenhuma a tomar. Cerco em curso aparece na ficha da
+província sitiada (**a metade que acontece COM o jogador**, e que explica a renda que
+minguou) e no painel da hoste que sitia, com o botão de passar ao assalto.
+
+⚠️ **Enquanto se escolhe destino, o painel da hoste ENCOLHE.** Ele fica por cima do mapa e
+cresceu com o seletor até cobrir um destino clicável — o jogador via o alvo e o clique não
+chegava nele. Some o que não é a decisão do momento: força, custo, de onde os homens vieram
+e o botão de dispensar. `testes/tela/marcha.spec.ts` pegou isso.
 
 ## Armadilhas conhecidas
 

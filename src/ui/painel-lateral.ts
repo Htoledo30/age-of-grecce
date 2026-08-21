@@ -16,6 +16,7 @@
  */
 
 import { definirTooltip } from './tooltip';
+import { rotularComIcone } from './icones-gregos';
 
 export class PainelLateral {
   private readonly raiz = document.createElement('aside');
@@ -23,17 +24,19 @@ export class PainelLateral {
   private readonly aba = document.createElement('button');
   private readonly interruptorCores = document.createElement('button');
 
-  private aberto = true;
+  private aberto = false;
 
   /** Chamado quando o jogador liga ou desliga a cor dos reinos. */
   aoTrocarCores: (ligadas: boolean) => void = () => {};
 
   constructor(pai: HTMLElement, coresLigadas: boolean) {
     this.raiz.className = 'painel-lateral';
-    this.raiz.dataset['aberto'] = 'sim';
+    this.raiz.dataset['aberto'] = 'nao';
 
     this.aba.className = 'painel-lateral__aba';
     this.aba.type = 'button';
+    this.aba.textContent = '‹';
+    this.aba.setAttribute('aria-expanded', 'false');
     definirTooltip(this.aba, {
       titulo: 'Controles do mapa',
       corpo: 'Recolha ou abra as opções de visualização.',
@@ -46,7 +49,7 @@ export class PainelLateral {
 
     const titulo = document.createElement('h2');
     titulo.className = 'painel-lateral__titulo';
-    titulo.textContent = 'Mapa';
+    rotularComIcone(titulo, 'mapa', 'Mapa');
     this.corpo.appendChild(titulo);
 
     this.interruptorCores.className = 'interruptor';

@@ -15,6 +15,7 @@
  */
 
 import { definirTooltip } from './tooltip';
+import { rotularComIcone } from './icones-gregos';
 
 /** Uma aba da janela. Só precisa saber se desenhar num elemento próprio. */
 export interface AbaDoGoverno {
@@ -54,7 +55,7 @@ export class Governo {
     barra.className = 'governo__barra';
     const titulo = document.createElement('h2');
     titulo.className = 'governo__titulo';
-    titulo.textContent = 'Governo';
+    rotularComIcone(titulo, 'templo', 'Governo');
     const fechar = document.createElement('button');
     fechar.className = 'governo__fechar';
     fechar.type = 'button';
@@ -69,7 +70,7 @@ export class Governo {
       const botao = document.createElement('button');
       botao.className = 'governo__aba';
       botao.type = 'button';
-      botao.textContent = aba.rotulo;
+      rotularComIcone(botao, aba.id === 'balanco' ? 'balanca' : 'territorio', aba.rotulo);
       botao.addEventListener('click', () => this.mostrarAba(aba.id));
       this.botoes.set(aba.id, botao);
       this.barraDeAbas.appendChild(botao);

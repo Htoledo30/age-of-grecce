@@ -60,6 +60,16 @@ export interface BaseDaProvincia {
    * batalha.
    */
   populacao: number;
+  /**
+   * Há inimigo sentado em cima dela.
+   *
+   * ⚠️ **Sitiada perde produção e comércio, e NÃO perde impostos.** A escolha é
+   * deliberada: o campo está tomado e a estrada está cortada, mas a cidade continua
+   * cobrando de quem está dentro dela — e continua podendo levantar tropa. Cortar o
+   * imposto também deixaria sem saída quem tem uma província só, que é a situação de 120
+   * dos 148 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
+   */
+  sitiada: boolean;
 }
 
 /** Um investimento em curso numa província. Vive no estado da campanha. */
@@ -165,8 +175,12 @@ export function rendaDaProvincia(
   // ergue a Oficina primeiro tem uma produção maior pro incentivo multiplicar depois.
   // Existe uma ordem de operações pro jogador descobrir.
   const producaoSemIncentivo = produto.valor * ficha.nivel * fator('producao');
-  const producao = Math.round(producaoSemIncentivo * (1 + bonus));
-  const comercio = Math.round(producao * ficha.comercioBase * fator('comercio'));
+  // O cerco zera as duas parcelas que dependem do CAMPO e da ESTRADA. O imposto continua:
+  // ver `sitiada` em `BaseDaProvincia`.
+  const producao = estado.sitiada ? 0 : Math.round(producaoSemIncentivo * (1 + bonus));
+  const comercio = estado.sitiada
+    ? 0
+    : Math.round(producao * ficha.comercioBase * fator('comercio'));
 
   return {
     produto: { id: ficha.produto, nome: produto.nome, valor: produto.valor },

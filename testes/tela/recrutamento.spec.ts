@@ -17,6 +17,7 @@ interface Ganchos {
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
   forcaEm: (idProvincia: string) => number;
+  formacaoEm: (idProvincia: string) => { homens: number; prontaNoTurno: number } | undefined;
   populacaoDe: (idProvincia: string) => number;
 }
 
@@ -84,15 +85,34 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
 
   const depois = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    return { forca: i.forcaEm('atenas'), populacao: i.populacaoDe('atenas') };
+    return {
+      forca: i.forcaEm('atenas'),
+      formacao: i.formacaoEm('atenas')?.homens ?? 0,
+      populacao: i.populacaoDe('atenas'),
+    };
   });
-  expect(depois).toEqual({ forca: 1000, populacao: 34_697 });
+  expect(depois).toEqual({ forca: 0, formacao: 1000, populacao: 34_697 });
+
+  // A leva já está no mapa, mas visualmente exausta e fora da força que pode marchar.
+  const formacao = page.locator('.hostes__marca[data-provincia="atenas"]');
+  await expect(formacao).toHaveText('1.000');
+  await expect(formacao).toHaveAttribute('data-somente-formacao', 'sim');
+  await expect(formacao).toHaveAttribute('data-em-formacao', 'sim');
 
   // Os painéis contam a mesma história.
   await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
   await expect(page.locator('.recrutamento__alvo')).toContainText('32.697 disponíveis');
   await expect(seletor).toHaveValue('0');
   await expect(page.locator('.barra-turno__ouro')).toContainText('+691');
+  await expect(page.locator('.barra-turno__ouro')).not.toContainText('−300');
+
+  await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.passarTurno());
+  const pronta = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return { forca: i.forcaEm('atenas'), formacao: i.formacaoEm('atenas') };
+  });
+  expect(pronta).toEqual({ forca: 1000, formacao: undefined });
+  await expect(formacao).toHaveAttribute('data-somente-formacao', 'nao');
   await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que

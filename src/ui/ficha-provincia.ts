@@ -35,6 +35,14 @@ export interface VistaDaProvincia {
    * que já diz "economia não configurada".
    */
   milicia: number;
+  /**
+   * Quem está sitiando esta província, se alguém estiver.
+   *
+   * Fica na ficha porque é a metade da mecânica que acontece COM o jogador: a renda dele
+   * cai e ele precisa saber por quê. Sem isto o número mingua na barra e a causa fica
+   * invisível.
+   */
+  cerco: { sitiante: string; progresso: number } | null;
 }
 
 export class FichaProvincia {
@@ -102,6 +110,19 @@ export class FichaProvincia {
     this.lista.replaceChildren(
       ...campo('povo', provincia.poder.povo),
       ...campo('região', provincia.regiao),
+      ...(provincia.cerco
+        ? campo(
+            'sitiada',
+            `por ${provincia.cerco.sitiante} · ${Math.min(99, Math.floor(provincia.cerco.progresso * 100))}%`,
+            'ficha__cerco',
+            {
+              titulo:
+                'Enquanto durar o cerco esta província não produz nem comercia. O imposto ' +
+                'continua, e ela ainda pode levantar tropa — sitiado e sem dinheiro seria ' +
+                'derrota anunciada, não decisão.',
+            },
+          )
+        : []),
       ...campo('milícia', `${moeda(provincia.milicia)} homens`, 'ficha__milicia', {
         titulo:
           'Quem defende esta província sem ter sido recrutado. Sai da população, então ' +

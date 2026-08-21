@@ -13,12 +13,13 @@
  * uma província — que é exatamente o crescimento que a regra de arquitetura do projeto
  * proíbe.
  *
- * ⚠️ **Fica na tela mesmo quando não dá pra recrutar, dizendo o motivo.** É a regra da
- * casa: esconder o controle esconde a existência da mecânica, e o jogador não tem como
- * adivinhar que precisa de um Quartel se o painel simplesmente não aparece.
+ * ⚠️ **Com uma província selecionada, fica na tela mesmo quando não dá pra recrutar e diz
+ * o motivo.** Sem seleção, some junto com os demais comandos provinciais: não existe alvo
+ * nem decisão a tomar.
  */
 
 import { definirTooltip, removerTooltip } from './tooltip';
+import { rotularComIcone } from './icones-gregos';
 
 /** O que o bloco precisa saber pra oferecer — ou recusar com motivo — uma leva. */
 export type VistaDeRecrutamento =
@@ -31,6 +32,8 @@ export type VistaDeRecrutamento =
       disponivel: number;
       /** Teto real neste instante: população disponível limitada pelo tesouro. */
       maximo: number;
+      /** Homens pagos nesta província que ainda não podem marchar. */
+      emFormacao: number;
       custoPorHomem: number;
       manutencaoPorHomem: number;
       avaliar: (
@@ -73,7 +76,7 @@ export class Recrutamento {
     });
 
     this.titulo.className = 'recrutamento__titulo';
-    this.titulo.textContent = 'Recrutar';
+    rotularComIcone(this.titulo, 'capacete', 'Recrutar');
     this.indicador.className = 'recrutamento__indicador';
     this.indicador.setAttribute('aria-hidden', 'true');
 
@@ -153,7 +156,7 @@ export class Recrutamento {
     pai.appendChild(this.raiz);
   }
 
-  /** `null` esconde o bloco — é o estado fora da campanha. */
+  /** `null` esconde o bloco — fora da campanha ou sem província selecionada. */
   mostrar(vista: VistaDeRecrutamento | null): void {
     this.vista = vista;
     this.raiz.hidden = vista === null;
@@ -163,12 +166,7 @@ export class Recrutamento {
       return;
     }
 
-    for (const el of [
-      this.quantidade,
-      this.campoHomens,
-      this.atalhos,
-      this.botaoRecrutar,
-    ])
+    for (const el of [this.quantidade, this.campoHomens, this.atalhos, this.botaoRecrutar])
       el.hidden = !vista.pode;
 
     if (!vista.pode) {
@@ -180,7 +178,8 @@ export class Recrutamento {
 
     this.alvo.textContent =
       `${vista.provincia.nome} · ${numero(vista.populacao)} habitantes · ` +
-      `${numero(vista.disponivel)} disponíveis para recrutar`;
+      `${numero(vista.disponivel)} disponíveis para recrutar` +
+      (vista.emFormacao > 0 ? ` · ${numero(vista.emFormacao)} em formação` : '');
     definirTooltip(this.alvo, {
       titulo: 'Reserva civil',
       corpo:
@@ -262,7 +261,7 @@ export class Recrutamento {
     const manutencao = Math.round(r.homens * vista.manutencaoPorHomem);
     this.previsao.textContent =
       `${numero(r.homens)} homens · ${numero(r.ouro)} moedas agora · ` +
-      `${numero(manutencao)} por turno`;
+      `${numero(manutencao)} por turno · prontos no próximo turno`;
     this.previsao.dataset['pode'] = 'sim';
     definirTooltip(this.previsao, {
       titulo: 'Custo da mobilização',

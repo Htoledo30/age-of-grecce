@@ -9,7 +9,7 @@ uma família de casos que precisa de resposta **escrita antes da primeira linha 
 
 O motivo de escrever antes: em resolução simultânea os bugs não estão no código, estão nas
 **interações**. Cada caso não previsto vira uma partida em que o jogador viu algo
-impossível e não tem como saber se foi regra ou defeito. O *Diplomacy* levou décadas para
+impossível e não tem como saber se foi regra ou defeito. O _Diplomacy_ levou décadas para
 formalizar a sua adjudicação, e a comunidade mantém uma suíte de testes só para isso.
 Não é motivo para recuar — é motivo para escrever a tabela primeiro.
 
@@ -21,8 +21,8 @@ Não é motivo para recuar — é motivo para escrever a tabela primeiro.
 > primeiro todos PARTEM, depois todos CHEGAM, e só então se resolve quem ficou junto de
 > quem.**
 
-Três fases por passo — **partida, chegada, choque** — e dois passos por rodada, porque a
-hoste tem dois pontos de movimento.
+Três fases por passo — **partida, chegada, choque** — e hoje um passo por rodada, porque a
+hoste atravessa uma fronteira por turno.
 
 É essa separação que faz a resolução ser simultânea de verdade. Se a partida e a chegada
 acontecessem hoste por hoste, quem fosse processado primeiro veria um mundo que os outros
@@ -31,9 +31,9 @@ para consertar.
 
 ### Por que passos, e não tudo de uma vez
 
-Com dois pontos, uma rota tem até dois trechos. Resolver "a rota inteira de A, depois a
-rota inteira de B" traria de volta a vantagem de quem é processado primeiro. **Só há um
-jeito coerente: o passo 1 de todo mundo, depois o passo 2 de todo mundo.**
+O motor preserva a resolução em passos para bônus futuros de estrada ou marcha forçada.
+Se uma rota voltar a ter mais de um trecho, resolve-se o passo 1 de todo mundo antes do
+passo 2 de qualquer um, preservando a simultaneidade.
 
 Uma hoste com rota de um trecho simplesmente não participa do passo 2.
 
@@ -44,9 +44,9 @@ passo o deixou. Sem isso, "interceptar no meio do caminho" não tem onde acontec
 
 - antes do passo 1, ele está na origem;
 - depois do passo 1, está em `rota[0]`;
-- depois do passo 2, está em `rota[1]`.
+- um segundo ponto só existirá se uma regra explícita conceder movimento adicional.
 
-⚠️ **A origem fica vazia já no passo 1**, mesmo que o destino esteja a dois trechos. Quem
+⚠️ **A origem fica vazia no passo 1.** Quem
 manda a guarnição inteira embora deixa a casa aberta desde o primeiro instante da rodada —
 e isso é a mecânica funcionando, não um efeito colateral.
 
@@ -65,14 +65,14 @@ Uma regra, sem exceção, e ela não depende de quem se moveu ou de quem chegou 
 
 ## 3. Os casos
 
-| # | situação | resultado | por quê |
-|---|---|---|---|
-| 1 | **A** vai X→Y, **B** vai Y→X | **batalha no encontro; quem vence SEGUE e toma o destino** | dois exércitos que marcham um contra o outro na mesma estrada se encontram. Ver §5 |
-| 2 | **A** vai X→Y, **B** vai Z→Y, Y vazia | **batalha em Y, sem defensor (encontro)** | os dois chegam juntos; nenhum é dono de Y. O vencedor fica em Y |
-| 3 | **A** sai de X, **B** entra em X | **B toma X sem batalha** | na fase de partida X esvazia; na chegada B encontra terra livre. Fronteira desprotegida é risco real, e é o que dá peso a decidir |
-| 4 | **A** vai X→W→Y, **B** entra em W | **batalha em W no passo 1; a rota de A é cancelada** | os dois chegam a W no mesmo passo. Quem sobreviver **fica em W** — nenhum dos dois continua |
-| 5 | três ou mais hostes no mesmo destino | **batalhas aos pares, da maior força para a menor** | a maior enfrenta a segunda; quem sobrar enfrenta a terceira, e assim por diante. Determinístico e sem regra de "aliança temporária" |
-| 6 | **A** reforça a própria Y; **B** ataca Y | **o reforço CHEGA a tempo; A defende com guarnição + reforço** | é exatamente a justiça que a resolução simultânea existe para dar. Sem isso, atacar seria sempre melhor que defender |
+| #   | situação                                 | resultado                                                      | por quê                                                                                                                             |
+| --- | ---------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **A** vai X→Y, **B** vai Y→X             | **batalha no encontro; quem vence SEGUE e toma o destino**     | dois exércitos que marcham um contra o outro na mesma estrada se encontram. Ver §5                                                  |
+| 2   | **A** vai X→Y, **B** vai Z→Y, Y vazia    | **batalha em Y, sem defensor (encontro)**                      | os dois chegam juntos; nenhum é dono de Y. O vencedor fica em Y                                                                     |
+| 3   | **A** sai de X, **B** entra em X         | **B toma X sem batalha**                                       | na fase de partida X esvazia; na chegada B encontra terra livre. Fronteira desprotegida é risco real, e é o que dá peso a decidir   |
+| 4   | **A** vai X→W→Y, **B** entra em W        | **batalha em W no passo 1; a rota de A é cancelada**           | os dois chegam a W no mesmo passo. Quem sobreviver **fica em W** — nenhum dos dois continua                                         |
+| 5   | três ou mais hostes no mesmo destino     | **batalhas aos pares, da maior força para a menor**            | a maior enfrenta a segunda; quem sobrar enfrenta a terceira, e assim por diante. Determinístico e sem regra de "aliança temporária" |
+| 6   | **A** reforça a própria Y; **B** ataca Y | **o reforço CHEGA a tempo; A defende com guarnição + reforço** | é exatamente a justiça que a resolução simultânea existe para dar. Sem isso, atacar seria sempre melhor que defender                |
 
 ### Notas que decorrem da tabela
 
@@ -186,33 +186,30 @@ Um por linha, mais os de determinismo. **É esta lista, e não o código, que fa
 adjudicação existir** — cada um afirma uma linha da tabela acima, e o dia em que alguém
 mexer na resolução por outro motivo, é ela que avisa.
 
-| teste | afirma |
-|---|---|
-| `duas hostes que se cruzam na mesma aresta batalham na estrada` | caso 1 |
-| `quem vence o encontro na estrada continua e chega ao destino` | caso 1 |
-| `o vencedor da estrada enfrenta quem ficou defendendo o destino` | caso 1 |
-| `dois que chegam na mesma província vazia se enfrentam sem defensor` | caso 2 |
-| `província esvaziada na partida cai sem batalha` | caso 3 |
-| `encontro no meio da rota cancela os dois percursos` | caso 4 |
-| `três no mesmo destino resolvem aos pares, da maior força pra menor` | caso 5 |
-| `o reforço chega a tempo de defender` | caso 6 |
-| `a mesma rodada resolvida duas vezes dá o mesmo resultado` | determinismo |
-| `a ordem de recrutamento não muda o resultado da rodada` | determinismo (§4.1) |
-| `nenhuma ordem sobrevive à virada` | §6 |
-| `a origem fica vazia já no passo 1 de uma rota de dois trechos` | §1 |
+| teste                                                                | afirma              |
+| -------------------------------------------------------------------- | ------------------- |
+| `duas hostes que se cruzam na mesma aresta batalham na estrada`      | caso 1              |
+| `quem vence o encontro na estrada continua e chega ao destino`       | caso 1              |
+| `o vencedor da estrada enfrenta quem ficou defendendo o destino`     | caso 1              |
+| `dois que chegam na mesma província vazia se enfrentam sem defensor` | caso 2              |
+| `província esvaziada na partida cai sem batalha`                     | caso 3              |
+| `encontro no meio da rota cancela os dois percursos`                 | caso 4              |
+| `três no mesmo destino resolvem aos pares, da maior força pra menor` | caso 5              |
+| `o reforço chega a tempo de defender`                                | caso 6              |
+| `a mesma rodada resolvida duas vezes dá o mesmo resultado`           | determinismo        |
+| `a ordem de recrutamento não muda o resultado da rodada`             | determinismo (§4.1) |
+| `nenhuma ordem sobrevive à virada`                                   | §6                  |
+| `a origem fica vazia já no passo 1 de uma rota de dois trechos`      | §1                  |
 
 ---
 
 ## 8. O que este documento NÃO decide
 
-- **Como a batalha se resolve.** Aqui só se decide *onde* e *entre quem* ela acontece.
+- **Como a batalha se resolve.** Aqui só se decide _onde_ e _entre quem_ ela acontece.
   A conta é da fatia 5.
 - **Cerco e conquista.** Chegar numa província inimiga sem defensor entrega o chão; com
   cidade, muralha ou guarnição, não. Fica para a mesma fatia.
 - **O mar.** Zonas marítimas e frota são outro grafo, com os mesmos princípios e casos
   próprios (bloqueio, tempestade, transporte afundado com a carga dentro).
-- **Se os pontos de movimento continuam sendo dois.** O dono já decidiu o rumo do tempo:
-  **no futuro o turno vira meia estação — verão e inverno, duas jogadas por ano.** Não é o
-  foco agora. Quando for, vale reabrir os dois pontos: com o turno mais curto, **um salto
-  por rodada** fica mais simples *e* mais fiel, e a resolução perde a máquina de passos
-  inteira.
+- **Bônus de movimento.** A regra-base está fechada em um salto por rodada. Estradas ou
+  marcha forçada podem conceder outro no futuro sem alterar a velocidade de toda hoste.

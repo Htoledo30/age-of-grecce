@@ -23,11 +23,21 @@ import { resolverChoque } from '@/combate/batalha';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import type { OrdemDeMarcha } from './ordens';
+import type { Ajustes } from '@/dados/esquema';
+import {
+  type Cerco,
+  type Postura,
+  avancoDoCerco,
+  defesaNoAssalto,
+  milicianosPerdidos,
+} from '@/combate/cerco';
 
 /** O recorte do estado que a resolução mexe. Nada além disto. */
 export interface EstadoDaResolucao {
   exercitos: Record<string, Exercito>;
   ordens: Record<string, OrdemDeMarcha>;
+  /** Cercos em curso, por província sitiada. Sobrevive à virada — cerco leva turnos. */
+  cercos: Record<string, Cerco>;
 }
 
 /** O que a resolução precisa perguntar e mudar no mundo em volta. */
@@ -62,14 +72,6 @@ interface Forca {
   partiuDe: string;
   /** Morreu num choque. Não some da lista: sair no meio da varredura muda o resultado. */
   viva: boolean;
-  /**
-   * É milícia: derivada da população, defende só a própria província e **nunca pousa**.
-   *
-   * Ela entra no choque como qualquer outra força — é isso que dispensa um caminho
-   * separado de "defesa da cidade" — mas no fim se dissolve de volta na população em vez
-   * de virar hoste no mapa.
-   */
-  milicia?: { provincia: string; inicial: number };
 }
 
 /** O que aconteceu na rodada — pra crônica, pra interface e pros testes. */
@@ -99,11 +101,18 @@ export interface RelatorioDaRodada {
    * campanha.
    */
   milicianosMortos: readonly { provincia: string; mortos: number }[];
+  /** Cidades sob cerco ao fim da rodada, com o quanto já foi feito e a postura. */
+  cercos: readonly {
+    provincia: string;
+    sitiante: string;
+    progresso: number;
+    postura: Postura;
+  }[];
 }
 
 export function resolverRodada(
   estado: EstadoDaResolucao,
-  saltosPorRodada: number,
+  ajustes: Ajustes['jogo']['combate'],
   mundo: MundoDaResolucao,
 ): RelatorioDaRodada {
   const relatorio: {
@@ -111,17 +120,22 @@ export function resolverRodada(
     batalhas: RelatorioDaRodada['batalhas'][number][];
     conquistas: RelatorioDaRodada['conquistas'][number][];
     milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
-  } = { marchas: [], batalhas: [], conquistas: [], milicianosMortos: [] };
+    cercos: RelatorioDaRodada['cercos'][number][];
+  } = { marchas: [], batalhas: [], conquistas: [], milicianosMortos: [], cercos: [] };
 
+  // As posturas são lidas ANTES de qualquer coisa: as ordens são consumidas no caminho, e
+  // sem isto a cidade não saberia se quem chegou veio assaltar ou sentar.
+  const posturas = posturasPorDestino(estado);
+
+  const saltosPorRodada = ajustes.saltosPorRodada;
   const forcas = partir(estado);
   for (let passo = 0; passo < saltosPorRodada; passo++) {
     naEstrada(forcas, passo, relatorio.batalhas);
     chegar(forcas, passo);
-    naProvincia(forcas, relatorio.batalhas, mundo);
+    naProvincia(forcas, relatorio.batalhas);
   }
-  dispersarMilicia(forcas, mundo, relatorio.milicianosMortos);
   pousar(estado, forcas, relatorio.marchas);
-  conquistar(estado, mundo, relatorio.conquistas);
+  resolverCidades(estado, ajustes, mundo, posturas, relatorio);
 
   // ⚠️ As ordens são da RODADA, não da partida. Se sobrevivessem à virada, executariam de
   // novo, e o sintoma seria tropa andando sozinha.
@@ -214,64 +228,6 @@ function naEstrada(
   }
 }
 
-/**
- * Chama a milícia quando aparece inimigo, uma vez por província por rodada.
- *
- * ⚠️ **Só é convocada se houver hostil de fato.** Levantá-la sempre encheria a resolução
- * de forças que nunca lutam, e — pior — faria uma hoste amiga de passagem parecer um
- * choque.
- *
- * ⚠️ **Ela só existe durante a resolução.** Não pousa, não vira hoste, não aparece no
- * mapa: no fim, o que sobrou dela se dissolve de volta na população.
- */
-function convocarMilicia(
-  provincia: string,
-  presentes: Forca[],
-  todas: Forca[],
-  mundo: MundoDaResolucao,
-): void {
-  if (presentes.some((f) => f.milicia)) return;
-  const dono = mundo.donoDe(provincia);
-  if (!presentes.some((f) => f.viva && f.poder !== dono)) return;
-
-  const milicianos = mundo.miliciaDe(provincia);
-  if (milicianos <= 0) return;
-
-  const forca: Forca = {
-    poder: dono,
-    origem: { [provincia]: milicianos },
-    rota: [],
-    posicao: provincia,
-    partiuDe: provincia,
-    viva: true,
-    milicia: { provincia, inicial: milicianos },
-  };
-  presentes.push(forca);
-  todas.push(forca);
-}
-
-/**
- * A milícia se dissolve: quem sobrou volta pra casa, e só os MORTOS saem da população.
- *
- * Aniquilar a milícia inteira mataria de uma vez a fatia da cidade que pega em armas, e
- * uma província que perdesse uma batalha ficaria arruinada pro resto da campanha. Ela
- * dispersa; são os mesmos lavradores.
- */
-function dispersarMilicia(
-  forcas: readonly Forca[],
-  mundo: MundoDaResolucao,
-  mortosPorProvincia: RelatorioDaRodada['milicianosMortos'][number][],
-): void {
-  for (const forca of forcas) {
-    if (!forca.milicia) continue;
-    const perdidos = forca.milicia.inicial - soma(forca.origem);
-    forca.viva = false; // nunca pousa
-    if (perdidos <= 0) continue;
-    mundo.miliciaPerdida(forca.milicia.provincia, perdidos);
-    mortosPorProvincia.push({ provincia: forca.milicia.provincia, mortos: perdidos });
-  }
-}
-
 /** FASE CHEGADA — todos os sobreviventes avançam um trecho. */
 function chegar(forcas: readonly Forca[], passo: number): void {
   for (const forca of forcas) {
@@ -289,11 +245,7 @@ function chegar(forcas: readonly Forca[], passo: number): void {
  * menor**, e o desempate é por id. É provisório e está marcado como tal: combate de três
  * lados de verdade é assunto de diplomacia, que não existe.
  */
-function naProvincia(
-  forcas: Forca[],
-  batalhas: RelatorioDaRodada['batalhas'][number][],
-  mundo: MundoDaResolucao,
-): void {
+function naProvincia(forcas: Forca[], batalhas: RelatorioDaRodada['batalhas'][number][]): void {
   const porProvincia = new Map<string, Forca[]>();
   for (const forca of forcas) {
     if (!forca.viva) continue;
@@ -304,7 +256,6 @@ function naProvincia(
 
   for (const provincia of [...porProvincia.keys()].sort()) {
     const presentes = porProvincia.get(provincia) ?? [];
-    convocarMilicia(provincia, presentes, forcas, mundo);
     for (;;) {
       const vivas = presentes.filter((f) => f.viva);
       const poderes = new Set(vivas.map((f) => f.poder));
@@ -431,33 +382,167 @@ function pousar(
   }
 }
 
-/**
- * A CONQUISTA — quem sobrou de pé em terra alheia fica com ela.
- *
- * Depois do choque só resta um poder por província, então isto não precisa perguntar quem
- * defendia: se há tropa e ela não é do dono, o dono mudou.
- *
- * ⚠️ **Província inimiga realmente vazia cai sem batalha.** Isso é fronteira
- * desprotegida, não vantagem de interface — e é o que dá peso a decidir se a guarnição
- * marcha ou fica.
- */
-function conquistar(
-  estado: EstadoDaResolucao,
-  mundo: MundoDaResolucao,
-  conquistas: RelatorioDaRodada['conquistas'][number][],
-): void {
-  for (const provincia of Object.keys(estado.exercitos).sort()) {
-    const hoste = estado.exercitos[provincia];
-    if (!hoste) continue;
-    const dono = mundo.donoDe(provincia);
-    if (dono === hoste.poder) continue;
-    mundo.trocarDono(provincia, hoste.poder);
-    conquistas.push({ provincia, de: dono, para: hoste.poder });
-  }
-}
-
 function soma(origem: Record<string, number>): number {
   let total = 0;
   for (const homens of Object.values(origem)) total += homens;
   return total;
+}
+
+/**
+ * A postura que cada hoste levava ao chegar, por província de destino.
+ *
+ * Lida antes de qualquer fase porque as ordens são consumidas no caminho — e sem ela a
+ * cidade não teria como saber se quem apareceu na fronteira veio assaltar ou sentar.
+ */
+function posturasPorDestino(estado: EstadoDaResolucao): Map<string, Postura> {
+  const posturas = new Map<string, Postura>();
+  for (const origem of Object.keys(estado.ordens).sort()) {
+    const ordem = estado.ordens[origem];
+    const destino = ordem?.rota.at(-1);
+    if (!ordem || destino === undefined) continue;
+    posturas.set(destino, ordem.postura);
+  }
+  return posturas;
+}
+
+/**
+ * AS CIDADES — o que acontece com quem ficou de pé em terra alheia.
+ *
+ * Substituiu a conquista instantânea, e a diferença é o jogo inteiro: antes, sobrar de pé
+ * numa província alheia era ser dono dela. Agora sobrar de pé é ficar com o CAMPO, e a
+ * cidade continua sendo um problema por resolver.
+ *
+ * ⚠️ **Província alheia realmente vazia continua caindo sem batalha.** Sem gente não há
+ * quem feche portão nenhum — é fronteira desprotegida, e é o que dá peso a decidir se a
+ * guarnição marcha ou fica. As 200 sem economia configurada caem assim.
+ */
+function resolverCidades(
+  estado: EstadoDaResolucao,
+  ajustes: Ajustes['jogo']['combate'],
+  mundo: MundoDaResolucao,
+  posturas: Map<string, Postura>,
+  relatorio: {
+    batalhas: RelatorioDaRodada['batalhas'][number][];
+    conquistas: RelatorioDaRodada['conquistas'][number][];
+    milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
+    cercos: RelatorioDaRodada['cercos'][number][];
+  },
+): void {
+  const tomar = (provincia: string, poder: string): void => {
+    const de = mundo.donoDe(provincia);
+    mundo.trocarDono(provincia, poder);
+    relatorio.conquistas.push({ provincia, de, para: poder });
+    delete estado.cercos[provincia];
+  };
+
+  for (const provincia of Object.keys(estado.exercitos).sort()) {
+    const hoste = estado.exercitos[provincia];
+    if (!hoste) continue;
+
+    // Terra própria: se havia cerco aqui, ele acabou — ou o socorro chegou, ou o sitiante
+    // foi expulso. Levantar o cerco é consequência, não regra separada.
+    if (hoste.poder === mundo.donoDe(provincia)) {
+      delete estado.cercos[provincia];
+      continue;
+    }
+
+    const milicianos = mundo.miliciaDe(provincia);
+    if (milicianos <= 0) {
+      tomar(provincia, hoste.poder);
+      continue;
+    }
+
+    // A ordem desta rodada manda; sem ordem, o cerco em curso continua como estava; sem
+    // nem uma coisa nem outra, senta-se. Sitiar é o padrão de propósito: quem chegou sem
+    // dizer nada não joga o exército contra a muralha por conta própria.
+    const cerco = estado.cercos[provincia];
+    const postura =
+      posturas.get(provincia) ??
+      (cerco && cerco.sitiante === hoste.poder ? cerco.postura : 'sitiar');
+
+    if (postura === 'assaltar') {
+      assaltar(estado, provincia, hoste, milicianos, ajustes, mundo, relatorio, tomar);
+      continue;
+    }
+
+    const progresso =
+      (cerco && cerco.sitiante === hoste.poder ? cerco.progresso : 0) +
+      avancoDoCerco(forcaDe(hoste), milicianos, ajustes.cerco);
+    if (progresso >= 1) {
+      tomar(provincia, hoste.poder);
+      continue;
+    }
+    const atual: Cerco = { sitiante: hoste.poder, progresso, postura: 'sitiar' };
+    estado.cercos[provincia] = atual;
+    relatorio.cercos.push({ provincia, sitiante: hoste.poder, progresso, postura: 'sitiar' });
+  }
+
+  // Cerco sem sitiante em cima não existe: quem marchou embora ou morreu soltou a cidade.
+  for (const provincia of Object.keys(estado.cercos)) {
+    const hoste = estado.exercitos[provincia];
+    if (!hoste || hoste.poder !== estado.cercos[provincia]?.sitiante) {
+      delete estado.cercos[provincia];
+    }
+  }
+}
+
+/**
+ * O ASSALTO — resolve no turno, contra a milícia com o bônus da muralha.
+ *
+ * ⚠️ **A milícia perdida é contada em HOMENS, não em unidades de defesa.** A defesa é
+ * gente multiplicada pela muralha; sem desfazer a multiplicação, um assalto rechaçado
+ * faria a população encolher pelo dobro do que de fato caiu.
+ */
+function assaltar(
+  estado: EstadoDaResolucao,
+  provincia: string,
+  hoste: Exercito,
+  milicianos: number,
+  ajustes: Ajustes['jogo']['combate'],
+  mundo: MundoDaResolucao,
+  relatorio: {
+    batalhas: RelatorioDaRodada['batalhas'][number][];
+    conquistas: RelatorioDaRodada['conquistas'][number][];
+    milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
+  },
+  tomar: (provincia: string, poder: string) => void,
+): void {
+  const dono = mundo.donoDe(provincia);
+  const atacantes = forcaDe(hoste);
+  const defesa = defesaNoAssalto(milicianos, ajustes.cerco);
+  const choque = resolverChoque(atacantes, defesa);
+
+  const perder = (perdidos: number): void => {
+    if (perdidos <= 0) return;
+    mundo.miliciaPerdida(provincia, perdidos);
+    relatorio.milicianosMortos.push({ provincia, mortos: perdidos });
+  };
+
+  if (choque.vencedor === 'a') {
+    retirar(hoste, atacantes - choque.sobreviventes);
+    perder(milicianos);
+    relatorio.batalhas.push({
+      provincia,
+      vencedor: hoste.poder,
+      perdedores: [dono],
+      sobreviventes: choque.sobreviventes,
+    });
+    tomar(provincia, hoste.poder);
+    return;
+  }
+
+  // Rechaçado: o exército de assalto se desfaz diante da muralha, e a cidade fica.
+  delete estado.exercitos[provincia];
+  delete estado.cercos[provincia];
+  perder(
+    choque.vencedor === 'b'
+      ? milicianosPerdidos(milicianos, choque.sobreviventes, ajustes.cerco)
+      : milicianos,
+  );
+  relatorio.batalhas.push({
+    provincia,
+    vencedor: choque.vencedor === 'b' ? dono : null,
+    perdedores: choque.vencedor === 'b' ? [hoste.poder] : [hoste.poder, dono],
+    sobreviventes: choque.vencedor === 'b' ? Math.floor(choque.sobreviventes / ajustes.cerco.bonusDeMuralha) : 0,
+  });
 }

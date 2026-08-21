@@ -1,140 +1,87 @@
-/* Bloco de recrutamento, na coluna da província escolhida.
-   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
-
 .recrutamento {
-  background: var(--papel);
-  border: 1px solid var(--tinta-fraca);
-  color: var(--tinta);
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-vidro);
+  color: var(--ui-texto);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
 }
-
-.recrutamento[hidden] {
-  display: none;
-}
-
 .recrutamento__cabecalho {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--gap-3);
+  padding: 14px 18px;
   border: 0;
   background: transparent;
-  color: var(--tinta);
+  color: var(--ui-texto);
   cursor: pointer;
   text-align: left;
 }
-
 .recrutamento[data-aberto='sim'] .recrutamento__cabecalho {
-  border-bottom: 1px solid var(--papel-escuro);
+  border-bottom: 1px solid var(--ui-borda-fraca);
 }
-
 .recrutamento__cabecalho:hover,
 .recrutamento__cabecalho:focus-visible {
-  background: var(--papel-claro);
+  background: var(--ui-hover);
 }
-
 .recrutamento__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 18px;
-  font-weight: normal;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
+  color: var(--ui-bronze-claro);
 }
-
 .recrutamento__indicador {
   font-family: var(--fonte-numero);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
-  color: var(--ouro);
+  color: var(--ui-bronze-claro);
 }
-
 .recrutamento__corpo {
-  padding: var(--gap-2) var(--gap-3) var(--gap-3);
+  padding: 12px 18px 18px;
 }
-
-.recrutamento__corpo[hidden] {
-  display: none;
-}
-
 .recrutamento__alvo {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--tinta-fraca);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ui-texto-fraco);
 }
-
 .recrutamento__valor {
   width: 100%;
-  margin-top: var(--gap-2);
-  accent-color: var(--ouro);
-  cursor: ew-resize;
+  margin-top: 8px;
 }
-
-.recrutamento__valor:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
 .recrutamento__quantidade {
-  margin-top: var(--gap-2);
+  margin-top: 8px;
   font-family: var(--fonte-numero);
-  font-size: 16px;
-  color: var(--tinta);
+  font-size: 14px;
+  color: var(--ui-texto);
 }
-
-.recrutamento__atalhos {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-top: var(--gap-1);
-}
-
-.recrutamento__atalho {
-  padding: 5px 2px;
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-claro);
-  color: var(--tinta-fraca);
-  font-family: var(--fonte-numero);
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.recrutamento__atalho:hover:not(:disabled),
-.recrutamento__atalho:focus-visible {
-  border-color: var(--ouro);
-  color: var(--tinta);
-}
-
-.recrutamento__atalho:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
 .recrutamento__previsao {
-  margin-top: var(--gap-1);
-  font-size: 12px;
+  min-height: 18px;
+  margin-top: 7px;
+  font-size: 11px;
   line-height: 1.4;
-  color: var(--tinta-tenue);
+  color: var(--ui-texto-tenue);
 }
-
-/* Leva impossível fica marcada em sangue, como o investimento que não se paga: é a
-   informação que decide, e o jogador não deveria ter que descobrir clicando. */
 .recrutamento__previsao[data-pode='nao'] {
-  color: var(--sangue);
+  color: var(--ui-sangue-claro);
 }
-
 .recrutamento__botao {
   display: block;
   width: 100%;
-  margin-top: var(--gap-2);
-  text-align: left;
+  margin-top: 10px;
+  text-align: center;
 }
 
-/* `display` explícito VENCE o atributo `hidden`, que só funciona por causa de um
-   `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
-   aqui em cima deixa de conseguir se esconder. */
-.recrutamento__botao[hidden],
-.recrutamento__valor[hidden],
-.recrutamento__quantidade[hidden],
-.recrutamento__atalhos[hidden] {
-  display: none;
+@media (max-height: 820px) {
+  .recrutamento__cabecalho {
+    padding: 11px 14px;
+  }
+
+  .recrutamento__corpo {
+    padding: 10px 14px 14px;
+  }
 }

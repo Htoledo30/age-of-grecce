@@ -6,6 +6,8 @@
  * liberados, não será necessário trocar o método de seleção.
  */
 
+import { iconeGrego, rotularComIcone } from './icones-gregos';
+
 const PODER_DISPONIVEL = 'atenas';
 
 /**
@@ -69,8 +71,7 @@ export class InicioJogo {
 
     this.nomeEscolhido.textContent = poder.nome;
     this.amostraCor.style.background = poder.cor;
-    this.detalhesEscolhidos.textContent =
-      `${poder.povo} · ${quantidade} ${quantidade === 1 ? 'província' : 'províncias'}`;
+    this.detalhesEscolhidos.textContent = `${poder.povo} · ${quantidade} ${quantidade === 1 ? 'província' : 'províncias'}`;
     this.disponibilidade.textContent = disponivel
       ? 'Disponível para esta campanha de teste.'
       : 'Indisponível neste protótipo.';
@@ -91,6 +92,10 @@ export class InicioJogo {
     const cartao = document.createElement('div');
     cartao.className = 'inicio-jogo__cartao-menu';
 
+    const emblema = document.createElement('div');
+    emblema.className = 'inicio-jogo__emblema';
+    emblema.appendChild(iconeGrego('coruja'));
+
     const titulo = document.createElement('h1');
     titulo.className = 'inicio-jogo__titulo';
     titulo.textContent = 'Age of Grecce';
@@ -102,13 +107,13 @@ export class InicioJogo {
     const iniciar = document.createElement('button');
     iniciar.className = 'inicio-jogo__acao';
     iniciar.type = 'button';
-    iniciar.textContent = 'Iniciar jogo';
+    rotularComIcone(iniciar, 'lanca', 'Iniciar jogo');
     iniciar.addEventListener('click', () => {
       this.mostrarEscolha();
       this.aoPedirEscolha();
     });
 
-    cartao.append(titulo, subtitulo, iniciar);
+    cartao.append(emblema, titulo, subtitulo, iniciar);
     this.telaMenu.appendChild(cartao);
     this.raiz.appendChild(this.telaMenu);
   }
@@ -122,7 +127,8 @@ export class InicioJogo {
 
     const instrucao = document.createElement('p');
     instrucao.className = 'inicio-jogo__instrucao';
-    instrucao.textContent = 'Clique num território do mapa. Neste teste, somente Atenas está disponível.';
+    instrucao.textContent =
+      'Clique num território do mapa. Neste teste, somente Atenas está disponível.';
 
     const escolhido = document.createElement('div');
     escolhido.className = 'inicio-jogo__poder';
@@ -137,7 +143,7 @@ export class InicioJogo {
 
     this.botaoComecar.className = 'inicio-jogo__acao';
     this.botaoComecar.type = 'button';
-    this.botaoComecar.textContent = 'Começar campanha';
+    rotularComIcone(this.botaoComecar, 'escudo', 'Começar campanha');
     this.botaoComecar.disabled = true;
     this.botaoComecar.addEventListener('click', () => {
       if (!this.poderEscolhido) return;
@@ -150,13 +156,7 @@ export class InicioJogo {
     voltar.textContent = 'Voltar';
     voltar.addEventListener('click', () => this.mostrarMenu());
 
-    this.painelEscolha.append(
-      titulo,
-      instrucao,
-      escolhido,
-      this.botaoComecar,
-      voltar,
-    );
+    this.painelEscolha.append(titulo, instrucao, escolhido, this.botaoComecar, voltar);
     this.raiz.appendChild(this.painelEscolha);
   }
 

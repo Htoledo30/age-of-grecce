@@ -35,10 +35,10 @@ nela, disputá-la e bloqueá-la. A frota navega de zona em zona adjacente.
 
 ⚠️ **Isso descarta duas ideias anteriores do projeto**, e as duas estão mortas:
 
-| ideia descartada | onde estava escrita | por que morreu |
-| --- | --- | --- |
-| alcance naval a partir do porto, em dias de navegação | proposta de design | o mar deixa de ser lugar e vira raio; não dá para bloquear um raio |
-| adjacência marítima derivada por proximidade mútua | `tarefas/esqueleto-estado-e-turno.md` (removido) | funcionava e era artificial: inventava vizinhança onde não há travessia |
+| ideia descartada                                      | onde estava escrita                              | por que morreu                                                          |
+| ----------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------- |
+| alcance naval a partir do porto, em dias de navegação | proposta de design                               | o mar deixa de ser lugar e vira raio; não dá para bloquear um raio      |
+| adjacência marítima derivada por proximidade mútua    | `tarefas/esqueleto-estado-e-turno.md` (removido) | funcionava e era artificial: inventava vizinhança onde não há travessia |
 
 ### A rodada tem planejamento e resolução
 
@@ -61,14 +61,14 @@ Província inimiga realmente vazia continua caindo sem batalha: isso é fronteir
 desprotegida, não vantagem de interface. Se o defensor também mandar reforço, as ordens se
 encontram durante a resolução.
 
-### Cada hoste tem dois pontos de movimento
+### Cada hoste atravessa uma fronteira por rodada
 
-Cada hoste planeja até **dois saltos entre províncias vizinhas por rodada**. Não existe
+Cada hoste planeja **um salto entre províncias vizinhas por rodada**. Não existe
 limite global de cliques ou ações do poder: dinheiro limita economia; população, teto de
 leva e manutenção limitam exércitos; os pontos da própria hoste limitam operações.
 
 - cada travessia terrestre custa inicialmente 1 ponto;
-- a rota pode ter no máximo dois trechos;
+- a rota-base tem exatamente um trecho;
 - encontrar inimigo inicia batalha e cancela o restante da rota;
 - os pontos voltam no começo da rodada seguinte;
 - não há limite artificial de quantidade de hostes;
@@ -99,17 +99,17 @@ depois continua devolvendo cada homem à terra correta.
 A regra temporal geral é: **a decisão compromete recursos imediatamente, mas o que exige
 preparação física leva rodadas.**
 
-| ação | quando o custo/ordem entra | quando o efeito fica disponível |
-| --- | --- | --- |
-| investimento | imediatamente | na próxima arrecadação |
-| dispensar soldados | imediatamente | população volta imediatamente à origem |
-| recrutar | ouro e população saem imediatamente | leva fica pronta na rodada seguinte |
-| construir | ouro sai imediatamente | depois dos turnos de obra do catálogo |
-| mover | ordem e pontos ficam comprometidos | durante a resolução da rodada |
-| combater e conquistar | consequência da ordem de marcha | durante a mesma resolução |
+| ação                  | quando o custo/ordem entra          | quando o efeito fica disponível        |
+| --------------------- | ----------------------------------- | -------------------------------------- |
+| investimento          | imediatamente                       | na próxima arrecadação                 |
+| dispensar soldados    | imediatamente                       | população volta imediatamente à origem |
+| recrutar              | ouro e população saem imediatamente | leva fica pronta na rodada seguinte    |
+| construir             | ouro sai imediatamente              | depois dos turnos de obra do catálogo  |
+| mover                 | ordem e pontos ficam comprometidos  | durante a resolução da rodada          |
+| combater e conquistar | consequência da ordem de marcha     | durante a mesma resolução              |
 
 Cada província prepara somente **uma leva por vez**. Quando pronta, ela cria uma hoste ou
-se incorpora à aliada que estiver ali, e entra na rodada seguinte com os dois pontos de
+se incorpora à aliada que estiver ali, e entra na rodada seguinte apta a atravessar uma
 movimento. Se a província for conquistada durante o preparo, a formação é interrompida:
 o ouro não volta e os homens retornam à população daquela terra, agora sob o novo dono.
 
@@ -140,16 +140,16 @@ ali.
 
 ## O que já está no jogo
 
-| peça | onde | estado |
-| --- | --- | --- |
-| Quartel destrava recrutar | `dados/construcoes.json` | feito |
-| leva custa ouro e população, mas hoje nasce imediatamente | `src/combate/recrutamento.ts`, `src/combate/mobilizacao.ts` | feito; falta a fila de um turno |
-| qualquer quantidade inteira de 1 até a população atual, sem fração nem lote mínimo | `src/combate/recrutamento.ts` | feito |
-| manutenção por turno, e deserção proporcional quando não se paga | `src/combate/mobilizacao.ts` | feito |
-| dispensar devolve cada homem à terra dele | `src/combate/mobilizacao.ts` | feito |
-| marcador da hoste no mapa, seleção e ficha | `src/ui/hostes-mapa.ts`, `src/ui/exercito-ficha.ts` | feito |
-| propriedade mutável e eliminação de poder | `src/campanha/territorios.ts` | feito |
-| movimento, batalha, cerco, IA militar, naval | — | não existe |
+| peça                                                                               | onde                                                            | estado     |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------- |
+| Quartel destrava recrutar                                                          | `dados/construcoes.json`                                        | feito      |
+| leva custa ouro e população e fica uma rodada em formação                          | `src/combate/formacao-de-leva.ts`, `src/combate/mobilizacao.ts` | feito      |
+| qualquer quantidade inteira de 1 até a população atual, sem fração nem lote mínimo | `src/combate/recrutamento.ts`                                   | feito      |
+| manutenção por turno, e deserção proporcional quando não se paga                   | `src/combate/mobilizacao.ts`                                    | feito      |
+| dispensar devolve cada homem à terra dele                                          | `src/combate/mobilizacao.ts`                                    | feito      |
+| marcador da hoste no mapa, seleção e ficha                                         | `src/ui/hostes-mapa.ts`, `src/ui/exercito-ficha.ts`             | feito      |
+| propriedade mutável e eliminação de poder                                          | `src/campanha/territorios.ts`                                   | feito      |
+| movimento, batalha, cerco, IA militar, naval                                       | —                                                               | não existe |
 
 O balanço que a estrutura produziu sozinha, e que um teste fixa: **Atenas mobilizada ao
 teto põe 3.500 homens em campo, que custam 700 por turno contra 691 de renda** — porque os
@@ -163,16 +163,16 @@ nenhuma regra dizendo isso.
 Estes números são para não se inventar regra sobre dado que não existe. Todos foram
 conferidos contra o raster e o assado de produção.
 
-| medida | valor |
-| --- | ---: |
-| províncias / poderes / regiões | 205 / 148 / 53 |
-| poderes com **uma única** província | **120** |
-| componentes de terra | 38, e o continental tem 160 províncias |
-| províncias fora do componente continental | 45, e **todas as 45 são costeiras** |
-| **poderes sem nenhuma província no continente** | **43** |
-| províncias costeiras / interiores | **151 / 54** |
-| água no mapa | 14.194.381 px = 549.269 km², **56% da moldura** |
-| recorte do mar por Dijkstra multiorigem | **1,1 s, 216 MB, 0,01% sem dono** |
+| medida                                          |                                           valor |
+| ----------------------------------------------- | ----------------------------------------------: |
+| províncias / poderes / regiões                  |                                  205 / 148 / 53 |
+| poderes com **uma única** província             |                                         **120** |
+| componentes de terra                            |          38, e o continental tem 160 províncias |
+| províncias fora do componente continental       |             45, e **todas as 45 são costeiras** |
+| **poderes sem nenhuma província no continente** |                                          **43** |
+| províncias costeiras / interiores               |                                    **151 / 54** |
+| água no mapa                                    | 14.194.381 px = 549.269 km², **56% da moldura** |
+| recorte do mar por Dijkstra multiorigem         |               **1,1 s, 216 MB, 0,01% sem dono** |
 
 ⚠️ **Os 43 e os 34 são medidas diferentes, e as duas são verdade.** 34 é o número de
 poderes cujo componente de terra não contém mais ninguém. Mas Creta é um componente de 8

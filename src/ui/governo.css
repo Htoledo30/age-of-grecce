@@ -1,193 +1,164 @@
-/* Janela de governo e a aba de balanço.
-   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
-
 .governo {
   position: absolute;
   inset: 0;
+  z-index: 80;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Escurece o mapa em vez de escondê-lo: o jogador continua sabendo onde está. */
-  background: rgba(20, 16, 12, 0.55);
+  background: var(--ui-overlay);
+  backdrop-filter: blur(4px) saturate(0.7);
 }
-
-.governo[hidden] {
-  display: none;
-}
-
 .governo__janela {
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: 1180px;
+  width: 1240px;
   max-height: 860px;
-  background: var(--papel);
-  border: 1px solid var(--tinta);
-  color: var(--tinta);
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-fundo-elevado);
+  color: var(--ui-texto);
+  box-shadow: 0 28px 80px var(--ui-sombra);
 }
-
 .governo__barra {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--gap-3) var(--gap-4);
-  border-bottom: 1px solid var(--papel-escuro);
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
 }
-
 .governo__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 26px;
-  font-weight: normal;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.governo__fechar {
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-escuro);
-  color: var(--tinta);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.governo__fechar:hover {
-  background: var(--sangue);
-  color: var(--papel-claro);
-}
-
-/* Barra de abas. Com uma aba só ela já fica aqui, porque a segunda chega e não deve
-   custar remodelação de layout. */
-.governo__abas {
-  display: flex;
-  gap: var(--gap-1);
-  padding: var(--gap-2) var(--gap-4) 0;
-  border-bottom: 1px solid var(--papel-escuro);
-}
-
-.governo__aba {
-  padding: var(--gap-2) var(--gap-3);
-  border: 1px solid var(--papel-escuro);
-  border-bottom: none;
-  background: var(--papel-escuro);
-  color: var(--tinta-fraca);
-  font-family: var(--fonte-corpo);
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.governo__aba:hover {
-  background: var(--papel-claro);
-}
-
-/* O estado mora em aria-selected, não numa classe: a marcação diz a verdade e o CSS
-   só reage a ela. */
-.governo__aba[aria-selected='true'] {
-  background: var(--papel);
-  border-color: var(--tinta-fraca);
-  color: var(--tinta);
-  /* cobre a linha da barra, ligando a aba ao conteúdo */
-  margin-bottom: -1px;
-  padding-bottom: calc(var(--gap-2) + 1px);
-}
-
-.governo__conteudo {
-  padding: var(--gap-4);
-  overflow-y: auto;
-}
-
-.governo__conteudo[hidden] {
-  display: none;
-}
-
-/* --- aba de balanço --------------------------------------------------------- */
-
-.balanco__resumo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--gap-3);
-  padding-bottom: var(--gap-3);
-  margin-bottom: var(--gap-3);
-  border-bottom: 1px solid var(--papel-escuro);
-  font-size: 16px;
-}
-
-.balanco__resumo > * + *::before {
-  content: '·';
-  margin-right: var(--gap-3);
-  color: var(--tinta-tenue);
-}
-
-.balanco__poder {
-  font-family: var(--fonte-titulo);
+  font-size: 28px;
+  font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
-.balanco__dado {
-  font-family: var(--fonte-numero);
-  font-size: 14px;
-  color: var(--tinta-fraca);
+.governo__fechar {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
+  font-size: 22px;
+  cursor: pointer;
 }
-
-.balanco__ouro {
-  font-family: var(--fonte-numero);
-  font-size: 14px;
-  color: var(--ouro);
+.governo__fechar:hover {
+  border-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
 }
-
+.governo__abas {
+  display: flex;
+  gap: 4px;
+  padding: 12px 28px 0;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.governo__aba {
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--ui-texto-tenue);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.governo__aba:hover {
+  color: var(--ui-texto);
+}
+.governo__aba[aria-selected='true'] {
+  margin-bottom: -1px;
+  border-color: var(--ui-borda-fraca);
+  border-top-color: var(--ui-bronze);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-bronze-claro);
+}
+.governo__conteudo {
+  padding: 24px 28px 30px;
+  overflow-y: auto;
+}
+.balanco__resumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.balanco__resumo > * {
+  padding: 0 14px;
+  border-left: 1px solid var(--ui-borda-fraca);
+}
+.balanco__resumo > *:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.balanco__poder {
+  font-family: var(--fonte-titulo);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.balanco__dado,
+.balanco__ouro,
 .balanco__aviso {
   font-family: var(--fonte-numero);
-  font-size: 14px;
-  color: var(--sangue);
+  font-size: 12px;
+  color: var(--ui-texto-fraco);
 }
-
+.balanco__ouro {
+  color: var(--ui-bronze-claro);
+}
+.balanco__aviso {
+  color: var(--ui-sangue-claro);
+}
 .balanco__tabela {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
 }
-
 .balanco__tabela th {
-  padding: var(--gap-2);
-  border-bottom: 1px solid var(--tinta-fraca);
-  font-family: var(--fonte-corpo);
-  font-weight: normal;
+  position: sticky;
+  top: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ui-borda);
+  background: var(--ui-fundo-elevado);
+  color: var(--ui-texto-tenue);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-align: left;
-  text-transform: lowercase;
-  color: var(--tinta-tenue);
+  text-transform: uppercase;
 }
-
 .balanco__tabela td {
-  padding: var(--gap-2);
-  border-bottom: 1px solid var(--papel-escuro);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  color: var(--ui-texto-fraco);
 }
-
-.balanco__tabela tbody tr:hover {
-  background: var(--papel-claro);
+.balanco__tabela tbody tr:hover td {
+  background: var(--ui-hover);
+  color: var(--ui-texto);
 }
-
 .balanco__tabela tbody tr[data-sem='sim'] {
-  color: var(--tinta-tenue);
-  font-style: italic;
+  color: var(--ui-texto-tenue);
 }
-
-/* Dinheiro alinhado à direita e em monoespaçada: é o que deixa comparar a coluna de
-   cima a baixo sem ler número por número. */
 .balanco__numero {
   font-family: var(--fonte-numero);
-  text-align: right;
+  font-variant-numeric: tabular-nums;
+  text-align: right !important;
 }
-
 .balanco__tabela tfoot td {
-  padding-top: var(--gap-2);
-  border-top: 1px solid var(--tinta-fraca);
-  border-bottom: none;
-  font-weight: bold;
+  border-top: 1px solid var(--ui-bronze);
+  border-bottom: 0;
+  color: var(--ui-texto);
+  font-weight: 700;
 }
-
 .balanco__tabela tfoot td.balanco__numero:last-child {
-  color: var(--ouro);
+  color: var(--ui-bronze-claro);
 }

@@ -121,6 +121,28 @@ export const Ajustes = z.object({
        * pra não ser ignorada e pra que o CERCO possa existir — sem defensor, província
        * alheia cai no instante em que alguém pisa nela.
        */
+      /**
+       * O cerco: o que custa tomar uma cidade que não se entrega.
+       *
+       * ⚠️ Estes dois números decidem o RITMO da guerra inteira. `turnosBase` baixo faz
+       * cidade cair depressa e o mapa virar corrida; alto faz todo cerco virar espera.
+       */
+      cerco: z.object({
+        /**
+         * Dureza da cidade. Um sitiante do tamanho exato da defesa leva estes turnos.
+         *
+         * O avanço é `sitiantes / (defensores × turnosBase)`, então o dobro de gente toma
+         * na metade do tempo — trazer o exército inteiro compra tempo, e é essa a decisão.
+         */
+        turnosBase: z.number().positive(),
+        /**
+         * Quanto a milícia vale atrás da muralha, no assalto.
+         *
+         * É bônus de POSIÇÃO, de toda cidade. A construção Muralha dobra a milícia antes
+         * disto, e os dois se multiplicam.
+         */
+        bonusDeMuralha: z.number().min(1),
+      }),
       milicia: z.object({
         /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */
         fracao: z.number().gt(0).max(1),
@@ -133,13 +155,11 @@ export const Ajustes = z.object({
         fracaoMorta: z.number().gt(0).max(1),
       }),
       /**
-       * Trechos que uma hoste planeja por rodada. Dois hoje.
+       * Fronteiras que uma hoste atravessa por rodada. A regra-base é uma.
        *
-       * ⚠️ **É este número que obriga a resolução a ter PASSOS.** Com um salto, a rodada
-       * seria "todo mundo anda uma vez e resolve"; com dois, é preciso resolver o passo 1
-       * de todo mundo antes do passo 2 de qualquer um — senão volta a vantagem de quem é
-       * processado primeiro. Se um dia o turno virar meia estação (verão e inverno), vale
-       * reabrir: com o turno mais curto, um salto fica mais simples e mais fiel.
+       * A estrutura continua aceitando mais trechos para uma futura estrada ou marcha
+       * forçada, mas isso precisa ser um bônus explícito — nunca a velocidade escondida
+       * de toda hoste. Assim Atenas → Elêusis → Mégara exige duas rodadas.
        */
       saltosPorRodada: z.number().int().positive(),
     }),

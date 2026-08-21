@@ -9,6 +9,8 @@
  * Este arquivo só sabe **julgar e descrever** uma ordem. Quem a executa é `resolucao.ts`.
  */
 
+import type { Postura } from '@/combate/cerco';
+
 /** Uma ordem de marcha registrada, ainda não executada. */
 export interface OrdemDeMarcha {
   /** De onde sai. É a chave do registro: **uma ordem por hoste por rodada.** */
@@ -22,6 +24,14 @@ export interface OrdemDeMarcha {
   rota: readonly string[];
   /** Quantos homens marcham. O resto fica defendendo a origem. */
   homens: number;
+  /**
+   * O que fazer ao chegar, se o destino for alheio e tiver gente dentro.
+   *
+   * Viaja com a ORDEM e não com a hoste porque é decisão do destino: a mesma tropa
+   * assalta uma cidade pequena e senta na frente de uma grande. Em terra própria ou em
+   * província vazia ela não significa nada — e não precisa significar.
+   */
+  postura: Postura;
 }
 
 /** Por que uma ordem foi recusada — ou o consentimento de registrá-la. */

@@ -289,7 +289,7 @@ para pagar o porto. A regra vale igualmente para jogador e IA.
 
 ### A decisão que bloqueava o porto já foi tomada
 
-**A tropa recebe uma ordem planejada de até dois saltos entre províncias vizinhas**, que
+**A tropa recebe uma ordem planejada de um salto entre províncias vizinhas**, que
 só é executada na resolução da rodada. E **o mar é recortado em zonas**, por onde a frota
 navega. Com isso, o porto tem forma: é o lugar onde a tropa embarca, e a ponte entre o
 grafo de terra e o grafo de mar.

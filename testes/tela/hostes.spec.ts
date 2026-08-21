@@ -35,6 +35,7 @@ async function campanhaComTropa(page: Page, homens: number) {
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', quantos);
+    i.passarTurno(); // conclui a formação antes dos testes da hoste ativa
   }, homens);
 }
 
@@ -80,6 +81,9 @@ test('clicar no mapa solta a hoste, e dispensar tira o marcador do mundo', async
 
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await expect(page.locator('.exercito')).toBeVisible();
+  const populacaoAntesDeDispensar = await page.evaluate(() =>
+    (window as unknown as { inspecao: Ganchos }).inspecao.populacaoDe('atenas'),
+  );
 
   // Clicar no mapa é escolher CHÃO: a ficha do exército sai.
   await page.mouse.click(500, 900);
@@ -91,7 +95,9 @@ test('clicar no mapa solta a hoste, e dispensar tira o marcador do mundo', async
   // Sem hoste, sem marcador e sem ficha — e ninguém fica descrevendo tropa que não existe.
   await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveCount(0);
   await expect(page.locator('.exercito')).toBeHidden();
-  await expect(page.locator('dd.ficha__populacao')).toContainText('35.697');
+  await expect(page.locator('dd.ficha__populacao')).toContainText(
+    (populacaoAntesDeDispensar + 1000).toLocaleString('pt-BR'),
+  );
   // E a manutenção some da barra junto com a tropa.
   await expect(page.locator('.barra-turno__ouro')).not.toContainText('−');
 });

@@ -1,0 +1,105 @@
+.icone-grego {
+  display: inline-block;
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rotulo-com-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.52em;
+}
+
+.rotulo-com-icone__texto {
+  min-width: 0;
+}
+
+.botao.rotulo-com-icone,
+.inicio-jogo__acao.rotulo-com-icone,
+.inicio-jogo__voltar.rotulo-com-icone {
+  display: flex;
+}
+
+.acoes__titulo.rotulo-com-icone,
+.recrutamento__titulo.rotulo-com-icone,
+.governo__titulo.rotulo-com-icone,
+.painel-lateral__titulo.rotulo-com-icone,
+.exercito__titulo.rotulo-com-icone {
+  justify-content: flex-start;
+}
+
+.acoes__titulo .icone-grego,
+.recrutamento__titulo .icone-grego,
+.painel-lateral__titulo .icone-grego {
+  color: var(--ui-bronze-claro);
+}
+
+.acoes__construcao.rotulo-com-icone {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.acoes__construcao .icone-grego {
+  width: 17px;
+  height: 17px;
+  color: var(--ui-bronze-claro);
+}
+
+.acoes__construcao:disabled .icone-grego {
+  color: var(--ui-texto-tenue);
+}
+
+.inicio-jogo__emblema {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  border: 1px solid var(--ui-bronze);
+  border-radius: 50%;
+  color: var(--ui-bronze-claro);
+  background: radial-gradient(circle, var(--ui-pressionado), transparent 68%);
+  box-shadow:
+    0 0 0 5px var(--ui-fundo),
+    0 0 0 6px var(--ui-bronze-escuro);
+}
+
+.inicio-jogo__emblema .icone-grego {
+  width: 44px;
+  height: 44px;
+  stroke-width: 1.25;
+}
+
+.barra-turno__dado.rotulo-com-icone,
+.barra-turno__ouro.rotulo-com-icone,
+.barra-turno__poder.rotulo-com-icone {
+  gap: 6px;
+}
+
+.barra-turno__linha .icone-grego {
+  width: 15px;
+  height: 15px;
+  color: var(--ui-bronze-claro);
+}
+
+.barra-turno__poder .icone-grego {
+  width: 18px;
+  height: 18px;
+}
+
+.governo__titulo .icone-grego,
+.exercito__titulo .icone-grego {
+  color: var(--ui-bronze-claro);
+}
+
+.governo__aba.rotulo-com-icone {
+  display: inline-flex;
+}

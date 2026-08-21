@@ -1,185 +1,152 @@
-/* Ficha do exército, na coluna da seleção.
-   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
-
-/* Baixo-centro: a QUARTA região da interface.
-   Painel direita = o que se aciona · coluna baixo-esquerda = a província escolhida ·
-   barra topo = o estado da campanha · e aqui, a HOSTE escolhida.
-
-   Região própria e não mais um painel na coluna da província, por dois motivos: a hoste
-   não é a província (assim que ela marchar, as duas deixam de coincidir), e quatro painéis
-   empilhados estouravam os 1080 e cortavam o de cima.
-
-   Largura por CONTEÚDO e centrada por translate, nunca largura cheia: um painel largo
-   ancorado embaixo comeria clique de mapa de ponta a ponta. */
 .exercito {
   position: absolute;
-  bottom: var(--gap-3);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  max-height: calc(100% - var(--gap-3) * 2 - 80px);
+  bottom: 22px;
+  right: 22px;
+  z-index: 17;
+  width: 390px;
+  max-height: 620px;
   overflow-y: auto;
-  scrollbar-width: none;
-  padding: var(--gap-3);
-  background: var(--papel);
-  border: 1px solid var(--tinta-fraca);
-  color: var(--tinta);
+  padding: 20px;
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-vidro);
+  color: var(--ui-texto);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
 }
-
-.exercito[hidden] {
-  display: none;
-}
-
 .exercito__titulo {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
-  font-size: 18px;
-  font-weight: normal;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding-bottom: var(--gap-2);
-  border-bottom: 1px solid var(--papel-escuro);
-  margin-bottom: var(--gap-2);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ui-texto);
 }
-
 .exercito__poder {
   display: flex;
   align-items: center;
-  gap: var(--gap-2);
-  font-size: 13px;
-  color: var(--tinta-fraca);
-}
-
-.exercito__tinta {
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--tinta-fraca);
-}
-
-.exercito__forca {
-  margin-top: var(--gap-2);
-  font-family: var(--fonte-numero);
-  font-size: 20px;
-}
-
-.exercito__custo {
-  font-size: 12px;
-  color: var(--tinta-tenue);
-}
-
-/* Estar em terra alheia é fato, não erro: ouro, como a obra em curso. */
-.exercito__aviso {
-  margin-top: var(--gap-1);
-  font-size: 12px;
-  color: var(--ouro);
-}
-
-.exercito__aviso[hidden] {
-  display: none;
-}
-
-.exercito__grupo {
-  margin-top: var(--gap-3);
-  margin-bottom: var(--gap-1);
-  font-family: var(--fonte-titulo);
-  font-size: 12px;
-  font-weight: normal;
-  letter-spacing: 0.1em;
+  gap: 8px;
+  font-size: 11px;
   text-transform: uppercase;
-  color: var(--tinta-tenue);
-  border-bottom: 1px solid var(--papel-escuro);
+  letter-spacing: 0.06em;
+  color: var(--ui-texto-fraco);
 }
-
+.exercito__tinta {
+  width: 16px;
+  height: 20px;
+  border: 1px solid var(--ui-texto-fraco);
+  border-radius: 6px 6px 8px 8px;
+  clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
+}
+.exercito__forca {
+  margin-top: 10px;
+  font-family: var(--fonte-numero);
+  font-size: 24px;
+  font-weight: 650;
+  color: var(--ui-texto);
+}
+.exercito__custo {
+  font-size: 11px;
+  color: var(--ui-bronze-claro);
+}
+.exercito__aviso {
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--ui-sangue-claro);
+}
+.exercito__grupo {
+  margin: 14px 0 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
 .exercito__origens {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 2px var(--gap-2);
-  font-size: 13px;
+  gap: 3px 12px;
+  font-size: 11px;
+  color: var(--ui-texto-fraco);
 }
-
 .exercito__origens dd {
-  text-align: right;
   font-family: var(--fonte-numero);
+  text-align: right;
 }
-
-/* Terra natal perdida: em sangue, porque dispensar estes homens entrega gente ao
-   inimigo — é a informação que muda a decisão. */
 .exercito__perdida {
-  color: var(--sangue);
+  color: var(--ui-sangue-claro);
 }
-
+.exercito__valor {
+  width: 100%;
+  margin-top: 8px;
+}
+.exercito__quantidade {
+  margin-top: 8px;
+  font-family: var(--fonte-numero);
+  font-size: 13px;
+  color: var(--ui-texto);
+}
 .exercito__botao {
   display: block;
   width: 100%;
-  margin-top: var(--gap-3);
-  text-align: left;
+  margin-top: 12px;
+  text-align: center;
 }
-
-/* `display` explícito VENCE o atributo `hidden`. Ver acoes-provincia.css. */
-.exercito__botao[hidden] {
-  display: none;
-}
-
-/* A ordem já dada é fato comprometido, não oferta: ouro, como a obra em curso. */
-.exercito__ordem {
-  margin-top: var(--gap-2);
-  padding-top: var(--gap-2);
-  border-top: 1px solid var(--papel-escuro);
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--ouro);
-}
-
-.exercito__valor {
-  width: 100%;
-  margin-top: var(--gap-2);
-  accent-color: var(--ouro);
-  cursor: ew-resize;
-}
-
-.exercito__quantidade {
-  margin-top: var(--gap-2);
-  font-family: var(--fonte-numero);
-  font-size: 14px;
-}
-
-.exercito__atalhos {
+.exercito__postura {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-top: var(--gap-1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 12px;
 }
-
-.exercito__atalho {
-  padding: 5px 2px;
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-claro);
-  color: var(--tinta-fraca);
-  font-family: var(--fonte-numero);
+.exercito__botao--postura {
+  margin-top: 0;
+}
+.exercito__botao--postura[data-escolhida='sim'] {
+  border-color: var(--ui-bronze-claro);
+  background: var(--ui-pressionado);
+  color: var(--ui-bronze-claro);
+}
+.exercito__cerco {
+  margin-top: 10px;
+  padding: 10px;
+  border-left: 2px solid var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
   font-size: 11px;
-  cursor: pointer;
 }
-
-.exercito__atalho:hover:not(:disabled),
-.exercito__atalho:focus-visible {
-  border-color: var(--ouro);
-  color: var(--tinta);
-}
-
-.exercito__ordem[hidden],
-.exercito__valor[hidden],
-.exercito__quantidade[hidden],
-.exercito__atalhos[hidden] {
-  display: none;
-}
-
-/* A instrução do modo de marcha: some quando a marcha não está em curso. */
-.exercito__instrucao {
-  margin-top: var(--gap-1);
-  font-size: 12px;
+.exercito__ordem {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-left: 2px solid var(--ui-bronze);
+  background: var(--ui-pressionado);
+  font-size: 11px;
   line-height: 1.4;
-  color: var(--ouro);
+  color: var(--ui-bronze-claro);
+}
+.exercito__instrucao {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ui-bronze-claro);
 }
 
-.exercito__instrucao[hidden] {
-  display: none;
+@media (max-width: 900px), (max-height: 700px) {
+  .exercito {
+    right: 14px;
+    bottom: 14px;
+    width: 350px;
+    max-height: calc(100% - 108px);
+    padding: 15px;
+  }
+}
+
+/* A pergunta que abre a escolha de postura. Nomeia o alvo: sem o nome, dois botões
+   soltos não dizem sobre o que se está decidindo. */
+.exercito__pergunta {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--ui-texto);
 }

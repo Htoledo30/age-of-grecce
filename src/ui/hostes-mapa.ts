@@ -27,7 +27,10 @@ export interface MarcadorDeHoste {
   /** Centro da província, em unidades de mundo. */
   x: number;
   y: number;
+  /** Homens já prontos para receber ordens. */
   forca: number;
+  /** Recrutas pagos que só entram na hoste no próximo turno. */
+  emFormacao: number;
   /** Cor do poder dono da hoste — não a do dono do chão. */
   cor: string;
   nomeDoPoder: string;
@@ -107,10 +110,17 @@ export class HostesMapa {
         this.marcadores.set(hoste.provincia, elemento);
       }
       if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
-      elemento.textContent = hoste.forca.toLocaleString('pt-BR');
+      const pronta = hoste.forca.toLocaleString('pt-BR');
+      const formando = hoste.emFormacao.toLocaleString('pt-BR');
+      elemento.textContent = hoste.forca > 0 ? pronta : formando;
       definirTooltip(elemento, {
-        titulo: `Hoste de ${hoste.nomeDoPoder}`,
-        corpo: `${hoste.forca.toLocaleString('pt-BR')} homens em armas.`,
+        titulo: hoste.forca > 0 ? `Hoste de ${hoste.nomeDoPoder}` : `Leva de ${hoste.nomeDoPoder}`,
+        corpo:
+          hoste.emFormacao <= 0
+            ? `${pronta} homens em armas.`
+            : hoste.forca <= 0
+              ? `${formando} recrutas em formação. Ficarão prontos no próximo turno.`
+              : `${pronta} homens prontos. ${formando} recrutas ficarão prontos no próximo turno.`,
         tom: hoste.minha ? 'informacao' : 'perigo',
       });
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
@@ -119,6 +129,10 @@ export class HostesMapa {
       elemento.dataset['escolhendoDestino'] = hoste.escolhendoDestino ? 'sim' : 'nao';
       elemento.dataset['ordem'] = hoste.temOrdem ? 'sim' : 'nao';
       elemento.dataset['chegada'] = hoste.chegadaRecente ? 'sim' : 'nao';
+      elemento.dataset['emFormacao'] = hoste.emFormacao > 0 ? 'sim' : 'nao';
+      elemento.dataset['somenteFormacao'] = hoste.forca <= 0 ? 'sim' : 'nao';
+      elemento.dataset['formacaoQuantidade'] =
+        hoste.forca > 0 && hoste.emFormacao > 0 ? `+${formando}` : '';
     }
   }
 

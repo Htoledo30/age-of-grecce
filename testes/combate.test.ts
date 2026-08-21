@@ -171,6 +171,16 @@ describe('recrutar custa ouro E população', () => {
 
     expect(c.tesouro).toBe(tesouro - custoDaLeva(1000, combate));
     expect(c.populacaoDe('atenas')).toBe(populacao - 1000);
+    expect(c.forcaEm('atenas')).toBe(0);
+    expect(c.exercitoEm('atenas')).toBeUndefined();
+    expect(c.formacaoEm('atenas')).toMatchObject({
+      poder: 'atenas',
+      homens: 1000,
+      prontaNoTurno: c.turno + 1,
+    });
+
+    c.passarTurno();
+    expect(c.formacaoEm('atenas')).toBeUndefined();
     expect(c.forcaEm('atenas')).toBe(1000);
     expect(c.exercitoEm('atenas')?.poder).toBe('atenas');
   });
@@ -229,6 +239,10 @@ describe('manter tropa é o ralo de dinheiro', () => {
   it('a manutenção sai do tesouro todo turno, depois da arrecadação', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
+    // Em formação, a leva ainda não é hoste e não cobra folha militar.
+    expect(c.manutencao).toBe(0);
+    c.passarTurno();
+
     const tesouro = c.tesouro;
     const renda = c.renda;
     const manutencao = c.manutencao;
@@ -251,6 +265,7 @@ describe('manter tropa é o ralo de dinheiro', () => {
     // contra 691 de renda, porque os mesmos 3.500 também deixaram de ser tributados.
     const c = comQuartel();
     c.recrutar('atenas', 3500);
+    c.passarTurno();
     expect(c.manutencao).toBe(Math.round(3500 * combate.manutencaoPorHomem));
     expect(c.saldoPorTurno).toBeLessThan(0);
   });
@@ -258,6 +273,7 @@ describe('manter tropa é o ralo de dinheiro', () => {
   it('o aperto drena o tesouro e a tropa deserta aos poucos, sem colapso', () => {
     const c = comQuartel();
     c.recrutar('atenas', 3500);
+    c.passarTurno();
     const forcaInicial = c.forcaEm('atenas');
     const totalAntes = c.populacaoDe('atenas') + c.homensEmArmasDe('atenas');
 
@@ -285,43 +301,46 @@ describe('manter tropa é o ralo de dinheiro', () => {
 describe('dispensar devolve cada um à sua terra', () => {
   it('aceita dispensar um único homem, sem lote mínimo', () => {
     const c = comQuartel();
-    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
+    c.passarTurno();
+    const populacao = c.populacaoDe('atenas');
     c.dispensar('atenas', 1);
     expect(c.forcaEm('atenas')).toBe(999);
-    expect(c.populacaoDe('atenas')).toBe(populacao - 999);
+    expect(c.populacaoDe('atenas')).toBe(populacao + 1);
   });
 
   it('a população volta exatamente de onde saiu', () => {
     const c = comQuartel();
-    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 2000);
-    expect(c.populacaoDe('atenas')).toBe(populacao - 2000);
+    c.passarTurno();
+    const populacao = c.populacaoDe('atenas');
 
     c.dispensar('atenas', 800);
 
     expect(c.forcaEm('atenas')).toBe(1200);
-    expect(c.populacaoDe('atenas')).toBe(populacao - 1200);
+    expect(c.populacaoDe('atenas')).toBe(populacao + 800);
   });
 
   it('dispensar tudo apaga o exército em vez de deixar um vazio', () => {
     const c = comQuartel();
-    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
+    c.passarTurno();
+    const populacao = c.populacaoDe('atenas');
     c.dispensar('atenas', 1000);
     expect(c.exercitoEm('atenas')).toBeUndefined();
-    expect(c.populacaoDe('atenas')).toBe(populacao);
+    expect(c.populacaoDe('atenas')).toBe(populacao + 1000);
     expect(c.manutencao).toBe(0);
   });
 
   it('a população nunca é uma catraca de sentido único', () => {
     const c = comQuartel();
-    const inicial = c.populacaoDe('atenas');
     for (let i = 0; i < 3; i++) {
+      const antes = c.populacaoDe('atenas');
       c.recrutar('atenas', 1000);
+      c.passarTurno();
       c.dispensar('atenas', 1000);
+      expect(c.populacaoDe('atenas')).toBeGreaterThanOrEqual(antes);
     }
-    expect(c.populacaoDe('atenas')).toBe(inicial);
   });
 });
 
@@ -329,6 +348,7 @@ describe('conquista e tropa', () => {
   it('perder a província não some com o exército que está nela', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
+    c.passarTurno();
     c.trocarDono('atenas', 'megara');
     // o exército continua sendo de Atenas: quem manda no chão não manda na tropa
     expect(c.exercitoEm('atenas')?.poder).toBe('atenas');
@@ -351,23 +371,28 @@ describe('perder o chão não é o mesmo que morrer', () => {
     expect(c.poderesVivos()).toContain('atenas');
   });
 
-  it('o exílio dura uma rodada: a hoste retoma a terra onde está', () => {
+  it('o exilado não fica parado: ele SITIA a própria capital de volta', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
+    c.passarTurno(); // a leva leva uma rodada pra virar hoste
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
     expect(c.renda).toBe(0); // sem província, sem arrecadação
     expect(c.noExilio('atenas')).toBe(true);
 
-    c.passarTurno();
+    // ⚠️ O CERCO mudou isto, e a regra nova é mais dura e mais justa: a hoste está pisando
+    // na própria terra, mas a cidade tem gente dentro e não abre o portão porque a bandeira
+    // mudou. O exilado tem que sitiar de volta — e o relógio da deserção corre enquanto ele
+    // sitia. É a única corrida do jogo em que o jogador está dos dois lados.
+    let turnos = 0;
+    while (c.noExilio('atenas') && turnos < 12) {
+      c.passarTurno();
+      turnos++;
+    }
 
-    // ⚠️ A regra da conquista mudou isto, e o comportamento novo é o certo: uma hoste
-    // parada em terra alheia SEM ninguém defendendo fica com ela. O exército no exílio
-    // não espera — ele retoma o chão em que está pisando.
+    expect(turnos).toBeGreaterThan(1); // não foi instantâneo
     expect(c.donoDe('atenas')).toBe('atenas');
     expect(c.noExilio('atenas')).toBe(false);
     expect(c.vivo('atenas')).toBe(true);
-    // O caminho da deserção continua existindo e tem teste próprio: ver "o aperto drena o
-    // tesouro". O que morreu foi a premissa de que o exilado fica parado.
   });
 
   it('sem chão e sem tropa é eliminação, como antes', () => {
@@ -381,15 +406,15 @@ describe('perder o chão não é o mesmo que morrer', () => {
 describe('dispensar homem de terra perdida', () => {
   it('ele volta pra terra dele mesmo que ela seja do inimigo agora', () => {
     const c = comQuartel();
-    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
-    expect(c.populacaoDe('atenas')).toBe(populacao - 1000);
+    c.passarTurno();
+    const populacao = c.populacaoDe('atenas');
 
     c.trocarDono('atenas', 'megara');
     // Uma regra só, sem exceção: gente pertence ao chão, não a quem manda no chão.
     c.dispensar('atenas', 1000);
 
-    expect(c.populacaoDe('atenas')).toBe(populacao);
+    expect(c.populacaoDe('atenas')).toBe(populacao + 1000);
     expect(c.donoDe('atenas')).toBe('megara');
     // E a consequência dura, de propósito: os habitantes rendem pro conquistador.
     expect(c.rendaDe('megara')).toBe(c.economiaDe('atenas')?.total);
@@ -413,8 +438,9 @@ describe('dispensar homem de terra perdida', () => {
 
   it('nenhum homem some do mundo no caminho', () => {
     const c = comQuartel();
-    const total = c.populacaoDe('atenas');
     c.recrutar('atenas', 3000);
+    c.passarTurno();
+    const total = c.populacaoDe('atenas') + c.homensEmArmasDe('atenas');
     c.trocarDono('atenas', 'megara');
     c.dispensar('atenas', 1200);
     expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(total);

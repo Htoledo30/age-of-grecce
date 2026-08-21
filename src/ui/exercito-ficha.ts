@@ -12,6 +12,8 @@
  */
 
 import { definirTooltip } from './tooltip';
+import type { Postura } from '@/combate/cerco';
+import { rotularComIcone } from './icones-gregos';
 
 /** De onde saiu um pedaço da hoste, e se aquela terra ainda é de quem a comanda. */
 interface OrigemDaHoste {
@@ -45,6 +47,22 @@ export interface VistaDoExercito {
    * Enquanto ela existe, a hoste não aceita outra: **uma ordem por hoste por rodada.**
    */
   ordem: { destino: string; homens: number } | null;
+  /**
+   * O alvo HOSTIL já apontado no mapa, esperando o jogador dizer o que fazer ao chegar.
+   *
+   * ⚠️ A pergunta só existe para terra alheia, e só depois de o alvo ser escolhido.
+   * Perguntar antes seria pedir uma decisão sobre um lugar que o jogador ainda não olhou;
+   * perguntar numa marcha dentro do próprio território seria pedir uma decisão que não
+   * existe.
+   */
+  alvo: { nome: string } | null;
+  /**
+   * O cerco que ESTA hoste está conduzindo onde ela está, se houver.
+   *
+   * Fica na ficha da hoste e não na da província porque quem decide assaltar ou continuar
+   * sentado é o comandante, não a cidade.
+   */
+  cerco: { progresso: number; postura: Postura } | null;
 }
 
 export class ExercitoFicha {
@@ -63,6 +81,12 @@ export class ExercitoFicha {
   private readonly botaoMover = document.createElement('button');
   private readonly instrucao = document.createElement('p');
   private readonly linhaOrdem = document.createElement('p');
+  private readonly perguntaDoAlvo = document.createElement('p');
+  private readonly seletorDePostura = document.createElement('div');
+  private readonly botaoAssaltar = document.createElement('button');
+  private readonly botaoSitiar = document.createElement('button');
+  private readonly linhaCerco = document.createElement('p');
+  private readonly botaoTrocarPostura = document.createElement('button');
   private readonly botaoCancelar = document.createElement('button');
   /** De quem é a quantidade que está no campo. Trocar de hoste reinicia o campo. */
   private quantidadeDe: string | null = null;
@@ -74,6 +98,10 @@ export class ExercitoFicha {
   /** Quantos homens o jogador quer mandar. Lida quando ele escolhe o destino no mapa. */
   aoMudarQuantidade: (homens: number) => void = () => {};
   aoCancelarOrdem: (idProvincia: string) => void = () => {};
+  /** A postura da ordem que está sendo composta. */
+  aoEscolherPostura: (postura: Postura) => void = () => {};
+  /** A postura de um cerco JÁ em pé. Vale na próxima virada, como toda ordem. */
+  aoTrocarPosturaDoCerco: (idProvincia: string, postura: Postura) => void = () => {};
   aoDispensar: (idProvincia: string, homens: number) => void = () => {};
 
   constructor(pai: HTMLElement) {
@@ -81,7 +109,7 @@ export class ExercitoFicha {
     this.raiz.hidden = true;
 
     this.titulo.className = 'exercito__titulo';
-    this.titulo.textContent = 'Exército';
+    rotularComIcone(this.titulo, 'escudo', 'Exército');
 
     const linhaDono = document.createElement('p');
     linhaDono.className = 'exercito__poder';
@@ -155,6 +183,53 @@ export class ExercitoFicha {
 
     this.linhaOrdem.className = 'exercito__ordem';
 
+    // A escolha de postura mora junto da quantidade porque é a mesma decisão: quantos vão,
+    // e para quê. Dois botões e não um interruptor: "assaltar" e "sitiar" são coisas
+    // diferentes, e um interruptor esconderia metade do vocabulário.
+    this.perguntaDoAlvo.className = 'exercito__pergunta';
+    this.seletorDePostura.className = 'exercito__postura';
+    for (const [botao, postura, rotulo, icone, titulo, corpo] of [
+      [
+        this.botaoAssaltar,
+        'assaltar' as const,
+        'Assaltar',
+        'lanca' as const,
+        'Assaltar a cidade',
+        'Resolve no mesmo turno, contra a milícia com o bônus da muralha. Custa homens, e um assalto rechaçado desfaz o exército.',
+      ],
+      [
+        this.botaoSitiar,
+        'sitiar' as const,
+        'Sitiar',
+        'muralha' as const,
+        'Sitiar a cidade',
+        'Leva turnos e não custa homens. Enquanto dura, a província sitiada não produz nem comercia — mas continua cobrando imposto e levantando tropa. Quem senta fica exposto ao exército de socorro.',
+      ],
+    ] as const) {
+      botao.className = 'botao exercito__botao exercito__botao--postura';
+      botao.type = 'button';
+      rotularComIcone(botao, icone, rotulo);
+      definirTooltip(botao, { titulo, corpo });
+      botao.addEventListener('click', () => {
+        this.aoEscolherPostura(postura);
+        botao.blur();
+      });
+      this.seletorDePostura.appendChild(botao);
+    }
+
+    this.linhaCerco.className = 'exercito__cerco';
+    this.botaoTrocarPostura.className = 'botao exercito__botao';
+    this.botaoTrocarPostura.type = 'button';
+    this.botaoTrocarPostura.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista?.cerco) return;
+      this.aoTrocarPosturaDoCerco(
+        vista.provincia.id,
+        vista.cerco.postura === 'sitiar' ? 'assaltar' : 'sitiar',
+      );
+      this.botaoTrocarPostura.blur();
+    });
+
     this.botaoMover.className = 'botao botao--principal exercito__botao';
     this.botaoMover.type = 'button';
     this.botaoMover.addEventListener('click', () => {
@@ -195,10 +270,14 @@ export class ExercitoFicha {
       this.quantidade,
       this.campoHomens,
       this.atalhos,
+      this.perguntaDoAlvo,
+      this.seletorDePostura,
       this.botaoMover,
       this.instrucao,
       this.linhaOrdem,
       this.botaoCancelar,
+      this.linhaCerco,
+      this.botaoTrocarPostura,
       this.botaoDispensar,
     );
     pai.appendChild(this.raiz);
@@ -210,7 +289,7 @@ export class ExercitoFicha {
     this.raiz.hidden = vista === null;
     if (!vista) return;
 
-    this.titulo.textContent = `Exército em ${vista.provincia.nome}`;
+    rotularComIcone(this.titulo, 'escudo', `Exército em ${vista.provincia.nome}`);
     this.tinta.style.background = vista.poder.cor;
     this.dono.textContent = vista.poder.nome;
     this.forca.textContent = `${numero(vista.forca)} homens`;
@@ -218,7 +297,6 @@ export class ExercitoFicha {
 
     // Estar em terra alheia ainda não faz nada — não há guerra. Mas é um fato que o
     // jogador precisa ver desde já, senão a primeira marcha vai parecer que não aconteceu.
-    this.aviso.hidden = !vista.emTerraAlheia;
     if (vista.emTerraAlheia) this.aviso.textContent = 'em território que não é seu';
 
     // As origens são o que torna dispensar uma decisão em vez de um botão: uma hoste
@@ -249,8 +327,7 @@ export class ExercitoFicha {
     // Só a hoste do jogador aceita comando. A do vizinho continua com ficha — saber a
     // força de quem está do outro lado da fronteira é informação, não ação.
     this.botaoMover.hidden = !vista.minha;
-    this.botaoDispensar.hidden = !vista.minha;
-    this.botaoDispensar.textContent = `Dispensar ${numero(vista.forca)}`;
+    rotularComIcone(this.botaoDispensar, 'capacete', `Dispensar ${numero(vista.forca)}`);
 
     // Uma ordem em pé tranca o resto: uma por hoste por rodada. Em vez de esconder os
     // controles, mostra-se a ordem e o jeito de desfazê-la.
@@ -258,8 +335,7 @@ export class ExercitoFicha {
     this.linhaOrdem.hidden = !temOrdem;
     this.botaoCancelar.hidden = !temOrdem;
     if (vista.ordem) {
-      this.linhaOrdem.textContent =
-        `${numero(vista.ordem.homens)} marcham para ${vista.ordem.destino} ao passar o turno`;
+      this.linhaOrdem.textContent = `${numero(vista.ordem.homens)} marcham para ${vista.ordem.destino} ao passar o turno`;
     }
 
     // A barra reinicia com a força inteira quando o jogador troca de hoste — mandar tudo
@@ -280,11 +356,12 @@ export class ExercitoFicha {
     const semDestino = vista.destinos === 0;
     this.botaoMover.hidden = !vista.minha || temOrdem;
     this.botaoMover.disabled = semDestino;
-    this.botaoMover.textContent = semDestino
+    const rotuloMover = semDestino
       ? 'Mover · sem caminho pelo seu território'
       : vista.marchando
         ? 'Escolhendo destino — cancelar'
         : 'Mover';
+    rotularComIcone(this.botaoMover, 'lanca', rotuloMover);
     definirTooltip(this.botaoMover, {
       titulo: 'Ordenar marcha',
       corpo:
@@ -292,7 +369,50 @@ export class ExercitoFicha {
         'do ataque, nunca parte intermediária do caminho.',
     });
 
-    this.instrucao.hidden = !vista.marchando;
+    // ⚠️ **Enquanto se escolhe destino, o painel encolhe.** Ele fica em baixo-centro, por
+    // cima do mapa, e cresceu com o seletor de postura até cobrir um destino clicável —
+    // o jogador via o alvo e o clique não chegava nele. Some o que não é a decisão do
+    // momento: de onde os homens vieram e o botão de dispensar. Nada disso desaparece de
+    // vez, e é o próprio botão "Mover" que traz tudo de volta ao cancelar.
+    // Fica só o que É a decisão: quantos vão, para quê, e para onde. O cabeçalho de força
+    // é redundante aqui — a linha da quantidade já diz "1.000 de 1.000 marcham".
+    this.forca.hidden = vista.marchando;
+    this.custo.hidden = vista.marchando;
+    this.aviso.hidden = vista.marchando || !vista.emTerraAlheia;
+    this.tituloOrigens.hidden = vista.marchando;
+    this.origens.hidden = vista.marchando;
+    this.botaoDispensar.hidden = vista.marchando || !vista.minha;
+
+    // O seletor só aparece com um alvo hostil apontado: é a pergunta "o que fazer ao
+    // chegar em Elêusis?", e ela não faz sentido sem o Elêusis.
+    this.seletorDePostura.hidden = vista.alvo === null;
+    this.perguntaDoAlvo.hidden = vista.alvo === null;
+    if (vista.alvo) this.perguntaDoAlvo.textContent = `${vista.alvo.nome}: o que fazer ao chegar?`;
+
+    const cerco = vista.cerco;
+    this.linhaCerco.hidden = cerco === null;
+    this.botaoTrocarPostura.hidden = cerco === null || !vista.minha;
+    if (cerco) {
+      const feito = Math.min(99, Math.floor(cerco.progresso * 100));
+      this.linhaCerco.textContent =
+        cerco.postura === 'sitiar'
+          ? `Sitiando ${vista.provincia.nome} — ${feito}% dos portões cedidos`
+          : `Assaltando ${vista.provincia.nome} na próxima virada`;
+      rotularComIcone(
+        this.botaoTrocarPostura,
+        cerco.postura === 'sitiar' ? 'lanca' : 'muralha',
+        cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
+      );
+      definirTooltip(this.botaoTrocarPostura, {
+        titulo: cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
+        corpo:
+          'A troca vale na próxima virada, como toda ordem. Sentar é barato e demorado; ' +
+          'assaltar resolve no turno e custa homens.',
+      });
+    }
+
+    // Com o alvo apontado, a instrução some: a pergunta acima já diz o que falta fazer.
+    this.instrucao.hidden = !vista.marchando || vista.alvo !== null;
     this.instrucao.textContent = vista.marchando
       ? `Clique num dos ${numero(vista.destinos)} destinos marcados no mapa. Clicar em outro lugar cancela.`
       : '';
@@ -301,8 +421,7 @@ export class ExercitoFicha {
   private atualizarQuantidade(): void {
     const vista = this.vista;
     if (!vista) return;
-    this.quantidade.textContent =
-      `${numero(Number(this.campoHomens.value))} de ${numero(vista.forca)} marcham`;
+    this.quantidade.textContent = `${numero(Number(this.campoHomens.value))} de ${numero(vista.forca)} marcham`;
   }
 }
 

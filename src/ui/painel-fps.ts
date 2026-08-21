@@ -1,22 +1,23 @@
 /** Sobreposição de diagnóstico: FPS, zoom e posição da câmera.
- *  Some com F3. */
+ *  Nasce oculta e aparece com F3 — diagnóstico não faz parte da interface do jogador. */
 
 import type { Camera } from '@/nucleo/camera';
 import type { Relogio } from '@/nucleo/tempo';
 
 export class PainelFps {
   private readonly caixa = document.createElement('div');
-  private visivel = true;
+  private visivel = false;
   private acumulado = 0;
 
   constructor(pai: HTMLElement) {
     this.caixa.className = 'painel-diagnostico';
+    this.caixa.hidden = true;
     pai.appendChild(this.caixa);
   }
 
   alternar(): void {
     this.visivel = !this.visivel;
-    this.caixa.style.display = this.visivel ? '' : 'none';
+    this.caixa.hidden = !this.visivel;
   }
 
   atualizar(relogio: Relogio, camera: Camera): void {

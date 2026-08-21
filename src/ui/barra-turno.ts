@@ -10,6 +10,8 @@
  */
 
 import { formatarAno } from '@/campanha/estado-campanha';
+import type { NomeDoIconeGrego } from './icones-gregos';
+import { rotularComIcone } from './icones-gregos';
 import { definirTooltip } from './tooltip';
 
 export interface VistaDoTurno {
@@ -50,7 +52,7 @@ export class BarraTurno {
 
     this.botao.className = 'botao botao--principal';
     this.botao.type = 'button';
-    this.botao.textContent = 'Passar o turno ▸';
+    rotularComIcone(this.botao, 'turno', 'Passar o turno ▸');
     this.botao.addEventListener('click', () => {
       this.aoPassarTurno();
       // Sem isto o botão fica com o foco e a barra de espaço, que também passa o turno,
@@ -62,7 +64,7 @@ export class BarraTurno {
     // procurar por tesouro, renda e o que mais diga respeito ao reino inteiro.
     this.botaoGoverno.className = 'botao barra-turno__governo';
     this.botaoGoverno.type = 'button';
-    this.botaoGoverno.textContent = 'Governo';
+    rotularComIcone(this.botaoGoverno, 'templo', 'Governo');
     definirTooltip(this.botaoGoverno, {
       titulo: 'Conselho de governo',
       corpo: 'Abra o balanço do reino e examine cada província.',
@@ -84,7 +86,7 @@ export class BarraTurno {
     }
     this.tinta.style.background = vista.poder.cor;
     this.linha.replaceChildren(
-      trecho('barra-turno__poder', vista.poder.nome),
+      trecho('barra-turno__poder', vista.poder.nome, 'capacete'),
       trecho('barra-turno__dado', formatarAno(vista.ano)),
       trecho('barra-turno__dado', `turno ${vista.turno}`),
       trecho(
@@ -92,16 +94,18 @@ export class BarraTurno {
         vista.manutencao > 0
           ? `${vista.tesouro} moedas (+${vista.renda} −${vista.manutencao})`
           : `${vista.tesouro} moedas (+${vista.renda})`,
+        'moeda',
       ),
-      trecho('barra-turno__dado', `${vista.provincias} províncias`),
+      trecho('barra-turno__dado', `${vista.provincias} províncias`, 'territorio'),
     );
     this.raiz.hidden = false;
   }
 }
 
-function trecho(classe: string, texto: string): HTMLElement {
+function trecho(classe: string, texto: string, icone?: NomeDoIconeGrego): HTMLElement {
   const span = document.createElement('span');
   span.className = classe;
-  span.textContent = texto;
+  if (icone) rotularComIcone(span, icone, texto);
+  else span.textContent = texto;
   return span;
 }

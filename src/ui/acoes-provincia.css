@@ -1,195 +1,181 @@
-/* Bloco de ações da província, empilhado logo acima da ficha.
-   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
-
-/* A coluna é quem ancora os dois no canto. Empilhar por posição absoluta obrigaria a
-   saber a altura da ficha, que muda com o conteúdo — a ficha de uma província sem
-   economia é bem mais baixa que a de Atenas. */
 .coluna-provincia {
   position: absolute;
-  left: var(--gap-3);
-  bottom: var(--gap-3);
+  top: 104px;
+  bottom: 22px;
+  left: 22px;
+  z-index: 16;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   align-items: stretch;
-  gap: var(--gap-2);
-  width: 320px;
-  /* Rede de segurança: a coluna cresce pra cima a partir da borda de baixo, e um dia
-     mais um painel a faria estourar 1080 e cortar o de cima sem aviso. Hoje ela não
-     rola — a ficha do exército foi pra baixo-centro justamente pra que não precise. */
-  max-height: calc(100% - var(--gap-3) * 2);
+  gap: 8px;
+  width: 380px;
+  max-height: calc(100% - 126px);
   overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.coluna-provincia::-webkit-scrollbar {
-  display: none;
+  overscroll-behavior: contain;
+  padding-right: 3px;
 }
 
 .acoes {
-  padding: var(--gap-3);
-  background: var(--papel);
-  border: 1px solid var(--tinta-fraca);
-  color: var(--tinta);
+  position: relative;
+  flex: 0 0 auto;
+  padding: 18px;
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-vidro);
+  color: var(--ui-texto);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
 }
-
-.acoes[hidden] {
-  display: none;
-}
-
 .acoes__titulo {
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
-  font-size: 18px;
-  font-weight: normal;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  padding-bottom: var(--gap-2);
-  border-bottom: 1px solid var(--papel-escuro);
-  margin-bottom: var(--gap-2);
+  color: var(--ui-bronze-claro);
 }
-
-/* Rótulo de categoria. Discreto de propósito: separa sem competir com as opções. */
-.acoes__grupo {
-  margin-top: var(--gap-3);
-  margin-bottom: var(--gap-1);
-  font-family: var(--fonte-titulo);
+.acoes__alvo {
   font-size: 12px;
-  font-weight: normal;
-  letter-spacing: 0.1em;
+  line-height: 1.45;
+  color: var(--ui-texto-fraco);
+}
+.acoes__grupo {
+  margin: 15px 0 7px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--tinta-tenue);
-  border-bottom: 1px solid var(--papel-escuro);
+  color: var(--ui-texto-tenue);
 }
-
-.acoes__grupo[hidden],
-.acoes__lista[hidden] {
-  display: none;
-}
-
 .acoes__lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-1);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
 }
-
-/* Uma linha por construção: nome e o que ela custa agora. O resto vive no tooltip —
-   a lista tem que dar pra varrer com o olho. */
 .acoes__construcao {
   display: block;
   width: 100%;
-  font-size: 14px;
-  padding: var(--gap-2);
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-escuro);
-  color: var(--tinta);
+  min-height: 34px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
   font-family: var(--fonte-corpo);
+  font-size: 12px;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease,
+    color 110ms ease;
 }
-
 .acoes__construcao:hover:not([disabled]) {
-  background: var(--papel-claro);
+  border-color: var(--ui-bronze);
+  background: var(--ui-fundo-claro);
+  color: var(--ui-texto);
 }
-
 .acoes__construcao[disabled] {
   cursor: default;
-  color: var(--tinta-tenue);
+  color: var(--ui-texto-tenue);
 }
-
-/* Já construída não é erro: é conquista. Verde, não cinza de recusa. */
 .acoes__construcao[data-estado='erguida'] {
-  background: var(--papel);
-  border-color: var(--verdete);
-  color: var(--tinta-fraca);
+  border-color: var(--ui-verde);
+  background: var(--ui-sucesso-fundo);
+  color: var(--ui-verde-claro);
 }
-
-/* Em obra: o dinheiro já saiu e o benefício ainda não chegou. Ouro, porque é
-   investimento em curso — nem recusa nem conquista. */
 .acoes__construcao[data-estado='obra'] {
-  background: var(--papel);
-  border-color: var(--ouro);
+  border-color: var(--ui-bronze);
   border-style: dashed;
-  color: var(--tinta-fraca);
+  background: var(--ui-pressionado);
+  color: var(--ui-bronze-claro);
 }
-
-.acoes__alvo {
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--tinta-fraca);
-}
-
 .acoes__valor {
   width: 100%;
-  margin-top: var(--gap-1);
-  accent-color: var(--ouro);
-  cursor: ew-resize;
+  margin-top: 5px;
 }
-
-.acoes__valor:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
 .acoes__quantidade {
-  margin-top: var(--gap-2);
+  margin-top: 8px;
   font-family: var(--fonte-numero);
-  font-size: 16px;
-  color: var(--tinta);
+  font-size: 14px;
+  color: var(--ui-texto);
 }
-
-.acoes__atalhos {
+.acoes__atalhos,
+.recrutamento__atalhos,
+.exercito__atalhos {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  margin-top: var(--gap-1);
+  margin-top: 5px;
 }
-
-.acoes__atalho {
-  padding: 5px 2px;
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-claro);
-  color: var(--tinta-fraca);
+.acoes__atalho,
+.recrutamento__atalho,
+.exercito__atalho {
+  min-height: 28px;
+  padding: 4px 2px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
   font-family: var(--fonte-numero);
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 650;
   cursor: pointer;
 }
-
 .acoes__atalho:hover:not(:disabled),
-.acoes__atalho:focus-visible {
-  border-color: var(--ouro);
-  color: var(--tinta);
+.recrutamento__atalho:hover:not(:disabled),
+.exercito__atalho:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
 }
-
-.acoes__atalho:disabled {
+.acoes__atalho:disabled,
+.recrutamento__atalho:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
 }
-
 .acoes__previsao {
-  margin-top: var(--gap-1);
-  font-size: 12px;
+  min-height: 18px;
+  margin-top: 7px;
+  font-size: 11px;
   line-height: 1.4;
-  color: var(--tinta-tenue);
+  color: var(--ui-texto-tenue);
 }
-
-/* Investimento que não se paga fica marcado em sangue: é a informação mais importante
-   da caixa, e o jogador não deveria ter que fazer a conta de cabeça pra vê-la. */
 .acoes__previsao[data-vale='nao'] {
-  color: var(--sangue);
+  color: var(--ui-sangue-claro);
 }
-
 .acoes__botao {
   display: block;
   width: 100%;
-  margin-top: var(--gap-2);
-  text-align: left;
+  margin-top: 10px;
+  text-align: center;
 }
 
-/* `display` explícito VENCE o atributo `hidden`, que só funciona por causa de um
-   `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
-   aqui em cima deixa de conseguir se esconder. */
-.acoes__botao[hidden],
-.acoes__valor[hidden],
-.acoes__quantidade[hidden],
-.acoes__atalhos[hidden] {
-  display: none;
+@media (max-height: 820px) {
+  .coluna-provincia {
+    top: 94px;
+    bottom: 14px;
+    left: 14px;
+    width: 350px;
+    max-height: calc(100% - 108px);
+  }
+
+  .acoes {
+    padding: 14px;
+  }
+
+  .acoes__grupo {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .coluna-provincia {
+    width: 330px;
+  }
 }

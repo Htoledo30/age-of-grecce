@@ -1,88 +1,70 @@
-/* Destinos de marcha sobre o mapa. Medidas em pixels do palco 1920x1080 — ver escala.ts.
-
-   ⚠️ `#ui > .destinos` e não `.destinos`: `base.css` tem `#ui > * { pointer-events: auto }`
-   e um seletor de id vence um de classe. Escrita só com a classe, esta camada — que cobre
-   a tela inteira — comeria TODOS os cliques do mapa, sem erro nenhum no console. É a mesma
-   armadilha de hostes-mapa.css, e ela pega duas vezes. */
 #ui > .destinos {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
-
-/* Alvo redondo e vazado, pra ler como "aqui dá pra pisar" e não como peça no tabuleiro:
-   as hostes são quadradas e opacas, os destinos são redondos e translúcidos. A forma
-   distingue antes da cor, o que continua valendo pra quem não separa bem as duas. */
 .destinos__marca {
   position: absolute;
   top: 0;
   left: 0;
-  pointer-events: auto;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   padding: 0;
-  border: 2px dashed var(--papel-claro);
+  pointer-events: auto;
+  border: 2px solid var(--ui-bronze-claro);
   border-radius: 50%;
-  background: rgb(0 0 0 / 18%);
-  color: var(--papel-claro);
+  background: var(--ui-overlay);
+  color: var(--ui-bronze-claro);
   font-size: 12px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+  box-shadow: 0 3px 10px var(--ui-sombra);
+  transition:
+    scale 100ms ease,
+    background 100ms ease;
 }
-
 .destinos__marca:hover,
 .destinos__marca:focus-visible {
-  border-style: solid;
-  background: var(--papel-claro);
-  color: var(--tinta);
+  scale: 1.15;
+  background: var(--ui-bronze);
+  color: var(--ui-fundo);
 }
-
-/* Destino inimigo é decisão de guerra. Forma, cor e verbo mudam juntos: depender só de
-   vermelho esconderia a diferença de quem não separa bem as cores. */
 .destinos__marca[data-hostil='sim'] {
-  border-style: solid;
-  border-color: var(--sangue);
-  background: rgb(91 30 25 / 58%);
-  color: var(--papel-claro);
+  border-color: var(--ui-sangue-claro);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
 }
-
-.destinos__marca[data-hostil='sim'] .destinos__nome {
-  border-color: var(--sangue);
-  color: var(--sangue);
+.destinos__marca[data-hostil='sim']:hover {
+  background: var(--ui-sangue);
+  color: var(--ui-texto);
 }
-
 .destinos__simbolo {
   display: block;
   transform: translateX(1px);
 }
-
-/* O nome só existe durante a escolha. Mostrar sempre evita que o jogador tenha que
-   passear o mouse por círculos anônimos para descobrir o mapa. */
 .destinos__nome {
   position: absolute;
-  top: 30px;
+  top: 34px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 2px 5px;
-  border: 1px solid rgb(58 47 38 / 45%);
-  background: rgb(240 226 189 / 90%);
-  color: var(--tinta);
-  font-family: var(--fonte-titulo);
-  font-size: 10px;
+  padding: 4px 7px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-vidro);
+  color: var(--ui-texto);
+  font-family: var(--fonte-corpo);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   line-height: 1.2;
-  letter-spacing: 0.04em;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+  box-shadow: 0 2px 6px var(--ui-sombra);
 }
-
-.destinos__marca:hover .destinos__nome,
-.destinos__marca:focus-visible .destinos__nome {
-  background: var(--papel-claro);
-  font-weight: bold;
+.destinos__marca[data-hostil='sim'] .destinos__nome {
+  border-color: var(--ui-sangue);
+  color: var(--ui-sangue-claro);
 }
-
-/* Mesma rede de hostes-mapa.css: alvo sem posição não se pinta. */
 .destinos__marca[data-posicionada='nao'] {
   visibility: hidden;
 }

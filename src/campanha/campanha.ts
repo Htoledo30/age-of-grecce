@@ -27,9 +27,11 @@ import type {
   RetornoDoInvestimento,
 } from './economia';
 import type { Exercito } from '@/combate/exercito';
+import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
 import { levantarGuarnicoes } from '@/combate/guarnicao-inicial';
+import type { Cerco, Postura } from '@/combate/cerco';
 import { miliciaDe, mortosDaMilicia } from '@/combate/milicia';
 import type { HosteEmProvincia } from '@/combate/mobilizacao';
 import { Territorios } from './territorios';
@@ -70,6 +72,7 @@ export class Campanha {
     batalhas: [],
     conquistas: [],
     milicianosMortos: [],
+    cercos: [],
   };
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
@@ -119,7 +122,9 @@ export class Campanha {
       dono,
       populacao: tabuleiro.populacao,
       exercitos: tabuleiro.exercitos,
+      formacoes: {},
       ordens: {},
+      cercos: {},
       investimentos: {},
       construcoes: {},
       obras: {},
@@ -247,10 +252,40 @@ export class Campanha {
   }
 
   /** O que a província é agora, tirando o incentivo: o que as contas comparam. */
+  /** O cerco em curso nesta província, se houver. */
+  cercoEm(idProvincia: string): Cerco | undefined {
+    return this.estado.cercos[idProvincia];
+  }
+
+  /** Todos os cercos em curso, ordenados por província. */
+  cercos(): { provincia: string; cerco: Cerco }[] {
+    return Object.keys(this.estado.cercos)
+      .sort()
+      .flatMap((provincia) => {
+        const cerco = this.estado.cercos[provincia];
+        return cerco ? [{ provincia, cerco }] : [];
+      });
+  }
+
+  /**
+   * Troca a postura de um cerco já em pé.
+   *
+   * É o que o desenho pedia: sentar na frente da cidade e, três turnos depois, decidir que
+   * o socorro está perto demais e ir pra cima. A troca vale na PRÓXIMA virada, como toda
+   * ordem — nada acontece no clique.
+   */
+  mudarPostura(idProvincia: string, postura: Postura): void {
+    const cerco = this.estado.cercos[idProvincia];
+    if (!cerco) return;
+    this.estado.cercos[idProvincia] = { ...cerco, postura };
+    this.aoMudar();
+  }
+
   private baseDe(idProvincia: string): BaseDaProvincia {
     return {
       construcoes: this.construcoesEm(idProvincia),
       populacao: this.populacaoDe(idProvincia),
+      sitiada: this.estado.cercos[idProvincia] !== undefined,
     };
   }
 
@@ -380,6 +415,15 @@ export class Campanha {
     return this.mobilizacao.todas();
   }
 
+  /** Levas visíveis no mapa que só aceitarão ordens no próximo turno. */
+  formacoes(): readonly { provincia: string; formacao: LevaEmFormacao }[] {
+    return this.mobilizacao.formacoes();
+  }
+
+  formacaoEm(idProvincia: string): LevaEmFormacao | undefined {
+    return this.mobilizacao.formacaoEm(idProvincia);
+  }
+
   /** Quantos homens NASCIDOS nesta província estão em armas, onde quer que estejam. */
   homensEmArmasDe(idProvincia: string): number {
     return this.mobilizacao.homensEmArmasDe(idProvincia);
@@ -417,13 +461,12 @@ export class Campanha {
    *
    * A população cai na mesma hora, e com ela o imposto dali — mobilizar não é só uma
    * despesa de entrada, é uma cidade produzindo menos enquanto os seus estão no campo.
-   * Junta-se ao exército que já estiver ali, em vez de criar um segundo: não existe pilha
-   * de exércitos no mesmo lugar pra gerenciar.
+   * A leva aparece como formação exausta e só se junta à hoste ativa no próximo turno.
    */
   recrutar(idProvincia: string, homens: number): void {
     const r = this.podeRecrutar(idProvincia, homens);
     if (!r.pode) throw new Error(r.motivo);
-    this.mobilizacao.recrutar(idProvincia, this.donoDe(idProvincia), r);
+    this.mobilizacao.recrutar(idProvincia, this.donoDe(idProvincia), r, this.estado.turno);
     this.aoMudar();
   }
 
@@ -513,10 +556,11 @@ export class Campanha {
     destino: string,
     homens: number,
     porPoder: string | null = this.estado.jogador,
+    postura: Postura = 'sitiar',
   ): void {
     const r = this.podeOrdenarMarcha(origem, destino, homens, porPoder);
     if (!r.pode) throw new Error(r.motivo);
-    this.estado.ordens[origem] = { origem, rota: r.rota, homens };
+    this.estado.ordens[origem] = { origem, rota: r.rota, homens, postura };
     this.aoMudar();
   }
 
@@ -775,7 +819,7 @@ export class Campanha {
     // como ele estava quando o jogador decidiu; quem conquista na resolução colhe no turno
     // seguinte. Resolver primeiro daria ao agressor um pagamento no mesmo instante da
     // tomada, e a ordem aqui não dá erro nenhum — dá número torto em silêncio.
-    this.ultimaRodada = resolverRodada(this.estado, this.ajustes.combate.saltosPorRodada, {
+    this.ultimaRodada = resolverRodada(this.estado, this.ajustes.combate, {
       donoDe: (id) => this.donoDe(id),
       miliciaDe: (id) => this.miliciaEm(id),
       miliciaPerdida: (id, perdidos) => {
@@ -816,6 +860,9 @@ export class Campanha {
 
     this.estado.ano = avancarAno(this.estado.ano, this.ajustes.anosPorTurno);
     this.estado.turno += 1;
+    // Só depois de todas as marchas e batalhas: recruta pago nesta rodada não pode
+    // defendê-la, atacar nem engrossar uma hoste que já recebeu ordem.
+    this.mobilizacao.concluirFormacoes(this.estado.turno, (id) => this.donoDe(id));
     this.aoMudar();
   }
 }

@@ -1,5 +1,7 @@
 import type { Investimento } from './economia';
+import type { Cerco } from '@/combate/cerco';
 import type { Exercito } from '@/combate/exercito';
+import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { OrdemDeMarcha } from '@/movimento/ordens';
 
 /**
@@ -59,6 +61,13 @@ export interface EstadoCampanha {
    */
   exercitos: Record<string, Exercito>;
   /**
+   * Levas pagas que ainda estão em formação, pela província onde aparecerão.
+   *
+   * Ficam fora de `exercitos` de propósito: já existem no mundo e aparecem no mapa, mas
+   * não podem marchar, lutar nem engrossar uma hoste veterana antes do turno indicado.
+   */
+  formacoes: Record<string, LevaEmFormacao>;
+  /**
    * Ordens de marcha registradas nesta RODADA, pela província de onde partem.
    *
    * Uma por hoste. Mover não muda o mapa no clique: a ordem fica aqui, revisável e
@@ -68,6 +77,13 @@ export interface EstadoCampanha {
    * de novo, e o sintoma seria tropa andando sozinha.
    */
   ordens: Record<string, OrdemDeMarcha>;
+  /**
+   * Cercos em curso, por província sitiada.
+   *
+   * Ao contrário das ordens, isto sobrevive à virada: o cerco precisa acumular progresso
+   * enquanto o defensor ainda pode mandar socorro.
+   */
+  cercos: Record<string, Cerco>;
   /**
    * Incentivos de exploração em curso, por id de província.
    *

@@ -220,6 +220,7 @@ function checarEconomia(): void {
       construcoes: [],
       populacao: ficha.populacao,
       investimento: undefined,
+      sitiada: false,
     });
     porPoder.set(provincia.dono, (porPoder.get(provincia.dono) ?? 0) + renda.total);
     console.log(
@@ -289,7 +290,7 @@ function checarConstrucoes(): void {
         economia.data.produtos,
         catalogo,
         ajustes.data.jogo.economia,
-        { construcoes: [], populacao: ficha.populacao },
+        { construcoes: [], populacao: ficha.populacao, sitiada: false },
         idConstrucao,
       );
       const turnos = Number.isFinite(c.turnosParaPagar)
