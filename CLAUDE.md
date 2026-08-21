@@ -790,6 +790,17 @@ tela inteira — comia **todos** os cliques do mapa: arrastar, dar zoom e seleci
 província paravam de funcionar **sem um erro sequer no console**. `testes/tela/hostes.spec.ts`
 guarda isso.
 
+⚠️ **Peça nova NUNCA pode ser pintada antes de saber onde fica.** `mostrar` é chamado ao
+dar a ordem e na virada do turno — os dois **fora do laço de quadro**. O elemento recém-criado
+ia pra tela sem `transform`, ou seja, em (0,0), e só achava o lugar no quadro seguinte: na
+tela isso lia como a hoste **surgindo no canto superior esquerdo e descendo** até a
+província. Na camada de marchas era pior, porque a ponta da seta é um polígono de pontos
+fixos e a quantidade é um texto sem `x`/`y` — os dois caíam no canto sozinhos.
+
+Cada uma das três camadas (`hostes-mapa`, `destinos-mapa`, `marchas-mapa`) guarda a última
+câmera e assenta o que cria; e o que ainda não tem coordenada não se pinta, por
+`data-posicionada` e regra de CSS. `testes/tela/marcha.spec.ts` reprova sem o conserto.
+
 ### Quatro regiões, quatro perguntas
 
 | região           | elemento            | responde                                                 |
