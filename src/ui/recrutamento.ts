@@ -27,6 +27,8 @@ export type VistaDeRecrutamento =
       populacao: number;
       /** Quantos habitantes ainda estão disponíveis para uma leva. */
       disponivel: number;
+      /** Teto real neste instante: população disponível limitada pelo tesouro. */
+      maximo: number;
       custoPorHomem: number;
       manutencaoPorHomem: number;
       avaliar: (
@@ -40,9 +42,14 @@ export class Recrutamento {
   private readonly titulo = document.createElement('h2');
   private readonly alvo = document.createElement('p');
   private readonly campoHomens = document.createElement('input');
+  private readonly quantidade = document.createElement('p');
+  private readonly atalhos = document.createElement('div');
+  private readonly botoesDeAtalho: HTMLButtonElement[] = [];
   private readonly previsao = document.createElement('p');
   private readonly botaoRecrutar = document.createElement('button');
   private vista: VistaDeRecrutamento | null = null;
+  /** Trocar de província reinicia a escolha; repintar a mesma preserva o arraste. */
+  private provinciaDaQuantidade: string | null = null;
 
   aoRecrutar: (idProvincia: string, homens: number) => void = () => {};
 
@@ -56,14 +63,40 @@ export class Recrutamento {
     this.alvo.className = 'recrutamento__alvo';
 
     this.campoHomens.className = 'recrutamento__valor';
-    this.campoHomens.type = 'number';
-    this.campoHomens.min = '1';
+    this.campoHomens.type = 'range';
+    this.campoHomens.min = '0';
     this.campoHomens.step = '1';
-    this.campoHomens.value = '1000';
+    this.campoHomens.value = '0';
+    this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para recrutar');
     this.campoHomens.title =
-      'Quantos homens levantar aqui. Eles saem da população desta província: enquanto ' +
-      'estiverem em armas, deixam de ser tributados.';
+      'Arraste para escolher quantos homens levantar. A barra já respeita o ouro e a ' +
+      'reserva civil desta província.';
     this.campoHomens.addEventListener('input', () => this.avaliar());
+
+    this.quantidade.className = 'recrutamento__quantidade';
+    this.quantidade.setAttribute('aria-live', 'polite');
+
+    this.atalhos.className = 'recrutamento__atalhos';
+    for (const [rotulo, fracao] of [
+      ['25%', 0.25],
+      ['50%', 0.5],
+      ['75%', 0.75],
+      ['Máximo', 1],
+    ] as const) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'recrutamento__atalho';
+      botao.textContent = rotulo;
+      botao.addEventListener('click', () => {
+        const vista = this.vista;
+        if (!vista?.pode || vista.maximo === 0) return;
+        this.campoHomens.value = String(Math.max(1, Math.floor(vista.maximo * fracao)));
+        this.avaliar();
+        botao.blur();
+      });
+      this.botoesDeAtalho.push(botao);
+      this.atalhos.appendChild(botao);
+    }
 
     this.previsao.className = 'recrutamento__previsao';
 
@@ -74,13 +107,25 @@ export class Recrutamento {
       const vista = this.vista;
       if (!vista?.pode) return;
       const homens = Number(this.campoHomens.value);
-      if (vista.avaliar(homens).pode) this.aoRecrutar(vista.provincia.id, homens);
+      if (vista.avaliar(homens).pode) {
+        // Uma nova decisão começa do zero; evita recrutar duas levas enormes por engano.
+        this.campoHomens.value = '0';
+        this.aoRecrutar(vista.provincia.id, homens);
+      }
       // `blur` no fim do clique: sem isso o botão fica com foco e a barra de espaço,
       // que passa o turno, dispara um clique sintético nele.
       this.botaoRecrutar.blur();
     });
 
-    this.raiz.append(this.titulo, this.alvo, this.campoHomens, this.previsao, this.botaoRecrutar);
+    this.raiz.append(
+      this.titulo,
+      this.alvo,
+      this.quantidade,
+      this.campoHomens,
+      this.atalhos,
+      this.previsao,
+      this.botaoRecrutar,
+    );
     pai.appendChild(this.raiz);
   }
 
@@ -90,7 +135,13 @@ export class Recrutamento {
     this.raiz.hidden = vista === null;
     if (!vista) return;
 
-    for (const el of [this.campoHomens, this.botaoRecrutar]) el.hidden = !vista.pode;
+    for (const el of [
+      this.quantidade,
+      this.campoHomens,
+      this.atalhos,
+      this.botaoRecrutar,
+    ])
+      el.hidden = !vista.pode;
 
     if (!vista.pode) {
       this.alvo.textContent = vista.motivo;
@@ -106,6 +157,15 @@ export class Recrutamento {
       'ainda vive aqui, menos os habitantes que a província nunca cede — mulheres, ' +
       'crianças, velhos e quem lavra —, além do ouro para reunir a leva.';
 
+    if (this.provinciaDaQuantidade !== vista.provincia.id) {
+      this.provinciaDaQuantidade = vista.provincia.id;
+      this.campoHomens.value = '0';
+    }
+    this.campoHomens.max = String(vista.maximo);
+    this.campoHomens.value = String(Math.min(Number(this.campoHomens.value), vista.maximo));
+    this.campoHomens.disabled = vista.maximo === 0;
+    for (const botao of this.botoesDeAtalho) botao.disabled = vista.maximo === 0;
+
     this.avaliar();
   }
 
@@ -120,6 +180,29 @@ export class Recrutamento {
     const vista = this.vista;
     if (!vista?.pode) return;
     const homens = Number(this.campoHomens.value);
+
+    this.quantidade.textContent =
+      `${numero(homens)} soldados` +
+      (vista.maximo > 0 ? ` · máximo agora: ${numero(vista.maximo)}` : '');
+
+    if (vista.maximo === 0) {
+      this.previsao.textContent =
+        vista.disponivel === 0
+          ? 'A reserva civil mínima foi alcançada.'
+          : `O tesouro não paga nem 1 soldado (${numero(vista.custoPorHomem)} moedas).`;
+      this.previsao.dataset['pode'] = 'nao';
+      this.botaoRecrutar.textContent = 'Reunir leva';
+      this.botaoRecrutar.disabled = true;
+      return;
+    }
+
+    if (homens === 0) {
+      this.previsao.textContent = 'Arraste a barra ou escolha uma porcentagem.';
+      this.previsao.dataset['pode'] = 'nao';
+      this.botaoRecrutar.textContent = 'Reunir leva';
+      this.botaoRecrutar.disabled = true;
+      return;
+    }
     const r = vista.avaliar(homens);
 
     if (!r.pode) {
@@ -138,6 +221,7 @@ export class Recrutamento {
       `${vista.custoPorHomem} moedas por homem para reunir, e ` +
       `${vista.manutencaoPorHomem} por homem a cada turno enquanto estiverem em armas. ` +
       `A província perde ${numero(r.homens)} habitantes e o imposto dela cai junto.`;
+    this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)}`;
     this.botaoRecrutar.disabled = false;
   }
 }

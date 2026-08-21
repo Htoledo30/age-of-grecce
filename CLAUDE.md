@@ -664,6 +664,12 @@ inteira, mesmo quando não dá pra investir, dizendo o motivo (`Mantineia: esta 
 não tem economia configurada`). Esconder o controle esconde a existência da mecânica, e o
 jogador não tem como adivinhar que ela existe.
 
+⚠️ **Ações frequentes não exigem digitar números.** Recrutar, dividir hoste, movimentar e
+investir são decisões de mouse: barra deslizante, botões de proporção e limites calculados
+pela própria regra. Um controle nunca oferece uma quantidade que o jogador não pode pagar
+ou usar para depois responder “faltam moedas”. Digitação fica reservada a texto autoral,
+como nome de campanha ou de exército.
+
 ⚠️ **População é ESTADO, e a linha anterior deste arquivo estava errada.** Ela dizia que
 população era dado autoral fixo "por decisão" — mas isso descrevia uma conveniência da
 fase de testes (bastava um número inicial pra economia básica rodar), não uma escolha de
@@ -790,6 +796,13 @@ tela inteira — comia **todos** os cliques do mapa: arrastar, dar zoom e seleci
 província paravam de funcionar **sem um erro sequer no console**. `testes/tela/hostes.spec.ts`
 guarda isso.
 
+⚠️ **A posição da peça vai na propriedade `translate`, NUNCA em `transform`.** A matriz
+final do CSS é `translate · rotate · scale · transform`: um `scale` independente
+**multiplica** o que estiver em `transform`. O pulso de chegada ia de `scale: 0.72` a 1, e
+com isso um `transform: translate(1010px, 471px)` virava 727px, 339px — a peça saltava pra
+cima e pra esquerda e voltava deslizando até o lugar. Separadas, `translate` diz ONDE ela
+está e `scale` diz COMO é desenhada, e uma animação não empurra mais a outra.
+
 ⚠️ **Peça nova NUNCA pode ser pintada antes de saber onde fica.** `mostrar` é chamado ao
 dar a ordem e na virada do turno — os dois **fora do laço de quadro**. O elemento recém-criado
 ia pra tela sem `transform`, ou seja, em (0,0), e só achava o lugar no quadro seguinte: na
@@ -831,7 +844,29 @@ três estados:
 - **possibilidade:** rotas tracejadas, destinos circulares e nomes das províncias;
 - **ordem registrada:** seta dourada cheia, quantidade ao lado do destino e selo `↗` na
   hoste de origem;
-- **ordem resolvida:** a seta desaparece e o marcador de chegada pulsa brevemente.
+- **ordem resolvida:** a seta desaparece, a peça **marcha até o destino** e pulsa ao
+  assentar.
+
+**A marcha animada é ILUSTRAÇÃO, e é isso que a mantém em `ui/`.** As regras resolvem a
+rodada de uma vez — a hoste já está no destino no instante em que o turno vira, e a chave
+do marcador é a província de CHEGADA. `src/ui/animacao-de-marcha.ts` só atrasa o desenho no
+caminho: se a animação for pulada, o estado do jogo é exatamente o mesmo. Ela anda em
+unidades de MUNDO, então arrastar o mapa ou dar zoom no meio da marcha continua funcionando.
+
+O prazo é **por salto** (`animacao.segundosPorSaltoDeMarcha`, hoje 0,55 s), não por marcha:
+uma marcha de dois saltos leva o dobro, e é assim que a distância percorrida se lê na tela.
+Cada hoste chega no seu tempo, e o pulso dispara quando ela ASSENTA — antes ele acontecia
+na virada do turno, confirmando uma chegada que o jogador ainda não tinha visto.
+
+⚠️ **O relatório da rodada guarda a `trilha`, não as pontas.** Com dois saltos por rodada,
+a reta entre origem e destino passa por fora do caminho que a seta prometeu. `trilha[0]` é
+de onde saiu e `trilha.at(-1)` é onde parou — guardar origem e destino ao lado dela seria
+guardar um resumo junto do detalhe, e um dia os dois discordariam.
+
+⚠️ **O gancho `inspecao.passarTurno` passa pelo mesmo caminho do botão.** Chamando
+`campanha.passarTurno` direto, captura e teste de tela exercitariam um jogo sem marcha —
+justamente o caminho que não existe pra quem joga. Foi por isso que o pulso de chegada
+nunca apareceu em medição nenhuma enquanto ele era o culpado.
 
 `src/ui/destinos-mapa.ts` continua sendo o controle clicável; `src/ui/marchas-mapa.ts`
 desenha rotas e ordens em SVG sem receber ponteiro; `src/ui/hostes-mapa.ts` desenha as

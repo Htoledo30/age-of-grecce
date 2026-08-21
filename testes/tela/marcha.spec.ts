@@ -50,7 +50,8 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
 
   await comHoste(page, 1500);
 
-  // O campo nasce com a força inteira: mandar tudo é o caso comum.
+  // A barra nasce com a força inteira: mandar tudo é o caso comum, sem digitar.
+  await expect(page.locator('.exercito__valor')).toHaveAttribute('type', 'range');
   await expect(page.locator('.exercito__valor')).toHaveValue('1500');
   await expect(page.locator('.destinos__marca')).toHaveCount(0);
 
@@ -159,7 +160,11 @@ test('cancelar a ordem devolve a hoste ao estado de quem não decidiu nada', asy
 
 test('só parte da hoste marcha, e o resto fica defendendo', async ({ page }) => {
   await comHoste(page, 1000);
-  await page.locator('.exercito__valor').fill('400');
+  await page.locator('.exercito__valor').evaluate((elemento) => {
+    const barra = elemento as HTMLInputElement;
+    barra.value = '400';
+    barra.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   await page.getByRole('button', { name: 'Mover' }).click();
   await page.locator('.destinos__marca[data-provincia="maratona"]').click();
   await expect(page.locator('.exercito__ordem')).toContainText('400 marcham');
@@ -214,31 +219,51 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
   await expect(page.locator('.destinos__marca[data-provincia="sounion"]')).toHaveCount(1);
 });
 
-test('nenhuma peça nova é pintada antes de saber onde fica', async ({ page }) => {
-  // ⚠️ O bug que este teste guarda: `mostrar` é chamado ao ordenar e na virada do turno,
-  // ambos FORA do laço de quadro. A peça nascia sem `transform` e era pintada uma vez em
-  // (0,0) — o canto superior esquerdo do palco — indo pro lugar só no quadro seguinte. Na
-  // tela isso lia como a hoste surgindo lá em cima e descendo até a província.
+test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page }) => {
+  // Duas coisas de uma vez, e as duas já quebraram:
+  //
+  // 1. A peça saía de Atenas e aparecia em Maratona no mesmo quadro. A ordem dada na
+  //    rodada anterior acontecia sem o jogador ver.
+  // 2. Antes disso, o marcador novo era pintado sem `transform` — em (0,0), o canto
+  //    superior esquerdo do palco — e só ia pro lugar no quadro seguinte. Na tela lia
+  //    como a hoste surgindo lá em cima e descendo.
+  //
+  // Sair do lugar certo mata as duas: em (2) a peça começaria no canto, em (1) já
+  // começaria no destino.
   await comHoste(page, 1500);
+  const emAtenas = await page.locator('.hostes__marca').boundingBox();
+  if (!emAtenas) throw new Error('a hoste não apareceu em Atenas');
 
-  const aoOrdenar = await page.evaluate(() => {
-    (window as unknown as { inspecao: Ganchos }).inspecao.ordenarMarcha('atenas', 'maratona', 1500);
-    const seta = document.querySelector('.marchas__seta');
-    const rotulo = document.querySelector('.marchas__quantidade');
-    return { seta: seta?.getAttribute('transform') ?? '', x: rotulo?.getAttribute('x') ?? '' };
-  });
-  // A ponta da seta é um polígono de pontos fixos e o rótulo um texto sem x/y: sem
-  // transform os dois caem no canto, e é um número piscando no alto da tela.
-  expect(aoOrdenar.seta).toMatch(/^translate\(/);
-  expect(Number(aoOrdenar.x)).toBeGreaterThan(100);
-
-  const aoChegar = await page.evaluate(() => {
-    (window as unknown as { inspecao: Ganchos }).inspecao.passarTurno();
+  const partida = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.ordenarMarcha('atenas', 'maratona', 1500);
+    i.passarTurno();
     const marca = document.querySelector<HTMLElement>('.hostes__marca');
-    return { provincia: marca?.dataset['provincia'] ?? '', transform: marca?.style.transform ?? '' };
+    const caixa = marca?.getBoundingClientRect();
+    return {
+      provincia: marca?.dataset['provincia'] ?? '',
+      marchando: marca?.dataset['marchando'] ?? '',
+      x: caixa?.x ?? -1,
+      y: caixa?.y ?? -1,
+    };
   });
-  // A hoste chegou a Maratona: o marcador da origem morreu e nasceu outro, no destino. É
-  // esse elemento novo que precisa nascer já colocado.
-  expect(aoChegar.provincia).toBe('maratona');
-  expect(aoChegar.transform).toMatch(/^translate\(\d/);
+
+  // Nas REGRAS ela já chegou: a chave do marcador é o destino. Na TELA ela ainda está em
+  // Atenas, que é o ponto de onde a marcha parte.
+  expect(partida.provincia).toBe('maratona');
+  expect(partida.marchando).toBe('sim');
+  expect(Math.abs(partida.x - emAtenas.x)).toBeLessThan(4);
+  expect(Math.abs(partida.y - emAtenas.y)).toBeLessThan(4);
+
+  await page.waitForFunction(
+    () => document.querySelector<HTMLElement>('.hostes__marca')?.dataset['marchando'] === 'nao',
+    undefined,
+    { timeout: 5000 },
+  );
+  const chegada = await page.locator('.hostes__marca').boundingBox();
+  if (!chegada) throw new Error('a hoste sumiu no caminho');
+  // Andou de verdade: assentou longe de onde partiu, e não no canto do palco.
+  expect(Math.hypot(chegada.x - emAtenas.x, chegada.y - emAtenas.y)).toBeGreaterThan(30);
+  expect(chegada.x).toBeGreaterThan(100);
+  expect(chegada.y).toBeGreaterThan(100);
 });

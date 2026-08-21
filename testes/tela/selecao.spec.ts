@@ -31,6 +31,7 @@ test('clicar no painel de ações não troca a província selecionada', async ({
 
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
+  await expect(page.locator('.acoes__valor')).toHaveAttribute('type', 'range');
 
   // Passar o cursor pelo MAPA antes de ir ao painel é o que arma a armadilha: a posição
   // do mouse só é atualizada sobre o canvas, então o clique fantasma acontecia no último
@@ -42,7 +43,7 @@ test('clicar no painel de ações não troca a província selecionada', async ({
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
 
   await page.mouse.move(500, 900); // Esparta: o fantasma trocaria a província
-  await page.getByRole('button', { name: 'Investir na produção' }).click();
+  await page.getByRole('button', { name: /^Investir 250$/ }).click();
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
   await expect(page.locator('.ficha')).toBeVisible();
 

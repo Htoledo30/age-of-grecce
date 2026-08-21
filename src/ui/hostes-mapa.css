@@ -117,9 +117,19 @@
 }
 
 /* ⚠️ Peça sem posição NÃO se pinta. `mostrar` é chamado na virada do turno, fora do laço
-   de quadro; um marcador recém-criado ficaria um quadro sem `transform`, ou seja, no
+   de quadro; um marcador recém-criado ficaria um quadro sem posição, ou seja, no
    canto superior esquerdo do palco, e só iria pro lugar depois. O sintoma era a hoste
    surgindo lá em cima e descendo até a província. */
 .hostes__marca[data-posicionada='nao'] {
   visibility: hidden;
+}
+
+/* Tropa no meio do passo não se pega: durante a marcha a peça não aceita clique, senão
+   selecioná-la abriria a ficha de uma província onde ela ainda não está desenhada. */
+.hostes__marca[data-marchando='sim'] {
+  z-index: 4;
+  pointer-events: none;
+  /* Sombra mais longa enquanto anda: a peça se descola do terreno enquanto está a
+     caminho, e volta a assentar quando chega. */
+  box-shadow: 0 3px 4px rgb(0 0 0 / 40%);
 }

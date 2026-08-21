@@ -74,7 +74,16 @@ interface Forca {
 
 /** O que aconteceu na rodada — pra crônica, pra interface e pros testes. */
 export interface RelatorioDaRodada {
-  marchas: readonly { origem: string; destino: string; homens: number }[];
+  /**
+   * Quem se moveu, e **por onde**.
+   *
+   * ⚠️ A trilha é o caminho INTEIRO, com as duas pontas: `trilha[0]` é de onde saiu e
+   * `trilha.at(-1)` é onde parou. Guardar origem e destino ao lado dela seria guardar um
+   * resumo junto do detalhe, e um dia os dois discordariam. Quem desenha a marcha precisa
+   * das paradas do meio: com dois saltos por rodada, a reta entre as pontas passa por
+   * fora do caminho que a seta prometeu.
+   */
+  marchas: readonly { trilha: readonly string[]; homens: number }[];
   /** Choques resolvidos. `provincia` é `null` no encontro na estrada, que não tem lugar. */
   batalhas: readonly {
     provincia: string | null;
@@ -410,9 +419,12 @@ function pousar(
     for (const [terra, homens] of Object.entries(forca.origem)) somarLeva(naChegada, terra, homens);
     estado.exercitos[forca.posicao] = naChegada;
     if (forca.posicao !== forca.partiuDe) {
+      // `rota` é o plano inteiro e `posicao` é onde a força de fato parou — quem foi
+      // barrado num choque na estrada parou antes do fim. Cortar a rota na posição atual
+      // é o que faz a trilha ser o andado, e não o pretendido.
+      const andados = forca.rota.indexOf(forca.posicao);
       marchas.push({
-        origem: forca.partiuDe,
-        destino: forca.posicao,
+        trilha: [forca.partiuDe, ...forca.rota.slice(0, andados + 1)],
         homens: soma(forca.origem),
       });
     }

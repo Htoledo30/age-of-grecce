@@ -104,7 +104,9 @@ export class DestinosMapa {
   /** Põe o alvo no ponto e o torna visível. É o único lugar que escreve `transform`. */
   private assentar(elemento: HTMLElement, camera: Camera, x: number, y: number): void {
     const p = camera.mundoParaPalco(x, y);
-    elemento.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+    // Mesma separação de `hostes-mapa.ts`: posição em `translate`, nunca em `transform`,
+    // pra que um `scale` de animação não multiplique a posição.
+    elemento.style.translate = `calc(${p.x}px - 50%) calc(${p.y}px - 50%)`;
     elemento.dataset['posicionada'] = 'sim';
   }
 }

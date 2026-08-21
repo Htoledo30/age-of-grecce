@@ -132,16 +132,43 @@
 .exercito__valor {
   width: 100%;
   margin-top: var(--gap-2);
-  padding: var(--gap-2);
+  accent-color: var(--ouro);
+  cursor: ew-resize;
+}
+
+.exercito__quantidade {
+  margin-top: var(--gap-2);
+  font-family: var(--fonte-numero);
+  font-size: 14px;
+}
+
+.exercito__atalhos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: var(--gap-1);
+}
+
+.exercito__atalho {
+  padding: 5px 2px;
   border: 1px solid var(--tinta-fraca);
   background: var(--papel-claro);
-  color: var(--tinta);
+  color: var(--tinta-fraca);
   font-family: var(--fonte-numero);
-  font-size: 16px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.exercito__atalho:hover:not(:disabled),
+.exercito__atalho:focus-visible {
+  border-color: var(--ouro);
+  color: var(--tinta);
 }
 
 .exercito__ordem[hidden],
-.exercito__valor[hidden] {
+.exercito__valor[hidden],
+.exercito__quantidade[hidden],
+.exercito__atalhos[hidden] {
   display: none;
 }
 

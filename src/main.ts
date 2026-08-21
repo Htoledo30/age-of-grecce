@@ -36,6 +36,8 @@ import { Recrutamento } from '@/ui/recrutamento';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import { ExercitoFicha } from '@/ui/exercito-ficha';
 import type { VistaDoExercito } from '@/ui/exercito-ficha';
+import { AnimacaoDeMarcha } from '@/ui/animacao-de-marcha';
+import type { TrechoDeMarcha } from '@/ui/animacao-de-marcha';
 import { MarchasMapa } from '@/ui/marchas-mapa';
 import type { OrdemNoMapa, PontoDeMarcha, PrevisaoDeMarcha } from '@/ui/marchas-mapa';
 import { HostesMapa } from '@/ui/hostes-mapa';
@@ -95,6 +97,9 @@ async function iniciar(): Promise<void> {
   // Os marcadores ficam numa camada própria sobre o mapa, e não dentro de painel nenhum:
   // eles pertencem ao mundo, e é a câmera que decide onde cada um aparece.
   const hostesMapa = new HostesMapa(ui);
+  // A marcha é ILUSTRAÇÃO: a campanha já resolveu a rodada, e isto só atrasa a peça no
+  // caminho pra que a ordem dada na rodada anterior aconteça diante do jogador.
+  const animacaoDeMarcha = new AnimacaoDeMarcha();
   // Os destinos ficam por cima das hostes: o alvo de uma ordem em curso tem que estar
   // clicável mesmo quando cai sobre uma província que já tem tropa.
   const destinosMapa = new DestinosMapa(ui);
@@ -133,7 +138,7 @@ async function iniciar(): Promise<void> {
   /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
   let homensParaMarchar = 0;
   /** Destinos que acabaram de receber tropa; existem só durante o pulso de chegada. */
-  let chegadasRecentes = new Set<string>();
+  const chegadasRecentes = new Set<string>();
   let temporizadorDaChegada: number | undefined;
 
   /**
@@ -266,6 +271,10 @@ async function iniciar(): Promise<void> {
       }),
       bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,
       arrecadacoesRestantes: campanha.investimentoEm(alvo)?.arrecadacoesRestantes ?? 0,
+      maximo: Math.min(
+        campanha.tesouro,
+        ajustes.jogo.economia.investimento.maximo,
+      ),
       avaliar: (valor) => campanha.podeInvestir(alvo, valor),
       duracao: ajustes.jogo.economia.investimento.arrecadacoes,
       retorno: (valor) => campanha.retornoDe(alvo, valor),
@@ -296,6 +305,7 @@ async function iniciar(): Promise<void> {
       provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
       populacao: campanha.populacaoDe(alvo),
       disponivel: campanha.disponivelParaLevaEm(alvo),
+      maximo: campanha.maximoParaLevaEm(alvo),
       custoPorHomem: ajustes.jogo.combate.custoPorHomem,
       manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
       avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
@@ -322,6 +332,20 @@ async function iniciar(): Promise<void> {
         temOrdem: campanha.ordemEm(provincia) !== undefined,
         chegadaRecente: chegadasRecentes.has(provincia),
       };
+    });
+  }
+
+  /**
+   * As marchas que a rodada acabou de resolver, no formato que a animação anda.
+   *
+   * A chave é a província de CHEGADA porque é lá que o marcador existe agora — a peça que
+   * anda é a que já chegou nas regras.
+   */
+  function trechosDaRodada(): TrechoDeMarcha[] {
+    return campanha.rodada.marchas.flatMap((marcha) => {
+      const destino = marcha.trilha.at(-1);
+      if (destino === undefined) return [];
+      return [{ destino, pontos: marcha.trilha.map(pontoDe) }];
     });
   }
 
@@ -476,22 +500,24 @@ async function iniciar(): Promise<void> {
     cena.pintarDonos((id) => campanha.donoDe(id));
     repintar();
   };
-  barraTurno.aoPassarTurno = () => {
-    // A ordem desaparece quando resolve; guardar os destinos por alguns quadros dá ao
-    // marcador novo uma confirmação de chegada em vez de fazê-lo apenas "teleportar".
-    chegadasRecentes = new Set(
-      campanha
-        .ordens()
-        .map((ordem) => ordem.rota.at(-1))
-        .filter((id): id is string => id !== undefined),
-    );
+  barraTurno.aoPassarTurno = () => virarTurno();
+
+  /**
+   * Vira o turno e põe as marchas em movimento.
+   *
+   * ⚠️ **O gancho de inspeção passa por aqui também.** Se ele chamasse `campanha.passarTurno`
+   * direto, captura e teste de tela exercitariam um jogo sem marcha — justamente o caminho
+   * que não existe pra quem joga.
+   */
+  function virarTurno(): void {
     campanha.passarTurno();
-    if (temporizadorDaChegada !== undefined) window.clearTimeout(temporizadorDaChegada);
-    temporizadorDaChegada = window.setTimeout(() => {
-      chegadasRecentes.clear();
-      repintar();
-    }, 900);
-  };
+    // ⚠️ A animação começa DEPOIS de resolver e ANTES de repintar, e a ordem importa:
+    // só depois de resolver se sabe quem de fato andou (quem foi barrado na estrada parou
+    // no meio), e é o `repintar` seguinte que põe cada peça no começo da própria trilha.
+    // Nenhum quadro é pintado entre as duas coisas, porque isto tudo é uma tarefa só.
+    animacaoDeMarcha.comecar(trechosDaRodada(), ajustes.animacao.segundosPorSaltoDeMarcha);
+    repintar();
+  }
   acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
   recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
@@ -512,6 +538,21 @@ async function iniciar(): Promise<void> {
     marchando = null;
     repintar();
   };
+  // Enquanto marcha, a peça está entre duas províncias; quem responde onde ela está é a
+  // animação, e a camada só desenha.
+  hostesMapa.ondeEstaMarchando = (idProvincia) => animacaoDeMarcha.posicaoDe(idProvincia);
+  // O pulso de chegada dispara quando a peça ASSENTA, não quando o turno vira: antes ele
+  // acontecia enquanto a hoste ainda estaria a caminho, e confirmava uma chegada que o
+  // jogador ainda não tinha visto.
+  animacaoDeMarcha.aoChegar = (destinos) => {
+    for (const destino of destinos) chegadasRecentes.add(destino);
+    repintar();
+    if (temporizadorDaChegada !== undefined) window.clearTimeout(temporizadorDaChegada);
+    temporizadorDaChegada = window.setTimeout(() => {
+      chegadasRecentes.clear();
+      repintar();
+    }, ajustes.animacao.segundosDoPulsoDeChegada * 1000);
+  };
   destinosMapa.aoDestacar = (destino) => marchasMapa.destacar(destino);
   hostesMapa.aoSelecionar = (idProvincia) => {
     // Clicar na hoste escolhe as DUAS coisas: a tropa e o chão sob ela. Os dois painéis
@@ -531,6 +572,9 @@ async function iniciar(): Promise<void> {
   };
   inicio.aoComecarCampanha = (idPoder) => {
     if (idPoder !== 'atenas') return;
+    // Partida nova não herda marcha nenhuma: o que estivesse andando descreve um mundo
+    // que deixou de existir.
+    animacaoDeMarcha.parar();
     fase = 'campanha';
     inicio.encerrar();
     campanha.comecar(idPoder);
@@ -562,6 +606,9 @@ async function iniciar(): Promise<void> {
     cena.atualizar(relogio, entrada);
     // Os marcadores seguem o mundo: reprojetados a cada quadro, arrastar e dar zoom
     // levam a peça junto.
+    // A marcha corre no relógio do quadro, antes de projetar: assim a peça já sai deste
+    // quadro no ponto certo, em vez de ficar um quadro atrás.
+    animacaoDeMarcha.avancar(relogio.delta);
     hostesMapa.posicionar(cena.camera);
     marchasMapa.posicionar(cena.camera);
     destinosMapa.posicionar(cena.camera);
@@ -589,8 +636,9 @@ async function iniciar(): Promise<void> {
       }),
       donoDe: (idProvincia: string) => campanha.donoDe(idProvincia),
       darOuro: (valor: number) => campanha.darOuro(valor),
-      passarTurno: () => campanha.passarTurno(),
+      passarTurno: () => virarTurno(),
       comecar: (idPoder: string) => {
+        animacaoDeMarcha.parar();
         fase = 'campanha';
         inicio.encerrar();
         campanha.comecar(idPoder);

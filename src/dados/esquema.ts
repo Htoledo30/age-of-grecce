@@ -167,6 +167,22 @@ export const Ajustes = z.object({
     /** Cobertura que o destaque garante sozinho, mesmo com as cores dos reinos desligadas. */
     forcaSelecao: z.number().min(0).max(1),
   }),
+  /**
+   * Ritmo do que o mapa mostra ao virar o turno. **É ilustração, nunca regra** — mudar
+   * estes números não muda resultado de partida nenhum.
+   */
+  animacao: z.object({
+    /**
+     * Quanto uma hoste leva pra andar UM trecho da rota.
+     *
+     * Por salto, e não por marcha: uma marcha de dois saltos leva o dobro, e é assim que
+     * a distância percorrida se lê na tela. Curto demais e a peça pisca de um lado pro
+     * outro; longo demais e passar o turno vira espera.
+     */
+    segundosPorSaltoDeMarcha: z.number().positive(),
+    /** Quanto o pulso de chegada dura depois que a peça assenta no destino. */
+    segundosDoPulsoDeChegada: z.number().positive(),
+  }),
   detalhes: z.object({
     alturaArvore: z.number().positive(),
     /** Faixa de zoom em que a camada de objetos entra. */

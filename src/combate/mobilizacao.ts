@@ -13,7 +13,7 @@
 import type { Ajustes } from '@/dados/esquema';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from './exercito';
 import type { Exercito } from './exercito';
-import { avaliarLeva, disponivelParaLeva, manutencaoDe } from './recrutamento';
+import { avaliarLeva, disponivelParaLeva, manutencaoDe, maximoDaLeva } from './recrutamento';
 import type { RecusaDeLeva } from './recrutamento';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
@@ -80,6 +80,14 @@ export class Mobilizacao {
   /** Quantos habitantes esta província ainda cede a uma leva. */
   disponivelParaLevaEm(idProvincia: string): number {
     return disponivelParaLeva(this.populacaoDe(idProvincia), this.ajustes);
+  }
+
+  /** Teto real da leva: população cedida e ouro disponível contam ao mesmo tempo. */
+  maximoParaLevaEm(idProvincia: string): number {
+    return maximoDaLeva(
+      { populacao: this.populacaoDe(idProvincia), tesouro: this.estado.tesouro },
+      this.ajustes,
+    );
   }
 
   avaliarLevaEm(idProvincia: string, homens: number, temQuartel: boolean): RecusaDeLeva {

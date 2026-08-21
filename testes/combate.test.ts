@@ -11,6 +11,7 @@ import {
   custoDaLeva,
   disponivelParaLeva,
   manutencaoDe,
+  maximoDaLeva,
 } from '../src/combate/recrutamento';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
@@ -106,6 +107,18 @@ describe('recrutamento: as contas', () => {
     expect(avaliarLeva(cabe + 1, situacao, combate)).toMatchObject({
       motivo: /nunca saem daqui/,
     });
+  });
+
+  it('oferece como teto somente o que população e tesouro permitem pagar', () => {
+    const pelaRiqueza = { populacao: 35_000, tesouro: 3_000 };
+    expect(maximoDaLeva(pelaRiqueza, combate)).toBe(1000);
+
+    const pelaPopulacao = {
+      populacao: combate.populacaoMinima + 37,
+      tesouro: 200_000,
+    };
+    expect(maximoDaLeva(pelaPopulacao, combate)).toBe(37);
+    expect(maximoDaLeva({ ...pelaRiqueza, tesouro: 0 }, combate)).toBe(0);
   });
 
   it('no piso, a província para de ceder gente e diz por quê', () => {

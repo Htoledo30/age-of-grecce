@@ -290,7 +290,7 @@ describe('resolução: partida, chegada, choque', () => {
       ordens: { a: { origem: 'a', rota: ['b', 'c'], homens: 400 } },
     };
     const r = resolverRodada(estado, 2, mundoDe());
-    expect(r.marchas).toEqual([{ origem: 'a', destino: 'c', homens: 400 }]);
+    expect(r.marchas).toEqual([{ trilha: ['a', 'b', 'c'], homens: 400 }]);
   });
 });
 

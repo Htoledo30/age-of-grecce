@@ -17,6 +17,7 @@
  */
 
 import type { Camera } from '@/nucleo/camera';
+import type { Ponto } from '@/ui/animacao-de-marcha';
 
 /** Uma hoste como o mapa precisa vê-la. */
 export interface MarcadorDeHoste {
@@ -57,6 +58,14 @@ export class HostesMapa {
 
   aoSelecionar: (idProvincia: string) => void = () => {};
 
+  /**
+   * Onde a peça está enquanto marcha, ou `null` se está parada na província.
+   *
+   * A camada não sabe — nem deve saber — o que é uma marcha; ela pergunta a posição e
+   * desenha. Quem responde é `AnimacaoDeMarcha`, ligada em `main.ts`.
+   */
+  ondeEstaMarchando: (idProvincia: string) => Ponto | null = () => null;
+
   constructor(pai: HTMLElement) {
     this.camada.className = 'hostes';
     pai.appendChild(this.camada);
@@ -96,7 +105,7 @@ export class HostesMapa {
         this.camada.appendChild(elemento);
         this.marcadores.set(hoste.provincia, elemento);
       }
-      if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste.x, hoste.y);
+      if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
       elemento.textContent = hoste.forca.toLocaleString('pt-BR');
       elemento.title = `${hoste.nomeDoPoder} · ${hoste.forca.toLocaleString('pt-BR')} homens`;
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
@@ -128,16 +137,37 @@ export class HostesMapa {
     for (const hoste of this.atual) {
       const elemento = this.marcadores.get(hoste.provincia);
       if (!elemento) continue;
-      this.assentar(elemento, camera, hoste.x, hoste.y);
+      this.assentar(elemento, camera, hoste);
     }
   }
 
-  /** Põe a peça no ponto e a torna visível. É o único lugar que escreve `transform`. */
-  private assentar(elemento: HTMLElement, camera: Camera, x: number, y: number): void {
-    const p = camera.mundoParaPalco(x, y);
-    // `translate(-50%, -50%)` centra a peça no ponto: sem isso ela pende pra baixo e pra
-    // direita, e em zoom alto o número deixa de cair sobre a província.
-    elemento.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+  /**
+   * Põe a peça no ponto e a torna visível. **É o único lugar que escreve `transform`**, e
+   * o único que decide se ela está no centro da província ou no meio de uma marcha.
+   *
+   * ⚠️ Ser único importa: foi ter duas rotas até a tela — uma no nascimento e outra no
+   * laço de quadro — que fez a peça nascer sem posição e ser pintada no canto do palco.
+   */
+  private assentar(elemento: HTMLElement, camera: Camera, hoste: MarcadorDeHoste): void {
+    const emMarcha = this.ondeEstaMarchando(hoste.provincia);
+    const onde = emMarcha ?? hoste;
+    const p = camera.mundoParaPalco(onde.x, onde.y);
+    // ⚠️ **A posição vai na propriedade `translate`, NUNCA em `transform`.** A matriz final
+    // do CSS é `translate · rotate · scale · transform`, ou seja, um `scale` independente
+    // MULTIPLICA o que estiver em `transform`. Com o pulso de chegada indo de `scale: 0.72`
+    // a 1, um `transform: translate(1010px, 471px)` virava 727px, 339px: a peça saltava pra
+    // cima e pra esquerda e voltava deslizando até o lugar. Era o "a tropa surge no topo da
+    // tela e vem descendo" — e não tinha nada a ver com o marcador nascer sem posição.
+    //
+    // Separadas, cada canal cuida do seu: `translate` diz ONDE ela está, `scale` diz COMO
+    // ela é desenhada, e uma animação não empurra mais a outra. O `- 50%` centra a peça no
+    // ponto; sem ele ela pende pra baixo e pra direita, e em zoom alto o número deixa de
+    // cair sobre a província.
+    elemento.style.translate = `calc(${p.x}px - 50%) calc(${p.y}px - 50%)`;
     elemento.dataset['posicionada'] = 'sim';
+    // Tropa em movimento não se pega no meio do passo: durante a marcha a peça deixa de
+    // aceitar clique, senão selecioná-la abriria a ficha de uma província onde ela ainda
+    // não está desenhada.
+    elemento.dataset['marchando'] = emMarcha ? 'sim' : 'nao';
   }
 }

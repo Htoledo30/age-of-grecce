@@ -12,6 +12,7 @@ import { expect, test } from '@playwright/test';
 
 interface Ganchos {
   comecar: (idPoder: string) => void;
+  campanha: () => { tesouro: number };
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -55,10 +56,26 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
 
   await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 habitantes');
   await expect(page.locator('.recrutamento__alvo')).toContainText('33.697 disponíveis');
+  const seletor = page.getByRole('slider', { name: 'Quantidade de soldados para recrutar' });
+  await expect(seletor).toHaveAttribute('type', 'range');
+  const tesouro = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().tesouro,
+  );
+  await expect(seletor).toHaveAttribute('max', String(Math.floor(tesouro / 3)));
+  await expect(page.locator('.recrutamento__previsao')).toContainText('Arraste a barra');
+  await expect(page.getByRole('button', { name: 'Reunir leva' })).toBeDisabled();
+
+  // O teste move a barra como o jogador faria; nenhum campo numérico digitável existe.
+  await seletor.evaluate((elemento) => {
+    const barra = elemento as HTMLInputElement;
+    barra.value = '1000';
+    barra.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   await expect(page.locator('.recrutamento__previsao')).toContainText('3.000 moedas agora');
   await expect(page.locator('.recrutamento__previsao')).toContainText('300 por turno');
+  await expect(page.getByRole('button', { name: 'Reunir 1.000' })).toBeEnabled();
 
-  await page.getByRole('button', { name: 'Reunir leva' }).click();
+  await page.getByRole('button', { name: 'Reunir 1.000' }).click();
 
   const depois = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -69,6 +86,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   // Os painéis contam a mesma história.
   await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
   await expect(page.locator('.recrutamento__alvo')).toContainText('32.697 disponíveis');
+  await expect(seletor).toHaveValue('0');
   await expect(page.locator('.barra-turno__ouro')).toContainText('+709');
   await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
 

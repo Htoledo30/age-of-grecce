@@ -50,7 +50,9 @@ export type VistaDeAcoes =
       arrecadacoesRestantes: number;
       /** Quantas arrecadações um incentivo novo dura. */
       duracao: number;
-      /** Resposta da campanha pro valor digitado agora. */
+      /** Teto real agora: limite do decreto e tesouro disponível. */
+      maximo: number;
+      /** Resposta da campanha pro valor escolhido agora. */
       avaliar: (valor: number) => { pode: true; bonus: number } | { pode: false; motivo: string };
       /** A conta do retorno: quanto rende por turno e se chega a pagar o que custou. */
       retorno: (valor: number) => {
@@ -69,10 +71,14 @@ export class AcoesProvincia {
   private readonly tituloConstrucoes = document.createElement('h3');
   private readonly listaConstrucoes = document.createElement('div');
   private readonly tituloDecretos = document.createElement('h3');
+  private readonly quantidade = document.createElement('p');
   private readonly campoValor = document.createElement('input');
+  private readonly atalhos = document.createElement('div');
+  private readonly botoesDeAtalho: HTMLButtonElement[] = [];
   private readonly previsao = document.createElement('p');
   private readonly botaoInvestir = document.createElement('button');
   private vista: VistaDeAcoes | null = null;
+  private provinciaDoValor: string | null = null;
 
   /** Chamado quando o jogador confirma um investimento. */
   aoInvestir: (idProvincia: string, valor: number) => void = () => {};
@@ -95,15 +101,41 @@ export class AcoesProvincia {
     this.tituloDecretos.className = 'acoes__grupo';
     this.tituloDecretos.textContent = 'Decretos';
 
+    this.quantidade.className = 'acoes__quantidade';
+    this.quantidade.setAttribute('aria-live', 'polite');
+
     this.campoValor.className = 'acoes__valor';
-    this.campoValor.type = 'number';
-    this.campoValor.min = '1';
+    this.campoValor.type = 'range';
+    this.campoValor.min = '0';
     this.campoValor.step = '1';
-    this.campoValor.value = '250';
+    this.campoValor.value = '0';
+    this.campoValor.setAttribute('aria-label', 'Moedas para investir na produção');
     this.campoValor.title =
-      'Quanto pôr na produção desta província. O bônus é proporcional ao investimento ' +
-      'máximo, e dura algumas arrecadações.';
+      'Arraste para escolher quanto pôr na produção. A barra respeita o tesouro e o ' +
+      'limite deste decreto.';
     this.campoValor.addEventListener('input', () => this.avaliar());
+
+    this.atalhos.className = 'acoes__atalhos';
+    for (const [rotulo, fracao] of [
+      ['25%', 0.25],
+      ['50%', 0.5],
+      ['75%', 0.75],
+      ['Máximo', 1],
+    ] as const) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'acoes__atalho';
+      botao.textContent = rotulo;
+      botao.addEventListener('click', () => {
+        const vista = this.vista;
+        if (!vista?.pode || vista.maximo === 0) return;
+        this.campoValor.value = String(Math.max(1, Math.floor(vista.maximo * fracao)));
+        this.avaliar();
+        botao.blur();
+      });
+      this.botoesDeAtalho.push(botao);
+      this.atalhos.appendChild(botao);
+    }
 
     this.previsao.className = 'acoes__previsao';
 
@@ -114,7 +146,10 @@ export class AcoesProvincia {
       const vista = this.vista;
       if (!vista?.pode) return;
       const valor = Number(this.campoValor.value);
-      if (vista.avaliar(valor).pode) this.aoInvestir(vista.provincia.id, valor);
+      if (vista.avaliar(valor).pode) {
+        this.campoValor.value = '0';
+        this.aoInvestir(vista.provincia.id, valor);
+      }
       this.botaoInvestir.blur();
     });
 
@@ -124,7 +159,9 @@ export class AcoesProvincia {
       this.tituloConstrucoes,
       this.listaConstrucoes,
       this.tituloDecretos,
+      this.quantidade,
       this.campoValor,
+      this.atalhos,
       this.previsao,
       this.botaoInvestir,
     );
@@ -142,7 +179,9 @@ export class AcoesProvincia {
       this.tituloConstrucoes,
       this.listaConstrucoes,
       this.tituloDecretos,
+      this.quantidade,
       this.campoValor,
+      this.atalhos,
       this.botaoInvestir,
     ]) {
       el.hidden = !disponivel;
@@ -163,6 +202,15 @@ export class AcoesProvincia {
     this.listaConstrucoes.replaceChildren(
       ...vista.construcoes.map((o) => this.linhaDeConstrucao(vista.provincia.id, o)),
     );
+    this.campoValor.max = String(vista.maximo);
+    if (this.provinciaDoValor !== vista.provincia.id) {
+      this.provinciaDoValor = vista.provincia.id;
+      this.campoValor.value = String(Math.min(250, vista.maximo));
+    } else {
+      this.campoValor.value = String(Math.min(Number(this.campoValor.value), vista.maximo));
+    }
+    this.campoValor.disabled = vista.maximo === 0;
+    for (const botao of this.botoesDeAtalho) botao.disabled = vista.maximo === 0;
     this.avaliar();
   }
 
@@ -235,12 +283,24 @@ export class AcoesProvincia {
    * Diz o que aquele valor compraria — ou por que não compra nada.
    *
    * Escrever o motivo em vez de só desabilitar o botão é o que ensina a regra sem
-   * tutorial: o jogador descobre o teto e o retorno digitando.
+   * tutorial: o jogador descobre o teto e o retorno enquanto arrasta.
    */
   private avaliar(): void {
     const vista = this.vista;
     if (!vista?.pode) return;
     const valor = Number(this.campoValor.value);
+    this.quantidade.textContent =
+      `${valor.toLocaleString('pt-BR')} moedas` +
+      (vista.maximo > 0 ? ` · máximo agora: ${vista.maximo.toLocaleString('pt-BR')}` : '');
+
+    if (vista.maximo === 0 || valor === 0) {
+      this.previsao.textContent =
+        vista.maximo === 0 ? 'O tesouro não permite investir agora.' : 'Escolha um valor.';
+      this.previsao.dataset['vale'] = 'nao';
+      this.botaoInvestir.textContent = 'Investir na produção';
+      this.botaoInvestir.disabled = true;
+      return;
+    }
     const r = vista.avaliar(valor);
     this.botaoInvestir.disabled = !r.pode;
 
@@ -268,5 +328,6 @@ export class AcoesProvincia {
       `Mais ${conta.ganhoPorTurno} moedas por turno durante ${vista.duracao} turnos, ` +
       `${conta.ganhoTotal} ao todo.`;
     this.previsao.dataset['vale'] = conta.vale ? 'sim' : 'nao';
+    this.botaoInvestir.textContent = `Investir ${valor.toLocaleString('pt-BR')}`;
   }
 }

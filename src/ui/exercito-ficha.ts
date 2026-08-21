@@ -55,7 +55,9 @@ export class ExercitoFicha {
   private readonly aviso = document.createElement('p');
   private readonly tituloOrigens = document.createElement('h3');
   private readonly origens = document.createElement('dl');
+  private readonly quantidade = document.createElement('p');
   private readonly campoHomens = document.createElement('input');
+  private readonly atalhos = document.createElement('div');
   private readonly botaoMover = document.createElement('button');
   private readonly instrucao = document.createElement('p');
   private readonly linhaOrdem = document.createElement('p');
@@ -93,16 +95,43 @@ export class ExercitoFicha {
     this.tituloOrigens.textContent = 'De onde vieram';
     this.origens.className = 'exercito__origens';
 
+    this.quantidade.className = 'exercito__quantidade';
+    this.quantidade.setAttribute('aria-live', 'polite');
+
     this.campoHomens.className = 'exercito__valor';
-    this.campoHomens.type = 'number';
+    this.campoHomens.type = 'range';
     this.campoHomens.min = '1';
-    this.campoHomens.step = '100';
+    this.campoHomens.step = '1';
+    this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para mover');
     this.campoHomens.title =
       'Quantos homens marcham. O resto fica defendendo esta província — mandar tudo é ' +
       'apostar a casa.';
     this.campoHomens.addEventListener('input', () => {
+      this.atualizarQuantidade();
       this.aoMudarQuantidade(Number(this.campoHomens.value));
     });
+
+    this.atalhos.className = 'exercito__atalhos';
+    for (const [rotulo, fracao] of [
+      ['25%', 0.25],
+      ['50%', 0.5],
+      ['75%', 0.75],
+      ['Todos', 1],
+    ] as const) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'exercito__atalho';
+      botao.textContent = rotulo;
+      botao.addEventListener('click', () => {
+        const vista = this.vista;
+        if (!vista?.minha || vista.forca === 0) return;
+        this.campoHomens.value = String(Math.max(1, Math.floor(vista.forca * fracao)));
+        this.atualizarQuantidade();
+        this.aoMudarQuantidade(Number(this.campoHomens.value));
+        botao.blur();
+      });
+      this.atalhos.appendChild(botao);
+    }
 
     this.botaoCancelar.className = 'botao exercito__botao';
     this.botaoCancelar.type = 'button';
@@ -150,7 +179,9 @@ export class ExercitoFicha {
       this.aviso,
       this.tituloOrigens,
       this.origens,
+      this.quantidade,
       this.campoHomens,
+      this.atalhos,
       this.botaoMover,
       this.instrucao,
       this.linhaOrdem,
@@ -214,15 +245,18 @@ export class ExercitoFicha {
         `${numero(vista.ordem.homens)} marcham para ${vista.ordem.destino} ao passar o turno`;
     }
 
-    // O campo reinicia com a força inteira quando o jogador troca de hoste — mandar tudo
-    // é o caso comum, e digitar o total toda vez seria atrito.
+    // A barra reinicia com a força inteira quando o jogador troca de hoste — mandar tudo
+    // é o caso comum. O `max` vem antes do valor para o navegador não limitá-lo ao padrão 100.
+    this.campoHomens.max = String(vista.forca);
     if (this.quantidadeDe !== vista.provincia.id) {
       this.quantidadeDe = vista.provincia.id;
       this.campoHomens.value = String(vista.forca);
       this.aoMudarQuantidade(vista.forca);
     }
-    this.campoHomens.max = String(vista.forca);
+    this.atualizarQuantidade();
+    this.quantidade.hidden = !vista.minha || temOrdem;
     this.campoHomens.hidden = !vista.minha || temOrdem;
+    this.atalhos.hidden = !vista.minha || temOrdem;
 
     // Nada de sumir em silêncio: sem destino, o botão fica na tela dizendo o motivo. É
     // assim que o jogador descobre que a marcha só passa por território dele.
@@ -242,6 +276,13 @@ export class ExercitoFicha {
     this.instrucao.textContent = vista.marchando
       ? `Clique num dos ${numero(vista.destinos)} destinos marcados no mapa. Clicar em outro lugar cancela.`
       : '';
+  }
+
+  private atualizarQuantidade(): void {
+    const vista = this.vista;
+    if (!vista) return;
+    this.quantidade.textContent =
+      `${numero(Number(this.campoHomens.value))} de ${numero(vista.forca)} marcham`;
   }
 }
 

@@ -376,6 +376,11 @@ export class Campanha {
     return this.mobilizacao.disponivelParaLevaEm(idProvincia);
   }
 
+  /** Quantos homens a população e o tesouro permitem recrutar neste instante. */
+  maximoParaLevaEm(idProvincia: string): number {
+    return this.mobilizacao.maximoParaLevaEm(idProvincia);
+  }
+
   /**
    * Pode levantar esta leva aqui, e por quanto?
    *

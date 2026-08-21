@@ -119,13 +119,49 @@
 
 .acoes__valor {
   width: 100%;
+  margin-top: var(--gap-1);
+  accent-color: var(--ouro);
+  cursor: ew-resize;
+}
+
+.acoes__valor:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.acoes__quantidade {
   margin-top: var(--gap-2);
-  padding: var(--gap-2);
-  border: 1px solid var(--tinta-fraca);
-  background: var(--papel-claro);
-  color: var(--tinta);
   font-family: var(--fonte-numero);
   font-size: 16px;
+  color: var(--tinta);
+}
+
+.acoes__atalhos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: var(--gap-1);
+}
+
+.acoes__atalho {
+  padding: 5px 2px;
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-claro);
+  color: var(--tinta-fraca);
+  font-family: var(--fonte-numero);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.acoes__atalho:hover:not(:disabled),
+.acoes__atalho:focus-visible {
+  border-color: var(--ouro);
+  color: var(--tinta);
+}
+
+.acoes__atalho:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .acoes__previsao {
@@ -152,6 +188,8 @@
    `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
    aqui em cima deixa de conseguir se esconder. */
 .acoes__botao[hidden],
-.acoes__valor[hidden] {
+.acoes__valor[hidden],
+.acoes__quantidade[hidden],
+.acoes__atalhos[hidden] {
   display: none;
 }

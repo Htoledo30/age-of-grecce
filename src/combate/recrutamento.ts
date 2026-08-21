@@ -50,6 +50,35 @@ export function disponivelParaLeva(populacao: number, ajustes: AjustesCombate): 
   return Math.max(0, Math.floor(populacao) - ajustes.populacaoMinima);
 }
 
+/**
+ * O maior contingente que a situação permite oferecer ao jogador AGORA.
+ *
+ * A interface usa este teto em vez de oferecer números que a própria regra recusaria.
+ * A busca binária respeita `custoDaLeva` inclusive quando o custo por homem não é inteiro;
+ * assim a barra e a cobrança nunca discordam por causa de arredondamento.
+ */
+export function maximoDaLeva(
+  situacao: Pick<SituacaoDaLeva, 'populacao' | 'tesouro'>,
+  ajustes: AjustesCombate,
+): number {
+  const disponivel = disponivelParaLeva(situacao.populacao, ajustes);
+  if (disponivel === 0 || situacao.tesouro < custoDaLeva(1, ajustes)) return 0;
+
+  let minimo = 1;
+  let maximo = disponivel;
+  let resposta = 0;
+  while (minimo <= maximo) {
+    const meio = Math.floor((minimo + maximo) / 2);
+    if (custoDaLeva(meio, ajustes) <= situacao.tesouro) {
+      resposta = meio;
+      minimo = meio + 1;
+    } else {
+      maximo = meio - 1;
+    }
+  }
+  return resposta;
+}
+
 /** Manutenção por turno de um contingente. Inteiro, pelo mesmo motivo. */
 export function manutencaoDe(homens: number, ajustes: AjustesCombate): number {
   return Math.round(homens * ajustes.manutencaoPorHomem);
