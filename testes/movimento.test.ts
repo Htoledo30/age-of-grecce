@@ -9,6 +9,7 @@ import { alcanceDe, rotasDe } from '../src/movimento/alcance';
 import { resolverRodada } from '../src/movimento/resolucao';
 import type { EstadoDaResolucao } from '../src/movimento/resolucao';
 import { exercitoVazio, forcaDe, somarLeva } from '../src/combate/exercito';
+import type { Exercito } from '../src/combate/exercito';
 import { resolverChoque } from '../src/combate/batalha';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
@@ -57,10 +58,30 @@ function mundoDe(donos: Record<string, string> = {}, milicias: Record<string, nu
 }
 
 /** Uma hoste solta, sem campanha em volta: é o que a resolução pura precisa. */
-function hoste(poder: string, origem: string, homens: number) {
-  const e = exercitoVazio(poder);
-  somarLeva(e, origem, homens);
+/**
+ * Uma hoste com identidade propria, parada numa provincia.
+ *
+ * ⚠️ O id e derivado do nome da provincia (`h_a`) so para o teste ficar legivel. No jogo
+ * ele vem de um contador no estado — a provincia deixou de ser o endereco da hoste, e e
+ * isso que permite duas no mesmo lugar.
+ */
+function hoste(poder: string, onde: string, homens: number): Exercito {
+  const e = exercitoVazio(`h_${onde}`, poder, onde);
+  somarLeva(e, onde, homens);
   return e;
+}
+
+/** Indexa as hostes por id, que e como o estado guarda. */
+function tabuleiro(...lista: Exercito[]): Record<string, Exercito> {
+  return Object.fromEntries(lista.map((h) => [h.id, h]));
+}
+
+/** A hoste parada nesta provincia, se houver. */
+function em(estado: EstadoDaResolucao, provincia: string): Exercito | undefined {
+  return Object.keys(estado.hostes)
+    .sort()
+    .map((id) => estado.hostes[id])
+    .find((h) => h !== undefined && h.posicao === provincia);
 }
 
 describe('rotas: até onde a hoste vai NESTA rodada', () => {
@@ -246,71 +267,77 @@ describe('a ordem recusada diz o motivo', () => {
 describe('resolução: partida, chegada, choque', () => {
   it('a origem fica vazia já no passo 1 de uma rota de dois trechos', () => {
     const estado: EstadoDaResolucao = {
-      exercitos: { a: hoste('atenas', 'a', 1000) },
-      ordens: { a: { origem: 'a', rota: ['b', 'c'], homens: 1000, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('atenas', 'a', 1000)),
+      proximaHoste: 90,
+      ordens: { h_a: { origem: 'a', rota: ['b', 'c'], homens: 1000, postura: 'assaltar' as const } },
       cercos: {},
     };
     resolverRodada(estado, combateComDoisSaltos, mundoDe());
     // Quem manda a guarnição inteira embora deixa a casa aberta desde o primeiro instante.
-    expect(estado.exercitos['a']).toBeUndefined();
-    expect(forcaDe(estado.exercitos['c'])).toBe(1000);
-    expect(estado.exercitos['b']).toBeUndefined(); // passou, não ficou
+    expect(em(estado, 'a')).toBeUndefined();
+    expect(forcaDe(em(estado, 'c'))).toBe(1000);
+    expect(em(estado, 'b')).toBeUndefined(); // passou, não ficou
   });
 
   it('uma rota de um trecho não participa do passo 2', () => {
     const estado: EstadoDaResolucao = {
-      exercitos: { a: hoste('atenas', 'a', 500) },
-      ordens: { a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('atenas', 'a', 500)),
+      proximaHoste: 90,
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
       cercos: {},
     };
     resolverRodada(estado, ajustes.combate, mundoDe());
-    expect(forcaDe(estado.exercitos['b'])).toBe(500);
+    expect(forcaDe(em(estado, 'b'))).toBe(500);
   });
 
   it('duas hostes do mesmo poder que chegam juntas viram uma', () => {
     const estado: EstadoDaResolucao = {
-      exercitos: { a: hoste('atenas', 'a', 300), b: hoste('atenas', 'b', 700) },
+      hostes: tabuleiro(hoste('atenas', 'a', 300), hoste('atenas', 'b', 700)),
+      proximaHoste: 90,
       ordens: {
-        a: { origem: 'a', rota: ['c'], homens: 300, postura: 'assaltar' as const },
-        b: { origem: 'b', rota: ['c'], homens: 700, postura: 'assaltar' as const },
+        h_a: { origem: 'a', rota: ['c'], homens: 300, postura: 'assaltar' as const },
+        h_b: { origem: 'b', rota: ['c'], homens: 700, postura: 'assaltar' as const },
       },
       cercos: {},
     };
     resolverRodada(estado, ajustes.combate, mundoDe());
-    expect(forcaDe(estado.exercitos['c'])).toBe(1000);
+    expect(forcaDe(em(estado, 'c'))).toBe(1000);
     // A terra natal de cada um sobrevive à fusão.
-    expect(estado.exercitos['c']?.origem).toEqual({ a: 300, b: 700 });
+    expect(em(estado, 'c')?.origem).toEqual({ a: 300, b: 700 });
   });
 
   it('o destacamento leva uma parcela proporcional de cada terra natal', () => {
-    const misturada = exercitoVazio('atenas');
+    const misturada = exercitoVazio('h_a', 'atenas', 'a');
     somarLeva(misturada, 'atenas', 700);
     somarLeva(misturada, 'maratona', 300);
     const estado: EstadoDaResolucao = {
-      exercitos: { a: misturada },
-      ordens: { a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      hostes: tabuleiro(misturada),
+      proximaHoste: 90,
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
       cercos: {},
     };
     resolverRodada(estado, ajustes.combate, mundoDe());
     // Metade de cada, não 500 da primeira da lista: a ordem das levas não pode virar regra.
-    expect(estado.exercitos['b']?.origem).toEqual({ atenas: 350, maratona: 150 });
-    expect(estado.exercitos['a']?.origem).toEqual({ atenas: 350, maratona: 150 });
+    expect(em(estado, 'b')?.origem).toEqual({ atenas: 350, maratona: 150 });
+    expect(em(estado, 'a')?.origem).toEqual({ atenas: 350, maratona: 150 });
   });
 
   it('ordem cuja hoste sumiu antes da virada simplesmente não marcha', () => {
     const estado: EstadoDaResolucao = {
-      exercitos: {},
-      ordens: { a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      hostes: tabuleiro(),
+      proximaHoste: 90,
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
       cercos: {},
     };
     expect(() => resolverRodada(estado, ajustes.combate, mundoDe())).not.toThrow();
-    expect(estado.exercitos['b']).toBeUndefined();
+    expect(em(estado, 'b')).toBeUndefined();
   });
 
   it('o relatório diz de onde saiu e onde parou', () => {
     const estado: EstadoDaResolucao = {
-      exercitos: { a: hoste('atenas', 'a', 1000) },
-      ordens: { a: { origem: 'a', rota: ['b', 'c'], homens: 400, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('atenas', 'a', 1000)),
+      proximaHoste: 90,
+      ordens: { h_a: { origem: 'a', rota: ['b', 'c'], homens: 400, postura: 'assaltar' as const } },
       cercos: {},
     };
     const r = resolverRodada(estado, combateComDoisSaltos, mundoDe());
@@ -321,13 +348,11 @@ describe('resolução: partida, chegada, choque', () => {
 describe('determinismo — a exigência que não é opcional', () => {
   it('a mesma rodada resolvida duas vezes dá o mesmo resultado', () => {
     const montar = (): EstadoDaResolucao => ({
-      exercitos: {
-        zacinto: hoste('atenas', 'zacinto', 300),
-        abido: hoste('atenas', 'abido', 700),
-      },
+      hostes: tabuleiro(hoste('atenas', 'zacinto', 300), hoste('atenas', 'abido', 700)),
+      proximaHoste: 90,
       ordens: {
-        zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
-        abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
       },
       cercos: {},
     });
@@ -336,32 +361,34 @@ describe('determinismo — a exigência que não é opcional', () => {
     expect(resolverRodada(uma, ajustes.combate, mundoDe())).toEqual(
       resolverRodada(outra, ajustes.combate, mundoDe()),
     );
-    expect(uma.exercitos).toEqual(outra.exercitos);
+    expect(uma.hostes).toEqual(outra.hostes);
   });
 
   it('a ordem de inserção no registro não muda o resultado', () => {
     // `Object.entries` devolve as chaves na ordem de criação. Se a resolução percorresse
     // isso cru, o resultado passaria a depender de quem foi recrutado primeiro.
     const primeiro: EstadoDaResolucao = {
-      exercitos: { zacinto: hoste('atenas', 'zacinto', 300), abido: hoste('atenas', 'abido', 700) },
+      hostes: tabuleiro(hoste('atenas', 'zacinto', 300), hoste('atenas', 'abido', 700)),
+      proximaHoste: 90,
       ordens: {
-        zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
-        abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
       },
       cercos: {},
     };
     const invertido: EstadoDaResolucao = {
-      exercitos: { abido: hoste('atenas', 'abido', 700), zacinto: hoste('atenas', 'zacinto', 300) },
+      hostes: tabuleiro(hoste('atenas', 'abido', 700), hoste('atenas', 'zacinto', 300)),
+      proximaHoste: 90,
       ordens: {
-        abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
-        zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300, postura: 'assaltar' as const },
       },
       cercos: {},
     };
     expect(resolverRodada(primeiro, ajustes.combate, mundoDe())).toEqual(
       resolverRodada(invertido, ajustes.combate, mundoDe()),
     );
-    expect(primeiro.exercitos['meio']?.origem).toEqual(invertido.exercitos['meio']?.origem);
+    expect(em(primeiro, 'meio')?.origem).toEqual(em(invertido, 'meio')?.origem);
   });
 });
 
@@ -388,10 +415,11 @@ describe('adjudicação: os seis casos da tabela', () => {
   it('caso 1 — quem se cruza na estrada batalha, e o vencedor SEGUE e toma o destino', () => {
     const mundo = mundoDe({ x: 'a', y: 'b' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      hostes: tabuleiro(hoste('a', 'x', 1000), hoste('b', 'y', 600)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['y'], homens: 1000, postura: 'assaltar' as const },
-        y: { origem: 'y', rota: ['x'], homens: 600, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['y'], homens: 1000, postura: 'assaltar' as const },
+        h_y: { origem: 'y', rota: ['x'], homens: 600, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -401,18 +429,19 @@ describe('adjudicação: os seis casos da tabela', () => {
     expect(r.batalhas).toEqual([
       { provincia: null, vencedor: 'a', perdedores: ['b'], sobreviventes: 800 },
     ]);
-    expect(forcaDe(estado.exercitos['y'])).toBe(800);
-    expect(estado.exercitos['x']).toBeUndefined();
+    expect(forcaDe(em(estado, 'y'))).toBe(800);
+    expect(em(estado, 'x')).toBeUndefined();
     expect(mundo.donoDe('y')).toBe('a'); // seguiu e conquistou
   });
 
   it('caso 2 — dois que chegam na mesma província se enfrentam sem defensor', () => {
     const mundo = mundoDe({ x: 'a', y: 'b', z: 'c' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      hostes: tabuleiro(hoste('a', 'x', 1000), hoste('b', 'y', 600)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['z'], homens: 1000, postura: 'assaltar' as const },
-        y: { origem: 'y', rota: ['z'], homens: 600, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['z'], homens: 1000, postura: 'assaltar' as const },
+        h_y: { origem: 'y', rota: ['z'], homens: 600, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -425,10 +454,11 @@ describe('adjudicação: os seis casos da tabela', () => {
   it('caso 3 — província esvaziada na partida cai sem batalha', () => {
     const mundo = mundoDe({ x: 'a', z: 'b' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 1000), z: hoste('b', 'z', 500) },
+      hostes: tabuleiro(hoste('a', 'x', 1000), hoste('b', 'z', 500)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['w'], homens: 1000, postura: 'assaltar' as const }, // sai de casa inteiro
-        z: { origem: 'z', rota: ['x'], homens: 500, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['w'], homens: 1000, postura: 'assaltar' as const }, // sai de casa inteiro
+        h_z: { origem: 'z', rota: ['x'], homens: 500, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -437,16 +467,17 @@ describe('adjudicação: os seis casos da tabela', () => {
     // Fronteira desprotegida é risco real, não vantagem de interface.
     expect(r.batalhas).toEqual([]);
     expect(mundo.donoDe('x')).toBe('b');
-    expect(forcaDe(estado.exercitos['x'])).toBe(500);
+    expect(forcaDe(em(estado, 'x'))).toBe(500);
   });
 
   it('caso 4 — encontro no meio da rota cancela o percurso dos DOIS', () => {
     const mundo = mundoDe({ x: 'a', y: 'b', w: 'c', z: 'c' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      hostes: tabuleiro(hoste('a', 'x', 1000), hoste('b', 'y', 600)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['w', 'z'], homens: 1000, postura: 'assaltar' as const }, // ia até z
-        y: { origem: 'y', rota: ['w'], homens: 600, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['w', 'z'], homens: 1000, postura: 'assaltar' as const }, // ia até z
+        h_y: { origem: 'y', rota: ['w'], homens: 600, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -455,23 +486,20 @@ describe('adjudicação: os seis casos da tabela', () => {
     expect(r.batalhas[0]).toMatchObject({ provincia: 'w', vencedor: 'a', sobreviventes: 800 });
     // Parou em w. Não chegou em z — ao contrário do encontro na estrada, aqui existe lugar
     // onde ficar.
-    expect(forcaDe(estado.exercitos['w'])).toBe(800);
-    expect(estado.exercitos['z']).toBeUndefined();
+    expect(forcaDe(em(estado, 'w'))).toBe(800);
+    expect(em(estado, 'z')).toBeUndefined();
     expect(mundo.donoDe('z')).toBe('c');
   });
 
   it('caso 5 — três no mesmo destino resolvem aos pares, da maior força pra menor', () => {
     const mundo = mundoDe({ x: 'a', y: 'b', k: 'c', z: 'd' });
     const estado: EstadoDaResolucao = {
-      exercitos: {
-        x: hoste('a', 'x', 1000),
-        y: hoste('b', 'y', 600),
-        k: hoste('c', 'k', 300),
-      },
+      hostes: tabuleiro(hoste('a', 'x', 1000), hoste('b', 'y', 600), hoste('c', 'k', 300)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['z'], homens: 1000, postura: 'assaltar' as const },
-        y: { origem: 'y', rota: ['z'], homens: 600, postura: 'assaltar' as const },
-        k: { origem: 'k', rota: ['z'], homens: 300, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['z'], homens: 1000, postura: 'assaltar' as const },
+        h_y: { origem: 'y', rota: ['z'], homens: 600, postura: 'assaltar' as const },
+        h_k: { origem: 'k', rota: ['z'], homens: 300, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -481,20 +509,17 @@ describe('adjudicação: os seis casos da tabela', () => {
     expect(r.batalhas).toHaveLength(2);
     expect(r.batalhas[0]).toMatchObject({ vencedor: 'a', perdedores: ['b'], sobreviventes: 800 });
     expect(r.batalhas[1]).toMatchObject({ vencedor: 'a', perdedores: ['c'], sobreviventes: 742 });
-    expect(forcaDe(estado.exercitos['z'])).toBe(742);
+    expect(forcaDe(em(estado, 'z'))).toBe(742);
   });
 
   it('caso 6 — o reforço CHEGA a tempo de defender', () => {
     const mundo = mundoDe({ x: 'a', y: 'a', z: 'b' });
     const estado: EstadoDaResolucao = {
-      exercitos: {
-        y: hoste('a', 'y', 300), // guarnição
-        x: hoste('a', 'x', 700), // reforço a caminho
-        z: hoste('b', 'z', 800), // atacante
-      },
+      hostes: tabuleiro(hoste('a', 'y', 300), hoste('a', 'x', 700), hoste('b', 'z', 800)),
+      proximaHoste: 90,
       ordens: {
-        x: { origem: 'x', rota: ['y'], homens: 700, postura: 'assaltar' as const },
-        z: { origem: 'z', rota: ['y'], homens: 800, postura: 'assaltar' as const },
+        h_x: { origem: 'x', rota: ['y'], homens: 700, postura: 'assaltar' as const },
+        h_z: { origem: 'z', rota: ['y'], homens: 800, postura: 'assaltar' as const },
       },
       cercos: {},
     };
@@ -504,7 +529,7 @@ describe('adjudicação: os seis casos da tabela', () => {
     // contra 800 seria derrota — é exatamente a justiça que a simultaneidade dá.
     expect(r.batalhas[0]).toMatchObject({ provincia: 'y', vencedor: 'a', sobreviventes: 600 });
     expect(mundo.donoDe('y')).toBe('a');
-    expect(forcaDe(estado.exercitos['y'])).toBe(600);
+    expect(forcaDe(em(estado, 'y'))).toBe(600);
   });
 });
 
@@ -512,8 +537,9 @@ describe('conquista', () => {
   it('província inimiga vazia cai sem batalha nenhuma', () => {
     const mundo = mundoDe({ x: 'a', y: 'b' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 100) },
-      ordens: { x: { origem: 'x', rota: ['y'], homens: 100, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('a', 'x', 100)),
+      proximaHoste: 90,
+      ordens: { h_x: { origem: 'x', rota: ['y'], homens: 100, postura: 'assaltar' as const } },
       cercos: {},
     };
     const r = resolverRodada(estado, ajustes.combate, mundo);
@@ -524,8 +550,9 @@ describe('conquista', () => {
   it('quem só passa pela própria terra não conquista nada', () => {
     const mundo = mundoDe({ x: 'a', y: 'a' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 100) },
-      ordens: { x: { origem: 'x', rota: ['y'], homens: 100, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('a', 'x', 100)),
+      proximaHoste: 90,
+      ordens: { h_x: { origem: 'x', rota: ['y'], homens: 100, postura: 'assaltar' as const } },
       cercos: {},
     };
     expect(resolverRodada(estado, ajustes.combate, mundo).conquistas).toEqual([]);
@@ -534,13 +561,14 @@ describe('conquista', () => {
   it('aniquilamento mútuo não entrega a província a ninguém', () => {
     const mundo = mundoDe({ x: 'a', y: 'b' });
     const estado: EstadoDaResolucao = {
-      exercitos: { x: hoste('a', 'x', 500), y: hoste('b', 'y', 500) },
-      ordens: { x: { origem: 'x', rota: ['y'], homens: 500, postura: 'assaltar' as const } },
+      hostes: tabuleiro(hoste('a', 'x', 500), hoste('b', 'y', 500)),
+      proximaHoste: 90,
+      ordens: { h_x: { origem: 'x', rota: ['y'], homens: 500, postura: 'assaltar' as const } },
       cercos: {},
     };
     const r = resolverRodada(estado, ajustes.combate, mundo);
     expect(r.batalhas[0]).toMatchObject({ vencedor: null, sobreviventes: 0 });
-    expect(estado.exercitos['y']).toBeUndefined();
+    expect(em(estado, 'y')).toBeUndefined();
     expect(mundo.donoDe('y')).toBe('b'); // continua de quem era
   });
 });

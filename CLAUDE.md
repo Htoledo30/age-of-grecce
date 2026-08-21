@@ -92,6 +92,12 @@ Esta organização é obrigatória ao criar ou ampliar sistemas:
 **Uma alteração que funcione, mas viole essa separação, não está concluída.** Testes
 devem acompanhar o módulo correspondente e seguir a mesma divisão por sistema.
 
+⚠️ **Dívida atual:** `src/campanha/campanha.ts` ainda coordena economia, obras, passagem do
+turno e integrações militares, e `src/main.ts` concentra montagem demais da interface. Não
+coloque novas regras nesses arquivos por conveniência. Ao ampliar um desses domínios,
+extraia primeiro a responsabilidade real para seu módulo; não faça uma fragmentação
+cosmética apenas para reduzir a contagem de linhas.
+
 ## O mapa
 
 Nasce em `gerador/gerar-mapa.ts` e é salvo em `assets/mundo/`. É **ferramenta de
@@ -298,6 +304,12 @@ e símbolo vivem em `src/ui/icones-gregos.ts`; tamanho, cor e aplicação vivem 
 desenhos incompatíveis. Os SVGs são decorativos (`aria-hidden`) e o texto continua sendo
 o nome acessível do controle.
 
+**O friso grego é moldura, não cabeçalho.** Ele contorna os quatro lados dos painéis
+principais por uma única regra em `src/estilo/base.css`, usando máscaras horizontal e
+vertical com traço fino e bronze de baixo contraste. Não recrie o desenho em cada
+componente e não volte a deixá-lo somente no topo: a continuidade da borda é parte da
+linguagem visual.
+
 ⚠️ **Clique fantasma: o aperto é escutado no canvas e a soltura na janela.** A soltura
 precisa ser na janela pra não se perder quando o jogador arrasta o mapa e solta fora
 dela — mas isso fazia um clique em QUALQUER painel gerar uma soltura sem aperto, que a
@@ -414,20 +426,20 @@ por quadro**: vinte conquistas numa virada de turno viram um envio de 256 KB, n�
 
 ## Comandos
 
-| comando                      | o que faz                                                                   |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| `npm run gerar-mapa`         | regera o mapa a partir da costa real (demora)                               |
-| `npm run gerar-provincias`   | recorta o mundo em províncias a partir das sementes                         |
-| `npm run ver-provincias`     | prévia colorida do recorte, em `capturas/`                                  |
-| `npm run calibrar-fronteira` | compara variações da linha de fronteira lado a lado                         |
-| `npm run dev`                | servidor de desenvolvimento (navegador)                                     |
-| `npm run app`                | Electron apontando pro servidor de dev                                      |
-| `npm run capturar`           | **print automático do jogo** — salva em `capturas/`                         |
-| `npm run verificar`          | tipos + lint + código morto + testes + dados, tudo junto                    |
-| `npm run teste-tela`         | testes de interface com Playwright, limitados a 2 workers pelo mapa WebGL   |
-| `npm run sitios`             | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem          |
-| `npm run build`              | compila pra `dist/`                                                         |
-| `npm run empacotar`          | gera o instalador em `dist-app/`                                            |
+| comando                      | o que faz                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------- |
+| `npm run gerar-mapa`         | regera o mapa a partir da costa real (demora)                             |
+| `npm run gerar-provincias`   | recorta o mundo em províncias a partir das sementes                       |
+| `npm run ver-provincias`     | prévia colorida do recorte, em `capturas/`                                |
+| `npm run calibrar-fronteira` | compara variações da linha de fronteira lado a lado                       |
+| `npm run dev`                | servidor de desenvolvimento (navegador)                                   |
+| `npm run app`                | Electron apontando pro servidor de dev                                    |
+| `npm run capturar`           | **print automático do jogo** — salva em `capturas/`                       |
+| `npm run verificar`          | tipos + lint + código morto + testes + dados, tudo junto                  |
+| `npm run teste-tela`         | testes de interface com Playwright, limitados a 2 workers pelo mapa WebGL |
+| `npm run sitios`             | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem        |
+| `npm run build`              | compila pra `dist/`                                                       |
+| `npm run empacotar`          | gera o instalador em `dist-app/`                                          |
 
 ## Como eu (IA) verifico o próprio trabalho
 
@@ -490,6 +502,11 @@ atravessa **uma fronteira por rodada**, pode mandar somente parte dos homens e e
 ordem por rodada. Ver "O exército", "A hoste no mapa" e
 `documentacao/design/combate-e-mar.md`.
 
+**Cada hoste possui id próprio e posição própria.** `estado.hostes` é indexado pelo id da
+hoste, não pela província; `proximaHoste` mantém a criação determinística. Hostes do mesmo
+poder ainda podem se fundir ao se encontrar, mas isso agora é uma regra da mobilização,
+não uma limitação da estrutura. Ordens também são indexadas pelo id da hoste.
+
 ⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
 terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
 andando de zona em zona. Isso substitui as duas ideias anteriores do projeto: "alcance
@@ -528,8 +545,9 @@ dinheiro: a fórmula antiga, que era função só da área, foi removida inteira
 sobrou como reserva pra ninguém** — duas economias diferentes escondidas no mesmo jogo
 seria pior que uma economia incompleta.
 
-O que é **fixo e mora nos dados** (`dados/economia.json`): população, produto, nível (1 a 5) e comércio-base. O que é **mutável e mora na campanha**: tesouro e os
-incentivos em curso. O que é **calculado**: as três parcelas e o total.
+O que é **fixo e mora nos dados** (`dados/economia.json`): população inicial, produto,
+nível (1 a 5) e comércio-base. O que é **mutável e mora na campanha**: população atual,
+tesouro e incentivos em curso. O que é **calculado**: as três parcelas e o total.
 
 O **valor de cada produto mora no catálogo**, não nas províncias: balancear todos os
 territórios de um produto é mudar um número só. Grão vale 15 por nível e metal precioso
@@ -545,10 +563,12 @@ teste garante que continue assim.
 | Atenas    | Atenas  | Azeite           |     4 |      175 |      100 |       55 | **330** |
 | Maratona  | Atenas  | Grãos            |     2 |       90 |       30 |        8 | **128** |
 | Sunião    | Atenas  | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
-| Elêusis   | Elêusis | Grãos            |     3 |       58 |       45 |       14 | **117** |
-| Tânagra   | Tânagra | Gado             |     2 |       43 |       32 |        6 |  **81** |
+| Elêusis   | Elêusis | Grãos            |     3 |       60 |       45 |       14 | **119** |
+| Tânagra   | Tânagra | Gado             |     2 |       45 |       32 |        6 |  **83** |
 
-Atenas soma **690 por turno**, com **3.000** de tesouro inicial.
+A tabela usa a população autoral, antes de mobilização. Atenas soma **690 por turno**, com
+**3.000** de tesouro inicial. Na campanha, os 500 soldados iniciais de Elêusis e Tânagra
+saem da população e reduzem temporariamente essas rendas para 117 e 81.
 
 ⚠️ **O nível tem uma RÉGUA, e ela está escrita em `dados/economia.json`.** Sem âncora, tudo
 que se escreve cai em 3, 4 e 5 e o número deixa de medir — foi o que aconteceu na primeira
@@ -575,11 +595,11 @@ propósito — são três províncias na Lacônia, e pra chegar lá se atravessa
 províncias sem economia.
 
 E os dois são diferentes em natureza, que é o que faz haver decisão: **Elêusis** é a
-planície Triásia e o santuário de Deméter, toca só Atenas, e abre rendendo 117; **Tânagra**
-é encosta beócia, pobre e mal escoada, rende 81 — mas toca **Atenas e Maratona**, ou seja,
-é duas frentes. Tomar os dois, antes de novas perdas populacionais, leva a renda de 690 a
-888, e é isso que fecha o laço central
-do jogo: conquistar passa a pagar.
+planície Triásia e o santuário de Deméter, toca só Atenas e tem renda-base 119;
+**Tânagra** é encosta beócia, pobre e mal escoada, tem renda-base 83 — mas toca **Atenas e
+Maratona**, ou seja, é duas frentes. A renda efetivamente conquistada depende da população
+que sobreviveu à mobilização, à milícia e ao assalto. O laço central permanece legível:
+conquistar passa a pagar.
 
 **Os dois abrem a partida com 500 homens em pé**, escritos em `dados/exercitos.json` e
 levantados por `src/combate/guarnicao-inicial.ts`. Sem isso a milícia era a única coisa
@@ -614,14 +634,14 @@ versão anterior (máximo 30.000) era pura armadilha — 30.000 devolviam 156.
 **Seis construções** disputam o mesmo tesouro. Três especializam as parcelas da renda;
 três compram capacidades militares ou demográficas:
 
-| construção | melhora         | custo | melhor em                                           |
-| ---------- | --------------- | ----: | --------------------------------------------------- |
-| Ágora      | impostos (×1,4) | 3.000 | Atenas (+70/t, 43 turnos) e Maratona (+36/t)        |
-| Oficina    | produção (×1,3) | 2.500 | Sunião (+55/t, 46 turnos)                           |
-| Mercado    | comércio (×1,6) | 3.000 | fraca em toda parte hoje (91 turnos no melhor caso) |
-| Celeiro público | crescimento populacional (×1,5) | 3.500 | províncias que precisam recompor gente |
-| Quartel | permite recrutar | 1.500 | onde o poder quer formar novas hostes |
-| Muralha | milícia defensora (×2) | 2.000 | fronteiras e cidades ameaçadas |
+| construção      | melhora                         | custo | melhor em                                           |
+| --------------- | ------------------------------- | ----: | --------------------------------------------------- |
+| Ágora           | impostos (×1,4)                 | 3.000 | Atenas (+70/t, 43 turnos) e Maratona (+36/t)        |
+| Oficina         | produção (×1,3)                 | 2.500 | Sunião (+55/t, 46 turnos)                           |
+| Mercado         | comércio (×1,6)                 | 3.000 | fraca em toda parte hoje (91 turnos no melhor caso) |
+| Celeiro público | crescimento populacional (×1,5) | 3.500 | províncias que precisam recompor gente              |
+| Quartel         | permite recrutar                | 1.500 | onde o poder quer formar novas hostes               |
+| Muralha         | milícia defensora (×2)          | 2.000 | fronteiras e cidades ameaçadas                      |
 
 `npm run checar` imprime essa tabela toda vez, então desequilíbrio aparece como número em
 vez de virar folclore. O alvo é obra se pagando em algumas dezenas de turnos — retorno de
@@ -883,12 +903,12 @@ câmera e assenta o que cria; e o que ainda não tem coordenada não se pinta, p
 
 ### Quatro regiões, quatro perguntas
 
-| região           | elemento            | responde                                                 |
-| ---------------- | ------------------- | -------------------------------------------------------- |
-| topo             | `.barra-turno`      | em que pé a campanha está                                |
-| topo-direita     | `.painel-lateral`   | o que o jogador **aciona** (global)                      |
-| esquerda         | `.coluna-provincia` | a **província** escolhida — ficha, ações e recrutamento   |
-| **baixo-direita** | `.exercito`        | a **hoste** escolhida                                    |
+| região            | elemento            | responde                                                |
+| ----------------- | ------------------- | ------------------------------------------------------- |
+| topo              | `.barra-turno`      | em que pé a campanha está                               |
+| topo-direita      | `.painel-lateral`   | o que o jogador **aciona** (global)                     |
+| esquerda          | `.coluna-provincia` | a **província** escolhida — ficha, ações e recrutamento |
+| **baixo-direita** | `.exercito`         | a **hoste** escolhida                                   |
 
 A hoste ganhou região própria por dois motivos, e o segundo é estrutural: quatro painéis
 empilhados na coluna estouravam os 1080 e cortavam o de cima; e **a hoste não é a
@@ -1044,8 +1064,8 @@ defesa é gente multiplicada pela muralha; sem desfazer a multiplicação, um as
 rechaçado faria a população encolher pelo dobro do que de fato caiu.
 
 **Na tela:** a pergunta aparece **depois** de o alvo hostil ser apontado — clicar em
-"Mover", clicar na província inimiga, e só então o painel pergunta *"Elêusis: o que fazer
-ao chegar?"* com os ícones próprios de **Assaltar** e **Sitiar**. Destino do próprio território registra a ordem no
+"Mover", clicar na província inimiga, e só então o painel pergunta _"Elêusis: o que fazer
+ao chegar?"_ com os ícones próprios de **Assaltar** e **Sitiar**. Destino do próprio território registra a ordem no
 clique, porque ali não há decisão nenhuma a tomar. Cerco em curso aparece na ficha da
 província sitiada (**a metade que acontece COM o jogador**, e que explica a renda que
 minguou) e no painel da hoste que sitia, com o botão de passar ao assalto.

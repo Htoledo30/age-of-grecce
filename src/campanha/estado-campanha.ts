@@ -56,19 +56,31 @@ export interface EstadoCampanha {
    * Exércitos em pé, pela província onde estão.
    *
    * Um por província: é o modelo que o mapa pede — tropa salta de vizinha em vizinha, sem
-   * peça com pontos de movimento. Entrar numa província onde já há tropa sua junta as
-   * duas, e por isso não existe pilha de exércitos no mesmo lugar pra gerenciar.
+   * peça com pontos de movimento.
+   *
+   * ⚠️ **A chave é o ID DA HOSTE, não a província.** Já foi a província, e isso impedia
+   * estruturalmente duas hostes no mesmo lugar. Fundir as do mesmo poder que se encontram
+   * continua acontecendo — mas agora por POLÍTICA, em `pousar`, e não porque a estrutura
+   * obrigava.
    */
-  exercitos: Record<string, Exercito>;
+  hostes: Record<string, Exercito>;
+  /**
+   * Próximo número livre de hoste. É o que dá identidade sem sorteio.
+   *
+   * Vive no estado e não numa variável de módulo porque vai pro disco junto: retomar um
+   * salvamento tem que continuar a contagem de onde parou, senão a próxima leva nasceria
+   * com o id de uma hoste que ainda existe.
+   */
+  proximaHoste: number;
   /**
    * Levas pagas que ainda estão em formação, pela província onde aparecerão.
    *
-   * Ficam fora de `exercitos` de propósito: já existem no mundo e aparecem no mapa, mas
+   * Ficam fora de `hostes` de propósito: já existem no mundo e aparecem no mapa, mas
    * não podem marchar, lutar nem engrossar uma hoste veterana antes do turno indicado.
    */
   formacoes: Record<string, LevaEmFormacao>;
   /**
-   * Ordens de marcha registradas nesta RODADA, pela província de onde partem.
+   * Ordens de marcha registradas nesta RODADA, pelo id da hoste que as recebeu.
    *
    * Uma por hoste. Mover não muda o mapa no clique: a ordem fica aqui, revisável e
    * cancelável, e só acontece quando o turno vira — junto com as de todo mundo.
@@ -80,8 +92,9 @@ export interface EstadoCampanha {
   /**
    * Cercos em curso, por província sitiada.
    *
-   * Ao contrário das ordens, isto sobrevive à virada: o cerco precisa acumular progresso
-   * enquanto o defensor ainda pode mandar socorro.
+   * Ao contrário das ordens, isto sobrevive à virada enquanto o sitiante permanecer ali.
+   * Sitiar não acumula progresso nem toma a cidade: bloqueia produção e comércio até o
+   * exército sair, morrer ou escolher assaltar.
    */
   cercos: Record<string, Cerco>;
   /**

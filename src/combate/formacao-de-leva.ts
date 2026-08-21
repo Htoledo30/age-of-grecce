@@ -23,7 +23,8 @@ export interface LevaEmFormacao {
 /** Recorte de estado que a formação pode alterar. */
 export interface EstadoDasFormacoes {
   populacao: Record<string, number>;
-  exercitos: Record<string, Exercito>;
+  hostes: Record<string, Exercito>;
+  proximaHoste: number;
   formacoes: Record<string, LevaEmFormacao>;
 }
 
@@ -82,7 +83,11 @@ export function concluirFormacoes(
     const formacao = estado.formacoes[idProvincia];
     if (!formacao || formacao.prontaNoTurno > turnoAtual) continue;
 
-    const hoste = estado.exercitos[idProvincia];
+    // Por posicao, e nao por chave: a provincia deixou de ser o endereco da hoste.
+    const hoste = Object.keys(estado.hostes)
+      .sort()
+      .map((id) => estado.hostes[id])
+      .find((h) => h !== undefined && h.posicao === idProvincia);
     const perdeuAFormacao =
       donoDe(idProvincia) !== formacao.poder ||
       (hoste !== undefined && hoste.poder !== formacao.poder);
@@ -95,9 +100,12 @@ export function concluirFormacoes(
       continue;
     }
 
-    const exercito = hoste ?? exercitoVazio(formacao.poder);
+    // A leva pronta engrossa a hoste que ja estava ali, ou nasce como hoste nova com
+    // identidade propria. O contador vem do estado, e e o mesmo de todo mundo.
+    const exercito =
+      hoste ?? exercitoVazio(`h${estado.proximaHoste++}`, formacao.poder, idProvincia);
     somarLeva(exercito, formacao.origem, formacao.homens);
-    estado.exercitos[idProvincia] = exercito;
+    estado.hostes[exercito.id] = exercito;
     ativadas.push({ provincia: idProvincia, homens: formacao.homens });
     delete estado.formacoes[idProvincia];
   }

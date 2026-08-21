@@ -97,10 +97,10 @@ dois resultados diferentes para a mesma jogada.
 
 Três regras que garantem isso:
 
-1. **Nenhuma fase pode depender da ordem de inserção.** `Object.entries(estado.exercitos)`
+1. **Nenhuma fase pode depender da ordem de inserção.** `Object.entries(estado.hostes)`
    devolve as chaves na ordem em que foram criadas — se a resolução percorrer esse
-   registro cru, o resultado passa a depender de quem foi recrutado antes. **Ordenar por id
-   de província antes de percorrer**, sempre.
+   registro cru, o resultado passa a depender de quem foi recrutado antes. **Ordenar pelo
+   id estável da hoste antes de percorrer**, sempre.
 2. **Empate se desempata por id**, nunca por posição na lista. No caso 5, forças iguais
    ordenam pelo id da província de origem.
 3. **Aleatoriedade, quando existir na batalha, sai de uma semente guardada no estado.**
@@ -156,7 +156,7 @@ vencedor segue.
 ```ts
 /** Uma ordem de marcha registrada, ainda não executada. */
 export interface OrdemDeMarcha {
-  /** De onde sai. É a chave: uma ordem por hoste por rodada. */
+  /** De onde sai. A chave do registro é o id da hoste. */
   origem: string;
   /** Os trechos, na ordem. Um ou dois — nunca mais que os pontos da hoste. */
   rota: readonly string[];
@@ -168,7 +168,7 @@ export interface OrdemDeMarcha {
 
 interface EstadoCampanha {
   // …o que já existe…
-  /** Ordens da rodada corrente, por província de origem. Zeradas na virada. */
+  /** Ordens da rodada corrente, por id de hoste. Zeradas na virada. */
   ordens: Record<string, OrdemDeMarcha>;
 }
 ```

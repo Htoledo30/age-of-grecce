@@ -50,7 +50,7 @@ function comQuartel(): Campanha {
 
 describe('exército: a força é derivada da origem', () => {
   it('somar levas soma a força, e a origem lembra de onde cada um veio', () => {
-    const e = exercitoVazio('atenas');
+    const e = exercitoVazio('h1', 'atenas', 'atenas');
     expect(forcaDe(e)).toBe(0);
     somarLeva(e, 'atenas', 600);
     somarLeva(e, 'maratona', 400);
@@ -60,7 +60,7 @@ describe('exército: a força é derivada da origem', () => {
   });
 
   it('retirar tira proporcionalmente de cada origem e a soma fecha exata', () => {
-    const e = exercitoVazio('atenas');
+    const e = exercitoVazio('h1', 'atenas', 'atenas');
     somarLeva(e, 'atenas', 700);
     somarLeva(e, 'maratona', 300);
 
@@ -74,14 +74,14 @@ describe('exército: a força é derivada da origem', () => {
   });
 
   it('retirar mais do que existe leva só o que existe', () => {
-    const e = exercitoVazio('atenas');
+    const e = exercitoVazio('h1', 'atenas', 'atenas');
     somarLeva(e, 'atenas', 100);
     expect(retirar(e, 999)).toEqual({ atenas: 100 });
     expect(forcaDe(e)).toBe(0);
   });
 
   it('o resto do arredondamento não perde nem cria homem', () => {
-    const e = exercitoVazio('atenas');
+    const e = exercitoVazio('h1', 'atenas', 'atenas');
     somarLeva(e, 'a', 33);
     somarLeva(e, 'b', 33);
     somarLeva(e, 'c', 34);

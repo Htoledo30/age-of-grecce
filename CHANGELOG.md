@@ -7,7 +7,15 @@ O processo completo está em [documentacao/versionamento.md](documentacao/versio
 
 ## Não lançado
 
-Nenhuma mudança concluída após `0.0.1` foi registrada ainda.
+### Alterado
+
+- o friso grego deixou de aparecer somente no topo e passou a contornar os quatro lados
+  dos principais painéis da interface, com traço fino e baixo contraste para não competir
+  com o conteúdo;
+- o Quartel recebeu um símbolo próprio de escudo e lança, legível no tamanho compacto do
+  menu de construções.
+- hostes passaram a possuir identidade e posição próprias, permitindo que a estrutura
+  represente mais de uma força na mesma província quando uma regra futura exigir.
 
 ## 0.0.1 — 2026-08-21
 

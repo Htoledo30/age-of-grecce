@@ -46,18 +46,18 @@ merecem profundidade.
 
 ### Situação no patch 0.0.1
 
-| parte do ciclo | situação |
-| --- | --- |
-| iniciar campanha e escolher Atenas | feito |
-| navegar, selecionar e inspecionar o mapa | feito |
-| turno, economia, construções e população | feito na primeira fatia de cinco províncias |
-| recrutar, mover, combater, sitiar e conquistar | feito com regras terrestres provisórias |
-| propriedade mutável, perda de terra e eliminação | feito |
-| escolher qualquer um dos 148 poderes | a fazer |
-| IA sob as mesmas regras | a fazer |
-| guerra, paz e diplomacia mínimas | a fazer |
-| derrota, domínio e fim da campanha | a fazer |
-| salvar e continuar | a fazer |
+| parte do ciclo                                   | situação                                    |
+| ------------------------------------------------ | ------------------------------------------- |
+| iniciar campanha e escolher Atenas               | feito                                       |
+| navegar, selecionar e inspecionar o mapa         | feito                                       |
+| turno, economia, construções e população         | feito na primeira fatia de cinco províncias |
+| recrutar, mover, combater, sitiar e conquistar   | feito com regras terrestres provisórias     |
+| propriedade mutável, perda de terra e eliminação | feito                                       |
+| escolher qualquer um dos 148 poderes             | a fazer                                     |
+| IA sob as mesmas regras                          | a fazer                                     |
+| guerra, paz e diplomacia mínimas                 | a fazer                                     |
+| derrota, domínio e fim da campanha               | a fazer                                     |
+| salvar e continuar                               | a fazer                                     |
 
 O esqueleto, portanto, já possui um **ciclo local testável**, mas ainda não uma campanha
 completa. O próximo trabalho deve fechar as linhas ausentes, sem aprofundar todos os

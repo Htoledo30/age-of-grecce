@@ -121,7 +121,8 @@ export class Campanha {
       tesouro: ajustes.tesouroInicial,
       dono,
       populacao: tabuleiro.populacao,
-      exercitos: tabuleiro.exercitos,
+      hostes: tabuleiro.hostes,
+      proximaHoste: tabuleiro.proximaHoste,
       formacoes: {},
       ordens: {},
       cercos: {},
@@ -505,9 +506,18 @@ export class Campanha {
     return [...this.rotasDaHoste(idProvincia).keys()];
   }
 
-  /** A ordem registrada para a hoste desta província, se houver. */
+  /**
+   * A ordem registrada para a hoste desta província, se houver.
+   *
+   * ⚠️ **As ordens são endereçadas por ID DE HOSTE, não por província.** Foi por província,
+   * e os dois são `Record<string, …>` — o compilador não distingue um do outro, então
+   * misturar as duas chaves não daria erro nenhum: daria uma ordem que a resolução nunca
+   * encontra e uma tropa que não sai do lugar. Esta função é a ponte para quem ainda
+   * pergunta por província.
+   */
   ordemEm(idProvincia: string): OrdemDeMarcha | undefined {
-    return this.estado.ordens[idProvincia];
+    const hoste = this.mobilizacao.exercitoEm(idProvincia);
+    return hoste ? this.estado.ordens[hoste.id] : undefined;
   }
 
   /** Todas as ordens da rodada. É o que o mapa desenha como setas. */
@@ -536,7 +546,7 @@ export class Campanha {
       forcaNaOrigem: this.mobilizacao.forcaEm(origem),
       minha: hoste?.poder === porPoder,
       rota: this.rotasDaHoste(origem).get(destino),
-      jaTemOrdem: this.estado.ordens[origem] !== undefined,
+      jaTemOrdem: this.ordemEm(origem) !== undefined,
     });
   }
 
@@ -560,7 +570,9 @@ export class Campanha {
   ): void {
     const r = this.podeOrdenarMarcha(origem, destino, homens, porPoder);
     if (!r.pode) throw new Error(r.motivo);
-    this.estado.ordens[origem] = { origem, rota: r.rota, homens, postura };
+    const hoste = this.mobilizacao.exercitoEm(origem);
+    if (!hoste) throw new Error(`não há hoste em ${origem}`);
+    this.estado.ordens[hoste.id] = { origem, rota: r.rota, homens, postura };
     this.aoMudar();
   }
 
@@ -598,8 +610,9 @@ export class Campanha {
 
   /** Desfaz a ordem. Nada foi gasto, então nada é devolvido. */
   cancelarOrdem(origem: string): void {
-    if (this.estado.ordens[origem] === undefined) return;
-    delete this.estado.ordens[origem];
+    const hoste = this.mobilizacao.exercitoEm(origem);
+    if (!hoste || this.estado.ordens[hoste.id] === undefined) return;
+    delete this.estado.ordens[hoste.id];
     this.aoMudar();
   }
 

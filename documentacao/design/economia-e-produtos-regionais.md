@@ -248,11 +248,12 @@ aberta e o Pireu não é, e nenhuma obra troca uma coisa pela outra. A construç
 
 ### A regra que faz o menu de construções ser uma decisão
 
-**Nenhuma construção deve pagar somente em ouro.** Se todas pagarem, escolher vira
-aritmética — basta pegar a de maior retorno, e a lista deixa de ser uma escolha.
+**Nem toda construção deve pagar somente em ouro.** Se todas pagarem, escolher vira
+aritmética — basta pegar a de maior retorno, e a lista deixa de ser uma escolha. O catálogo
+atual já mistura renda, crescimento, recrutamento e defesa.
 
-Cada construção paga numa moeda diferente, e é justamente por não serem comparáveis que
-o jogador precisa decidir do que sente falta:
+As construções podem pagar em naturezas diferentes, e é justamente quando os benefícios
+não são diretamente comparáveis que o jogador precisa decidir do que sente falta:
 
 | construção       | paga em                                           |
 | ---------------- | ------------------------------------------------- |
@@ -260,7 +261,9 @@ o jogador precisa decidir do que sente falta:
 | Estrada          | comércio terrestre e velocidade de marcha         |
 | Torre de vigia   | informação: força inimiga nas províncias vizinhas |
 | Arsenal (futuro) | recrutamento mais barato                          |
-| Mercado (futuro) | valor do que é vendido                            |
+| Mercado (atual)  | melhora a parcela comercial da renda              |
+| Quartel (atual)  | permite recrutar                                  |
+| Muralha (atual)  | dobra a milícia defensora                         |
 
 A torre tem um pré-requisito que a torna um sistema, e não um item de lista:
 **informação precisa ser escassa primeiro.** Hoje o mapa mostra tudo — dono, fronteira,
@@ -283,9 +286,11 @@ Com porto, a regra passa a ser do jogo: navio sai de onde há porto. A ilha deix
 exceção que o motor contorna e passa a ser o que uma ilha é — um lugar que depende de
 porto. De quebra, o porto vira alvo militar: tomar o porto de alguém tranca a ilha dele.
 
-**Decisão: todo poder marítimo começa com porto.** Sem isso os 43 poderes insulares
-nasceriam congelados — sem porto não saem da ilha, e sem sair da ilha não conquistam nada
-para pagar o porto. A regra vale igualmente para jogador e IA.
+**Decisão: todo poder isolado do continente começa com acesso naval funcional.** Sem isso
+os 43 poderes que não possuem terra no componente continental nasceriam congelados — sem
+porto ou frota não saem de sua ilha, e sem sair não conquistam nada para pagar o acesso.
+A distribuição exata entre portos e frotas iniciais ainda será decidida e valerá igualmente
+para jogador e IA.
 
 ### A decisão que bloqueava o porto já foi tomada
 
@@ -473,13 +478,13 @@ passagem de turno só beneficia o crescimento da passagem seguinte.
 A primeira fatia cobre cinco províncias e existe para testar o ciclo completo antes de
 preencher o mapa:
 
-| província | produto | nível natural | população inicial | comércio-base |
-| --- | --- | ---: | ---: | ---: |
-| Atenas | azeite | 4 | 35.000 | 0,55 |
-| Maratona | grãos | 2 | 18.000 | 0,25 |
-| Sunião | metais preciosos | 5 | 10.000 | 0,30 |
-| Elêusis | grãos | 3 | 12.000 | 0,30 |
-| Tânagra | gado | 2 | 9.000 | 0,18 |
+| província | produto          | nível natural | população inicial | comércio-base |
+| --------- | ---------------- | ------------: | ----------------: | ------------: |
+| Atenas    | azeite           |             4 |            35.000 |          0,55 |
+| Maratona  | grãos            |             2 |            18.000 |          0,25 |
+| Sunião    | metais preciosos |             5 |            10.000 |          0,30 |
+| Elêusis   | grãos            |             3 |            12.000 |          0,30 |
+| Tânagra   | gado             |             2 |             9.000 |          0,18 |
 
 Elêusis e Tânagra começam com 500 homens mobilizados cada. Como soldados saem da
 população, sua população tributável inicial em campanha já aparece 500 habitantes menor.

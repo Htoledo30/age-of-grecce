@@ -59,24 +59,48 @@ input:focus-visible {
   pointer-events: auto;
 }
 
+/* Uma borda externa fina segura o painel; o meandro interno é detalhe, não uma segunda
+   moldura pesada. Centralizar isto evita que cada janela tenha uma grossura diferente. */
+.barra-turno,
+.acoes,
+.ficha,
+.recrutamento,
+.exercito,
+.governo__janela,
+.inicio-jogo__cartao-menu,
+.inicio-jogo__escolha,
+.painel-lateral__corpo {
+  border-color: var(--ui-bronze-escuro);
+}
+
 .barra-turno::after,
 .acoes::before,
 .ficha::before,
+.recrutamento::before,
 .exercito::before,
 .governo__janela::before,
-.inicio-jogo__cartao-menu::before {
+.inicio-jogo__cartao-menu::before,
+.inicio-jogo__escolha::before,
+.painel-lateral__corpo::before {
+  --friso-horizontal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='8' viewBox='0 0 28 8'%3E%3Cpath d='M0 1h12v6H3V3h6v2H5M14 1h12v6h-9V3h6v2h-4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E");
+  --friso-vertical: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='28' viewBox='0 0 8 28'%3E%3Cpath d='M1 0v12h6V3H3v6h2V5M1 14v12h6v-9H3v6h2v-4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E");
   content: '';
   position: absolute;
-  top: 0;
-  left: 18px;
-  right: 18px;
-  height: 7px;
+  inset: 4px;
+  z-index: 2;
+  pointer-events: none;
   background: var(--ui-bronze);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='8' viewBox='0 0 28 8'%3E%3Cpath d='M0 1h12v6H3V3h6v2H5M14 1h12v6h-9V3h6v2h-4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E")
-    repeat-x left top / 28px 8px;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='8' viewBox='0 0 28 8'%3E%3Cpath d='M0 1h12v6H3V3h6v2H5M14 1h12v6h-9V3h6v2h-4' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E")
-    repeat-x left top / 28px 8px;
-  opacity: 0.8;
+  -webkit-mask:
+    var(--friso-horizontal) repeat-x left top / 28px 6px,
+    var(--friso-horizontal) repeat-x left bottom / 28px 6px,
+    var(--friso-vertical) repeat-y left top / 6px 28px,
+    var(--friso-vertical) repeat-y right top / 6px 28px;
+  mask:
+    var(--friso-horizontal) repeat-x left top / 28px 6px,
+    var(--friso-horizontal) repeat-x left bottom / 28px 6px,
+    var(--friso-vertical) repeat-y left top / 6px 28px,
+    var(--friso-vertical) repeat-y right top / 6px 28px;
+  opacity: 0.45;
 }
 
 * {

@@ -1,18 +1,30 @@
 /**
  * O que é um exército: gente em armas, e de onde ela veio.
  *
- * Um exército por província, identificado pela província onde está. É o modelo mais
- * simples que serve ao mapa que já existe — tropa salta de província vizinha em província
- * vizinha, sem peça com pontos de movimento — e é a base sobre a qual composição, moral e
- * veterania entram depois, sem trocar a estrutura.
+ * ⚠️ **A hoste tem IDENTIDADE PRÓPRIA, e não é "o exército da província X".** Foi assim
+ * antes, e a província como chave impedia estruturalmente duas hostes no mesmo lugar — o
+ * que o cerco exige (sitiante do lado de fora, guarnição trancada dentro) e o que
+ * diplomacia (passagem militar), frota com tropa embarcada e general com nome vão exigir
+ * depois. Com id, "uma hoste por poder por província" deixa de ser uma restrição da
+ * estrutura e passa a ser POLÍTICA — que é o lugar certo dela, porque assim dá pra abrir
+ * exceção quando uma regra pedir.
  *
  * ⚠️ **A força é DERIVADA de `origem`, nunca guardada ao lado dela.** Guardar um total
  * junto do detalhe é convidar os dois a discordarem: bastaria um caminho de código somar
  * num e esquecer o outro. Somar 1 a 3 números a cada leitura é de graça.
  */
 
-/** Um exército parado numa província. */
+/** Um exército em pé em algum lugar do mundo. */
 export interface Exercito {
+  /**
+   * Identidade própria, estável enquanto a hoste existir.
+   *
+   * Vem de um contador no estado, nunca de sorteio: a resolução da rodada precisa ser
+   * determinística, e id aleatório faria a mesma partida divergir de si mesma.
+   */
+  id: string;
+  /** Onde ela está agora. Muda quando ela marcha. */
+  posicao: string;
   /**
    * De quem ele é.
    *
@@ -40,8 +52,8 @@ export function forcaDe(exercito: Exercito | undefined): number {
 }
 
 /** Um exército vazio, pronto pra receber a primeira leva. */
-export function exercitoVazio(poder: string): Exercito {
-  return { poder, origem: {} };
+export function exercitoVazio(id: string, poder: string, posicao: string): Exercito {
+  return { id, poder, posicao, origem: {} };
 }
 
 /** Junta uma leva ao exército, lembrando de onde ela saiu. */

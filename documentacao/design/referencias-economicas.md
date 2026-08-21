@@ -122,8 +122,8 @@ de territórios distantes, isso impede que guerra e economia sejam telas indepen
 
 Essa relação não foi copiada literalmente, mas a primeira decisão já foi tomada:
 **soldados saem da população atual, custam para ser reunidos e geram manutenção.** Quem
-é dispensado volta à província de origem; quem não recebe deserta. Ainda depende do
-futuro sistema de combate decidir o que uma batalha destrói e se saque existe. A regra
+é dispensado volta à província de origem; quem não recebe deserta. A batalha atual já
+mata soldados e, na defesa, parte da milícia populacional; saque ainda não existe. A regra
 preservada é: **mobilizar, manter e perder forças precisa ter consequência econômica
 compreensível**.
 

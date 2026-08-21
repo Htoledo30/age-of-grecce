@@ -57,6 +57,10 @@
   color: var(--ui-texto-tenue);
 }
 
+.acoes__construcao .icone-grego--quartel {
+  stroke-width: 1.85;
+}
+
 .inicio-jogo__emblema {
   display: grid;
   place-items: center;

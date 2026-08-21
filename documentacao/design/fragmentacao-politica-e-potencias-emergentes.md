@@ -178,8 +178,8 @@ O objetivo não é impedir a consolidação, mas fazer com que ela conte uma his
 
 Estes sistemas não precisam ser construídos todos ao mesmo tempo. Uma ordem enxuta seria:
 
-1. propriedade e conquista de províncias;
-2. guerra e eliminação de poderes;
+1. propriedade e conquista de províncias — **feito**;
+2. guerra terrestre e eliminação de poderes — **feito em versão provisória**;
 3. diplomacia básica e alianças;
 4. estabilidade de territórios conquistados;
 5. reação diplomática à expansão;

@@ -30,7 +30,9 @@ export interface HosteEmProvincia {
 export interface EstadoDeMobilizacao {
   tesouro: number;
   populacao: Record<string, number>;
-  exercitos: Record<string, Exercito>;
+  /** Por ID de hoste. Ver `exercito.ts`: a provincia deixou de ser a chave. */
+  hostes: Record<string, Exercito>;
+  proximaHoste: number;
   formacoes: Record<string, LevaEmFormacao>;
 }
 
@@ -40,8 +42,54 @@ export class Mobilizacao {
     private readonly ajustes: AjustesCombate,
   ) {}
 
+  /**
+   * Gera a identidade da proxima hoste. Contador, nunca sorteio.
+   *
+   * Publico porque a guarnicao inicial e a formacao de leva tambem criam hostes, e todas
+   * tem que sair do MESMO contador - dois contadores dariam dois `h7` um dia.
+   */
+  proximoId(): string {
+    const numero = this.estado.proximaHoste;
+    this.estado.proximaHoste = numero + 1;
+    return `h${numero}`;
+  }
+
+  /** Toda hoste parada nesta provincia, em ordem estavel de id. */
+  hostesEm(idProvincia: string): readonly Exercito[] {
+    return this.ordenadas().filter((h) => h.posicao === idProvincia);
+  }
+
+  /**
+   * A hoste parada aqui, quando ha uma so.
+   *
+   * ⚠️ **Conveniencia, nao verdade estrutural.** Hoje nunca ha duas na mesma provincia
+   * porque quem chega em terra alheia briga ou senta - mas o modelo ja permite duas, e
+   * quem precisar disso pergunta por `hostesEm`. Esta funcao devolve a primeira por id, e
+   * existe pra que as regras e a interface que ainda pensam por provincia nao precisem
+   * mudar todas de uma vez.
+   */
   exercitoEm(idProvincia: string): Exercito | undefined {
-    return this.estado.exercitos[idProvincia];
+    return this.hostesEm(idProvincia)[0];
+  }
+
+  /** A hoste com este id, onde quer que esteja. */
+  hoste(idHoste: string): Exercito | undefined {
+    return this.estado.hostes[idHoste];
+  }
+
+  /**
+   * Todas as hostes em ordem de id.
+   *
+   * ⚠️ Ordenado sempre: `Object.keys` devolve a ordem de criacao, e percorrer isso cru
+   * faria o desenho e a folha de pagamento dependerem de quem foi recrutado primeiro.
+   */
+  private ordenadas(): Exercito[] {
+    return Object.keys(this.estado.hostes)
+      .sort()
+      .flatMap((id) => {
+        const h = this.estado.hostes[id];
+        return h ? [h] : [];
+      });
   }
 
   forcaEm(idProvincia: string): number {
@@ -62,10 +110,7 @@ export class Mobilizacao {
 
   /** Toda hoste em pé no mundo, com o lugar dela. É o que o mapa desenha. */
   todas(): readonly HosteEmProvincia[] {
-    return Object.entries(this.estado.exercitos).map(([provincia, exercito]) => ({
-      provincia,
-      exercito,
-    }));
+    return this.ordenadas().map((exercito) => ({ provincia: exercito.posicao, exercito }));
   }
 
   /** As hostes deste poder, onde quer que estejam — inclusive em terra alheia. */
@@ -89,7 +134,7 @@ export class Mobilizacao {
   /** Quantos homens nascidos nesta província estão em armas em todo o mapa. */
   homensEmArmasDe(idProvincia: string): number {
     let total = 0;
-    for (const exercito of Object.values(this.estado.exercitos)) {
+    for (const exercito of Object.values(this.estado.hostes)) {
       total += exercito.origem[idProvincia] ?? 0;
     }
     for (const formacao of Object.values(this.estado.formacoes)) {
@@ -130,9 +175,11 @@ export class Mobilizacao {
    * não tira gente da população, e por isso nenhuma regra do jogo pode chamar isto.
    */
   plantar(idProvincia: string, idPoder: string, homens: number): void {
-    const exercito = exercitoVazio(idPoder);
+    // Substitui o que estiver ali, como antes: e gancho de desenvolvimento, nao regra.
+    for (const antiga of this.hostesEm(idProvincia)) delete this.estado.hostes[antiga.id];
+    const exercito = exercitoVazio(this.proximoId(), idPoder, idProvincia);
     somarLeva(exercito, idProvincia, homens);
-    this.estado.exercitos[idProvincia] = exercito;
+    this.estado.hostes[exercito.id] = exercito;
   }
 
   /**
@@ -145,12 +192,10 @@ export class Mobilizacao {
     leva: { ouro: number; homens: number },
     turnoAtual: number,
   ): void {
-    const existente = this.estado.exercitos[idProvincia];
-    // Guarda contra o dia em que houver tropa alheia parada aqui: recrutar não pode
-    // engordar o exército de outro poder por acidente de chave.
-    if (existente && existente.poder !== poder) {
-      throw new Error(`há tropa de ${existente.poder} em ${idProvincia}`);
-    }
+    const alheia = this.hostesEm(idProvincia).find((h) => h.poder !== poder);
+    // Guarda contra tropa alheia parada aqui: recrutar nao pode engordar o exercito de
+    // outro poder por acidente.
+    if (alheia) throw new Error(`há tropa de ${alheia.poder} em ${idProvincia}`);
 
     this.estado.tesouro -= leva.ouro;
     this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - leva.homens;
@@ -181,9 +226,9 @@ export class Mobilizacao {
     if (!Number.isInteger(homens) || homens <= 0) {
       throw new Error('o número de homens dispensados precisa ser um inteiro positivo');
     }
-    const exercito = this.estado.exercitos[idProvincia];
+    const exercito = this.exercitoEm(idProvincia);
     if (!exercito) throw new Error(`não há exército em ${idProvincia}`);
-    this.devolver(exercito, idProvincia, homens);
+    this.devolver(exercito, homens);
   }
 
   /**
@@ -199,25 +244,26 @@ export class Mobilizacao {
    * de guerra acabariam morando.
    */
   mover(origem: string, destino: string): void {
-    const hoste = this.estado.exercitos[origem];
+    const hoste = this.exercitoEm(origem);
     if (!hoste) throw new Error(`não há exército em ${origem}`);
     if (origem === destino) return;
 
-    const naChegada = this.estado.exercitos[destino];
+    const naChegada = this.exercitoEm(destino);
     if (naChegada && naChegada.poder !== hoste.poder) {
-      // Entrar onde há tropa alheia é batalha, e batalha ainda não existe. Estourar alto
-      // é melhor que fundir exércitos inimigos num só e produzir um estado impossível.
+      // Entrar onde ha tropa alheia e batalha, e batalha nao e assunto desta primitiva.
+      // Estourar alto e melhor que fundir exercitos inimigos num so.
       throw new Error(`há tropa de ${naChegada.poder} em ${destino}`);
     }
 
     if (!naChegada) {
-      this.estado.exercitos[destino] = hoste;
-    } else {
-      for (const [terra, homens] of Object.entries(hoste.origem)) {
-        naChegada.origem[terra] = (naChegada.origem[terra] ?? 0) + homens;
-      }
+      hoste.posicao = destino;
+      return;
     }
-    delete this.estado.exercitos[origem];
+    // Fundir e POLITICA, nao obrigacao da estrutura: some a que chegou, fica a que estava.
+    for (const [terra, homens] of Object.entries(hoste.origem)) {
+      naChegada.origem[terra] = (naChegada.origem[terra] ?? 0) + homens;
+    }
+    delete this.estado.hostes[hoste.id];
   }
 
   manutencaoDe(idPoder: string): number {
@@ -250,11 +296,11 @@ export class Mobilizacao {
     const fracaoNaoPaga = (devido - pago) / devido;
     let desertaram = 0;
 
-    for (const { provincia, exercito } of this.doPoder(idPoder)) {
+    for (const { exercito } of this.doPoder(idPoder)) {
       const desertores = Math.ceil(forcaDe(exercito) * fracaoNaoPaga);
       if (desertores <= 0) continue;
       desertaram += desertores;
-      this.devolver(exercito, provincia, desertores);
+      this.devolver(exercito, desertores);
     }
     return desertaram;
   }
@@ -269,11 +315,11 @@ export class Mobilizacao {
    * Apaga a hoste quando ela zera, em vez de deixar um objeto vazio no estado: hoste sem
    * homem nenhum viraria marcador fantasma no mapa e linha vazia na lista.
    */
-  private devolver(exercito: Exercito, idProvincia: string, homens: number): void {
+  private devolver(exercito: Exercito, homens: number): void {
     const devolvidos = retirar(exercito, homens);
     for (const [origem, quantos] of Object.entries(devolvidos)) {
       this.estado.populacao[origem] = (this.estado.populacao[origem] ?? 0) + quantos;
     }
-    if (forcaDe(exercito) === 0) delete this.estado.exercitos[idProvincia];
+    if (forcaDe(exercito) === 0) delete this.estado.hostes[exercito.id];
   }
 }

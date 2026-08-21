@@ -17,13 +17,13 @@ esta é a resposta.
 ### O achado que torna isto barato
 
 A paleta 256×256 de `src/mapa/provincias-mapa.ts` escreve alfa 255 e o chuveirinho lê só
-`.rgb`. **O byte de alfa está livre**, e ele vira o *nível de realce* da província:
+`.rgb`. **O byte de alfa está livre**, e ele vira o _nível de realce_ da província:
 
-| nível | quem |
-| ---: | --- |
-| `1,00` | o reino da província **selecionada**, de qualquer poder |
+|  nível | quem                                                                 |
+| -----: | -------------------------------------------------------------------- |
+| `1,00` | o reino da província **selecionada**, de qualquer poder              |
 | `0,35` | o reino do **jogador**, levemente aceso depois que a campanha começa |
-| `0,00` | ninguém |
+| `0,00` | ninguém                                                              |
 
 Nível contínuo, e não enumeração: quando o jogador seleciona uma província própria, 1,0
 vence por construção, sem tabela de prioridade. Custo: **um byte por província e um envio
@@ -121,8 +121,8 @@ no estado gravado e é conferida na leitura.
 
 ⚠️ **Guardar os 205 donos, não um diff contra o assado.** O diff é menor e é armadilha: com
 o `provincias.json` reassado com uma fronteira movida, ele mistura dois recortes em silêncio
-e a partida segue rodando errada. A tabela cheia falha alto. *(Esta regra já está
-implementada no estado; vale repetir aqui porque o salvamento é onde ela é cobrada.)*
+e a partida segue rodando errada. A tabela cheia falha alto. _(Esta regra já está
+implementada no estado; vale repetir aqui porque o salvamento é onde ela é cobrada.)_
 
 ### Alto, mas não fatal
 

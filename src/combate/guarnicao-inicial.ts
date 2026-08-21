@@ -17,9 +17,11 @@ import { disponivelParaLeva } from '@/combate/recrutamento';
 type AjustesCombate = Ajustes['jogo']['combate'];
 
 export interface TabuleiroInicial {
-  exercitos: Record<string, Exercito>;
+  hostes: Record<string, Exercito>;
   /** A população já descontada dos homens em armas. */
   populacao: Record<string, number>;
+  /** Primeiro numero de hoste ainda livre, para o estado continuar a contagem. */
+  proximaHoste: number;
 }
 
 /**
@@ -34,8 +36,9 @@ export function levantarGuarnicoes(
   donoDe: (idProvincia: string) => string,
   ajustes: AjustesCombate,
 ): TabuleiroInicial {
-  const exercitos: Record<string, Exercito> = {};
+  const hostes: Record<string, Exercito> = {};
   const restante = { ...populacao };
+  let proxima = 1;
 
   // Ordem estável: o resultado não pode depender da ordem em que as chaves foram escritas
   // no arquivo, pela mesma razão que a resolução da rodada é determinística.
@@ -59,11 +62,13 @@ export function levantarGuarnicoes(
       );
     }
 
-    const exercito = exercitoVazio(donoDe(idProvincia));
+    const exercito = exercitoVazio(`h${proxima++}`, donoDe(idProvincia), idProvincia);
     somarLeva(exercito, idProvincia, homens);
-    exercitos[idProvincia] = exercito;
+    hostes[exercito.id] = exercito;
     restante[idProvincia] = gente - homens;
   }
 
-  return { exercitos, populacao: restante };
+  // O contador sai daqui e continua no estado: as hostes de 700 a.C. ja gastaram os
+  // primeiros numeros, e a proxima leva nao pode nascer com um id que ja existe.
+  return { hostes, populacao: restante, proximaHoste: proxima };
 }

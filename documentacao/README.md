@@ -5,11 +5,11 @@ recursos externos.
 
 **A divisão de trabalho entre os dois lugares, para não procurar no errado:**
 
-| onde | o que é | quando confiar |
-| --- | --- | --- |
-| `CLAUDE.md`, na raiz | **o retrato técnico do jogo agora** — o que existe, como funciona e as armadilhas já pagas | para trabalhar no código atual |
-| `CHANGELOG.md`, na raiz | **o histórico de versões** — o que entrou em cada patch e o que ainda não foi lançado | para acompanhar a evolução do jogo |
-| esta pasta | **o desenho e o porquê** — decisões, especificações, referências e propostas futuras | para entender uma regra ou planejar o que ainda não existe |
+| onde                    | o que é                                                                                    | quando confiar                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `CLAUDE.md`, na raiz    | **o retrato técnico do jogo agora** — o que existe, como funciona e as armadilhas já pagas | para trabalhar no código atual                             |
+| `CHANGELOG.md`, na raiz | **o histórico de versões** — o que entrou em cada patch e o que ainda não foi lançado      | para acompanhar a evolução do jogo                         |
+| esta pasta              | **o desenho e o porquê** — decisões, especificações, referências e propostas futuras       | para entender uma regra ou planejar o que ainda não existe |
 
 Regra que mantém os dois honestos: **documento de tarefa cumprido é apagado**, e o que
 sobrou de vivo dele migra. O resultado e o motivo vão para o `CLAUDE.md`; a orientação

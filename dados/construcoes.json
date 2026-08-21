@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "Construcoes sao permanentes, caras, pagas a vista e entregues depois. Elas podem render ouro, destravar uma capacidade ou fortalecer a populacao. Beneficios diferentes disputam o mesmo tesouro sem serem reduzidos a uma conta unica. Porto, estrada e torre NAO estao aqui: dependem do modelo de movimentacao de tropas.",
+  "comentario": "Construcoes sao permanentes, caras, pagas a vista e entregues depois. Elas podem render ouro, destravar uma capacidade, fortalecer a populacao ou melhorar a defesa. Beneficios diferentes disputam o mesmo tesouro sem serem reduzidos a uma conta unica. Porto, estrada e torre NAO estao aqui: dependem do modelo maritimo, de rotas e de informacao.",
   "construcoes": {
     "agora": {
       "nome": "Ágora",
@@ -55,7 +55,7 @@
         "capacidade": "recrutar",
         "promessa": "Permite reunir e recrutar exercitos nesta provincia."
       },
-      "motivo": "Patio de treino, deposito de armas e alojamento. Nao rende moeda nenhuma: o que ele compra e o direito de por gente em armas aqui, e por isso e a obra mais cara do catalogo. Um reino sem Quartel nenhum e rico e indefeso."
+      "motivo": "Patio de treino, deposito de armas e alojamento. Nao rende moeda nenhuma: o que ele compra e o direito de por gente em armas aqui. Um reino sem Quartel nenhum pode ser rico e indefeso."
     },
     "muralha": {
       "nome": "Muralha",

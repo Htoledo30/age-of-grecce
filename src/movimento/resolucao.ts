@@ -33,7 +33,10 @@ import {
 
 /** O recorte do estado que a resolução mexe. Nada além disto. */
 export interface EstadoDaResolucao {
-  exercitos: Record<string, Exercito>;
+  /** Por ID de hoste. A provincia esta em `hoste.posicao`. */
+  hostes: Record<string, Exercito>;
+  proximaHoste: number;
+  /** Por ID de hoste: **uma ordem por hoste por rodada**, agora literalmente. */
   ordens: Record<string, OrdemDeMarcha>;
   /** Cercos em curso, por província sitiada. Sobrevive à virada — cerco leva turnos. */
   cercos: Record<string, Cerco>;
@@ -62,6 +65,14 @@ export interface MundoDaResolucao {
  * Sem isso, "interceptar no meio do caminho" não teria onde acontecer.
  */
 interface Forca {
+  /**
+   * A hoste de onde esta forca saiu.
+   *
+   * Guardada para que a que pousa REAPROVEITE a identidade em vez de nascer outra: uma
+   * hoste que marcha e a mesma hoste do outro lado, e um id novo a cada passo faria a
+   * selecao do jogador se perder toda virada de turno.
+   */
+  hoste: string;
   poder: string;
   /** Quantos homens de cada terra natal. Fatia proporcional da hoste de origem. */
   origem: Record<string, number>;
@@ -152,11 +163,18 @@ export function resolverRodada(
  */
 function partir(estado: EstadoDaResolucao): Forca[] {
   const forcas: Forca[] = [];
+  // ⚠️ Guarda a lista ANTES de esvaziar o tabuleiro. Esvaziar primeiro e percorrer depois
+  // percorre o vazio — nenhuma força parte, e o mapa fica sem exército nenhum.
+  const antes = Object.keys(estado.hostes).sort();
+  const emPe = { ...estado.hostes };
+  // O tabuleiro fica vazio: quem fica volta em `pousar`, com a própria identidade.
+  estado.hostes = {};
 
-  for (const onde of Object.keys(estado.exercitos).sort()) {
-    const hoste = estado.exercitos[onde];
+  for (const id of antes) {
+    const hoste = emPe[id];
     if (!hoste) continue;
-    const ordem = estado.ordens[onde];
+    const onde = hoste.posicao;
+    const ordem = estado.ordens[id];
 
     if (ordem) {
       // `retirar` já tira proporcionalmente de cada terra natal — é o que faz o
@@ -164,6 +182,9 @@ function partir(estado: EstadoDaResolucao): Forca[] {
       const partem = retirar(hoste, Math.min(ordem.homens, forcaDe(hoste)));
       if (Object.keys(partem).length > 0) {
         forcas.push({
+          // O destacamento e uma hoste NOVA: parte da antiga fica, parte vai, e as duas
+          // passam a existir ao mesmo tempo.
+          hoste: `h${estado.proximaHoste++}`,
           poder: hoste.poder,
           origem: partem,
           rota: ordem.rota,
@@ -176,6 +197,7 @@ function partir(estado: EstadoDaResolucao): Forca[] {
 
     if (forcaDe(hoste) > 0) {
       forcas.push({
+        hoste: id,
         poder: hoste.poder,
         origem: { ...hoste.origem },
         rota: [],
@@ -184,7 +206,6 @@ function partir(estado: EstadoDaResolucao): Forca[] {
         viva: true,
       });
     }
-    delete estado.exercitos[onde];
   }
 
   return forcas;
@@ -324,7 +345,7 @@ function reduzirLado(lado: readonly Forca[], alvo: number): void {
   if (total <= alvo || total === 0) return;
 
   // Reaproveita `retirar`, que já reparte proporcionalmente e fecha exato no arredondamento.
-  const caixa = exercitoVazio('provisorio');
+  const caixa = exercitoVazio('provisorio', 'provisorio', 'provisorio');
   for (const f of lado) {
     for (const [terra, homens] of Object.entries(f.origem)) somarLeva(caixa, terra, homens);
   }
@@ -360,9 +381,16 @@ function pousar(
 ): void {
   for (const forca of forcas) {
     if (!forca.viva || soma(forca.origem) === 0) continue;
-    const naChegada = estado.exercitos[forca.posicao] ?? exercitoVazio(forca.poder);
+    // Fundir as do mesmo poder que pararam juntas e POLITICA, nao obrigacao da estrutura:
+    // duas hostes ja cabem no mesmo lugar. A que fica e a de menor id, pra que o resultado
+    // nao dependa de quem chegou primeiro.
+    const juntas = Object.keys(estado.hostes)
+      .sort()
+      .map((id) => estado.hostes[id])
+      .find((h) => h !== undefined && h.posicao === forca.posicao && h.poder === forca.poder);
+    const naChegada = juntas ?? exercitoVazio(forca.hoste, forca.poder, forca.posicao);
     for (const [terra, homens] of Object.entries(forca.origem)) somarLeva(naChegada, terra, homens);
-    estado.exercitos[forca.posicao] = naChegada;
+    estado.hostes[naChegada.id] = naChegada;
     if (forca.posicao !== forca.partiuDe) {
       // `rota` é o plano inteiro e `posicao` é onde a força de fato parou — quem foi
       // barrado num choque na estrada parou antes do fim. Cortar a rota na posição atual
@@ -429,9 +457,11 @@ function resolverCidades(
     delete estado.cercos[provincia];
   };
 
-  for (const provincia of Object.keys(estado.exercitos).sort()) {
-    const hoste = estado.exercitos[provincia];
+  // Por hoste e nao por provincia: a chave mudou, e o lugar agora vive dentro dela.
+  for (const idHoste of Object.keys(estado.hostes).sort()) {
+    const hoste = estado.hostes[idHoste];
     if (!hoste) continue;
+    const provincia = hoste.posicao;
 
     // Terra própria: se havia cerco aqui, ele acabou — ou o socorro chegou, ou o sitiante
     // foi expulso. Levantar o cerco é consequência, não regra separada.
@@ -471,10 +501,11 @@ function resolverCidades(
 
   // Cerco sem sitiante em cima não existe: quem marchou embora ou morreu soltou a cidade.
   for (const provincia of Object.keys(estado.cercos)) {
-    const hoste = estado.exercitos[provincia];
-    if (!hoste || hoste.poder !== estado.cercos[provincia]?.sitiante) {
-      delete estado.cercos[provincia];
-    }
+    const sitiante = estado.cercos[provincia]?.sitiante;
+    const emCima = Object.values(estado.hostes).some(
+      (h) => h.posicao === provincia && h.poder === sitiante,
+    );
+    if (!emCima) delete estado.cercos[provincia];
   }
 }
 
@@ -524,7 +555,7 @@ function assaltar(
   }
 
   // Rechaçado: o exército de assalto se desfaz diante da muralha, e a cidade fica.
-  delete estado.exercitos[provincia];
+  delete estado.hostes[hoste.id];
   delete estado.cercos[provincia];
   perder(
     choque.vencedor === 'b'

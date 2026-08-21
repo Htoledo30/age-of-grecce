@@ -19,6 +19,7 @@ export type NomeDoIconeGrego =
   | 'mercado'
   | 'moeda'
   | 'muralha'
+  | 'quartel'
   | 'templo'
   | 'territorio'
   | 'turno';
@@ -107,6 +108,14 @@ const FORMAS: Record<NomeDoIconeGrego, readonly Forma[]> = {
     ['path', { d: 'M4 4v5h3V4h4v5h3V4h4v5h2v12H4V9h0' }],
     ['path', { d: 'M9 21v-6h6v6' }],
   ],
+  quartel: [
+    // Escudo grego com lança: duas silhuetas grandes sobrevivem melhor no botão de 17 px
+    // que os detalhes do capacete anterior, que reduzido parecia uma cadeira.
+    ['path', { d: 'M10 3 17 6v5c0 4-2.5 7-7 10-4.5-3-7-6-7-10V6Z' }],
+    ['path', { d: 'm6.5 16 3.5-8 3.5 8M8 13h4' }],
+    ['line', { x1: '20', y1: '6', x2: '20', y2: '22' }],
+    ['polyline', { points: '17 6 20 2 23 6' }],
+  ],
 };
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -143,7 +152,7 @@ export function iconeDaConstrucao(id: string): NomeDoIconeGrego {
     oficina: 'martelo',
     mercado: 'mercado',
     celeiro: 'celeiro',
-    quartel: 'capacete',
+    quartel: 'quartel',
     muralha: 'muralha',
   };
   return conhecidos[id] ?? 'martelo';

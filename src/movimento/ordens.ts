@@ -13,7 +13,7 @@ import type { Postura } from '@/combate/cerco';
 
 /** Uma ordem de marcha registrada, ainda não executada. */
 export interface OrdemDeMarcha {
-  /** De onde sai. É a chave do registro: **uma ordem por hoste por rodada.** */
+  /** De onde sai. A chave do registro é o id da hoste: **uma ordem por hoste por rodada.** */
   origem: string;
   /**
    * Os trechos, na ordem, sem a origem. Um ou dois — nunca mais que os pontos da hoste.
@@ -35,7 +35,8 @@ export interface OrdemDeMarcha {
 }
 
 /** Por que uma ordem foi recusada — ou o consentimento de registrá-la. */
-export type RecusaDeOrdem = { pode: true; rota: readonly string[] } | { pode: false; motivo: string };
+export type RecusaDeOrdem =
+  { pode: true; rota: readonly string[] } | { pode: false; motivo: string };
 
 /** O que se precisa saber para julgar uma ordem. */
 export interface SituacaoDaOrdem {

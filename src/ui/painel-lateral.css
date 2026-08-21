@@ -35,6 +35,7 @@
 }
 
 .painel-lateral__corpo {
+  position: relative;
   flex: 1;
   padding: 18px;
   border: 1px solid var(--ui-borda);

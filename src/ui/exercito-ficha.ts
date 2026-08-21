@@ -369,7 +369,7 @@ export class ExercitoFicha {
         'do ataque, nunca parte intermediária do caminho.',
     });
 
-    // ⚠️ **Enquanto se escolhe destino, o painel encolhe.** Ele fica em baixo-centro, por
+    // ⚠️ **Enquanto se escolhe destino, o painel encolhe.** Ele fica em baixo-direita, por
     // cima do mapa, e cresceu com o seletor de postura até cobrir um destino clicável —
     // o jogador via o alvo e o clique não chegava nele. Some o que não é a decisão do
     // momento: de onde os homens vieram e o botão de dispensar. Nada disso desaparece de

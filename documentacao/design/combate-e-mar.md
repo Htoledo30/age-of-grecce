@@ -79,8 +79,10 @@ Entrar no mar continua impossível até existirem zonas marítimas e frota.
 ### A hoste pode mandar somente parte dos homens
 
 Hoste é uma quantidade divisível, não uma peça indivisível. Uma hoste de 1.000 em Atenas
-pode ordenar que 500 marchem e deixar 500 defendendo. A ordem guarda **origem, destino,
-quantidade, rota e custo de movimento**.
+pode ordenar que 500 marchem e deixar 500 defendendo. A ordem guarda **origem, rota,
+quantidade e postura diante de uma cidade inimiga**; o destino é o último trecho da rota.
+O custo atual é a própria regra de uma fronteira por rodada, não um campo separado no
+estado.
 
 - cada hoste emite somente **uma ordem de movimento por rodada**;
 - não existe quantidade mínima: pode marchar um homem e pode ficar um homem na origem;
@@ -150,9 +152,9 @@ mar continuam sistemas futuros.
 | dispensar devolve cada homem à terra dele                                          | `src/combate/mobilizacao.ts`                                    | feito      |
 | marcador da hoste no mapa, seleção e ficha                                         | `src/ui/hostes-mapa.ts`, `src/ui/exercito-ficha.ts`             | feito      |
 | propriedade mutável e eliminação de poder                                          | `src/campanha/territorios.ts`                                   | feito      |
-| movimento terrestre e resolução simultânea                                         | `src/movimento/`                                                 | feito      |
+| movimento terrestre e resolução simultânea                                         | `src/movimento/`                                                | feito      |
 | batalha determinística                                                             | `src/combate/batalha.ts`                                        | feito      |
-| milícia, muralha, assalto e cerco                                                   | `src/combate/milicia.ts`, `src/combate/cerco.ts`                | feito      |
+| milícia, muralha, assalto e cerco                                                  | `src/combate/milicia.ts`, `src/combate/cerco.ts`                | feito      |
 | conquista e exílio                                                                 | `src/campanha/territorios.ts`, `src/campanha/campanha.ts`       | feito      |
 | IA estratégica e militar                                                           | —                                                               | não existe |
 | zonas marítimas, frota e guerra naval                                              | —                                                               | não existe |

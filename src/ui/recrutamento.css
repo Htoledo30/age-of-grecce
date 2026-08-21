@@ -1,4 +1,5 @@
 .recrutamento {
+  position: relative;
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--ui-borda);

@@ -24,17 +24,18 @@ function nova(): Campanha {
 
 describe('a guarnição de 700 a.C. sai da população da própria terra', () => {
   it('os homens são descontados, e o manancial continua sendo um só', () => {
-    const { exercitos: postos, populacao } = levantarGuarnicoes(
+    const { hostes: postos, populacao } = levantarGuarnicoes(
       { eleusis: 500 },
       { eleusis: 12_000, atenas: 35_000 },
       () => 'eleusis',
       combate,
     );
     expect(populacao['eleusis']).toBe(11_500);
-    expect(postos['eleusis']?.origem).toEqual({ eleusis: 500 });
+    expect(Object.values(postos)[0]?.origem).toEqual({ eleusis: 500 });
+    expect(Object.values(postos)[0]?.posicao).toBe('eleusis');
     // Quem não tem guarnição não é tocado.
     expect(populacao['atenas']).toBe(35_000);
-    expect(postos['atenas']).toBeUndefined();
+    expect(Object.values(postos)).toHaveLength(1);
   });
 
   it('não altera o mapa que recebe: o dado autoral continua o do arquivo', () => {
