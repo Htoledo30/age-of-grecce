@@ -293,3 +293,81 @@ describe('conquista e tropa', () => {
     expect(c.forcaEm('atenas')).toBe(1000);
   });
 });
+
+describe('perder o chão não é o mesmo que morrer', () => {
+  it('um poder sem território mas com hoste continua vivo, no exílio', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 1000);
+    expect(c.poderesVivos()).toHaveLength(148);
+
+    // Atenas perde as três províncias, mas a hoste continua de pé.
+    for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
+
+    expect(c.provinciasDe('atenas')).toHaveLength(0);
+    expect(c.vivo('atenas')).toBe(true);
+    expect(c.noExilio('atenas')).toBe(true);
+    expect(c.poderesVivos()).toContain('atenas');
+  });
+
+  it('o exílio acaba sozinho: sem renda a folha não é paga e a tropa deserta', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 1000);
+    for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
+    expect(c.renda).toBe(0); // sem província, sem arrecadação
+
+    // Não precisa de temporizador nenhum: a regra da deserção que já existia dá o prazo.
+    for (let i = 0; i < 60; i++) c.passarTurno();
+
+    expect(c.forcaEm('atenas')).toBe(0);
+    expect(c.vivo('atenas')).toBe(false);
+    expect(c.noExilio('atenas')).toBe(false);
+    expect(c.poderesVivos()).not.toContain('atenas');
+  });
+
+  it('sem chão e sem tropa é eliminação, como antes', () => {
+    const c = nova();
+    for (const id of [...c.provinciasDe('megara')]) c.trocarDono(id, 'atenas');
+    expect(c.vivo('megara')).toBe(false);
+    expect(c.noExilio('megara')).toBe(false);
+  });
+});
+
+describe('dispensar homem de terra perdida', () => {
+  it('ele volta pra terra dele mesmo que ela seja do inimigo agora', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 1000);
+    expect(c.populacaoDe('atenas')).toBe(34_000);
+
+    c.trocarDono('atenas', 'megara');
+    // Uma regra só, sem exceção: gente pertence ao chão, não a quem manda no chão.
+    c.dispensar('atenas', 1000);
+
+    expect(c.populacaoDe('atenas')).toBe(35_000);
+    expect(c.donoDe('atenas')).toBe('megara');
+    // E a consequência dura, de propósito: os habitantes rendem pro conquistador.
+    expect(c.rendaDe('megara')).toBe(330);
+    expect(c.rendaDe('atenas')).toBe(146 + 232); // só Maratona e Sunião
+  });
+
+  it('a mesma regra vale pra deserção por falta de pagamento', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 1000);
+    for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
+
+    for (let i = 0; i < 60; i++) c.passarTurno();
+
+    // Os desertores do exílio engordam exatamente quem tomou a terra deles.
+    expect(c.populacaoDe('atenas')).toBe(35_000);
+    expect(c.rendaDe('megara')).toBe(708);
+  });
+
+  it('nenhum homem some do mundo no caminho', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 3000);
+    c.trocarDono('atenas', 'megara');
+    c.dispensar('atenas', 1200);
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(35_000);
+    c.dispensar('atenas', 1800);
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(35_000);
+  });
+});
