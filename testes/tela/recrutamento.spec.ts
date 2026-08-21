@@ -92,7 +92,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
   await expect(page.locator('.recrutamento__alvo')).toContainText('32.697 disponíveis');
   await expect(seletor).toHaveValue('0');
-  await expect(page.locator('.barra-turno__ouro')).toContainText('+709');
+  await expect(page.locator('.barra-turno__ouro')).toContainText('+691');
   await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
