@@ -51,6 +51,15 @@ export class MarchasMapa {
   private previsoes: LinhaDePrevisao[] = [];
   private ordens: LinhaDeOrdem[] = [];
   private pontoDaOrigem: PontoDeMarcha | null = null;
+  /**
+   * A última câmera vista, para desenhar traço NOVO já no lugar.
+   *
+   * ⚠️ `mostrar` é chamado ao dar uma ordem e na virada do turno — fora do laço de quadro.
+   * Sem isto, a ponta da seta (um `polygon` de pontos fixos, sem `transform`) e a
+   * quantidade (um `text` sem `x`/`y`) são pintadas uma vez em (0,0), o canto superior
+   * esquerdo do palco.
+   */
+  private ultimaCamera: Camera | null = null;
 
   constructor(pai: HTMLElement) {
     this.camada.classList.add('marchas');
@@ -108,6 +117,11 @@ export class MarchasMapa {
     this.grupoOrdens.replaceChildren(
       ...this.ordens.flatMap((o) => [o.elemento, o.seta, o.quantidade]),
     );
+
+    // Nada de traço sem coordenada chegar à tela: ou já sai posicionado, ou fica invisível
+    // até o primeiro `posicionar`.
+    if (this.ultimaCamera) this.posicionar(this.ultimaCamera);
+    else this.camada.dataset['posicionada'] = 'nao';
   }
 
   /** A rota sob o destino apontado ganha peso; as demais continuam como contexto. */
@@ -119,6 +133,8 @@ export class MarchasMapa {
 
   /** Reprojeta linhas, origem e rótulos quando a câmera anda ou dá zoom. */
   posicionar(camera: Camera): void {
+    this.ultimaCamera = camera;
+    this.camada.dataset['posicionada'] = 'sim';
     if (this.pontoDaOrigem) {
       const origem = camera.mundoParaPalco(this.pontoDaOrigem.x, this.pontoDaOrigem.y);
       this.origem.setAttribute('cx', String(origem.x));

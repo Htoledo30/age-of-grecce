@@ -44,6 +44,16 @@ export class HostesMapa {
   private readonly marcadores = new Map<string, HTMLButtonElement>();
   private atual: readonly MarcadorDeHoste[] = [];
   private selecionada: string | null = null;
+  /**
+   * A última câmera vista, guardada para posicionar peça NOVA no mesmo instante em que
+   * ela nasce.
+   *
+   * ⚠️ Sem isto, um marcador criado fora do laço — e `mostrar` é chamado na virada do
+   * turno, fora dele — é pintado uma vez **sem `transform`**, ou seja, no canto superior
+   * esquerdo do palco, e só vai pro lugar no quadro seguinte. O sintoma é a hoste
+   * aparecendo lá em cima e "descendo" até a província.
+   */
+  private ultimaCamera: Camera | null = null;
 
   aoSelecionar: (idProvincia: string) => void = () => {};
 
@@ -80,9 +90,13 @@ export class HostesMapa {
           this.aoSelecionar(hoste.provincia);
           elemento?.blur();
         });
+        // Nasce escondida e só aparece quando tiver posição: é a rede que impede o
+        // marcador de ser pintado no canto da tela antes do primeiro `posicionar`.
+        elemento.dataset['posicionada'] = 'nao';
         this.camada.appendChild(elemento);
         this.marcadores.set(hoste.provincia, elemento);
       }
+      if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste.x, hoste.y);
       elemento.textContent = hoste.forca.toLocaleString('pt-BR');
       elemento.title = `${hoste.nomeDoPoder} · ${hoste.forca.toLocaleString('pt-BR')} homens`;
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
@@ -110,13 +124,20 @@ export class HostesMapa {
    * sobre ele.
    */
   posicionar(camera: Camera): void {
+    this.ultimaCamera = camera;
     for (const hoste of this.atual) {
       const elemento = this.marcadores.get(hoste.provincia);
       if (!elemento) continue;
-      const { x, y } = camera.mundoParaPalco(hoste.x, hoste.y);
-      // `translate(-50%, -50%)` centra a peça no ponto: sem isso ela pende pra baixo e
-      // pra direita, e em zoom alto o número deixa de cair sobre a província.
-      elemento.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+      this.assentar(elemento, camera, hoste.x, hoste.y);
     }
+  }
+
+  /** Põe a peça no ponto e a torna visível. É o único lugar que escreve `transform`. */
+  private assentar(elemento: HTMLElement, camera: Camera, x: number, y: number): void {
+    const p = camera.mundoParaPalco(x, y);
+    // `translate(-50%, -50%)` centra a peça no ponto: sem isso ela pende pra baixo e pra
+    // direita, e em zoom alto o número deixa de cair sobre a província.
+    elemento.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+    elemento.dataset['posicionada'] = 'sim';
   }
 }

@@ -81,3 +81,8 @@
   background: var(--papel-claro);
   font-weight: bold;
 }
+
+/* Mesma rede de hostes-mapa.css: alvo sem posição não se pinta. */
+.destinos__marca[data-posicionada='nao'] {
+  visibility: hidden;
+}

@@ -115,3 +115,11 @@
     animation: none;
   }
 }
+
+/* ⚠️ Peça sem posição NÃO se pinta. `mostrar` é chamado na virada do turno, fora do laço
+   de quadro; um marcador recém-criado ficaria um quadro sem `transform`, ou seja, no
+   canto superior esquerdo do palco, e só iria pro lugar depois. O sintoma era a hoste
+   surgindo lá em cima e descendo até a província. */
+.hostes__marca[data-posicionada='nao'] {
+  visibility: hidden;
+}

@@ -31,6 +31,8 @@ export class DestinosMapa {
   private readonly camada = document.createElement('div');
   private readonly marcas = new Map<string, HTMLButtonElement>();
   private atuais: readonly Destino[] = [];
+  /** Ver `HostesMapa.ultimaCamera`: alvo novo tem que nascer já no lugar. */
+  private ultimaCamera: Camera | null = null;
 
   aoEscolher: (idProvincia: string) => void = () => {};
   aoDestacar: (idProvincia: string | null) => void = () => {};
@@ -73,9 +75,11 @@ export class DestinosMapa {
           this.aoEscolher(destino.provincia);
           elemento?.blur();
         });
+        elemento.dataset['posicionada'] = 'nao';
         this.camada.appendChild(elemento);
         this.marcas.set(destino.provincia, elemento);
       }
+      if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, destino.x, destino.y);
       elemento.dataset['hostil'] = destino.hostil ? 'sim' : 'nao';
       const simbolo = elemento.querySelector<HTMLElement>('.destinos__simbolo');
       if (simbolo) simbolo.textContent = destino.hostil ? '⚔' : '▸';
@@ -89,11 +93,18 @@ export class DestinosMapa {
 
   /** Põe cada destino sobre a província dele. Chamado uma vez por quadro. */
   posicionar(camera: Camera): void {
+    this.ultimaCamera = camera;
     for (const destino of this.atuais) {
       const elemento = this.marcas.get(destino.provincia);
       if (!elemento) continue;
-      const { x, y } = camera.mundoParaPalco(destino.x, destino.y);
-      elemento.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+      this.assentar(elemento, camera, destino.x, destino.y);
     }
+  }
+
+  /** Põe o alvo no ponto e o torna visível. É o único lugar que escreve `transform`. */
+  private assentar(elemento: HTMLElement, camera: Camera, x: number, y: number): void {
+    const p = camera.mundoParaPalco(x, y);
+    elemento.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`;
+    elemento.dataset['posicionada'] = 'sim';
   }
 }

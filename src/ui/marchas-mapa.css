@@ -127,3 +127,9 @@
     animation: none;
   }
 }
+
+/* Mesma rede de hostes-mapa.css: traço sem coordenada não se pinta. A ponta da seta e a
+   quantidade cairiam em (0,0) — o canto superior esquerdo do palco. */
+.marchas[data-posicionada='nao'] {
+  visibility: hidden;
+}

@@ -13,6 +13,7 @@ import { PNG } from 'pngjs';
 
 import { Ajustes, Construcoes, Economia, Mundo, Provincias } from '../src/dados/esquema';
 import { rendaDaProvincia, retornoDaConstrucao } from '../src/campanha/economia';
+import { miliciaDe } from '../src/combate/milicia';
 
 const problemas: string[] = [];
 
@@ -277,9 +278,6 @@ function checarConstrucoes(): void {
   // turnos" — ele paga em capacidade, e enfiá-lo aqui imprimiria "nunca", que é verdade
   // aritmética e mentira sobre o que ele é. Ele sai listado à parte.
   const deRenda = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'renda');
-  const deCapacidade = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'capacidade');
-  const dePopulacao = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'populacao');
-
   console.log('construções que rendem moeda — ganho por turno e turnos até se pagar:');
   const cabecalho = deRenda.map(([, c]) => `${c.nome} (${c.custo})`.padStart(20)).join('');
   console.log(`  ${''.padEnd(12)}${cabecalho}`);
@@ -302,24 +300,39 @@ function checarConstrucoes(): void {
     console.log(`  ${id.padEnd(12)}${celulas.join('')}`);
   }
 
-  if (deCapacidade.length > 0) {
-    console.log('construções que pagam em capacidade:');
-    for (const [, c] of deCapacidade) {
-      const promessa = c.efeito.tipo === 'capacidade' ? c.efeito.promessa : '';
+  // Cada família paga numa moeda diferente, e é por isso que cada uma se lista sozinha:
+  // enfileirar todas numa tabela de "turnos até se pagar" imprimiria "nunca" para as três
+  // que não rendem moeda — verdade aritmética e mentira sobre o que elas são.
+  familia('construções que pagam em capacidade:', 'capacidade');
+  familia('construções que fortalecem a população:', 'populacao');
+  familia('construções que fortalecem a defesa local:', 'milicia');
+
+  // `renda` fica de fora porque só ela não tem promessa escrita: o que ela promete é a
+  // tabela de cima. A união discriminada é quem obriga esta distinção a existir.
+  type Efeito = Construcoes['construcoes'][string]['efeito'];
+  function familia(titulo: string, tipo: Exclude<Efeito['tipo'], 'renda'>): void {
+    const desta = Object.values(catalogo).filter((c) => c.efeito.tipo === tipo);
+    if (desta.length === 0) return;
+    console.log(titulo);
+    for (const c of desta) {
+      if (c.efeito.tipo === 'renda') continue;
       console.log(
-        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`,
+        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${c.efeito.promessa}`,
       );
     }
   }
 
-  if (dePopulacao.length > 0) {
-    console.log('construções que fortalecem a população:');
-    for (const [, c] of dePopulacao) {
-      const promessa = c.efeito.tipo === 'populacao' ? c.efeito.promessa : '';
-      console.log(
-        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`,
-      );
-    }
+  // A milícia é fraca de propósito, e "1,2%" não diz nada; o número de defensores diz. É
+  // aqui que uma Muralha barata demais aparece como cidade intomável.
+  if (!economia.success || !ajustes.success) return;
+  const combate = ajustes.data.jogo.combate;
+  console.log('milícia por província configurada — sem obra e com Muralha:');
+  for (const [id, ficha] of Object.entries(economia.data.provincias)) {
+    const nua = miliciaDe(ficha.populacao, [], catalogo, combate);
+    const murada = miliciaDe(ficha.populacao, ['muralha'], catalogo, combate);
+    console.log(
+      `  ${id.padEnd(12)}${String(ficha.populacao).padStart(8)} hab · ${String(nua).padStart(5)} · ${String(murada).padStart(5)} com Muralha`,
+    );
   }
 }
 

@@ -20,6 +20,7 @@ interface Ganchos {
   alcanceDaHoste: (idProvincia: string) => string[];
   conquistar: (idProvincia: string, idPoder: string) => void;
   ordens: () => { origem: string; rota: string[]; homens: number }[];
+  ordenarMarcha: (origem: string, destino: string, homens: number, porPoder?: string) => void;
 }
 
 async function comHoste(page: Page, homens: number) {
@@ -211,4 +212,33 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
   await mover.click();
   await expect(page.locator('.destinos__marca[data-provincia="maratona"]')).toHaveCount(1);
   await expect(page.locator('.destinos__marca[data-provincia="sounion"]')).toHaveCount(1);
+});
+
+test('nenhuma peça nova é pintada antes de saber onde fica', async ({ page }) => {
+  // ⚠️ O bug que este teste guarda: `mostrar` é chamado ao ordenar e na virada do turno,
+  // ambos FORA do laço de quadro. A peça nascia sem `transform` e era pintada uma vez em
+  // (0,0) — o canto superior esquerdo do palco — indo pro lugar só no quadro seguinte. Na
+  // tela isso lia como a hoste surgindo lá em cima e descendo até a província.
+  await comHoste(page, 1500);
+
+  const aoOrdenar = await page.evaluate(() => {
+    (window as unknown as { inspecao: Ganchos }).inspecao.ordenarMarcha('atenas', 'maratona', 1500);
+    const seta = document.querySelector('.marchas__seta');
+    const rotulo = document.querySelector('.marchas__quantidade');
+    return { seta: seta?.getAttribute('transform') ?? '', x: rotulo?.getAttribute('x') ?? '' };
+  });
+  // A ponta da seta é um polígono de pontos fixos e o rótulo um texto sem x/y: sem
+  // transform os dois caem no canto, e é um número piscando no alto da tela.
+  expect(aoOrdenar.seta).toMatch(/^translate\(/);
+  expect(Number(aoOrdenar.x)).toBeGreaterThan(100);
+
+  const aoChegar = await page.evaluate(() => {
+    (window as unknown as { inspecao: Ganchos }).inspecao.passarTurno();
+    const marca = document.querySelector<HTMLElement>('.hostes__marca');
+    return { provincia: marca?.dataset['provincia'] ?? '', transform: marca?.style.transform ?? '' };
+  });
+  // A hoste chegou a Maratona: o marcador da origem morreu e nasceu outro, no destino. É
+  // esse elemento novo que precisa nascer já colocado.
+  expect(aoChegar.provincia).toBe('maratona');
+  expect(aoChegar.transform).toMatch(/^translate\(\d/);
 });
