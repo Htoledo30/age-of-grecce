@@ -7,6 +7,7 @@ import '@/ui/governo.css';
 import '@/ui/inicio-jogo.css';
 import '@/ui/controles.css';
 import '@/ui/barra-turno.css';
+import '@/ui/recrutamento.css';
 
 import { iniciarEscala } from '@/estilo/escala';
 import { Entrada } from '@/nucleo/entrada';
@@ -27,6 +28,8 @@ import { Balanco } from '@/ui/balanco';
 import type { VistaDeAcoes } from '@/ui/acoes-provincia';
 import { FichaProvincia } from '@/ui/ficha-provincia';
 import type { VistaDaProvincia } from '@/ui/ficha-provincia';
+import { Recrutamento } from '@/ui/recrutamento';
+import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Campanha } from '@/campanha/campanha';
@@ -64,6 +67,9 @@ async function iniciar(): Promise<void> {
   colunaProvincia.className = 'coluna-provincia';
   ui.appendChild(colunaProvincia);
   const acoes = new AcoesProvincia(colunaProvincia);
+  // Recrutar é outra mecânica de investir e construir: mexe em gente, não em dinheiro.
+  // Bloco próprio, entre o que se PAGA e o que a província É.
+  const recrutamento = new Recrutamento(colunaProvincia);
   const ficha = new FichaProvincia(colunaProvincia);
   ficha.usarCatalogo(
     Object.fromEntries(
@@ -123,6 +129,7 @@ async function iniciar(): Promise<void> {
             turno: campanha.turno,
             tesouro: campanha.tesouro,
             renda: campanha.renda,
+            manutencao: campanha.manutencao,
             provincias: campanha.provinciasDe(jogador.id).length,
           },
     );
@@ -142,6 +149,7 @@ async function iniciar(): Promise<void> {
     );
 
     acoes.mostrar(vistaDeAcoes());
+    recrutamento.mostrar(vistaDeRecrutamento());
 
     // A janela de governo se redesenha junto com o resto, mas só quando está aberta:
     // fechada, montar a tabela seria trabalho jogado fora a cada turno.
@@ -192,6 +200,36 @@ async function iniciar(): Promise<void> {
       avaliar: (valor) => campanha.podeInvestir(alvo, valor),
       duracao: ajustes.jogo.economia.investimento.arrecadacoes,
       retorno: (valor) => campanha.retornoDe(alvo, valor),
+    };
+  }
+
+  /**
+   * O que o bloco de recrutamento mostra agora.
+   *
+   * Mesma regra do bloco de ações: dentro da campanha ele fica sempre na tela, e quando
+   * não dá pra recrutar diz o motivo — é assim que o jogador descobre que existe Quartel.
+   */
+  function vistaDeRecrutamento(): VistaDeRecrutamento | null {
+    if (fase !== 'campanha') return null;
+    const alvo = selecionada;
+    if (!alvo) return { pode: false, motivo: 'Clique numa província sua para reunir tropa.' };
+    const naProvincia = campanha.podeAgirEm(alvo);
+    if (!naProvincia.pode) return { pode: false, motivo: `${atlas.nomeDe(alvo)}: ${naProvincia.motivo}.` };
+    if (!campanha.podeRecrutarEm(alvo)) {
+      return {
+        pode: false,
+        motivo: `${atlas.nomeDe(alvo)}: é preciso um Quartel aqui para reunir tropa.`,
+      };
+    }
+    return {
+      pode: true,
+      provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
+      populacao: campanha.populacaoDe(alvo),
+      teto: campanha.tetoDeLevaEm(alvo),
+      emArmas: campanha.forcaEm(alvo),
+      custoPorHomem: ajustes.jogo.combate.custoPorHomem,
+      manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
+      avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
     };
   }
 
@@ -250,6 +288,8 @@ async function iniciar(): Promise<void> {
   barraTurno.aoPassarTurno = () => campanha.passarTurno();
   acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
+  recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
+  recrutamento.aoDispensar = (idProvincia, homens) => campanha.dispensar(idProvincia, homens);
 
   inicio.aoPedirEscolha = () => {
     fase = 'escolha';
@@ -307,6 +347,18 @@ async function iniciar(): Promise<void> {
         poderesVivos: campanha.poderesVivos().length,
       }),
       donoDe: (idProvincia: string) => campanha.donoDe(idProvincia),
+      darOuro: (valor: number) => campanha.darOuro(valor),
+      passarTurno: () => campanha.passarTurno(),
+      comecar: (idPoder: string) => {
+        fase = 'campanha';
+        inicio.encerrar();
+        campanha.comecar(idPoder);
+      },
+      construir: (idProvincia: string, idConstrucao: string) =>
+        campanha.construir(idProvincia, idConstrucao),
+      recrutar: (idProvincia: string, homens: number) => campanha.recrutar(idProvincia, homens),
+      forcaEm: (idProvincia: string) => campanha.forcaEm(idProvincia),
+      populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.
       conquistar: (idProvincia: string, idPoder: string) =>

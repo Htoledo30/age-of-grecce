@@ -610,6 +610,18 @@ export class Campanha {
   }
 
   /**
+   * Põe ouro no tesouro. **Existe pra DESENVOLVIMENTO**, como o `calibrarFronteira` da
+   * camada de mapa: montar um cenário de teste sem jogar quinze turnos à mão.
+   *
+   * Não é regra do jogo e nenhuma mecânica chama isto. O gancho que a expõe vive atrás
+   * de `import.meta.env.DEV` e não existe no jogo empacotado.
+   */
+  darOuro(valor: number): void {
+    this.estado.tesouro += valor;
+    this.aoMudar();
+  }
+
+  /**
    * Vira o turno.
    *
    * A ordem está escrita porque errar a ordem aqui não dá erro nenhum, só um número

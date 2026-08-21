@@ -648,10 +648,16 @@ inteira, mesmo quando não dá pra investir, dizendo o motivo (`Mantineia: esta 
 não tem economia configurada`). Esconder o controle esconde a existência da mecânica, e o
 jogador não tem como adivinhar que ela existe.
 
-⚠️ **População é dado autoral fixo.** Não há crescimento populacional, e isso é decisão,
-não esquecimento: crescimento exigiria natalidade, mortalidade, alimento, migração,
-capacidade territorial e relação com a duração do turno — um sistema demográfico inteiro
-dentro de um teste de economia.
+⚠️ **População é ESTADO, e a linha anterior deste arquivo estava errada.** Ela dizia que
+população era dado autoral fixo "por decisão" — mas isso descrevia uma conveniência da
+fase de testes (bastava um número inicial pra economia básica rodar), não uma escolha de
+design. Desde que recrutar passou a custar população, ela vive em
+`estado.populacao` e o `dados/economia.json` guarda só a população INICIAL, de 700 a.C.
+
+Continua **não havendo crescimento populacional**, e isso sim é decisão de escopo:
+crescimento exigiria natalidade, mortalidade, alimento, migração e capacidade
+territorial. O que existe hoje é o vaivém da mobilização — recrutar tira, dispensar
+devolve.
 
 ⚠️ **`jogo.anosPorTurno` é decisão em aberto**, exposta no arquivo de ajustes de propósito:
 um turno por ano funciona no protótipo, mas é o que decide o ritmo da campanha inteira.
@@ -669,6 +675,74 @@ A revisão das ilhas descrita em
 "Ilhas: desenhada, jogável e província são três coisas" acima. Leia aquele documento
 antes de mexer no recorte insular de novo: ele guarda o raciocínio, e este arquivo
 guarda só o resultado.
+
+## O exército
+
+**Só se recruta onde há Quartel**, e a leva custa **ouro e população da própria
+província**. As regras vivem em `src/combate/`, uma mecânica por arquivo:
+`exercito.ts` (o que é uma força) e `recrutamento.ts` (o que custa e por que é recusado).
+O estado mora na campanha, como todo o resto que vai pro disco.
+
+### O Quartel é a primeira construção que não paga em ouro
+
+O documento de economia já exigia isso — *"nenhuma construção deve pagar somente em ouro;
+se todas pagarem, escolher vira aritmética"* — e nenhuma cumpria: Ágora, Oficina e Mercado
+rendem todas moeda, em parcelas diferentes da mesma conta. O Quartel custa **5.000**, leva
+**4 turnos** e **rende zero**. Comparar 5.000 por um exército com 3.000 por +70 moedas por
+turno não é uma conta: é uma decisão.
+
+Por isso o catálogo passou a ter `efeito` como **união discriminada** — `renda` (parcela +
+fator) ou `capacidade`. União e não campos opcionais: assim o compilador obriga quem lê a
+decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined` atravessar a
+fórmula da renda em silêncio.
+
+⚠️ **Construção de capacidade nunca mostra "paga-se em N turnos".** A tela diz o que ela
+destrava. `+0 por turno, não muda nada aqui` é verdade aritmética e mentira sobre o que o
+Quartel é — e o `checar` lista as duas famílias em tabelas separadas pelo mesmo motivo.
+
+### Soldado sai da população, e é o teto que importa
+
+**O ouro sozinho faria exército brotar de tesouro grande**, e um reino rico venceria
+digitando. O limite real é `fracaoRecrutavel` — hoje 10% da população — e ele conta
+**quem já está em armas**, onde quer que esteja; senão bastava recrutar, marchar pra fora
+e recrutar de novo pra esvaziar a cidade em rodadas.
+
+Quem vai pras armas **sai da população na mesma hora**, então o imposto daquela província
+cai junto e o próprio teto aperta. Mobilizar tem preço contínuo, não só preço de entrada.
+
+O número que o sistema existe pra produzir, e que um teste fixa:
+
+| Atenas | valor |
+|---|---|
+| população | 35.000 |
+| teto em armas | 3.500 |
+| manutenção com o teto cheio | 700/turno |
+| renda com o teto cheio | 691/turno (o imposto cai de 175 pra 158) |
+| **saldo** | **−9 por turno** |
+
+**Mobilização total é insustentável por construção**, sem nenhuma regra dizendo isso.
+
+⚠️ **Quem não paga vê a tropa desertar, proporcionalmente, e os desertores VOLTAM pra
+casa.** Espiral de morte não é decisão: é o jogo terminando sozinho enquanto o jogador
+assiste. O tesouro nunca fica negativo, o exército encolhe aos poucos, e a saída existe
+(dispensar antes, ou tomar mais renda).
+
+⚠️ **`origem` guarda de qual província veio cada homem.** Sem isso, marchar de uma
+província pobre até uma rica e dispensar ali seria lavagem de população — e nenhuma regra
+proibiria explicitamente. Dispensar devolve cada um à sua terra, e `retirar` tira
+proporcionalmente de cada origem, pra que a ordem em que as levas entraram não vire uma
+regra escondida.
+
+⚠️ **A força é DERIVADA de `origem`, nunca guardada ao lado dela.** Guardar um total junto
+do detalhe é convidar os dois a discordarem.
+
+⚠️ **A manutenção aparece na barra de turno** (`17.130 moedas (+698 −400)`), não escondida
+no Governo. É a única despesa recorrente do jogo: sem ela visível, o jogador vê o tesouro
+parar de crescer e não tem como saber que foi o exército que comeu.
+
+**População na ficha não é enfeite.** Ela saiu do esconderijo porque decide duas coisas: a
+Ágora multiplica imposto, que vem de população, e o teto de recrutamento é uma fração
+dela. Enquanto ficou invisível, escolher a Ágora era um chute informado.
 
 ## Armadilhas conhecidas
 

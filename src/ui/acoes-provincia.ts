@@ -208,6 +208,18 @@ export class AcoesProvincia {
   /** O tooltip da construção: pra que serve, prazo, quanto rende e quando se paga. */
   private explicacao(opcao: OpcaoDeConstrucao): string {
     const linhas = [opcao.motivo];
+    const custoEPrazo = `${opcao.custo.toLocaleString('pt-BR')} moedas · ${opcao.turnos} turnos de obra.`;
+
+    // Construção de capacidade não tem retorno em moeda, e forçá-la na mesma frase
+    // produziria "não muda nada aqui" — que é verdade aritmética e mentira sobre o que
+    // ela é. O Quartel não rende: ele destrava.
+    if (opcao.promessa !== null) {
+      if (opcao.erguida) linhas.push(opcao.promessa);
+      else if (opcao.emObra !== null) linhas.push(`Pronta em ${opcao.emObra}. ${opcao.promessa}`);
+      else linhas.push(custoEPrazo, opcao.promessa);
+      return linhas.join('\n');
+    }
+
     if (opcao.erguida) {
       linhas.push(`Rendendo +${opcao.ganhoPorTurno} moedas por turno.`);
     } else if (opcao.emObra !== null) {
@@ -216,10 +228,7 @@ export class AcoesProvincia {
       const paga = Number.isFinite(opcao.turnosParaPagar)
         ? `paga-se em ${Math.ceil(opcao.turnosParaPagar)} turnos`
         : 'não muda nada aqui';
-      linhas.push(
-        `${opcao.custo.toLocaleString('pt-BR')} moedas · ${opcao.turnos} turnos de obra.`,
-        `Depois de pronta: +${opcao.ganhoPorTurno} por turno, ${paga}.`,
-      );
+      linhas.push(custoEPrazo, `Depois de pronta: +${opcao.ganhoPorTurno} por turno, ${paga}.`);
     }
     return linhas.join('\n');
   }

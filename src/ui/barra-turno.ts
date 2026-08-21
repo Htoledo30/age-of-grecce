@@ -17,6 +17,14 @@ export interface VistaDoTurno {
   turno: number;
   tesouro: number;
   renda: number;
+  /**
+   * O que a tropa custa por turno.
+   *
+   * Vai na barra junto com a renda, e não escondido no Governo, porque é a única despesa
+   * recorrente do jogo: sem ela visível, o jogador vê o tesouro parar de crescer e não
+   * tem como saber que foi o exército que comeu.
+   */
+  manutencao: number;
   provincias: number;
 }
 
@@ -75,7 +83,12 @@ export class BarraTurno {
       trecho('barra-turno__poder', vista.poder.nome),
       trecho('barra-turno__dado', formatarAno(vista.ano)),
       trecho('barra-turno__dado', `turno ${vista.turno}`),
-      trecho('barra-turno__ouro', `${vista.tesouro} moedas (+${vista.renda})`),
+      trecho(
+        'barra-turno__ouro',
+        vista.manutencao > 0
+          ? `${vista.tesouro} moedas (+${vista.renda} −${vista.manutencao})`
+          : `${vista.tesouro} moedas (+${vista.renda})`,
+      ),
       trecho('barra-turno__dado', `${vista.provincias} províncias`),
     );
     this.raiz.hidden = false;

@@ -1,0 +1,80 @@
+/* Bloco de recrutamento, na coluna da província escolhida.
+   Medidas em pixels do palco 1920x1080 — ver escala.ts. */
+
+.recrutamento {
+  padding: var(--gap-3);
+  background: var(--papel);
+  border: 1px solid var(--tinta-fraca);
+  color: var(--tinta);
+}
+
+.recrutamento[hidden] {
+  display: none;
+}
+
+.recrutamento__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 18px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: var(--gap-2);
+  border-bottom: 1px solid var(--papel-escuro);
+  margin-bottom: var(--gap-2);
+}
+
+.recrutamento__alvo {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+}
+
+.recrutamento__valor {
+  width: 100%;
+  margin-top: var(--gap-2);
+  padding: var(--gap-2);
+  border: 1px solid var(--tinta-fraca);
+  background: var(--papel-claro);
+  color: var(--tinta);
+  font-family: var(--fonte-numero);
+  font-size: 16px;
+}
+
+.recrutamento__previsao {
+  margin-top: var(--gap-1);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tinta-tenue);
+}
+
+/* Leva impossível fica marcada em sangue, como o investimento que não se paga: é a
+   informação que decide, e o jogador não deveria ter que descobrir clicando. */
+.recrutamento__previsao[data-pode='nao'] {
+  color: var(--sangue);
+}
+
+/* A guarnição é fato consumado, não oferta: fica em ouro, como a obra em curso. */
+.recrutamento__guarnicao {
+  margin-top: var(--gap-3);
+  padding-top: var(--gap-2);
+  border-top: 1px solid var(--papel-escuro);
+  font-family: var(--fonte-numero);
+  font-size: 14px;
+  color: var(--tinta);
+}
+
+.recrutamento__botao {
+  display: block;
+  width: 100%;
+  margin-top: var(--gap-2);
+  text-align: left;
+}
+
+/* `display` explícito VENCE o atributo `hidden`, que só funciona por causa de um
+   `display: none` da folha padrão do navegador. Sem este par, tudo que ganha `display`
+   aqui em cima deixa de conseguir se esconder. */
+.recrutamento__botao[hidden],
+.recrutamento__valor[hidden],
+.recrutamento__guarnicao[hidden] {
+  display: none;
+}
