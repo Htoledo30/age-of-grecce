@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Ajustes, Construcoes, Economia, Provincias } from '../src/dados/esquema';
 import { Campanha } from '../src/campanha/campanha';
+import { Atlas } from '../src/mundo/atlas';
 import { avancarAno, formatarAno } from '../src/campanha/estado-campanha';
 import { bonusDoInvestimento } from '../src/campanha/economia';
 
@@ -18,8 +19,12 @@ const economia = ler(Economia, 'dados/economia.json');
 const construcoes = ler(Construcoes, 'dados/construcoes.json');
 const ajustes = ler(Ajustes, 'dados/ajustes.json').jogo;
 
+const atlas = new Atlas(provincias);
+
 function nova(): Campanha {
-  return new Campanha(provincias, economia, construcoes, ajustes);
+  // Atlas novo a cada campanha: ele é imutável, mas compartilhar instância entre testes
+  // esconderia um dia em que ele deixasse de ser.
+  return new Campanha(new Atlas(provincias), economia, construcoes, ajustes);
 }
 
 describe('economia da Ática', () => {
@@ -408,5 +413,99 @@ describe('construções', () => {
       }
     }
     expect(Number.isInteger(c.tesouro)).toBe(true);
+  });
+});
+
+describe('propriedade: de quem é a província agora', () => {
+  it('a campanha nasce com os donos de 700 a.C. e a tabela é completa', () => {
+    const c = nova();
+    // Tabela CHEIA, não um diff contra o assado: é o que faz um recorte reassado falhar
+    // alto em vez de misturar duas eras em silêncio.
+    for (const p of atlas.provincias) expect(c.donoDe(p.id)).toBe(atlas.donoInicial(p.id));
+    expect(c.provinciasDe('atenas')).toHaveLength(3);
+  });
+
+  it('trocar o dono move a província dos dois lados de uma vez', () => {
+    const c = nova();
+    c.comecar('atenas');
+    const antes = c.provinciasDe('megara').length;
+
+    c.trocarDono('megara', 'atenas');
+
+    expect(c.donoDe('megara')).toBe('atenas');
+    expect(c.provinciasDe('atenas')).toContain('megara');
+    expect(c.provinciasDe('megara')).toHaveLength(antes - 1);
+    expect(c.provinciasDe('megara')).not.toContain('megara');
+  });
+
+  it('perder a última província é a eliminação, e ela é derivada', () => {
+    const c = nova();
+    expect(c.vivo('megara')).toBe(true);
+    expect(c.poderesVivos()).toHaveLength(148);
+
+    for (const id of [...c.provinciasDe('megara')]) c.trocarDono(id, 'atenas');
+
+    expect(c.vivo('megara')).toBe(false);
+    expect(c.poderesVivos()).toHaveLength(147);
+    expect(c.poderesVivos()).not.toContain('megara');
+  });
+
+  it('conquistar muda quem pode agir ali, e quanto o dono arrecada', () => {
+    const c = nova();
+    c.comecar('atenas');
+    expect(c.podeAgirEm('maratona')).toMatchObject({ pode: true });
+
+    c.trocarDono('maratona', 'megara');
+
+    expect(c.podeAgirEm('maratona')).toMatchObject({ motivo: 'esta província não é sua' });
+    // Atenas perde exatamente a renda de Maratona: 708 − 146.
+    expect(c.rendaDe('atenas')).toBe(708 - 146);
+    expect(c.rendaDe('megara')).toBe(146);
+  });
+
+  it('o incentivo e a obra morrem com a posse; a construção fica', () => {
+    const c = nova();
+    c.comecar('atenas');
+    c.investir('maratona', 100);
+    c.construir('sounion', 'oficina');
+    // Quatro turnos: dois pra Oficina ficar pronta e mais dois pra juntar os 3.000 da
+    // Ágora. O incentivo de Maratona dura 20 arrecadações, então continua em pé.
+    for (let i = 0; i < 4; i++) c.passarTurno();
+    expect(c.construcoesEm('sounion')).toContain('oficina');
+    c.construir('atenas', 'agora'); // obra em andamento em Atenas
+    expect(c.investimentoEm('maratona')).toBeDefined();
+    expect(c.obraEm('atenas')).toBeDefined();
+
+    c.trocarDono('maratona', 'megara');
+    c.trocarDono('atenas', 'megara');
+    c.trocarDono('sounion', 'megara');
+
+    // Quem pagou pra explorar mais uma terra não colhe dela depois de perdê-la...
+    expect(c.investimentoEm('maratona')).toBeUndefined();
+    // ...e não entrega a obra pronta ao inimigo.
+    expect(c.obraEm('atenas')).toBeUndefined();
+    // Mas a construção é da PROVÍNCIA, não de quem mandava nela: é isso que faz tomar
+    // uma cidade rica valer mais que tomar uma pobre.
+    expect(c.construcoesEm('sounion')).toContain('oficina');
+    expect(c.economiaDe('sounion')?.producao).toBe(182); // 28 x 5 x 1,3
+  });
+
+  it('trocar pro mesmo dono não faz nada, e poder inexistente estoura', () => {
+    const c = nova();
+    const antes = c.provinciasDe('atenas').length;
+    c.trocarDono('atenas', 'atenas');
+    expect(c.provinciasDe('atenas')).toHaveLength(antes);
+    expect(() => c.trocarDono('atenas', 'roma')).toThrow(/poder inexistente: roma/);
+    expect(() => c.donoDe('cartago')).toThrow(/província inexistente: cartago/);
+  });
+
+  it('a soma das províncias de todos os poderes é sempre 205', () => {
+    const c = nova();
+    const total = () => atlas.poderes.reduce((s, p) => s + c.provinciasDe(p.id).length, 0);
+    expect(total()).toBe(205);
+    c.trocarDono('megara', 'atenas');
+    c.trocarDono('esparta', 'atenas');
+    // Nenhuma província some nem aparece em dois donos ao mesmo tempo.
+    expect(total()).toBe(205);
   });
 });

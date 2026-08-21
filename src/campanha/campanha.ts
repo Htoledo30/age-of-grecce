@@ -11,6 +11,7 @@
  */
 
 import type { Ajustes, Construcoes, Economia, Provincias } from '@/dados/esquema';
+import type { Atlas } from '@/mundo/atlas';
 import { avancarAno } from './estado-campanha';
 import type { EstadoCampanha, Obra } from './estado-campanha';
 import {
@@ -31,44 +32,67 @@ export type Recusa =
 
 export class Campanha {
   private readonly estado: EstadoCampanha;
+  /**
+   * Índice reverso de `estado.dono`, mantido em pé a cada troca.
+   *
+   * É derivado, nunca gravado: a verdade é `estado.dono`, e este mapa só existe pra que
+   * "quais são as províncias de Atenas?" não custe uma varredura das 205 a cada
+   * redesenho. Quem muda dono é obrigado a passar por `trocarDono`, que conserta os dois
+   * lados juntos.
+   */
   private readonly provinciasPorPoder = new Map<string, string[]>();
-  private readonly poderes = new Map<string, Poder>();
-  private readonly nomeDaProvincia = new Map<string, string>();
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
 
   constructor(
-    dados: Provincias,
+    private readonly atlas: Atlas,
     private readonly economia: Economia,
     private readonly catalogoDeConstrucoes: Construcoes,
     private readonly ajustes: AjustesJogo,
   ) {
-    for (const poder of dados.poderes) {
-      this.poderes.set(poder.id, poder);
-      this.provinciasPorPoder.set(poder.id, []);
-    }
-    for (const p of dados.provincias) {
-      const lista = this.provinciasPorPoder.get(p.dono);
-      if (!lista) throw new Error(`província "${p.nome}" tem dono inexistente: ${p.dono}`);
-      lista.push(p.id);
-      this.nomeDaProvincia.set(p.id, p.nome);
-    }
     for (const id of Object.keys(economia.provincias)) {
-      if (!this.nomeDaProvincia.has(id)) {
+      if (!atlas.existe(id)) {
         throw new Error(`economia.json descreve província inexistente: ${id}`);
       }
     }
+
+    // O dono do arquivo assado é o dono INICIAL: a condição de 700 a.C. A partir daqui a
+    // verdade corrente é `estado.dono`, e é ela que a conquista muda.
+    const dono: Record<string, string> = {};
+    for (const p of atlas.provincias) dono[p.id] = p.dono;
 
     this.estado = {
       jogador: null,
       ano: ajustes.anoInicial,
       turno: 0,
       tesouro: ajustes.tesouroInicial,
+      dono,
       investimentos: {},
       construcoes: {},
       obras: {},
     };
+
+    this.reindexar();
+  }
+
+  /**
+   * Remonta o índice reverso inteiro a partir de `estado.dono`.
+   *
+   * Usado na abertura e em qualquer carga de estado. Custa 205 iterações e é idempotente
+   * de propósito: retomar um salvamento tem que produzir exatamente o mesmo índice que
+   * jogar até ali produziria.
+   */
+  private reindexar(): void {
+    this.provinciasPorPoder.clear();
+    for (const poder of this.atlas.poderes) this.provinciasPorPoder.set(poder.id, []);
+    for (const p of this.atlas.provincias) {
+      const dono = this.estado.dono[p.id];
+      if (dono === undefined) throw new Error(`província sem dono na tabela: ${p.id}`);
+      const lista = this.provinciasPorPoder.get(dono);
+      if (!lista) throw new Error(`província "${p.nome}" tem dono inexistente: ${dono}`);
+      lista.push(p.id);
+    }
   }
 
   get iniciada(): boolean {
@@ -97,22 +121,79 @@ export class Campanha {
   }
 
   poder(idPoder: string): Poder {
-    const poder = this.poderes.get(idPoder);
-    if (!poder) throw new Error(`poder inexistente: ${idPoder}`);
-    return poder;
+    return this.atlas.poder(idPoder);
   }
 
   /** Nome de exibição de uma província. Lança se ela não existe. */
   nomeDe(idProvincia: string): string {
-    const nome = this.nomeDaProvincia.get(idProvincia);
-    if (nome === undefined) throw new Error(`província inexistente: ${idProvincia}`);
-    return nome;
+    return this.atlas.nomeDe(idProvincia);
   }
 
   provinciasDe(idPoder: string): readonly string[] {
     const lista = this.provinciasPorPoder.get(idPoder);
     if (!lista) throw new Error(`poder inexistente: ${idPoder}`);
     return lista;
+  }
+
+  /** De quem é esta província AGORA. Não é o dono assado: é o dono corrente. */
+  donoDe(idProvincia: string): string {
+    const dono = this.estado.dono[idProvincia];
+    if (dono === undefined) throw new Error(`província inexistente: ${idProvincia}`);
+    return dono;
+  }
+
+  /**
+   * Um poder está vivo enquanto tiver ao menos uma província.
+   *
+   * Derivado, nunca gravado: perder a última província É a eliminação, e não existe um
+   * segundo lugar onde alguém possa marcar "morto" e discordar da tabela de donos.
+   */
+  vivo(idPoder: string): boolean {
+    return this.provinciasDe(idPoder).length > 0;
+  }
+
+  /** Quem ainda tem território. Começa com 148 e só encolhe. */
+  poderesVivos(): readonly string[] {
+    return this.atlas.poderes.filter((p) => this.vivo(p.id)).map((p) => p.id);
+  }
+
+  /**
+   * Passa uma província de um dono a outro.
+   *
+   * É o único caminho: a tabela `estado.dono` e o índice reverso são consertados juntos,
+   * aqui, e por isso não existe estado em que os dois discordem.
+   *
+   * Deliberadamente **sem regra de guerra nenhuma** — não pergunta se há fronteira, se
+   * há exército, se há paz. É a primitiva que a conquista vai usar; quem decide se pode
+   * é quem chama. Misturar as duas coisas faria desta função o lugar onde toda regra do
+   * jogo acabaria morando.
+   */
+  trocarDono(idProvincia: string, idPoder: string): void {
+    const anterior = this.donoDe(idProvincia);
+    if (!this.atlas.existePoder(idPoder)) throw new Error(`poder inexistente: ${idPoder}`);
+    if (anterior === idPoder) return;
+
+    const listaAnterior = this.provinciasPorPoder.get(anterior);
+    if (listaAnterior) {
+      const posicao = listaAnterior.indexOf(idProvincia);
+      if (posicao >= 0) listaAnterior.splice(posicao, 1);
+    }
+    const listaNova = this.provinciasPorPoder.get(idPoder);
+    if (!listaNova) throw new Error(`poder inexistente: ${idPoder}`);
+    listaNova.push(idProvincia);
+
+    this.estado.dono[idProvincia] = idPoder;
+
+    // O incentivo em curso morre junto com a posse: quem pagou pra explorar mais uma
+    // terra não continua colhendo dela depois de perdê-la. A construção FICA — ela é da
+    // província, não de quem mandava nela, e é isso que faz tomar uma cidade rica valer
+    // mais que tomar uma pobre.
+    delete this.estado.investimentos[idProvincia];
+    // A obra em andamento também morre: o dinheiro já saiu, e quem perdeu a província não
+    // vai entregar a obra ao inimigo pronta.
+    delete this.estado.obras[idProvincia];
+
+    this.aoMudar();
   }
 
   /**
@@ -282,7 +363,7 @@ export class Campanha {
       return { pode: false, motivo: 'esta província não tem economia configurada' };
     }
     const jogador = this.estado.jogador;
-    if (jogador === null || !this.provinciasDe(jogador).includes(idProvincia)) {
+    if (jogador === null || this.donoDe(idProvincia) !== jogador) {
       return { pode: false, motivo: 'esta província não é sua' };
     }
     return { pode: true, bonus: 0 };

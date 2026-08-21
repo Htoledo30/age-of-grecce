@@ -3,10 +3,8 @@ import type { Investimento } from './economia';
 /**
  * O estado mínimo de uma campanha — e nada além do mínimo.
  *
- * Quatro campos, porque quatro é o que o ciclo atual precisa: quem eu sou, que ano é,
- * que turno é, quanto tenho. Dono de província ainda mora no arquivo assado
- * (`assets/mundo/provincias.json`) porque nesta etapa nada troca de dono; quando a
- * anexação entrar, é aqui que a tabela de donos aparece.
+ * Quem eu sou, que ano é, que turno é, quanto tenho, **de quem é cada província**, e o
+ * que está em curso nelas.
  *
  * A regra que vale desde já, mesmo sem salvamento existir: **este objeto é, e vai
  * continuar sendo, exatamente o que um dia vai pro disco.** O que não estiver nele é
@@ -28,6 +26,18 @@ export interface EstadoCampanha {
   turno: number;
   /** Tesouro do jogador. Vira uma tabela por poder quando a IA entrar. */
   tesouro: number;
+  /**
+   * Dono ATUAL de cada província, por id. **Sempre completo: as 205 entradas.**
+   *
+   * O `dono` do arquivo assado passa a significar dono INICIAL — a condição de 700 a.C. —
+   * e esta tabela é a verdade corrente. Quem pergunta "de quem é isto?" pergunta aqui.
+   *
+   * ⚠️ **Tabela cheia, e não um diff contra o assado.** O diff é menor e é armadilha: se
+   * o `provincias.json` for reassado com uma fronteira movida, o diff mistura dois
+   * recortes em silêncio e a partida continua rodando errada. A tabela cheia, conferida
+   * contra o atlas na carga, falha alto.
+   */
+  dono: Record<string, string>;
   /**
    * Incentivos de exploração em curso, por id de província.
    *

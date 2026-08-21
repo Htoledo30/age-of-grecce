@@ -30,6 +30,7 @@ import { FichaProvincia } from '@/ui/ficha-provincia';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Campanha } from '@/campanha/campanha';
+import { Atlas } from '@/mundo/atlas';
 
 function exigir<T extends Element>(seletor: string): T {
   const el = document.querySelector<T>(seletor);
@@ -75,8 +76,11 @@ async function iniciar(): Promise<void> {
   // vai custar uma linha aqui em vez de uma remodelação de layout.
   const balanco = new Balanco();
   const governo = new Governo(ui, [balanco]);
+  // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate
+  // e diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.
+  const atlas = new Atlas(provincias);
   const campanha = new Campanha(
-    provincias,
+    atlas,
     carregarEconomia(),
     carregarConstrucoes(),
     ajustes.jogo,

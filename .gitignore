@@ -13,3 +13,6 @@ documentacao/.obsidian/workspace*.json
 # limite de 100 MB por arquivo do GitHub. O resto de assets/mundo/ fica versionado
 # para que um clone novo jogue sem regerar o mapa, que demora.
 assets/mundo/altitude.f32
+
+# Rascunho de simulação dos agentes de desenho — vive fora do repositório.
+.sim*.mjs

@@ -1,0 +1,88 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+import { Provincias } from '../src/dados/esquema';
+import { Atlas } from '../src/mundo/atlas';
+
+// Contra o recorte DE VERDADE: é o que faz estes testes pegarem uma mudança no mapa, e
+// não só uma mudança no código.
+const provincias = Provincias.parse(
+  JSON.parse(readFileSync(resolve('assets/mundo/provincias.json'), 'utf8')),
+);
+const atlas = new Atlas(provincias);
+
+describe('atlas: o mundo assado e indexado', () => {
+  it('conhece o recorte inteiro', () => {
+    expect(atlas.provincias).toHaveLength(205);
+    expect(atlas.poderes).toHaveLength(148);
+    expect(atlas.impressaoDigital).toEqual({
+      epoca: provincias.epoca,
+      provincias: 205,
+      poderes: 148,
+    });
+  });
+
+  it('acha província por id e por índice, e o índice 0 é o mar', () => {
+    expect(atlas.provincia('atenas').nome).toBe('Atenas');
+    expect(atlas.nomeDe('sounion')).toBe('Sunião');
+    const atenas = atlas.provincia('atenas');
+    expect(atlas.porIndice(atenas.indice)?.id).toBe('atenas');
+    // 0 é reservado pro mar em provincias.png — não pode resolver pra província nenhuma.
+    expect(atlas.porIndice(0)).toBeUndefined();
+  });
+
+  it('estoura com o nome do culpado quando o id não existe', () => {
+    expect(() => atlas.provincia('cartago')).toThrow(/província inexistente: cartago/);
+    expect(() => atlas.poder('roma')).toThrow(/poder inexistente: roma/);
+    expect(atlas.existe('cartago')).toBe(false);
+    expect(atlas.existePoder('roma')).toBe(false);
+  });
+
+  it('a vizinhança por terra é simétrica', () => {
+    // Assimetria aqui não daria erro nenhum: daria exército marchando num sentido só.
+    const torto: string[] = [];
+    for (const p of atlas.provincias) {
+      for (const vizinha of p.vizinhas) {
+        if (!atlas.vizinhasDe(vizinha).includes(p.id)) torto.push(`${p.id} → ${vizinha}`);
+      }
+    }
+    expect(torto).toEqual([]);
+  });
+
+  it('35 províncias não têm nenhuma vizinha por terra', () => {
+    const ilhadas = atlas.provincias.filter((p) => atlas.semVizinhaPorTerra(p.id));
+    expect(ilhadas).toHaveLength(35);
+    // Egina é o caso que importa: uma potência naval arcaica que, sem mar, não tem jogada
+    // legal nenhuma.
+    expect(ilhadas.map((p) => p.id)).toContain('egina');
+  });
+
+  it('o mapa tem 38 pedaços de terra desconexos', () => {
+    expect(atlas.componentes).toBe(38);
+    // Dentro de Creta se anda por terra; de Atenas pra Creta, não.
+    expect(atlas.mesmoContinente('atenas', 'eleusis')).toBe(true);
+    expect(atlas.mesmoContinente('atenas', 'egina')).toBe(false);
+  });
+
+  it('o dono do arquivo assado é o dono INICIAL, de 700 a.C.', () => {
+    expect(atlas.donoInicial('atenas')).toBe('atenas');
+    expect(atlas.donoInicial('maratona')).toBe('atenas');
+  });
+
+  it('vizinhança responde nos dois sentidos', () => {
+    expect(atlas.saoVizinhasPorTerra('atenas', 'eleusis')).toBe(true);
+    expect(atlas.saoVizinhasPorTerra('eleusis', 'atenas')).toBe(true);
+    expect(atlas.saoVizinhasPorTerra('atenas', 'esparta')).toBe(false);
+  });
+
+  it('recusa um recorte com dono ou vizinha que não existe', () => {
+    const quebrado = structuredClone(provincias);
+    quebrado.provincias[0]!.dono = 'poder-que-nao-existe';
+    expect(() => new Atlas(quebrado)).toThrow(/dono inexistente/);
+
+    const outro = structuredClone(provincias);
+    outro.provincias[0]!.vizinhas = ['provincia-que-nao-existe'];
+    expect(() => new Atlas(outro)).toThrow(/vizinha inexistente/);
+  });
+});
