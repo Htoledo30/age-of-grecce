@@ -137,7 +137,7 @@ function checarProvincias(mapa: MapaGerado | null): void {
   }
   const dados = r.data;
 
-  if (mapa && (dados.resolucao.largura !== mapa.resolucaoTerreno)) {
+  if (mapa && dados.resolucao.largura !== mapa.resolucaoTerreno) {
     reclamar(
       `provincias.png tem ${dados.resolucao.largura} px de largura mas o terreno tem ` +
         `${mapa.resolucaoTerreno} — as duas camadas não se sobrepõem`,
@@ -150,11 +150,14 @@ function checarProvincias(mapa: MapaGerado | null): void {
   let semArea = 0;
 
   for (const p of dados.provincias) {
-    if (indices.has(p.indice)) reclamar(`provincias.json: índice ${p.indice} repetido em "${p.nome}"`);
+    if (indices.has(p.indice))
+      reclamar(`provincias.json: índice ${p.indice} repetido em "${p.nome}"`);
     indices.add(p.indice);
-    if (!poderes.has(p.dono)) reclamar(`provincias.json: "${p.nome}" tem dono inexistente "${p.dono}"`);
+    if (!poderes.has(p.dono))
+      reclamar(`provincias.json: "${p.nome}" tem dono inexistente "${p.dono}"`);
     for (const v of p.vizinhas) {
-      if (!ids.has(v)) reclamar(`provincias.json: "${p.nome}" faz fronteira com "${v}", que não existe`);
+      if (!ids.has(v))
+        reclamar(`provincias.json: "${p.nome}" faz fronteira com "${v}", que não existe`);
     }
     if (p.areaKm2 === 0) semArea++;
   }
@@ -233,7 +236,9 @@ function checarEconomia(): void {
       `(${total - configuradas} ainda sem economia, e sem arrecadar nada)`,
   );
   for (const [poder, renda] of porPoder) {
-    console.log(`  ${poder}: ${renda} por turno, tesouro inicial ${ajustes.data.jogo.tesouroInicial}`);
+    console.log(
+      `  ${poder}: ${renda} por turno, tesouro inicial ${ajustes.data.jogo.tesouroInicial}`,
+    );
   }
 }
 
@@ -273,6 +278,7 @@ function checarConstrucoes(): void {
   // aritmética e mentira sobre o que ele é. Ele sai listado à parte.
   const deRenda = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'renda');
   const deCapacidade = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'capacidade');
+  const dePopulacao = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'populacao');
 
   console.log('construções que rendem moeda — ganho por turno e turnos até se pagar:');
   const cabecalho = deRenda.map(([, c]) => `${c.nome} (${c.custo})`.padStart(20)).join('');
@@ -300,7 +306,19 @@ function checarConstrucoes(): void {
     console.log('construções que pagam em capacidade:');
     for (const [, c] of deCapacidade) {
       const promessa = c.efeito.tipo === 'capacidade' ? c.efeito.promessa : '';
-      console.log(`  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`);
+      console.log(
+        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`,
+      );
+    }
+  }
+
+  if (dePopulacao.length > 0) {
+    console.log('construções que fortalecem a população:');
+    for (const [, c] of dePopulacao) {
+      const promessa = c.efeito.tipo === 'populacao' ? c.efeito.promessa : '';
+      console.log(
+        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${promessa}`,
+      );
     }
   }
 }

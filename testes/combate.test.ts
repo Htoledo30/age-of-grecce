@@ -6,7 +6,7 @@ import { Ajustes, Construcoes, Economia, Provincias } from '../src/dados/esquema
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from '../src/combate/exercito';
-import { custoDaLeva, manutencaoDe, tetoDeRecrutamento } from '../src/combate/recrutamento';
+import { avaliarLeva, custoDaLeva, manutencaoDe } from '../src/combate/recrutamento';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -37,6 +37,7 @@ function comQuartel(): Campanha {
   c.construir('atenas', 'quartel');
   for (let i = 0; i < 4; i++) c.passarTurno(); // 4 turnos de obra
   for (let i = 0; i < 8; i++) c.passarTurno(); // e o caixa pra uma leva de verdade
+  c.darOuro(2_000);
   return c;
 }
 
@@ -91,13 +92,11 @@ describe('recrutamento: as contas', () => {
     expect(Number.isInteger(manutencaoDe(777, combate))).toBe(true);
   });
 
-  it('o teto é uma fração da população, e o que já está em armas conta contra ele', () => {
-    // 10% de 35.000 = 3.500
-    expect(tetoDeRecrutamento(35_000, 0, combate)).toBe(3500);
-    // com 1.000 já fora, a população caiu pra 34.000 mas o teto continua sendo sobre os
-    // 35.000 originais — senão bastava recrutar em rodadas pra esvaziar a cidade
-    expect(tetoDeRecrutamento(34_000, 1000, combate)).toBe(2500);
-    expect(tetoDeRecrutamento(31_500, 3500, combate)).toBe(0);
+  it('não impõe fração nem lote mínimo: a população atual é o limite', () => {
+    const situacao = { populacao: 35_000, tesouro: 200_000, temQuartel: true };
+    expect(avaliarLeva(1, situacao, combate)).toMatchObject({ pode: true, homens: 1 });
+    expect(avaliarLeva(35_000, situacao, combate)).toMatchObject({ pode: true, homens: 35_000 });
+    expect(avaliarLeva(35_001, situacao, combate)).toMatchObject({ motivo: /35\.000 habitantes/ });
   });
 });
 
@@ -114,11 +113,7 @@ describe('o Quartel é o portão', () => {
   });
 
   it('o Quartel não rende moeda nenhuma — ele paga em capacidade', () => {
-    const antes = nova();
-    antes.comecar('atenas');
-    const renda = antes.rendaDe('atenas');
     const c = comQuartel();
-    expect(c.rendaDe('atenas')).toBe(renda);
     expect(c.retornoDaConstrucaoEm('atenas', 'quartel')?.ganhoPorTurno).toBe(0);
     // e destrava o que nenhuma das outras destrava
     expect(c.capacidadesEm('atenas')).toEqual(['recrutar']);
@@ -136,12 +131,12 @@ describe('recrutar custa ouro E população', () => {
   it('tira os homens da população da província e o ouro do tesouro', () => {
     const c = comQuartel();
     const tesouro = c.tesouro;
-    expect(c.populacaoDe('atenas')).toBe(35_000);
+    const populacao = c.populacaoDe('atenas');
 
     c.recrutar('atenas', 1000);
 
     expect(c.tesouro).toBe(tesouro - custoDaLeva(1000, combate));
-    expect(c.populacaoDe('atenas')).toBe(34_000);
+    expect(c.populacaoDe('atenas')).toBe(populacao - 1000);
     expect(c.forcaEm('atenas')).toBe(1000);
     expect(c.exercitoEm('atenas')?.poder).toBe('atenas');
   });
@@ -149,37 +144,34 @@ describe('recrutar custa ouro E população', () => {
   it('quem está em armas deixa de ser tributado, e a renda cai na hora', () => {
     const c = comQuartel();
     const impostosAntes = c.economiaDe('atenas')?.impostos;
-    expect(impostosAntes).toBe(175); // 35.000 x 0,005
 
     c.recrutar('atenas', 1000);
 
-    // 34.000 x 0,005 = 170: mobilizar tem preço contínuo, não só preço de entrada
-    expect(c.economiaDe('atenas')?.impostos).toBe(170);
-    expect(c.rendaDe('atenas')).toBe(708 - 5);
+    // Mil habitantes a menos tiram cinco moedas de imposto imediatamente.
+    expect(c.economiaDe('atenas')?.impostos).toBe((impostosAntes ?? 0) - 5);
   });
 
   it('a ficha mostra a população de agora, não a inicial', () => {
     const c = comQuartel();
+    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 2000);
-    expect(c.economiaDe('atenas')?.populacao).toBe(33_000);
+    expect(c.economiaDe('atenas')?.populacao).toBe(populacao - 2000);
   });
 
-  it('respeita o teto e diz quanto ainda cabe', () => {
+  it('permite mobilizar toda a população, mas nunca inventa habitantes', () => {
     const c = comQuartel();
-    expect(c.tetoDeLevaEm('atenas')).toBe(3500);
-    expect(c.podeRecrutar('atenas', 3501)).toMatchObject({
-      motivo: /comporta mais 3\.500 homens/,
-    });
-    c.recrutar('atenas', 3500);
-    expect(c.tetoDeLevaEm('atenas')).toBe(0);
-    expect(c.podeRecrutar('atenas', 100)).toMatchObject({
-      motivo: 'esta província já tem em armas tudo o que comporta',
-    });
+    c.darOuro(200_000);
+    const populacao = c.populacaoDe('atenas');
+    expect(c.podeRecrutar('atenas', populacao)).toMatchObject({ pode: true });
+    expect(c.podeRecrutar('atenas', populacao + 1)).toMatchObject({ pode: false });
+    c.recrutar('atenas', populacao);
+    expect(c.populacaoDe('atenas')).toBe(0);
+    expect(c.podeRecrutar('atenas', 1)).toMatchObject({ motivo: /0 habitantes/ });
   });
 
-  it('recusa leva miúda e valor quebrado', () => {
+  it('aceita uma pessoa e recusa somente valor quebrado ou não positivo', () => {
     const c = comQuartel();
-    expect(c.podeRecrutar('atenas', 50)).toMatchObject({ motivo: /leva mínima/ });
+    expect(c.podeRecrutar('atenas', 1)).toMatchObject({ pode: true, homens: 1 });
     expect(c.podeRecrutar('atenas', 100.5)).toMatchObject({ motivo: /inteiro/ });
     expect(c.podeRecrutar('atenas', 0)).toMatchObject({ motivo: /inteiro/ });
   });
@@ -187,7 +179,7 @@ describe('recrutar custa ouro E população', () => {
   it('recusa quando falta ouro, dizendo quanto falta', () => {
     const c = comQuartel();
     const cabe = Math.floor(c.tesouro / combate.custoPorHomem);
-    const demais = cabe + combate.minimoPorLeva;
+    const demais = cabe + 1;
     expect(c.podeRecrutar('atenas', demais)).toMatchObject({ motivo: /faltam .* moedas/ });
   });
 });
@@ -200,8 +192,8 @@ describe('manter tropa é o ralo de dinheiro', () => {
     const renda = c.renda;
     const manutencao = c.manutencao;
 
-    expect(manutencao).toBe(200); // 1.000 x 0,2
-    expect(c.saldoPorTurno).toBe(renda - 200);
+    expect(manutencao).toBe(Math.round(1000 * combate.manutencaoPorHomem));
+    expect(c.saldoPorTurno).toBe(renda - manutencao);
 
     c.passarTurno();
     expect(c.tesouro).toBe(tesouro + renda - manutencao);
@@ -213,22 +205,20 @@ describe('manter tropa é o ralo de dinheiro', () => {
     expect(c.saldoPorTurno).toBe(c.renda);
   });
 
-  it('mobilização total come quase toda a renda de Atenas', () => {
-    // Este é o número que o sistema existe pra produzir: com o teto em 10% da população,
-    // Atenas põe 3.500 homens em campo e eles custam 700 por turno — contra 691 de renda,
-    // porque os mesmos 3.500 deixaram de ser tributados. Guerra total é insustentável por
-    // construção, sem nenhuma regra dizendo isso.
+  it('uma mobilização grande pode custar mais que a renda de Atenas', () => {
+    // Sem teto artificial, o freio continua legível: 3.500 homens custam 700 por turno
+    // contra 691 de renda, porque os mesmos 3.500 também deixaram de ser tributados.
     const c = comQuartel();
     c.recrutar('atenas', 3500);
-    expect(c.manutencao).toBe(700);
-    expect(c.renda).toBe(691); // 31.500 x 0,005 = 158 de imposto, contra 175
-    expect(c.saldoPorTurno).toBe(-9);
+    expect(c.manutencao).toBe(Math.round(3500 * combate.manutencaoPorHomem));
+    expect(c.saldoPorTurno).toBeLessThan(0);
   });
 
   it('o aperto drena o tesouro e a tropa deserta aos poucos, sem colapso', () => {
     const c = comQuartel();
     c.recrutar('atenas', 3500);
     const forcaInicial = c.forcaEm('atenas');
+    const totalAntes = c.populacaoDe('atenas') + c.homensEmArmasDe('atenas');
 
     // Saldo negativo de 9 por turno: o tesouro escorre até não cobrir a folha, e aí
     // começa a desertar. Não existe instante de colapso, existe uma corda esticando.
@@ -238,7 +228,7 @@ describe('manter tropa é o ralo de dinheiro', () => {
     expect(c.forcaEm('atenas')).toBeGreaterThan(0); // e não colapsou
     expect(c.tesouro).toBeGreaterThanOrEqual(0); // tesouro nunca fica negativo
     // quem desertou voltou pra casa em vez de sumir do mundo: a soma fecha sempre
-    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(35_000);
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBeGreaterThan(totalAntes);
   });
 
   it('a conta fecha em inteiros mesmo depois de desertar', () => {
@@ -252,23 +242,34 @@ describe('manter tropa é o ralo de dinheiro', () => {
 });
 
 describe('dispensar devolve cada um à sua terra', () => {
+  it('aceita dispensar um único homem, sem lote mínimo', () => {
+    const c = comQuartel();
+    const populacao = c.populacaoDe('atenas');
+    c.recrutar('atenas', 1000);
+    c.dispensar('atenas', 1);
+    expect(c.forcaEm('atenas')).toBe(999);
+    expect(c.populacaoDe('atenas')).toBe(populacao - 999);
+  });
+
   it('a população volta exatamente de onde saiu', () => {
     const c = comQuartel();
+    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 2000);
-    expect(c.populacaoDe('atenas')).toBe(33_000);
+    expect(c.populacaoDe('atenas')).toBe(populacao - 2000);
 
     c.dispensar('atenas', 800);
 
     expect(c.forcaEm('atenas')).toBe(1200);
-    expect(c.populacaoDe('atenas')).toBe(33_800);
+    expect(c.populacaoDe('atenas')).toBe(populacao - 1200);
   });
 
   it('dispensar tudo apaga o exército em vez de deixar um vazio', () => {
     const c = comQuartel();
+    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
     c.dispensar('atenas', 1000);
     expect(c.exercitoEm('atenas')).toBeUndefined();
-    expect(c.populacaoDe('atenas')).toBe(35_000);
+    expect(c.populacaoDe('atenas')).toBe(populacao);
     expect(c.manutencao).toBe(0);
   });
 
@@ -335,39 +336,44 @@ describe('perder o chão não é o mesmo que morrer', () => {
 describe('dispensar homem de terra perdida', () => {
   it('ele volta pra terra dele mesmo que ela seja do inimigo agora', () => {
     const c = comQuartel();
+    const populacao = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
-    expect(c.populacaoDe('atenas')).toBe(34_000);
+    expect(c.populacaoDe('atenas')).toBe(populacao - 1000);
 
     c.trocarDono('atenas', 'megara');
     // Uma regra só, sem exceção: gente pertence ao chão, não a quem manda no chão.
     c.dispensar('atenas', 1000);
 
-    expect(c.populacaoDe('atenas')).toBe(35_000);
+    expect(c.populacaoDe('atenas')).toBe(populacao);
     expect(c.donoDe('atenas')).toBe('megara');
     // E a consequência dura, de propósito: os habitantes rendem pro conquistador.
-    expect(c.rendaDe('megara')).toBe(330);
-    expect(c.rendaDe('atenas')).toBe(146 + 232); // só Maratona e Sunião
+    expect(c.rendaDe('megara')).toBe(c.economiaDe('atenas')?.total);
+    expect(c.rendaDe('atenas')).toBe(
+      (c.economiaDe('maratona')?.total ?? 0) + (c.economiaDe('sounion')?.total ?? 0),
+    );
   });
 
   it('a mesma regra vale pra deserção por falta de pagamento', () => {
     const c = comQuartel();
+    const antes = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
 
     for (let i = 0; i < 60; i++) c.passarTurno();
 
     // Os desertores do exílio engordam exatamente quem tomou a terra deles.
-    expect(c.populacaoDe('atenas')).toBe(35_000);
-    expect(c.rendaDe('megara')).toBe(708);
+    expect(c.populacaoDe('atenas')).toBeGreaterThan(antes);
+    expect(c.rendaDe('megara')).toBeGreaterThan(0);
   });
 
   it('nenhum homem some do mundo no caminho', () => {
     const c = comQuartel();
+    const total = c.populacaoDe('atenas');
     c.recrutar('atenas', 3000);
     c.trocarDono('atenas', 'megara');
     c.dispensar('atenas', 1200);
-    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(35_000);
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(total);
     c.dispensar('atenas', 1800);
-    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(35_000);
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBe(total);
   });
 });

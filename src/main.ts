@@ -10,6 +10,7 @@ import '@/ui/barra-turno.css';
 import '@/ui/recrutamento.css';
 import '@/ui/exercito-ficha.css';
 import '@/ui/hostes-mapa.css';
+import '@/ui/destinos-mapa.css';
 
 import { iniciarEscala } from '@/estilo/escala';
 import { Entrada } from '@/nucleo/entrada';
@@ -36,6 +37,8 @@ import { ExercitoFicha } from '@/ui/exercito-ficha';
 import type { VistaDoExercito } from '@/ui/exercito-ficha';
 import { HostesMapa } from '@/ui/hostes-mapa';
 import type { MarcadorDeHoste } from '@/ui/hostes-mapa';
+import { DestinosMapa } from '@/ui/destinos-mapa';
+import type { Destino } from '@/ui/destinos-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Campanha } from '@/campanha/campanha';
@@ -56,7 +59,9 @@ async function iniciar(): Promise<void> {
 
   const mundo = carregarMundo();
   const ajustes = carregarAjustes();
-  const provincias = await carregarProvincias(new URL('mundo/provincias.json', document.baseURI).href);
+  const provincias = await carregarProvincias(
+    new URL('mundo/provincias.json', document.baseURI).href,
+  );
   const cena = await CenaMapa.criar(canvas, mundo, ajustes, provincias);
   // A entrada escuta o CANVAS, não o palco: assim clique em painel não vira clique no
   // mapa. O #ui é transparente a ponteiro por padrão e cada painel liga o seu.
@@ -85,6 +90,9 @@ async function iniciar(): Promise<void> {
   // Os marcadores ficam numa camada própria sobre o mapa, e não dentro de painel nenhum:
   // eles pertencem ao mundo, e é a câmera que decide onde cada um aparece.
   const hostesMapa = new HostesMapa(ui);
+  // Os destinos ficam por cima das hostes: o alvo de uma ordem em curso tem que estar
+  // clicável mesmo quando cai sobre uma província que já tem tropa.
+  const destinosMapa = new DestinosMapa(ui);
   // A hoste escolhida ganha região própria, em baixo-centro: ela não é a província, e
   // assim que marchar as duas deixam de coincidir.
   const exercitoFicha = new ExercitoFicha(ui);
@@ -97,12 +105,7 @@ async function iniciar(): Promise<void> {
   // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate
   // e diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.
   const atlas = new Atlas(provincias);
-  const campanha = new Campanha(
-    atlas,
-    carregarEconomia(),
-    carregarConstrucoes(),
-    ajustes.jogo,
-  );
+  const campanha = new Campanha(atlas, carregarEconomia(), carregarConstrucoes(), ajustes.jogo);
   let fase: 'menu' | 'escolha' | 'campanha' = 'menu';
   /** O ID da província escolhida — não uma ficha montada, que envelheceria. */
   let selecionada: string | null = null;
@@ -114,6 +117,16 @@ async function iniciar(): Promise<void> {
    * isso que dispensar saiu do painel de recrutamento.
    */
   let hosteSelecionada: string | null = null;
+  /**
+   * A província de onde parte a marcha que o jogador está compondo, ou `null`.
+   *
+   * Modo, e não intenção guardada: enquanto ele existe, o mapa mostra destinos e um
+   * clique fora deles cancela. Nada é reservado, nada é gasto — a ordem só acontece no
+   * clique no destino.
+   */
+  let marchando: string | null = null;
+  /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
+  let homensParaMarchar = 0;
 
   /**
    * Monta a ficha de uma província juntando as duas verdades: o atlas diz o que ela É, a
@@ -166,6 +179,7 @@ async function iniciar(): Promise<void> {
             turnosRestantes: obraNaFicha.turnosRestantes,
           }
         : null,
+      selecionada ? campanha.crescimentoDe(selecionada) : null,
     );
 
     acoes.mostrar(vistaDeAcoes());
@@ -177,8 +191,16 @@ async function iniciar(): Promise<void> {
     if (hosteSelecionada !== null && !campanha.exercitoEm(hosteSelecionada)) {
       hosteSelecionada = null;
     }
+    // O modo de marcha só vale pela hoste selecionada e enquanto ela existir: dispensar
+    // ou trocar de seleção derruba a ordem em composição, em vez de deixá-la apontando
+    // pra uma tropa que não está mais ali.
+    if (marchando !== null && (marchando !== hosteSelecionada || !campanha.exercitoEm(marchando))) {
+      marchando = null;
+    }
+
     hostesMapa.mostrar(fase === 'campanha' ? marcadoresDasHostes() : []);
     hostesMapa.selecionar(hosteSelecionada);
+    destinosMapa.mostrar(destinosDaMarcha());
     exercitoFicha.mostrar(vistaDoExercito());
 
     // A janela de governo se redesenha junto com o resto, mas só quando está aberta:
@@ -210,6 +232,7 @@ async function iniciar(): Promise<void> {
       provincia: { id: alvo, nome: nomeDoAlvo },
       construcoes: Object.entries(campanha.construcoesDisponiveis).map(([id, c]) => {
         const conta = campanha.retornoDaConstrucaoEm(alvo, id);
+        const impactoPopulacional = campanha.impactoPopulacionalDaConstrucaoEm(alvo, id);
         const r = campanha.podeConstruir(alvo, id);
         return {
           id,
@@ -222,7 +245,12 @@ async function iniciar(): Promise<void> {
           motivo: c.motivo,
           ganhoPorTurno: conta?.ganhoPorTurno ?? 0,
           turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
-          promessa: c.efeito.tipo === 'capacidade' ? c.efeito.promessa : null,
+          promessa:
+            c.efeito.tipo === 'capacidade'
+              ? c.efeito.promessa
+              : c.efeito.tipo === 'populacao'
+                ? `${c.efeito.promessa} Aqui: +${impactoPopulacional?.antes ?? 0} → +${impactoPopulacional?.depois ?? 0} habitantes por turno.`
+                : null,
         };
       }),
       bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,
@@ -244,7 +272,8 @@ async function iniciar(): Promise<void> {
     const alvo = selecionada;
     if (!alvo) return { pode: false, motivo: 'Clique numa província sua para reunir tropa.' };
     const naProvincia = campanha.podeAgirEm(alvo);
-    if (!naProvincia.pode) return { pode: false, motivo: `${atlas.nomeDe(alvo)}: ${naProvincia.motivo}.` };
+    if (!naProvincia.pode)
+      return { pode: false, motivo: `${atlas.nomeDe(alvo)}: ${naProvincia.motivo}.` };
     if (!campanha.podeRecrutarEm(alvo)) {
       return {
         pode: false,
@@ -255,7 +284,7 @@ async function iniciar(): Promise<void> {
       pode: true,
       provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
       populacao: campanha.populacaoDe(alvo),
-      teto: campanha.tetoDeLevaEm(alvo),
+      disponivel: campanha.disponivelParaLevaEm(alvo),
       custoPorHomem: ajustes.jogo.combate.custoPorHomem,
       manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
       avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
@@ -282,6 +311,15 @@ async function iniciar(): Promise<void> {
     });
   }
 
+  /** Para onde a marcha em composição pode ir. Vazio fora do modo de marcha. */
+  function destinosDaMarcha(): Destino[] {
+    if (marchando === null) return [];
+    return campanha.alcanceDaHoste(marchando).map((id) => {
+      const p = atlas.provincia(id);
+      return { provincia: id, nome: p.nome, x: p.centro.x, y: p.centro.y };
+    });
+  }
+
   /** A hoste escolhida, como a ficha dela precisa vê-la. */
   function vistaDoExercito(): VistaDoExercito | null {
     if (fase !== 'campanha' || hosteSelecionada === null) return null;
@@ -297,6 +335,16 @@ async function iniciar(): Promise<void> {
       manutencao: Math.round(forca * ajustes.jogo.combate.manutencaoPorHomem),
       emTerraAlheia: campanha.donoDe(onde) !== exercito.poder,
       minha: campanha.jogador?.id === exercito.poder,
+      destinos: campanha.alcanceDaHoste(onde).length,
+      marchando: marchando === onde,
+      ordem: (() => {
+        const ordem = campanha.ordemEm(onde);
+        if (!ordem) return null;
+        const destino = ordem.rota[ordem.rota.length - 1];
+        return destino === undefined
+          ? null
+          : { destino: atlas.nomeDe(destino), homens: ordem.homens };
+      })(),
       origens: Object.entries(exercito.origem)
         .map(([id, homens]) => {
           const donoAgora = campanha.donoDe(id);
@@ -369,6 +417,22 @@ async function iniciar(): Promise<void> {
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
   recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
   exercitoFicha.aoDispensar = (idProvincia, homens) => campanha.dispensar(idProvincia, homens);
+  exercitoFicha.aoAlternarMarcha = (idProvincia) => {
+    marchando = marchando === idProvincia ? null : idProvincia;
+    repintar();
+  };
+  exercitoFicha.aoMudarQuantidade = (homens) => {
+    homensParaMarchar = homens;
+  };
+  exercitoFicha.aoCancelarOrdem = (idProvincia) => campanha.cancelarOrdem(idProvincia);
+  destinosMapa.aoEscolher = (destino) => {
+    if (marchando === null) return;
+    // Registra a ORDEM. Nada se move agora: a marcha acontece na virada do turno, junto
+    // com as de todo mundo. A seleção fica onde está, porque a tropa também fica.
+    campanha.ordenarMarcha(marchando, destino, homensParaMarchar);
+    marchando = null;
+    repintar();
+  };
   hostesMapa.aoSelecionar = (idProvincia) => {
     // Clicar na hoste escolhe as DUAS coisas: a tropa e o chão sob ela. Os dois painéis
     // ficam verdadeiros ao mesmo tempo, e o jogador não precisa clicar duas vezes.
@@ -403,6 +467,9 @@ async function iniciar(): Promise<void> {
       return;
     }
     if (fase !== 'campanha') return;
+    // Clicar fora dos destinos cancela a marcha em vez de recusar com mensagem: os alvos
+    // legais estão desenhados, e reclamar de cada clique errado seria ruído.
+    marchando = null;
     selecionada = provincia?.id ?? null;
     // Clicar no mapa é escolher CHÃO: solta a hoste. Sem isto, a ficha do exército
     // ficaria em pé descrevendo uma tropa que o jogador não está mais olhando.
@@ -416,6 +483,7 @@ async function iniciar(): Promise<void> {
     // Os marcadores seguem o mundo: reprojetados a cada quadro, arrastar e dar zoom
     // levam a peça junto.
     hostesMapa.posicionar(cena.camera);
+    destinosMapa.posicionar(cena.camera);
     painel.atualizar(relogio, cena.camera);
     entrada.novoQuadro();
   });
@@ -452,6 +520,11 @@ async function iniciar(): Promise<void> {
       forcaEm: (idProvincia: string) => campanha.forcaEm(idProvincia),
       dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
       noExilio: (idPoder: string) => campanha.noExilio(idPoder),
+      ordenarMarcha: (origem: string, destino: string, homens: number) =>
+        campanha.ordenarMarcha(origem, destino, homens),
+      cancelarOrdem: (origem: string) => campanha.cancelarOrdem(origem),
+      ordens: () => campanha.ordens(),
+      alcanceDaHoste: (idProvincia: string) => [...campanha.alcanceDaHoste(idProvincia)],
       populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.

@@ -100,14 +100,14 @@ A costa vem da **Natural Earth 1:10m** (domínio público, cache em `gerador/cac
 chega ao jogo **intacta** — sem espelhar, girar ou distorcer. A forma tem que ser a que o
 jogador reconhece.
 
-| o quê | valor |
-|---|---|
-| janela | 18,7°–32,4° E, 34,5°–41,7° N |
-| moldura | 12288 × 8256 unidades (proporção 1,50) |
-| escala | ~98 m por unidade (1.199 × 801 km) |
-| projeção | equirretangular, paralelo de referência em 38,1° N |
-| arte do terreno | 6144 × 4128 px |
-| ilha mínima | 10 km² |
+| o quê           | valor                                              |
+| --------------- | -------------------------------------------------- |
+| janela          | 18,7°–32,4° E, 34,5°–41,7° N                       |
+| moldura         | 12288 × 8256 unidades (proporção 1,50)             |
+| escala          | ~98 m por unidade (1.199 × 801 km)                 |
+| projeção        | equirretangular, paralelo de referência em 38,1° N |
+| arte do terreno | 6144 × 4128 px                                     |
+| ilha mínima     | 10 km²                                             |
 
 A janela é panorâmica com o Egeu no centro. **A borda oeste passa rente a Otranto
 (18,52° E), a ponta mais a leste da Itália** — de propósito: um grau a menos e o calcanhar
@@ -174,7 +174,7 @@ polígono, e por isso a coisa toda roda a 144 fps com o mapa inteiro na tela.
 ### A fronteira: duas medidas, uma pra cada regime de zoom
 
 Este é o pedaço mais sutil do shader e o que mais custou a acertar. A primeira versão
-perguntava *"o texel vizinho é de outra província?"* e pintava o texel inteiro quando
+perguntava _"o texel vizinho é de outra província?"_ e pintava o texel inteiro quando
 sim. Dois defeitos vinham juntos, e **nenhum tinha conserto de cor**:
 
 - a linha nunca podia ser mais fina que um texel — ≈200 m, uns 7 pixels no zoom máximo;
@@ -241,12 +241,12 @@ a época não quer. Falta semear o interior da Anatólia na mesma malha do lado 
 Uma ilha pequena não precisa sumir do mapa só porque não merece província própria — e não
 pode ficar sem dono, senão vira buraco sem cor com cara de esquecimento. A regra:
 
-| tamanho | tratamento |
-|---|---|
-| acima de ~2.000 km² | pode ter várias províncias (Creta com 8, Eubeia com 4) |
-| ~100 a 2.000 km² | normalmente uma província por ilha |
-| abaixo de ~100 km² | anexada a uma província vizinha, ou agrupada em arquipélago |
-| ilhota | continua desenhada, mas com o índice político da província a que pertence |
+| tamanho             | tratamento                                                                |
+| ------------------- | ------------------------------------------------------------------------- |
+| acima de ~2.000 km² | pode ter várias províncias (Creta com 8, Eubeia com 4)                    |
+| ~100 a 2.000 km²    | normalmente uma província por ilha                                        |
+| abaixo de ~100 km²  | anexada a uma província vizinha, ou agrupada em arquipélago               |
+| ilhota              | continua desenhada, mas com o índice político da província a que pertence |
 
 O mecanismo é `anexos` em `dados/provincias.json`: uma lista de pontos, cada um dentro de
 uma ilha sem semente. O gerador acha o pedaço de terra ali e pinta o pedaço **inteiro**
@@ -360,11 +360,11 @@ reinos desligadas**, quando não existe preenchimento nenhum pra diferenciá-la.
 
 Três coisas diferentes, e confundi-las foi o bug que já custou um conserto de raiz:
 
-| o quê | onde | significa |
-|---|---|---|
-| `dono` em `assets/mundo/provincias.json` | assado, imutável | **dono INICIAL**, a condição de 700 a.C. |
-| `Atlas` (`src/mundo/atlas.ts`) | derivado do assado, imutável | geografia e identidade: nome, região, vizinhança, componentes |
-| `estado.dono` (`src/campanha/`) | mutável, vai pro disco | **de quem é AGORA** |
+| o quê                                    | onde                         | significa                                                     |
+| ---------------------------------------- | ---------------------------- | ------------------------------------------------------------- |
+| `dono` em `assets/mundo/provincias.json` | assado, imutável             | **dono INICIAL**, a condição de 700 a.C.                      |
+| `Atlas` (`src/mundo/atlas.ts`)           | derivado do assado, imutável | geografia e identidade: nome, região, vizinhança, componentes |
+| `estado.dono` (`src/campanha/`)          | mutável, vai pro disco       | **de quem é AGORA**                                           |
 
 `Atlas` existe separado porque campanha, combate e diplomacia fazem todos as mesmas
 perguntas de geografia. Se cada um montar o próprio índice, a mesma verdade passa a viver
@@ -403,20 +403,20 @@ por quadro**: vinte conquistas numa virada de turno viram um envio de 256 KB, n�
 
 ## Comandos
 
-| comando | o que faz |
-|---|---|
-| `npm run gerar-mapa` | regera o mapa a partir da costa real (demora) |
-| `npm run gerar-provincias` | recorta o mundo em províncias a partir das sementes |
-| `npm run ver-provincias` | prévia colorida do recorte, em `capturas/` |
-| `npm run calibrar-fronteira` | compara variações da linha de fronteira lado a lado |
-| `npm run dev` | servidor de desenvolvimento (navegador) |
-| `npm run app` | Electron apontando pro servidor de dev |
-| `npm run capturar` | **print automático do jogo** — salva em `capturas/` |
-| `npm run verificar` | tipos + lint + código morto + testes + dados, tudo junto |
-| `npm run teste-tela` | testes de interface com Playwright, em série por causa do mapa WebGL pesado |
-| `npm run sitios` | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem |
-| `npm run build` | compila pra `dist/` |
-| `npm run empacotar` | gera o instalador em `dist-app/` |
+| comando                      | o que faz                                                                   |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `npm run gerar-mapa`         | regera o mapa a partir da costa real (demora)                               |
+| `npm run gerar-provincias`   | recorta o mundo em províncias a partir das sementes                         |
+| `npm run ver-provincias`     | prévia colorida do recorte, em `capturas/`                                  |
+| `npm run calibrar-fronteira` | compara variações da linha de fronteira lado a lado                         |
+| `npm run dev`                | servidor de desenvolvimento (navegador)                                     |
+| `npm run app`                | Electron apontando pro servidor de dev                                      |
+| `npm run capturar`           | **print automático do jogo** — salva em `capturas/`                         |
+| `npm run verificar`          | tipos + lint + código morto + testes + dados, tudo junto                    |
+| `npm run teste-tela`         | testes de interface com Playwright, em série por causa do mapa WebGL pesado |
+| `npm run sitios`             | ⚠️ **quebrado, ver abaixo** — lista foz de rio, enseada e passagem          |
+| `npm run build`              | compila pra `dist/`                                                         |
+| `npm run empacotar`          | gera o instalador em `dist-app/`                                            |
 
 ## Como eu (IA) verifico o próprio trabalho
 
@@ -477,8 +477,10 @@ derivado da mesma tabela. Ver "De quem é a província: o assado, o atlas e o es
 ouro e população, e um marcador com o número de homens aparece sobre a província; clicar
 nele abre a ficha da hoste em baixo-centro. **A tropa fica parada onde foi levantada:**
 faltam movimento, declaração de guerra, batalha, cerco e IA — é isso que decide quando a
-troca de dono pode acontecer. Ver "O exército", "A hoste no mapa" e
-`documentacao/design/combate-e-mar.md`.
+troca de dono pode acontecer. **Já está decidido, mas ainda não implementado:** recrutamento
+leva uma rodada; movimento é ordem planejada e resolvida ao passar o turno; cada hoste tem
+dois pontos, pode mandar somente parte dos homens e emite uma ordem por rodada. Ver "O
+exército", "A hoste no mapa" e `documentacao/design/combate-e-mar.md`.
 
 ⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
 terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
@@ -532,11 +534,11 @@ inventada**: `economiaDe()` devolve `null`, elas não arrecadam, não são simul
 ficha diz "Economia ainda não configurada" com todas as letras. Um teste garante que
 continue assim.
 
-| província | produto | nível | impostos | produção | comércio | total |
-|---|---|---:|---:|---:|---:|---:|
-| Atenas | Azeite | 4 | 175 | 100 | 55 | **330** |
-| Maratona | Grãos | 3 | 90 | 45 | 11 | **146** |
-| Sunião | Metais preciosos | 5 | 50 | 140 | 42 | **232** |
+| província | produto          | nível | impostos | produção | comércio |   total |
+| --------- | ---------------- | ----: | -------: | -------: | -------: | ------: |
+| Atenas    | Azeite           |     4 |      175 |      100 |       55 | **330** |
+| Maratona  | Grãos            |     3 |       90 |       45 |       11 | **146** |
+| Sunião    | Metais preciosos |     5 |       50 |      140 |       42 | **232** |
 
 Atenas soma **708 por turno**, com **3.000** de tesouro inicial. Sunião é a lição do
 sistema: menos gente e menos terra que Maratona, e rende 60% mais — nível e produto
@@ -557,11 +559,11 @@ versão anterior (máximo 30.000) era pura armadilha — 30.000 devolviam 156.
 **Três construções, uma por parcela da renda** — e é isso que faz a melhor escolha mudar
 de província em vez de ser sempre a mesma:
 
-| construção | melhora | custo | melhor em |
-|---|---|---:|---|
-| Ágora | impostos (×1,4) | 3.000 | Atenas (+70/t, 43 turnos) e Maratona (+36/t) |
-| Oficina | produção (×1,3) | 2.500 | Sunião (+55/t, 46 turnos) |
-| Mercado | comércio (×1,6) | 3.000 | fraca em toda parte hoje (91 turnos no melhor caso) |
+| construção | melhora         | custo | melhor em                                           |
+| ---------- | --------------- | ----: | --------------------------------------------------- |
+| Ágora      | impostos (×1,4) | 3.000 | Atenas (+70/t, 43 turnos) e Maratona (+36/t)        |
+| Oficina    | produção (×1,3) | 2.500 | Sunião (+55/t, 46 turnos)                           |
+| Mercado    | comércio (×1,6) | 3.000 | fraca em toda parte hoje (91 turnos no melhor caso) |
 
 `npm run checar` imprime essa tabela toda vez, então desequilíbrio aparece como número em
 vez de virar folclore. O alvo é obra se pagando em algumas dezenas de turnos — retorno de
@@ -668,10 +670,17 @@ fase de testes (bastava um número inicial pra economia básica rodar), não uma
 design. Desde que recrutar passou a custar população, ela vive em
 `estado.populacao` e o `dados/economia.json` guarda só a população INICIAL, de 700 a.C.
 
-Continua **não havendo crescimento populacional**, e isso sim é decisão de escopo:
-crescimento exigiria natalidade, mortalidade, alimento, migração e capacidade
-territorial. O que existe hoje é o vaivém da mobilização — recrutar tira, dispensar
-devolve.
+**Há crescimento natural ao fim de cada turno.** A regra é logística e intencionalmente
+pequena: população inicial × 2 define a capacidade; a taxa máxima é 1% por turno e cai
+conforme a província se aproxima dessa capacidade. Atenas começa em 35.000, tem capacidade
+70.000 e cresce 175 no primeiro turno. Zero não se repovoa sozinho — migração continua
+fora do escopo.
+
+O cálculo puro vive em `src/populacao/crescimento.ts`; taxa e capacidade vivem em
+`dados/ajustes.json`. Recrutar usa a população atual e portanto também reduz o crescimento
+seguinte. A passagem do turno arrecada, paga a tropa, cresce a população com as obras já
+ativas e só então avança as obras. Assim um Celeiro concluído hoje começa a valer no
+próximo turno.
 
 ⚠️ **`jogo.anosPorTurno` é decisão em aberto**, exposta no arquivo de ajustes de propósito:
 um turno por ano funciona no protótipo, mas é o que decide o ritmo da campanha inteira.
@@ -696,42 +705,37 @@ que um dia vai para o disco.
 
 ### O Quartel é a primeira construção que não paga em ouro
 
-O documento de economia já exigia isso — *"nenhuma construção deve pagar somente em ouro;
-se todas pagarem, escolher vira aritmética"* — e nenhuma cumpria: Ágora, Oficina e Mercado
+O documento de economia já exigia isso — _"nenhuma construção deve pagar somente em ouro;
+se todas pagarem, escolher vira aritmética"_ — e nenhuma cumpria: Ágora, Oficina e Mercado
 rendem todas moeda, em parcelas diferentes da mesma conta. O Quartel custa **5.000**, leva
 **4 turnos** e **rende zero**. Comparar 5.000 por um exército com 3.000 por +70 moedas por
 turno não é uma conta: é uma decisão.
 
-Por isso o catálogo passou a ter `efeito` como **união discriminada** — `renda` (parcela +
-fator) ou `capacidade`. União e não campos opcionais: assim o compilador obriga quem lê a
+Por isso o catálogo usa `efeito` como **união discriminada** — `renda` (parcela + fator),
+`capacidade` ou `populacao`. União e não campos opcionais: assim o compilador obriga quem lê a
 decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined` atravessar a
 fórmula da renda em silêncio.
 
-⚠️ **Construção de capacidade nunca mostra "paga-se em N turnos".** A tela diz o que ela
-destrava. `+0 por turno, não muda nada aqui` é verdade aritmética e mentira sobre o que o
-Quartel é — e o `checar` lista as duas famílias em tabelas separadas pelo mesmo motivo.
+⚠️ **Construção que não paga em ouro nunca mostra "paga-se em N turnos".** A tela diz o
+benefício na moeda correta. `+0 por turno, não muda nada aqui` é verdade aritmética e
+mentira sobre o Quartel e o Celeiro — o `checar` lista as famílias separadamente.
 
-### Soldado sai da população, e é o teto que importa
+### Celeiro público fortalece a população
 
-**O ouro sozinho faria exército brotar de tesouro grande**, e um reino rico venceria
-digitando. O limite real é `fracaoRecrutavel` — hoje 10% da população — e ele conta
-**quem já está em armas**, onde quer que esteja; senão bastava recrutar, marchar pra fora
-e recrutar de novo pra esvaziar a cidade em rodadas.
+O Celeiro custa **3.500**, leva **3 turnos** e multiplica em **1,5** somente o crescimento
+natural da província. Não dá dinheiro direto e não aumenta a capacidade da terra. Na
+Atenas inicial a interface mostra o efeito concreto: `+175 → +262 habitantes por turno`.
+
+### Soldado sai da população; não existe fração nem lote mínimo
+
+Pode-se recrutar **qualquer quantidade inteira positiva até a população atual**, desde
+que haja Quartel e ouro. `fracaoRecrutavel` e `minimoPorLeva` foram removidos: não existe
+teto artificial de 10%, e uma leva de um homem é válida.
 
 Quem vai pras armas **sai da população na mesma hora**, então o imposto daquela província
-cai junto e o próprio teto aperta. Mobilizar tem preço contínuo, não só preço de entrada.
-
-O número que o sistema existe pra produzir, e que um teste fixa:
-
-| Atenas | valor |
-|---|---|
-| população | 35.000 |
-| teto em armas | 3.500 |
-| manutenção com o teto cheio | 700/turno |
-| renda com o teto cheio | 691/turno (o imposto cai de 175 pra 158) |
-| **saldo** | **−9 por turno** |
-
-**Mobilização total é insustentável por construção**, sem nenhuma regra dizendo isso.
+cai junto. População disponível, preço de entrada e manutenção são os freios naturais.
+O jogador pode mobilizar muita gente, mas preço de entrada, manutenção, perda de impostos
+e perda de crescimento precisam sustentar a decisão.
 
 ⚠️ **Quem não paga vê a tropa desertar, proporcionalmente, e os desertores VOLTAM pra
 casa.** Espiral de morte não é decisão: é o jogo terminando sozinho enquanto o jogador
@@ -751,9 +755,8 @@ do detalhe é convidar os dois a discordarem.
 no Governo. É a única despesa recorrente do jogo: sem ela visível, o jogador vê o tesouro
 parar de crescer e não tem como saber que foi o exército que comeu.
 
-**População na ficha não é enfeite.** Ela saiu do esconderijo porque decide duas coisas: a
-Ágora multiplica imposto, que vem de população, e o teto de recrutamento é uma fração
-dela. Enquanto ficou invisível, escolher a Ágora era um chute informado.
+**População na ficha não é enfeite.** Ela decide imposto, recrutamento e crescimento. A
+ficha mostra a população atual e `+N por turno`; a capacidade fica no tooltip.
 
 ### A hoste no mapa
 
@@ -775,12 +778,12 @@ guarda isso.
 
 ### Quatro regiões, quatro perguntas
 
-| região | elemento | responde |
-|---|---|---|
-| topo | `.barra-turno` | em que pé a campanha está |
-| topo-direita | `.painel-lateral` | o que o jogador **aciona** (global) |
-| baixo-esquerda | `.coluna-provincia` | a **província** escolhida — ações em cima, ficha embaixo |
-| **baixo-centro** | `.exercito` | a **hoste** escolhida |
+| região           | elemento            | responde                                                 |
+| ---------------- | ------------------- | -------------------------------------------------------- |
+| topo             | `.barra-turno`      | em que pé a campanha está                                |
+| topo-direita     | `.painel-lateral`   | o que o jogador **aciona** (global)                      |
+| baixo-esquerda   | `.coluna-provincia` | a **província** escolhida — ações em cima, ficha embaixo |
+| **baixo-centro** | `.exercito`         | a **hoste** escolhida                                    |
 
 A hoste ganhou região própria por dois motivos, e o segundo é estrutural: quatro painéis
 empilhados na coluna estouravam os 1080 e cortavam o de cima; e **a hoste não é a

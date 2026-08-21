@@ -31,14 +31,18 @@ import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
 import type { HosteEmProvincia } from '@/combate/mobilizacao';
 import { Territorios } from './territorios';
+import { rotasDe } from '@/movimento/alcance';
+import { avaliarOrdem } from '@/movimento/ordens';
+import type { OrdemDeMarcha, RecusaDeOrdem } from '@/movimento/ordens';
+import { resolverRodada } from '@/movimento/resolucao';
+import { calcularCrescimentoPopulacional } from '@/populacao/crescimento';
+import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 
 type AjustesJogo = Ajustes['jogo'];
 type Poder = Provincias['poderes'][number];
 
 /** Por que um investimento foi recusado. A interface mostra o motivo em vez de sumir. */
-export type Recusa =
-  | { pode: true; bonus: number }
-  | { pode: false; motivo: string };
+export type Recusa = { pode: true; bonus: number } | { pode: false; motivo: string };
 
 export class Campanha {
   private readonly estado: EstadoCampanha;
@@ -86,6 +90,7 @@ export class Campanha {
       dono,
       populacao,
       exercitos: {},
+      ordens: {},
       investimentos: {},
       construcoes: {},
       obras: {},
@@ -230,6 +235,40 @@ export class Campanha {
     return this.estado.populacao[idProvincia] ?? 0;
   }
 
+  /** Crescimento que esta província receberá no próximo fim de turno. */
+  crescimentoDe(idProvincia: string): CrescimentoPopulacional | null {
+    const ficha = this.economia.provincias[idProvincia];
+    if (!ficha) return null;
+    return calcularCrescimentoPopulacional(
+      this.populacaoDe(idProvincia),
+      ficha.populacao,
+      this.construcoesEm(idProvincia),
+      this.catalogoDeConstrucoes.construcoes,
+      this.ajustes.populacao,
+    );
+  }
+
+  /** Compara o crescimento atual com o que uma construção populacional entregaria. */
+  impactoPopulacionalDaConstrucaoEm(
+    idProvincia: string,
+    idConstrucao: string,
+  ): { antes: number; depois: number } | null {
+    const ficha = this.economia.provincias[idProvincia];
+    const construcao = this.catalogoDeConstrucoes.construcoes[idConstrucao];
+    if (!ficha || construcao?.efeito.tipo !== 'populacao') return null;
+
+    const atuais = this.construcoesEm(idProvincia);
+    const antes = this.crescimentoDe(idProvincia);
+    const depois = calcularCrescimentoPopulacional(
+      this.populacaoDe(idProvincia),
+      ficha.populacao,
+      atuais.includes(idConstrucao) ? atuais : [...atuais, idConstrucao],
+      this.catalogoDeConstrucoes.construcoes,
+      this.ajustes.populacao,
+    );
+    return antes ? { antes: antes.crescimento, depois: depois.crescimento } : null;
+  }
+
   /** Soma só o que está configurado. O resto do mapa não arrecada nada. */
   rendaDe(idPoder: string): number {
     let total = 0;
@@ -292,7 +331,9 @@ export class Campanha {
 
   /** Dá pra pôr gente em armas aqui? Exige o Quartel erguido e a província ser sua. */
   podeRecrutarEm(idProvincia: string): boolean {
-    return this.podeAgirEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar');
+    return (
+      this.podeAgirEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar')
+    );
   }
 
   /** O exército parado nesta província, se houver. */
@@ -315,9 +356,9 @@ export class Campanha {
     return this.mobilizacao.homensEmArmasDe(idProvincia);
   }
 
-  /** Quantos homens esta província ainda comporta pôr em armas. */
-  tetoDeLevaEm(idProvincia: string): number {
-    return this.mobilizacao.tetoDeLevaEm(idProvincia);
+  /** Quantos habitantes esta província ainda cede a uma leva. */
+  disponivelParaLevaEm(idProvincia: string): number {
+    return this.mobilizacao.disponivelParaLevaEm(idProvincia);
   }
 
   /**
@@ -364,6 +405,81 @@ export class Campanha {
     this.aoMudar();
   }
 
+  /**
+   * As rotas que a hoste parada aqui pode tomar nesta rodada, por destino.
+   *
+   * Vazio quando não há hoste, quando ela não é do jogador, ou quando ela está cercada de
+   * terra alheia. É este mapa que a interface desenha como destinos clicáveis — e é dele
+   * que sai a rota que a ordem guarda.
+   */
+  rotasDaHoste(idProvincia: string): ReadonlyMap<string, readonly string[]> {
+    const hoste = this.mobilizacao.exercitoEm(idProvincia);
+    if (!hoste) return new Map();
+    return rotasDe(
+      this.atlas,
+      idProvincia,
+      (id) => this.donoDe(id) === hoste.poder,
+      this.ajustes.combate.saltosPorRodada,
+    );
+  }
+
+  /** Só os destinos, pra quem não precisa da rota. */
+  alcanceDaHoste(idProvincia: string): readonly string[] {
+    return [...this.rotasDaHoste(idProvincia).keys()];
+  }
+
+  /** A ordem registrada para a hoste desta província, se houver. */
+  ordemEm(idProvincia: string): OrdemDeMarcha | undefined {
+    return this.estado.ordens[idProvincia];
+  }
+
+  /** Todas as ordens da rodada. É o que o mapa desenha como setas. */
+  ordens(): readonly OrdemDeMarcha[] {
+    return Object.keys(this.estado.ordens)
+      .sort()
+      .map((id) => this.estado.ordens[id])
+      .filter((o): o is OrdemDeMarcha => o !== undefined);
+  }
+
+  /**
+   * Esta ordem pode ser registrada, e por qual rota?
+   *
+   * Devolve o MOTIVO da recusa, como todo o resto do jogo: a interface escreve o texto em
+   * vez de esconder o controle.
+   */
+  podeOrdenarMarcha(origem: string, destino: string, homens: number): RecusaDeOrdem {
+    if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
+    const hoste = this.mobilizacao.exercitoEm(origem);
+    return avaliarOrdem(origem, destino, this.atlas.nomeDe(destino), homens, {
+      forcaNaOrigem: this.mobilizacao.forcaEm(origem),
+      minha: hoste?.poder === this.estado.jogador,
+      rota: this.rotasDaHoste(origem).get(destino),
+      destinoEhMeu: this.donoDe(destino) === hoste?.poder,
+      jaTemOrdem: this.estado.ordens[origem] !== undefined,
+    });
+  }
+
+  /**
+   * Registra a ordem. **Nada se move agora.**
+   *
+   * É o ponto da resolução simultânea: enquanto o turno não vira, jogador e IA decidem
+   * contra o MESMO mundo. Sem isso, quem age primeiro toma a fronteira vazia antes de o
+   * outro lado ter chance de mandar reforço.
+   */
+  ordenarMarcha(origem: string, destino: string, homens: number): void {
+    const r = this.podeOrdenarMarcha(origem, destino, homens);
+    if (!r.pode) throw new Error(r.motivo);
+    this.estado.ordens[origem] = { origem, rota: r.rota, homens };
+    this.aoMudar();
+  }
+
+  /** Desfaz a ordem. Nada foi gasto, então nada é devolvido. */
+  cancelarOrdem(origem: string): void {
+    if (this.estado.ordens[origem] === undefined) return;
+    delete this.estado.ordens[origem];
+    this.aoMudar();
+  }
+
   /** O que este poder paga por turno pra manter os seus em armas. */
   manutencaoDe(idPoder: string): number {
     return this.mobilizacao.manutencaoDe(idPoder);
@@ -395,6 +511,14 @@ export class Campanha {
     const jogador = this.estado.jogador;
     if (jogador === null) return;
     this.mobilizacao.pagarManutencao(jogador);
+  }
+
+  /** Cresce todas as províncias configuradas, inclusive as que não pertencem ao jogador. */
+  private crescerPopulacao(): void {
+    for (const id of Object.keys(this.economia.provincias)) {
+      const crescimento = this.crescimentoDe(id);
+      if (crescimento) this.estado.populacao[id] = crescimento.proxima;
+    }
   }
 
   /** O catálogo inteiro, pra interface montar a lista de opções. */
@@ -511,7 +635,10 @@ export class Campanha {
     }
     const maximo = this.ajustes.economia.investimento.maximo;
     if (valor > maximo) {
-      return { pode: false, motivo: `o máximo por província é ${maximo.toLocaleString('pt-BR')} moedas` };
+      return {
+        pode: false,
+        motivo: `o máximo por província é ${maximo.toLocaleString('pt-BR')} moedas`,
+      };
     }
     if (valor > this.estado.tesouro) {
       return {
@@ -564,6 +691,17 @@ export class Campanha {
     if (!this.iniciada) throw new Error('a campanha ainda não começou');
     this.estado.tesouro += this.renda;
     this.pagarTropa();
+
+    // ⚠️ **Arrecada ANTES de resolver as marchas.** A renda do turno pertence ao mundo
+    // como ele estava quando o jogador decidiu; quem conquista na resolução colhe no turno
+    // seguinte. Resolver primeiro daria ao agressor um pagamento no mesmo instante da
+    // tomada, e a ordem aqui não dá erro nenhum — dá número torto em silêncio.
+    resolverRodada(this.estado, this.ajustes.combate.saltosPorRodada);
+
+    // Cresce com a população restante depois da folha militar. Só contam construções
+    // que já estavam prontas ao começar a passagem: as obras avançam mais abaixo, então
+    // um Celeiro concluído agora começa a ajudar no próximo turno.
+    this.crescerPopulacao();
 
     for (const [id, investimento] of Object.entries(this.estado.investimentos)) {
       investimento.arrecadacoesRestantes -= 1;

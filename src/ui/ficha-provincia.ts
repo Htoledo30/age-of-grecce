@@ -12,6 +12,7 @@
  */
 
 import type { RendaDaProvincia } from '@/campanha/economia';
+import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 
 /**
  * A província como a ficha precisa vê-la.
@@ -70,6 +71,7 @@ export class FichaProvincia {
     provincia: VistaDaProvincia | null,
     renda: RendaDaProvincia | null = null,
     obra: { nome: string; turnosRestantes: number } | null = null,
+    populacao: CrescimentoPopulacional | null = null,
   ): void {
     this.obra = obra;
     if (!provincia) {
@@ -96,6 +98,15 @@ export class FichaProvincia {
             titulo:
               `É a base do imposto: ${moeda(renda.populacao)} habitantes rendem ` +
               `${moeda(renda.impostos)} por turno.`,
+          })
+        : []),
+      ...(populacao
+        ? campo('crescimento', `+${moeda(populacao.crescimento)} por turno`, 'ficha__crescimento', {
+            titulo:
+              `Capacidade: ${moeda(populacao.capacidade)} habitantes` +
+              (populacao.fatorConstrucoes > 1
+                ? ` · construções ×${populacao.fatorConstrucoes.toLocaleString('pt-BR')}`
+                : ''),
           })
         : []),
     );

@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "Construcoes: permanentes, caras, pagas a vista e entregues depois. Cada uma paga numa MOEDA diferente, e e isso que faz a lista ser escolha em vez de aritmetica: Agora, Oficina e Mercado rendem ouro em parcelas diferentes da renda, e o Quartel nao rende nada - ele compra a capacidade de recrutar. Comparar 5.000 por um exercito com 3.000 por +70 moedas/turno nao e uma conta, e uma decisao. Como as parcelas pesam diferente em cada provincia, a melhor construcao muda de lugar pra lugar. O prazo acompanha o custo: obra maior demora mais, e isso le sozinho sem explicacao. Porto, estrada e torre NAO estao aqui: dependem do modelo de movimentacao de tropas.",
+  "comentario": "Construcoes sao permanentes, caras, pagas a vista e entregues depois. Elas podem render ouro, destravar uma capacidade ou fortalecer a populacao. Beneficios diferentes disputam o mesmo tesouro sem serem reduzidos a uma conta unica. Porto, estrada e torre NAO estao aqui: dependem do modelo de movimentacao de tropas.",
   "construcoes": {
     "agora": {
       "nome": "Ágora",
@@ -22,6 +22,17 @@
       "turnos": 3,
       "efeito": { "tipo": "renda", "parcela": "comercio", "fator": 1.6 },
       "motivo": "Nao produz nada: vende melhor o que existe. So compensa onde ja ha escoamento, porque multiplica o comercio e nao a producao."
+    },
+    "celeiro": {
+      "nome": "Celeiro público",
+      "custo": 3500,
+      "turnos": 3,
+      "efeito": {
+        "tipo": "populacao",
+        "fatorCrescimento": 1.5,
+        "promessa": "Aumenta em 50% o crescimento natural da população desta província."
+      },
+      "motivo": "Reserva alimento entre colheitas e reduz a fome nos anos ruins. Nao cria habitantes nem aumenta a capacidade da terra: faz a populacao existente crescer com mais seguranca."
     },
     "quartel": {
       "nome": "Quartel",

@@ -13,11 +13,14 @@
         "arrecadacoes": 20
       }
     },
+    "populacao": {
+      "taxaNatural": 0.01,
+      "fatorCapacidade": 2
+    },
     "combate": {
-      "custoPorHomem": 2,
-      "manutencaoPorHomem": 0.2,
-      "fracaoRecrutavel": 0.1,
-      "minimoPorLeva": 100
+      "custoPorHomem": 3,
+      "manutencaoPorHomem": 0.3,
+      "saltosPorRodada": 2
     }
   },
   "camera": {

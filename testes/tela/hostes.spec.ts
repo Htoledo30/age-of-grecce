@@ -62,7 +62,7 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
   await expect(page.locator('.exercito')).toBeVisible();
   await expect(page.locator('.exercito__titulo')).toHaveText('Exército em Atenas');
   await expect(page.locator('.exercito__forca')).toHaveText('1.500 homens');
-  await expect(page.locator('.exercito__custo')).toHaveText('custa 300 por turno');
+  await expect(page.locator('.exercito__custo')).toHaveText('custa 450 por turno');
   // De onde vieram: é o que torna dispensar uma decisão, e não um botão.
   await expect(page.locator('.exercito__origens')).toContainText('Atenas');
   // Em casa, sem aviso de terra alheia.
@@ -90,7 +90,7 @@ test('clicar no mapa solta a hoste, e dispensar tira o marcador do mundo', async
   // Sem hoste, sem marcador e sem ficha — e ninguém fica descrevendo tropa que não existe.
   await expect(page.locator('.hostes__marca')).toHaveCount(0);
   await expect(page.locator('.exercito')).toBeHidden();
-  await expect(page.locator('dd.ficha__populacao')).toContainText('35.000');
+  await expect(page.locator('dd.ficha__populacao')).toContainText('35.697');
   // E a manutenção some da barra junto com a tropa.
   await expect(page.locator('.barra-turno__ouro')).not.toContainText('−');
 });

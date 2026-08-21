@@ -25,8 +25,8 @@ export type VistaDeRecrutamento =
       provincia: { id: string; nome: string };
       /** Habitantes que ainda estão na província. */
       populacao: number;
-      /** Quantos ainda cabem em armas. Zero quando a província já deu o que tinha. */
-      teto: number;
+      /** Quantos habitantes ainda estão disponíveis para uma leva. */
+      disponivel: number;
       custoPorHomem: number;
       manutencaoPorHomem: number;
       avaliar: (
@@ -58,7 +58,7 @@ export class Recrutamento {
     this.campoHomens.className = 'recrutamento__valor';
     this.campoHomens.type = 'number';
     this.campoHomens.min = '1';
-    this.campoHomens.step = '100';
+    this.campoHomens.step = '1';
     this.campoHomens.value = '1000';
     this.campoHomens.title =
       'Quantos homens levantar aqui. Eles saem da população desta província: enquanto ' +
@@ -100,10 +100,10 @@ export class Recrutamento {
 
     this.alvo.textContent =
       `${vista.provincia.nome} · ${numero(vista.populacao)} habitantes · ` +
-      `cabem mais ${numero(vista.teto)} em armas`;
+      `${numero(vista.disponivel)} disponíveis para recrutar`;
     this.alvo.title =
-      'O teto é uma fração da população, e quem já está fora conta contra ele: uma ' +
-      'província despovoada não vira exército por mais rico que o reino seja.';
+      'Não existe fração recrutável nem lote mínimo. O limite local é toda a população ' +
+      'que ainda vive aqui, além do ouro necessário para reunir a leva.';
 
     this.avaliar();
   }

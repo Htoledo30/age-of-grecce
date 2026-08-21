@@ -32,10 +32,9 @@ export interface OpcaoDeConstrucao {
   ganhoPorTurno: number;
   turnosParaPagar: number;
   /**
-   * O que ela destrava, escrito, quando não paga em ouro.
+   * O benefício, escrito, quando não paga em ouro.
    *
-   * `null` nas que rendem moeda. Uma construção de capacidade não tem "paga-se em N
-   * turnos" — e mostrar "nunca se paga" no Quartel seria mentir sobre o que ele é.
+   * `null` nas que rendem moeda. Capacidade e população não têm "paga-se em N turnos".
    */
   promessa: string | null;
 }
@@ -186,8 +185,7 @@ export class AcoesProvincia {
     // e quem quer conferir a conta passa o mouse.
     if (opcao.erguida) botao.textContent = `${opcao.nome} · construída`;
     else if (opcao.emObra !== null) {
-      botao.textContent =
-        `${opcao.nome} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
+      botao.textContent = `${opcao.nome} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
     } else if (opcao.recusa) {
       // O impedimento fica NO LUGAR do custo, não escondido: opção desabilitada sem
       // explicação é exatamente o que não pode acontecer aqui.

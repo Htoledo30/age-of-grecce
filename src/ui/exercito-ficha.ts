@@ -33,6 +33,16 @@ export interface VistaDoExercito {
   /** É do jogador? Só a dele aceita comando. */
   minha: boolean;
   origens: readonly OrigemDaHoste[];
+  /** Quantas províncias ela alcança daqui. Zero desabilita a marcha, dizendo por quê. */
+  destinos: number;
+  /** O jogador já mandou marchar e está escolhendo o destino no mapa. */
+  marchando: boolean;
+  /**
+   * A ordem já registrada para esta hoste nesta rodada, se houver.
+   *
+   * Enquanto ela existe, a hoste não aceita outra: **uma ordem por hoste por rodada.**
+   */
+  ordem: { destino: string; homens: number } | null;
 }
 
 export class ExercitoFicha {
@@ -45,9 +55,21 @@ export class ExercitoFicha {
   private readonly aviso = document.createElement('p');
   private readonly tituloOrigens = document.createElement('h3');
   private readonly origens = document.createElement('dl');
+  private readonly campoHomens = document.createElement('input');
+  private readonly botaoMover = document.createElement('button');
+  private readonly instrucao = document.createElement('p');
+  private readonly linhaOrdem = document.createElement('p');
+  private readonly botaoCancelar = document.createElement('button');
+  /** De quem é a quantidade que está no campo. Trocar de hoste reinicia o campo. */
+  private quantidadeDe: string | null = null;
   private readonly botaoDispensar = document.createElement('button');
   private vista: VistaDoExercito | null = null;
 
+  /** Liga e desliga o modo de marcha. Quem sabe para onde dá pra ir é a campanha. */
+  aoAlternarMarcha: (idProvincia: string) => void = () => {};
+  /** Quantos homens o jogador quer mandar. Lida quando ele escolhe o destino no mapa. */
+  aoMudarQuantidade: (homens: number) => void = () => {};
+  aoCancelarOrdem: (idProvincia: string) => void = () => {};
   aoDispensar: (idProvincia: string, homens: number) => void = () => {};
 
   constructor(pai: HTMLElement) {
@@ -71,6 +93,43 @@ export class ExercitoFicha {
     this.tituloOrigens.textContent = 'De onde vieram';
     this.origens.className = 'exercito__origens';
 
+    this.campoHomens.className = 'exercito__valor';
+    this.campoHomens.type = 'number';
+    this.campoHomens.min = '1';
+    this.campoHomens.step = '100';
+    this.campoHomens.title =
+      'Quantos homens marcham. O resto fica defendendo esta província — mandar tudo é ' +
+      'apostar a casa.';
+    this.campoHomens.addEventListener('input', () => {
+      this.aoMudarQuantidade(Number(this.campoHomens.value));
+    });
+
+    this.botaoCancelar.className = 'botao exercito__botao';
+    this.botaoCancelar.type = 'button';
+    this.botaoCancelar.textContent = 'Cancelar ordem';
+    this.botaoCancelar.title = 'Nada foi gasto ainda, então nada é devolvido.';
+    this.botaoCancelar.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista?.ordem) return;
+      this.aoCancelarOrdem(vista.provincia.id);
+      this.botaoCancelar.blur();
+    });
+
+    this.linhaOrdem.className = 'exercito__ordem';
+
+    this.botaoMover.className = 'botao botao--principal exercito__botao';
+    this.botaoMover.type = 'button';
+    this.botaoMover.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista?.minha) return;
+      this.aoAlternarMarcha(vista.provincia.id);
+      // `blur` no fim do clique: sem isso o botão fica com foco e a barra de espaço, que
+      // passa o turno, dispara um clique sintético nele.
+      this.botaoMover.blur();
+    });
+
+    this.instrucao.className = 'exercito__instrucao';
+
     this.botaoDispensar.className = 'botao exercito__botao';
     this.botaoDispensar.type = 'button';
     this.botaoDispensar.title =
@@ -91,6 +150,11 @@ export class ExercitoFicha {
       this.aviso,
       this.tituloOrigens,
       this.origens,
+      this.campoHomens,
+      this.botaoMover,
+      this.instrucao,
+      this.linhaOrdem,
+      this.botaoCancelar,
       this.botaoDispensar,
     );
     pai.appendChild(this.raiz);
@@ -134,8 +198,50 @@ export class ExercitoFicha {
       }),
     );
 
+    // Só a hoste do jogador aceita comando. A do vizinho continua com ficha — saber a
+    // força de quem está do outro lado da fronteira é informação, não ação.
+    this.botaoMover.hidden = !vista.minha;
     this.botaoDispensar.hidden = !vista.minha;
     this.botaoDispensar.textContent = `Dispensar ${numero(vista.forca)}`;
+
+    // Uma ordem em pé tranca o resto: uma por hoste por rodada. Em vez de esconder os
+    // controles, mostra-se a ordem e o jeito de desfazê-la.
+    const temOrdem = vista.ordem !== null;
+    this.linhaOrdem.hidden = !temOrdem;
+    this.botaoCancelar.hidden = !temOrdem;
+    if (vista.ordem) {
+      this.linhaOrdem.textContent =
+        `${numero(vista.ordem.homens)} marcham para ${vista.ordem.destino} ao passar o turno`;
+    }
+
+    // O campo reinicia com a força inteira quando o jogador troca de hoste — mandar tudo
+    // é o caso comum, e digitar o total toda vez seria atrito.
+    if (this.quantidadeDe !== vista.provincia.id) {
+      this.quantidadeDe = vista.provincia.id;
+      this.campoHomens.value = String(vista.forca);
+      this.aoMudarQuantidade(vista.forca);
+    }
+    this.campoHomens.max = String(vista.forca);
+    this.campoHomens.hidden = !vista.minha || temOrdem;
+
+    // Nada de sumir em silêncio: sem destino, o botão fica na tela dizendo o motivo. É
+    // assim que o jogador descobre que a marcha só passa por território dele.
+    const semDestino = vista.destinos === 0;
+    this.botaoMover.hidden = !vista.minha || temOrdem;
+    this.botaoMover.disabled = semDestino;
+    this.botaoMover.textContent = semDestino
+      ? 'Mover · sem caminho pelo seu território'
+      : vista.marchando
+        ? 'Escolhendo destino — cancelar'
+        : 'Mover';
+    this.botaoMover.title =
+      'A hoste marcha livre pelo seu território, mas só por ele: o caminho inteiro tem ' +
+      'que passar por províncias suas.';
+
+    this.instrucao.hidden = !vista.marchando;
+    this.instrucao.textContent = vista.marchando
+      ? `Clique num dos ${numero(vista.destinos)} destinos marcados no mapa. Clicar em outro lugar cancela.`
+      : '';
   }
 }
 

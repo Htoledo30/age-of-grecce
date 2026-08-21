@@ -43,8 +43,8 @@ export const Ajustes = z.object({
     tesouroInicial: z.number().nonnegative(),
     economia: z.object({
       /**
-       * Moedas por habitante, por turno. É a parcela mais estável da renda: população é
-       * dado autoral fixo nesta etapa, então imposto não oscila.
+       * Moedas por habitante, por turno. População é estado e cresce; por isso os
+       * impostos acompanham nascimentos, recrutamento, deserção e desmobilização.
        */
       impostoPorHabitante: z.number().positive(),
       investimento: z.object({
@@ -69,6 +69,13 @@ export const Ajustes = z.object({
         arrecadacoes: z.number().int().positive(),
       }),
     }),
+    /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
+    populacao: z.object({
+      /** Taxa máxima por turno, antes da falta de espaço e das construções. */
+      taxaNatural: z.number().gt(0).max(1),
+      /** Capacidade da província como múltiplo de sua população inicial autoral. */
+      fatorCapacidade: z.number().gt(1),
+    }),
     /**
      * O que custa pôr e manter gente em armas.
      *
@@ -87,14 +94,15 @@ export const Ajustes = z.object({
        */
       manutencaoPorHomem: z.number().positive(),
       /**
-       * Maior fatia da população de uma província que pode estar em armas ao mesmo tempo.
+       * Trechos que uma hoste planeja por rodada. Dois hoje.
        *
-       * É este número, e não o ouro, que torna população um recurso estratégico: uma
-       * província despovoada não vira exército por mais rico que seja o reino.
+       * ⚠️ **É este número que obriga a resolução a ter PASSOS.** Com um salto, a rodada
+       * seria "todo mundo anda uma vez e resolve"; com dois, é preciso resolver o passo 1
+       * de todo mundo antes do passo 2 de qualquer um — senão volta a vantagem de quem é
+       * processado primeiro. Se um dia o turno virar meia estação (verão e inverno), vale
+       * reabrir: com o turno mais curto, um salto fica mais simples e mais fiel.
        */
-      fracaoRecrutavel: z.number().gt(0).max(1),
-      /** Lote mínimo de recrutamento. Impede recrutar de um em um. */
-      minimoPorLeva: z.number().int().positive(),
+      saltosPorRodada: z.number().int().positive(),
     }),
   }),
   camera: z.object({
@@ -285,6 +293,13 @@ export const Construcoes = z.object({
           /** O que a província passa a poder fazer. */
           capacidade: z.enum(['recrutar']),
           /** A promessa, escrita pro jogador. Fica no dado, não no código da interface. */
+          promessa: z.string().min(1),
+        }),
+        z.object({
+          tipo: z.literal('populacao'),
+          /** Multiplica somente o crescimento natural. 1,5 é mais 50%. */
+          fatorCrescimento: z.number().gt(1),
+          /** A promessa genérica; a interface acrescenta os números da província. */
           promessa: z.string().min(1),
         }),
       ]),

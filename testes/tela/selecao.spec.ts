@@ -79,6 +79,10 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
     'title',
     /paga-se em 43 turnos/,
   );
+  await expect(page.getByRole('button', { name: /^Celeiro público/ })).toHaveAttribute(
+    'title',
+    /\+175 → \+262 habitantes por turno/,
+  );
 
   await page.getByRole('button', { name: /^Ágora/ }).click();
 
@@ -93,11 +97,11 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: /Passar o turno/ }).click();
   }
-  await expect(page.locator('.barra-turno')).toContainText('(+778)');
+  await expect(page.locator('.barra-turno')).toContainText('(+784)');
   await expect(page.locator('.ficha__construcoes')).toHaveText('Ágora');
   await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('construída');
   // a ficha mostra UMA linha de dinheiro; a decomposição mora no Governo
-  await expect(page.locator('.ficha__renda')).toHaveText('rende 400 por turno');
+  await expect(page.locator('.ficha__renda')).toHaveText('rende 404 por turno');
 
   expect(erros.join(' | ')).toBe('');
 });

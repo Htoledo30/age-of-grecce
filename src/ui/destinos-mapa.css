@@ -1,0 +1,38 @@
+/* Destinos de marcha sobre o mapa. Medidas em pixels do palco 1920x1080 — ver escala.ts.
+
+   ⚠️ `#ui > .destinos` e não `.destinos`: `base.css` tem `#ui > * { pointer-events: auto }`
+   e um seletor de id vence um de classe. Escrita só com a classe, esta camada — que cobre
+   a tela inteira — comeria TODOS os cliques do mapa, sem erro nenhum no console. É a mesma
+   armadilha de hostes-mapa.css, e ela pega duas vezes. */
+#ui > .destinos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Alvo redondo e vazado, pra ler como "aqui dá pra pisar" e não como peça no tabuleiro:
+   as hostes são quadradas e opacas, os destinos são redondos e translúcidos. A forma
+   distingue antes da cor, o que continua valendo pra quem não separa bem as duas. */
+.destinos__marca {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px dashed var(--papel-claro);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 18%);
+  color: var(--papel-claro);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.destinos__marca:hover,
+.destinos__marca:focus-visible {
+  border-style: solid;
+  background: var(--papel-claro);
+  color: var(--tinta);
+}

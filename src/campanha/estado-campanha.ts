@@ -1,5 +1,6 @@
 import type { Investimento } from './economia';
 import type { Exercito } from '@/combate/exercito';
+import type { OrdemDeMarcha } from '@/movimento/ordens';
 
 /**
  * O estado mínimo de uma campanha — e nada além do mínimo.
@@ -44,8 +45,9 @@ export interface EstadoCampanha {
    *
    * ⚠️ **População é estado, não dado fixo.** O `dados/economia.json` guarda a população
    * INICIAL, de 700 a.C.; esta tabela é a de agora, e ela encolhe quando o poder põe
-   * gente em armas — quem marcha deixa de ser tributado e deixa de lavrar. É o que faz
-   * mobilizar ter preço contínuo em vez de só preço de entrada.
+   * gente em armas — quem marcha deixa de ser tributado e deixa de lavrar. Ao fim de
+   * cada turno ela cresce até a capacidade definida pela população inicial. É o que faz
+   * mobilizar ter preço contínuo sem condenar uma província a encolher para sempre.
    */
   populacao: Record<string, number>;
   /**
@@ -56,6 +58,16 @@ export interface EstadoCampanha {
    * duas, e por isso não existe pilha de exércitos no mesmo lugar pra gerenciar.
    */
   exercitos: Record<string, Exercito>;
+  /**
+   * Ordens de marcha registradas nesta RODADA, pela província de onde partem.
+   *
+   * Uma por hoste. Mover não muda o mapa no clique: a ordem fica aqui, revisável e
+   * cancelável, e só acontece quando o turno vira — junto com as de todo mundo.
+   *
+   * ⚠️ **Esvaziado no fim da resolução.** Se uma ordem sobrevivesse à virada, executaria
+   * de novo, e o sintoma seria tropa andando sozinha.
+   */
+  ordens: Record<string, OrdemDeMarcha>;
   /**
    * Incentivos de exploração em curso, por id de província.
    *

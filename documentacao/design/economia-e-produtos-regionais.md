@@ -237,10 +237,10 @@ jogador paga, e cada uma existe por um motivo próprio.
 
 A distinção que organiza isso:
 
-| natureza | exemplo | onde vive |
-| --- | --- | --- |
-| vantagem natural do sítio | comércio-base: o Pireu é enseada boa antes de qualquer obra | dados autorais, fixo |
-| capacidade construída | porto, estrada, torre | estado da campanha, comprado |
+| natureza                  | exemplo                                                     | onde vive                    |
+| ------------------------- | ----------------------------------------------------------- | ---------------------------- |
+| vantagem natural do sítio | comércio-base: o Pireu é enseada boa antes de qualquer obra | dados autorais, fixo         |
+| capacidade construída     | porto, estrada, torre                                       | estado da campanha, comprado |
 
 O comércio-base continua sendo terreno, igual ao nível de produção: Maratona é costa
 aberta e o Pireu não é, e nenhuma obra troca uma coisa pela outra. A construção entra
@@ -254,13 +254,13 @@ aritmética — basta pegar a de maior retorno, e a lista deixa de ser uma escol
 Cada construção paga numa moeda diferente, e é justamente por não serem comparáveis que
 o jogador precisa decidir do que sente falta:
 
-| construção | paga em |
-| --- | --- |
-| Porto | alcance marítimo — tropas e comércio pelo mar |
-| Estrada | comércio terrestre e velocidade de marcha |
-| Torre de vigia | informação: força inimiga nas províncias vizinhas |
-| Arsenal (futuro) | recrutamento mais barato |
-| Mercado (futuro) | valor do que é vendido |
+| construção       | paga em                                           |
+| ---------------- | ------------------------------------------------- |
+| Porto            | alcance marítimo — tropas e comércio pelo mar     |
+| Estrada          | comércio terrestre e velocidade de marcha         |
+| Torre de vigia   | informação: força inimiga nas províncias vizinhas |
+| Arsenal (futuro) | recrutamento mais barato                          |
+| Mercado (futuro) | valor do que é vendido                            |
 
 A torre tem um pré-requisito que a torna um sistema, e não um item de lista:
 **informação precisa ser escassa primeiro.** Hoje o mapa mostra tudo — dono, fronteira,
@@ -289,10 +289,10 @@ para pagar o porto. A regra vale igualmente para jogador e IA.
 
 ### A decisão que bloqueava o porto já foi tomada
 
-**A tropa salta de província vizinha em província vizinha**, sem peça com pontos de
-movimento — o modelo mais simples e o mais próximo do mapa que já existe. E **o mar é
-recortado em zonas**, por onde a frota navega. Com isso, o porto tem forma: é o lugar onde
-a tropa embarca, e a ponte entre o grafo de terra e o grafo de mar.
+**A tropa recebe uma ordem planejada de até dois saltos entre províncias vizinhas**, que
+só é executada na resolução da rodada. E **o mar é recortado em zonas**, por onde a frota
+navega. Com isso, o porto tem forma: é o lugar onde a tropa embarca, e a ponte entre o
+grafo de terra e o grafo de mar.
 
 O porto continua sem entrar, mas agora por ordem de fatias e não por indecisão: movimento
 em terra vem antes de movimento no mar. Ver
@@ -307,6 +307,7 @@ em terra vem antes de movimento no mar. Ver
    ⚠️ **A varredura tem que cortar 26 px ao norte e a leste da moldura.** Aquela faixa é
    100% água e é borda, não mar: contando a água crua dão 161 costeiras, e as dez a mais
    incluem Górdio e Pessinunte, que estão a 200 km de qualquer mar.
+
 2. **Recortar o mar em zonas** e derivar as duas adjacências: zona↔zona e
    zona↔província costeira. Medido: a máquina que recorta a terra recorta a água em
    **1,1 s**, deixando 0,01% sem dono.
@@ -447,20 +448,40 @@ Alguns recursos devem aparecer em poucos locais para criar objetivos militares c
 - ferro: Macedônia, Eubeia e interior da Anatólia;
 - cavalos: característica concentrada na Tessália, Macedônia, Trácia e Lídia.
 
+## Crescimento populacional implementado
+
+A população inicial de `dados/economia.json` é a âncora autoral da província, não um valor
+congelado. A população atual vive no estado da campanha, cai com o recrutamento, volta com
+a desmobilização e cresce naturalmente ao fim de cada turno.
+
+```text
+capacidade = população inicial × 2
+crescimento = piso(população atual × 1% × (1 − atual/capacidade) × bônus de construções)
+```
+
+A curva desacelera perto da capacidade e nunca a ultrapassa. População zero não cresce
+sozinha; migração e repovoamento continuam fora do escopo. Os parâmetros ficam em
+`dados/ajustes.json`, enquanto a fórmula pura fica em `src/populacao/crescimento.ts`.
+
+O **Celeiro público** custa 3.500 moedas, leva 3 turnos e aumenta em 50% o crescimento
+natural da província, sem gerar ouro direto e sem elevar sua capacidade. Na Atenas inicial,
+isso muda a previsão de +175 para +262 habitantes por turno. Uma obra concluída numa
+passagem de turno só beneficia o crescimento da passagem seguinte.
+
 ## Próximo passo quando as províncias estiverem prontas
 
 Criar uma tabela definitiva com uma linha por província contendo:
 
-| Campo             | Conteúdo                              |
-| ----------------- | ------------------------------------- |
-| identificador     | nome interno estável                  |
-| nome              | nome mostrado ao jogador              |
-| produto           | um dos oito produtos comerciais       |
-| nível de produção | grau natural fixo de 1 a 5            |
-| população         | estimativa inicial usada nos impostos |
+| Campo             | Conteúdo                                   |
+| ----------------- | ------------------------------------------ |
+| identificador     | nome interno estável                       |
+| nome              | nome mostrado ao jogador                   |
+| produto           | um dos oito produtos comerciais            |
+| nível de produção | grau natural fixo de 1 a 5                 |
+| população         | estimativa inicial usada nos impostos      |
 | costeira          | sim ou não — condição para construir porto |
-| comércio-base     | vantagem natural de posição e escoamento |
-| característica    | cavalos ou outra exceção rara         |
+| comércio-base     | vantagem natural de posição e escoamento   |
+| característica    | cavalos ou outra exceção rara              |
 
 A distribuição deve ser feita depois que o recorte provincial estiver estabilizado para
 evitar retrabalho.

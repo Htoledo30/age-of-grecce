@@ -40,11 +40,81 @@ nela, disputá-la e bloqueá-la. A frota navega de zona em zona adjacente.
 | alcance naval a partir do porto, em dias de navegação | proposta de design | o mar deixa de ser lugar e vira raio; não dá para bloquear um raio |
 | adjacência marítima derivada por proximidade mútua | `tarefas/esqueleto-estado-e-turno.md` (removido) | funcionava e era artificial: inventava vizinhança onde não há travessia |
 
-### A tropa salta de província vizinha em província vizinha
+### A rodada tem planejamento e resolução
 
-Sem peça com pontos de movimento. É o modelo mais simples e o mais próximo do mapa que já
-existe, e é o que a régua de escopo pede. Profundidade entra em cima disso — não em
-substituição a isso.
+**Mover não altera o mapa no instante do clique.** Durante o turno, jogador e IA registram
+ordens sobre o mesmo estado do mundo; ao passar o turno, começa a fase de resolução. É ela
+que executa marchas, encontros, batalhas e conquistas. Assim quem age primeiro não pode
+tomar uma fronteira vazia antes que o outro lado tenha oportunidade de mandar reforço.
+
+O fluxo visível é:
+
+1. selecionar a hoste e clicar em **Mover**;
+2. destacar destinos e mostrar a rota;
+3. escolher quantos homens marcham;
+4. gravar uma seta com a quantidade, sem deslocar o marcador ainda;
+5. permitir revisar ou cancelar a ordem antes de passar o turno;
+6. receber as ordens da IA e resolver a rodada;
+7. começar a rodada seguinte com o mundo resultante.
+
+Província inimiga realmente vazia continua caindo sem batalha: isso é fronteira
+desprotegida, não vantagem de interface. Se o defensor também mandar reforço, as ordens se
+encontram durante a resolução.
+
+### Cada hoste tem dois pontos de movimento
+
+Cada hoste planeja até **dois saltos entre províncias vizinhas por rodada**. Não existe
+limite global de cliques ou ações do poder: dinheiro limita economia; população, teto de
+leva e manutenção limitam exércitos; os pontos da própria hoste limitam operações.
+
+- cada travessia terrestre custa inicialmente 1 ponto;
+- a rota pode ter no máximo dois trechos;
+- encontrar inimigo inicia batalha e cancela o restante da rota;
+- os pontos voltam no começo da rodada seguinte;
+- não há limite artificial de quantidade de hostes;
+- custo por relevo está proibido enquanto o mapa não tiver dado geográfico confiável.
+
+Entrar no mar continua impossível até existirem zonas marítimas e frota.
+
+### A hoste pode mandar somente parte dos homens
+
+Hoste é uma quantidade divisível, não uma peça indivisível. Uma hoste de 1.000 em Atenas
+pode ordenar que 500 marchem e deixar 500 defendendo. A ordem guarda **origem, destino,
+quantidade, rota e custo de movimento**.
+
+- cada hoste emite somente **uma ordem de movimento por rodada**;
+- não existe quantidade mínima: pode marchar um homem e pode ficar um homem na origem;
+- mover a hoste inteira também é permitido com qualquer quantidade;
+- os homens comprometidos ficam indicados como "em marcha", mas só saem na resolução;
+- a parte que ficou não recebe outra ordem de movimento naquela rodada, mas defende a origem;
+- se chegar a uma hoste aliada, o destacamento se incorpora a ela;
+- se chegar a inimigo, só o destacamento enviado participa da batalha.
+
+**A origem populacional continua preservada.** Ao separar uma hoste que mistura homens de
+várias províncias, o destacamento leva uma parcela proporcional de cada origem. Dispensar
+depois continua devolvendo cada homem à terra correta.
+
+### Ordem e pagamento agora; preparo físico depois
+
+A regra temporal geral é: **a decisão compromete recursos imediatamente, mas o que exige
+preparação física leva rodadas.**
+
+| ação | quando o custo/ordem entra | quando o efeito fica disponível |
+| --- | --- | --- |
+| investimento | imediatamente | na próxima arrecadação |
+| dispensar soldados | imediatamente | população volta imediatamente à origem |
+| recrutar | ouro e população saem imediatamente | leva fica pronta na rodada seguinte |
+| construir | ouro sai imediatamente | depois dos turnos de obra do catálogo |
+| mover | ordem e pontos ficam comprometidos | durante a resolução da rodada |
+| combater e conquistar | consequência da ordem de marcha | durante a mesma resolução |
+
+Cada província prepara somente **uma leva por vez**. Quando pronta, ela cria uma hoste ou
+se incorpora à aliada que estiver ali, e entra na rodada seguinte com os dois pontos de
+movimento. Se a província for conquistada durante o preparo, a formação é interrompida:
+o ouro não volta e os homens retornam à população daquela terra, agora sob o novo dono.
+
+Por enquanto toda leva leva uma rodada, independentemente do tamanho. Fazer o prazo variar
+com a quantidade só entra se o ciclo jogável provar que essa profundidade faz falta.
 
 ### Só se recruta onde há Quartel, e a leva custa ouro **e população**
 
@@ -58,10 +128,10 @@ grande passa a valer por gente, não só por renda.
 ### A ordem das fatias, escolhida pelo dono
 
 1. marcador e seleção — **feito**
-2. movimento entre províncias amigas
-3. reunião e divisão de hostes
-4. entrada em território inimigo
-5. batalha provisória
+2. recrutamento com uma rodada de preparo
+3. ordens de movimento entre províncias amigas, com divisão e reunião
+4. resolução simultânea das ordens e entrada em território inimigo
+5. batalha provisória e conquista
 
 **Batalha é a última.** Antes dela é preciso olhar para Atenas e ver que mil homens estão
 ali.
@@ -73,8 +143,8 @@ ali.
 | peça | onde | estado |
 | --- | --- | --- |
 | Quartel destrava recrutar | `dados/construcoes.json` | feito |
-| leva custa ouro e população | `src/combate/recrutamento.ts` | feito |
-| teto de 10% da população, contando quem já está fora | `src/combate/recrutamento.ts` | feito |
+| leva custa ouro e população, mas hoje nasce imediatamente | `src/combate/recrutamento.ts`, `src/combate/mobilizacao.ts` | feito; falta a fila de um turno |
+| qualquer quantidade inteira de 1 até a população atual, sem fração nem lote mínimo | `src/combate/recrutamento.ts` | feito |
 | manutenção por turno, e deserção proporcional quando não se paga | `src/combate/mobilizacao.ts` | feito |
 | dispensar devolve cada homem à terra dele | `src/combate/mobilizacao.ts` | feito |
 | marcador da hoste no mapa, seleção e ficha | `src/ui/hostes-mapa.ts`, `src/ui/exercito-ficha.ts` | feito |
@@ -165,9 +235,9 @@ unidade nenhuma, e é essa restrição que torna o relatório a mecânica em vez
 
 ## Perguntas em aberto que precisam de resposta do dono
 
-1. **Dividir hoste.** A ordem de fatias do dono inclui "reunião e divisão"; uma proposta de
-   design recomenda o contrário — uma hoste por província, sem dividir, e a segunda coluna
-   se faz recrutando outra. As duas posições são defensáveis e são incompatíveis.
+1. **Ordem de resolução dos conflitos.** Falta decidir hostes que cruzam em sentidos
+   opostos, dois atacantes chegando ao mesmo destino e qual atributo desempata iniciativa.
+   A regra precisa ser determinística e visível, nunca sorteio escondido.
 2. **Quantas zonas de mar**, e onde ficam as sementes.
 3. **`jogo.anosPorTurno`** continua em aberto, e decide o ritmo da campanha inteira.
 

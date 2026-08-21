@@ -43,6 +43,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
 
   // A população aparece na ficha, e é ela que decide se a Ágora vale a pena.
   await expect(page.locator('dd.ficha__populacao')).toContainText('35.000');
+  await expect(page.locator('dd.ficha__crescimento')).toHaveText('+175 por turno');
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -52,10 +53,10 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   });
   await page.mouse.click(960, 540);
 
-  await expect(page.locator('.recrutamento__alvo')).toContainText('35.000 habitantes');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('cabem mais 3.500');
-  await expect(page.locator('.recrutamento__previsao')).toContainText('2.000 moedas agora');
-  await expect(page.locator('.recrutamento__previsao')).toContainText('200 por turno');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 habitantes');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 disponíveis');
+  await expect(page.locator('.recrutamento__previsao')).toContainText('3.000 moedas agora');
+  await expect(page.locator('.recrutamento__previsao')).toContainText('300 por turno');
 
   await page.getByRole('button', { name: 'Reunir leva' }).click();
 
@@ -63,14 +64,13 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { forca: i.forcaEm('atenas'), populacao: i.populacaoDe('atenas') };
   });
-  expect(depois).toEqual({ forca: 1000, populacao: 34_000 });
+  expect(depois).toEqual({ forca: 1000, populacao: 34_697 });
 
   // Os painéis contam a mesma história.
-  await expect(page.locator('dd.ficha__populacao')).toContainText('34.000');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('cabem mais 2.500');
-  // 34.000 x 0,005 = 170 de imposto, contra 175: quem está em armas não é tributado.
-  await expect(page.locator('.barra-turno__ouro')).toContainText('+703');
-  await expect(page.locator('.barra-turno__ouro')).toContainText('−200');
+  await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('34.697 disponíveis');
+  await expect(page.locator('.barra-turno__ouro')).toContainText('+709');
+  await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
   // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.

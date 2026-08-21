@@ -20,6 +20,9 @@ existe mais é pior que documento nenhum, porque parece verdade.
 - [Combate, exército e o mar](design/combate-e-mar.md) — o que está decidido sobre guerra,
   movimento e o recorte do mar em zonas; o que já está no jogo; o que foi medido no mapa
   real; e o que ainda é proposta. As quatro coisas separadas de propósito.
+- [Resolução da rodada](design/resolucao-da-rodada.md) — **proposta, para revisão.** As
+  regras de adjudicação da resolução simultânea: o princípio dos passos, quem defende, os
+  seis casos de encontro e os testes que os provam.
 - [Economia e produtos regionais](design/economia-e-produtos-regionais.md) — especificação
   do sistema econômico, vocações do mapa e referência regional para a distribuição por
   província.
@@ -34,6 +37,9 @@ existe mais é pior que documento nenhum, porque parece verdade.
   história política diferente.
 - [Estratégia de desenvolvimento](design/estrategia-de-desenvolvimento.md) — construção
   inicial do esqueleto jogável e evolução posterior sem uma ordem rígida de patches.
+- [Desempenho futuro da simulação](design/desempenho-da-simulacao.md) — diretrizes para
+  fases de rodada, cortes de alcance, dados orientados à simulação, cache de rotas e Web
+  Workers, adotadas somente depois de medir um gargalo real.
 
 ## Créditos
 

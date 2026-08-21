@@ -13,7 +13,7 @@
 import type { Ajustes } from '@/dados/esquema';
 import { exercitoVazio, forcaDe, retirar, somarLeva } from './exercito';
 import type { Exercito } from './exercito';
-import { avaliarLeva, manutencaoDe, tetoDeRecrutamento } from './recrutamento';
+import { avaliarLeva, disponivelParaLeva, manutencaoDe } from './recrutamento';
 import type { RecusaDeLeva } from './recrutamento';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
@@ -77,12 +77,9 @@ export class Mobilizacao {
     return total;
   }
 
-  tetoDeLevaEm(idProvincia: string): number {
-    return tetoDeRecrutamento(
-      this.populacaoDe(idProvincia),
-      this.homensEmArmasDe(idProvincia),
-      this.ajustes,
-    );
+  /** Quantos habitantes esta província ainda cede a uma leva. */
+  disponivelParaLevaEm(idProvincia: string): number {
+    return disponivelParaLeva(this.populacaoDe(idProvincia));
   }
 
   avaliarLevaEm(idProvincia: string, homens: number, temQuartel: boolean): RecusaDeLeva {
@@ -90,7 +87,6 @@ export class Mobilizacao {
       homens,
       {
         populacao: this.populacaoDe(idProvincia),
-        jaEmArmas: this.homensEmArmasDe(idProvincia),
         tesouro: this.estado.tesouro,
         temQuartel,
       },
@@ -134,6 +130,40 @@ export class Mobilizacao {
     const exercito = this.estado.exercitos[idProvincia];
     if (!exercito) throw new Error(`não há exército em ${idProvincia}`);
     this.devolver(exercito, idProvincia, homens);
+  }
+
+  /**
+   * Passa a hoste de uma província para outra, fundindo com a que já estiver lá.
+   *
+   * **Uma hoste por província**, e é isso que dispensa pilha, ordem de empilhamento e a
+   * pergunta "qual das minhas defende". Duas hostes do mesmo poder que se encontram viram
+   * uma, somando a origem de cada homem — e por isso quem veio de Maratona continua
+   * voltando pra Maratona quando for dispensado.
+   *
+   * ⚠️ **Não julga se a marcha é legal.** Quem decide é `src/movimento/marcha.ts`; esta é
+   * a primitiva que executa. Misturar as duas faria deste arquivo o lugar onde as regras
+   * de guerra acabariam morando.
+   */
+  mover(origem: string, destino: string): void {
+    const hoste = this.estado.exercitos[origem];
+    if (!hoste) throw new Error(`não há exército em ${origem}`);
+    if (origem === destino) return;
+
+    const naChegada = this.estado.exercitos[destino];
+    if (naChegada && naChegada.poder !== hoste.poder) {
+      // Entrar onde há tropa alheia é batalha, e batalha ainda não existe. Estourar alto
+      // é melhor que fundir exércitos inimigos num só e produzir um estado impossível.
+      throw new Error(`há tropa de ${naChegada.poder} em ${destino}`);
+    }
+
+    if (!naChegada) {
+      this.estado.exercitos[destino] = hoste;
+    } else {
+      for (const [terra, homens] of Object.entries(hoste.origem)) {
+        naChegada.origem[terra] = (naChegada.origem[terra] ?? 0) + homens;
+      }
+    }
+    delete this.estado.exercitos[origem];
   }
 
   manutencaoDe(idPoder: string): number {
