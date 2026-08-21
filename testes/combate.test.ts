@@ -337,19 +337,23 @@ describe('perder o chão não é o mesmo que morrer', () => {
     expect(c.poderesVivos()).toContain('atenas');
   });
 
-  it('o exílio acaba sozinho: sem renda a folha não é paga e a tropa deserta', () => {
+  it('o exílio dura uma rodada: a hoste retoma a terra onde está', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
     expect(c.renda).toBe(0); // sem província, sem arrecadação
+    expect(c.noExilio('atenas')).toBe(true);
 
-    // Não precisa de temporizador nenhum: a regra da deserção que já existia dá o prazo.
-    for (let i = 0; i < 60; i++) c.passarTurno();
+    c.passarTurno();
 
-    expect(c.forcaEm('atenas')).toBe(0);
-    expect(c.vivo('atenas')).toBe(false);
+    // ⚠️ A regra da conquista mudou isto, e o comportamento novo é o certo: uma hoste
+    // parada em terra alheia SEM ninguém defendendo fica com ela. O exército no exílio
+    // não espera — ele retoma o chão em que está pisando.
+    expect(c.donoDe('atenas')).toBe('atenas');
     expect(c.noExilio('atenas')).toBe(false);
-    expect(c.poderesVivos()).not.toContain('atenas');
+    expect(c.vivo('atenas')).toBe(true);
+    // O caminho da deserção continua existindo e tem teste próprio: ver "o aperto drena o
+    // tesouro". O que morreu foi a premissa de que o exilado fica parado.
   });
 
   it('sem chão e sem tropa é eliminação, como antes', () => {

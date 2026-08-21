@@ -94,6 +94,18 @@ export class Mobilizacao {
     );
   }
 
+  /**
+   * Põe uma hoste no mapa do nada. **Só desenvolvimento** — ver `Campanha.plantarHoste`.
+   *
+   * Serve pra montar um inimigo no tabuleiro enquanto a IA não existe. Não cobra ouro,
+   * não tira gente da população, e por isso nenhuma regra do jogo pode chamar isto.
+   */
+  plantar(idProvincia: string, idPoder: string, homens: number): void {
+    const exercito = exercitoVazio(idPoder);
+    somarLeva(exercito, idProvincia, homens);
+    this.estado.exercitos[idProvincia] = exercito;
+  }
+
   /** Aplica uma leva que a campanha já autorizou: cobra o ouro e tira os homens da terra. */
   recrutar(idProvincia: string, poder: string, leva: { ouro: number; homens: number }): void {
     const existente = this.estado.exercitos[idProvincia];

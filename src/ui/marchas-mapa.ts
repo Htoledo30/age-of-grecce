@@ -1,0 +1,155 @@
+/**
+ * Rotas de marcha sobre o mapa.
+ *
+ * Destinos respondem "onde posso clicar"; esta camada responde "por onde a tropa vai".
+ * Mantê-las separadas evita transformar os botões de destino em desenho, estado e
+ * controle ao mesmo tempo. A camada é SVG, não recebe ponteiro e segue a câmera.
+ */
+
+import type { Camera } from '@/nucleo/camera';
+
+const SVG = 'http://www.w3.org/2000/svg';
+
+export interface PontoDeMarcha {
+  x: number;
+  y: number;
+}
+
+export interface PrevisaoDeMarcha {
+  destino: string;
+  pontos: readonly PontoDeMarcha[];
+  hostil: boolean;
+}
+
+export interface OrdemNoMapa {
+  origem: string;
+  destino: string;
+  pontos: readonly PontoDeMarcha[];
+  homens: number;
+  cor: string;
+  minha: boolean;
+  hostil: boolean;
+}
+
+interface LinhaDePrevisao {
+  dados: PrevisaoDeMarcha;
+  elemento: SVGPolylineElement;
+}
+
+interface LinhaDeOrdem {
+  dados: OrdemNoMapa;
+  elemento: SVGPolylineElement;
+  seta: SVGPolygonElement;
+  quantidade: SVGTextElement;
+}
+
+export class MarchasMapa {
+  private readonly camada = document.createElementNS(SVG, 'svg');
+  private readonly grupoPrevisoes = document.createElementNS(SVG, 'g');
+  private readonly grupoOrdens = document.createElementNS(SVG, 'g');
+  private readonly origem = document.createElementNS(SVG, 'circle');
+  private previsoes: LinhaDePrevisao[] = [];
+  private ordens: LinhaDeOrdem[] = [];
+  private pontoDaOrigem: PontoDeMarcha | null = null;
+
+  constructor(pai: HTMLElement) {
+    this.camada.classList.add('marchas');
+    this.camada.setAttribute('aria-hidden', 'true');
+    this.origem.classList.add('marchas__origem');
+    this.origem.setAttribute('r', '23');
+    this.camada.append(this.grupoPrevisoes, this.grupoOrdens, this.origem);
+    pai.appendChild(this.camada);
+  }
+
+  /** Redesenha os poucos traços da interação atual e das ordens ainda não resolvidas. */
+  mostrar(
+    origem: PontoDeMarcha | null,
+    previsoes: readonly PrevisaoDeMarcha[],
+    ordens: readonly OrdemNoMapa[],
+  ): void {
+    this.pontoDaOrigem = origem;
+    if (origem === null) this.origem.setAttribute('hidden', '');
+    else this.origem.removeAttribute('hidden');
+
+    this.previsoes = previsoes.map((dados) => {
+      const elemento = document.createElementNS(SVG, 'polyline');
+      elemento.classList.add('marchas__previsao');
+      elemento.dataset['destino'] = dados.destino;
+      elemento.dataset['destacada'] = 'nao';
+      elemento.dataset['hostil'] = dados.hostil ? 'sim' : 'nao';
+      return { dados, elemento };
+    });
+    this.grupoPrevisoes.replaceChildren(...this.previsoes.map((p) => p.elemento));
+
+    this.ordens = ordens.map((dados) => {
+      const elemento = document.createElementNS(SVG, 'polyline');
+      elemento.classList.add('marchas__ordem');
+      elemento.dataset['origem'] = dados.origem;
+      elemento.dataset['destino'] = dados.destino;
+      elemento.dataset['minha'] = dados.minha ? 'sim' : 'nao';
+      elemento.dataset['hostil'] = dados.hostil ? 'sim' : 'nao';
+      elemento.style.setProperty('--cor-da-marcha', dados.cor);
+
+      const seta = document.createElementNS(SVG, 'polygon');
+      seta.classList.add('marchas__seta');
+      seta.dataset['minha'] = dados.minha ? 'sim' : 'nao';
+      seta.dataset['hostil'] = dados.hostil ? 'sim' : 'nao';
+      seta.setAttribute('points', '-2,-7 14,0 -2,7 2,0');
+      seta.style.setProperty('--cor-da-marcha', dados.cor);
+
+      const quantidade = document.createElementNS(SVG, 'text');
+      quantidade.classList.add('marchas__quantidade');
+      quantidade.dataset['minha'] = dados.minha ? 'sim' : 'nao';
+      quantidade.dataset['hostil'] = dados.hostil ? 'sim' : 'nao';
+      quantidade.textContent = dados.homens.toLocaleString('pt-BR');
+      quantidade.style.setProperty('--cor-da-marcha', dados.cor);
+      return { dados, elemento, seta, quantidade };
+    });
+    this.grupoOrdens.replaceChildren(
+      ...this.ordens.flatMap((o) => [o.elemento, o.seta, o.quantidade]),
+    );
+  }
+
+  /** A rota sob o destino apontado ganha peso; as demais continuam como contexto. */
+  destacar(idDestino: string | null): void {
+    for (const previsao of this.previsoes) {
+      previsao.elemento.dataset['destacada'] = previsao.dados.destino === idDestino ? 'sim' : 'nao';
+    }
+  }
+
+  /** Reprojeta linhas, origem e rótulos quando a câmera anda ou dá zoom. */
+  posicionar(camera: Camera): void {
+    if (this.pontoDaOrigem) {
+      const origem = camera.mundoParaPalco(this.pontoDaOrigem.x, this.pontoDaOrigem.y);
+      this.origem.setAttribute('cx', String(origem.x));
+      this.origem.setAttribute('cy', String(origem.y));
+    }
+
+    for (const previsao of this.previsoes) {
+      previsao.elemento.setAttribute('points', pontosNaTela(previsao.dados.pontos, camera));
+    }
+
+    for (const ordem of this.ordens) {
+      ordem.elemento.setAttribute('points', pontosNaTela(ordem.dados.pontos, camera));
+      const ultimo = ordem.dados.pontos.at(-1);
+      const penultimo = ordem.dados.pontos.at(-2);
+      if (!ultimo || !penultimo) continue;
+      const destino = camera.mundoParaPalco(ultimo.x, ultimo.y);
+      const anterior = camera.mundoParaPalco(penultimo.x, penultimo.y);
+      const angulo = (Math.atan2(destino.y - anterior.y, destino.x - anterior.x) * 180) / Math.PI;
+      ordem.seta.setAttribute(
+        'transform',
+        `translate(${destino.x} ${destino.y}) rotate(${angulo})`,
+      );
+      ordem.quantidade.setAttribute('x', String(destino.x + 18));
+      ordem.quantidade.setAttribute('y', String(destino.y - 16));
+    }
+  }
+}
+
+function pontosNaTela(pontos: readonly PontoDeMarcha[], camera: Camera): string {
+  return pontos
+    .map((ponto) => camera.mundoParaPalco(ponto.x, ponto.y))
+    .map((ponto) => `${ponto.x},${ponto.y}`)
+    .join(' ');
+}

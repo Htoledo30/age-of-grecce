@@ -811,6 +811,22 @@ Quartel estivessem na mesma província. Seleções diferentes viram painéis dif
 Clicar no marcador escolhe **as duas coisas** — a tropa e o chão sob ela —, e os dois
 painéis ficam verdadeiros ao mesmo tempo. Clicar no mapa é escolher chão, e solta a hoste.
 
+### O mapa precisa mostrar a intenção de marcha
+
+Movimento simultâneo cria um problema visual: a hoste não sai do lugar quando a ordem é
+dada. Sem feedback no mapa, isso parece clique perdido. A linguagem implementada separa
+três estados:
+
+- **possibilidade:** rotas tracejadas, destinos circulares e nomes das províncias;
+- **ordem registrada:** seta dourada cheia, quantidade ao lado do destino e selo `↗` na
+  hoste de origem;
+- **ordem resolvida:** a seta desaparece e o marcador de chegada pulsa brevemente.
+
+`src/ui/destinos-mapa.ts` continua sendo o controle clicável; `src/ui/marchas-mapa.ts`
+desenha rotas e ordens em SVG sem receber ponteiro; `src/ui/hostes-mapa.ts` desenha as
+peças e seus estados. Essa separação é deliberada: destino responde **onde clicar**, rota
+responde **por onde vai**, hoste responde **quem está indo**.
+
 ### O exílio, e o homem de terra perdida
 
 ⚠️ **Perder o último chão não é morrer.** `vivo` é ter **chão OU hoste**. Antes era só

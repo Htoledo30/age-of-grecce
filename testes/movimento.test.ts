@@ -9,6 +9,7 @@ import { alcanceDe, rotasDe } from '../src/movimento/alcance';
 import { resolverRodada } from '../src/movimento/resolucao';
 import type { EstadoDaResolucao } from '../src/movimento/resolucao';
 import { exercitoVazio, forcaDe, somarLeva } from '../src/combate/exercito';
+import { resolverChoque } from '../src/combate/batalha';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -30,6 +31,20 @@ function comHoste(homens = 1000, onde = 'atenas'): Campanha {
   for (let i = 0; i < 4; i++) c.passarTurno();
   c.recrutar(onde, homens);
   return c;
+}
+
+/**
+ * Um mundo mínimo pra resolução pura: só sabe de quem é cada província e deixa trocar.
+ * Quem não está na tabela pertence a `ninguem`, que nunca é dono de hoste nenhuma.
+ */
+function mundoDe(donos: Record<string, string> = {}) {
+  return {
+    donos,
+    donoDe: (id: string) => donos[id] ?? 'ninguem',
+    trocarDono: (id: string, poder: string) => {
+      donos[id] = poder;
+    },
+  };
 }
 
 /** Uma hoste solta, sem campanha em volta: é o que a resolução pura precisa. */
@@ -153,9 +168,24 @@ describe('a ordem recusada diz o motivo', () => {
     });
   });
 
-  it('o destino não é seu', () => {
+  it('marchar contra terra alheia é LEGAL — é o ponto da guerra', () => {
     expect(comHoste(1000).podeOrdenarMarcha('atenas', 'tanagra', 100)).toMatchObject({
-      motivo: 'Tanagra não é sua',
+      pode: true,
+      rota: ['tanagra'],
+    });
+  });
+
+  it('mas terra alheia não serve de CAMINHO: a rota acaba nela', () => {
+    const c = comHoste(1000);
+    // Tebas fica depois de Tanagra, que é alheia. Dois pontos não bastam, porque a hoste
+    // não atravessa o reino do vizinho — pararia em Tanagra.
+    expect(c.podeOrdenarMarcha('atenas', 'tebas', 100)).toMatchObject({
+      motivo: 'Tebas está longe demais para esta rodada',
+    });
+    // Elêusis é alheia e vizinha: alcançável. Mégara fica atrás dela: não.
+    expect(c.podeOrdenarMarcha('atenas', 'eleusis', 100)).toMatchObject({ pode: true });
+    expect(c.podeOrdenarMarcha('atenas', 'megara', 100)).toMatchObject({
+      motivo: 'Mégara está longe demais para esta rodada',
     });
   });
 
@@ -195,7 +225,7 @@ describe('resolução: partida, chegada, choque', () => {
       exercitos: { a: hoste('atenas', 'a', 1000) },
       ordens: { a: { origem: 'a', rota: ['b', 'c'], homens: 1000 } },
     };
-    resolverRodada(estado, 2);
+    resolverRodada(estado, 2, mundoDe());
     // Quem manda a guarnição inteira embora deixa a casa aberta desde o primeiro instante.
     expect(estado.exercitos['a']).toBeUndefined();
     expect(forcaDe(estado.exercitos['c'])).toBe(1000);
@@ -207,7 +237,7 @@ describe('resolução: partida, chegada, choque', () => {
       exercitos: { a: hoste('atenas', 'a', 500) },
       ordens: { a: { origem: 'a', rota: ['b'], homens: 500 } },
     };
-    resolverRodada(estado, 2);
+    resolverRodada(estado, 2, mundoDe());
     expect(forcaDe(estado.exercitos['b'])).toBe(500);
   });
 
@@ -219,7 +249,7 @@ describe('resolução: partida, chegada, choque', () => {
         b: { origem: 'b', rota: ['c'], homens: 700 },
       },
     };
-    resolverRodada(estado, 2);
+    resolverRodada(estado, 2, mundoDe());
     expect(forcaDe(estado.exercitos['c'])).toBe(1000);
     // A terra natal de cada um sobrevive à fusão.
     expect(estado.exercitos['c']?.origem).toEqual({ a: 300, b: 700 });
@@ -233,7 +263,7 @@ describe('resolução: partida, chegada, choque', () => {
       exercitos: { a: misturada },
       ordens: { a: { origem: 'a', rota: ['b'], homens: 500 } },
     };
-    resolverRodada(estado, 2);
+    resolverRodada(estado, 2, mundoDe());
     // Metade de cada, não 500 da primeira da lista: a ordem das levas não pode virar regra.
     expect(estado.exercitos['b']?.origem).toEqual({ atenas: 350, maratona: 150 });
     expect(estado.exercitos['a']?.origem).toEqual({ atenas: 350, maratona: 150 });
@@ -244,7 +274,7 @@ describe('resolução: partida, chegada, choque', () => {
       exercitos: {},
       ordens: { a: { origem: 'a', rota: ['b'], homens: 500 } },
     };
-    expect(() => resolverRodada(estado, 2)).not.toThrow();
+    expect(() => resolverRodada(estado, 2, mundoDe())).not.toThrow();
     expect(estado.exercitos['b']).toBeUndefined();
   });
 
@@ -253,7 +283,7 @@ describe('resolução: partida, chegada, choque', () => {
       exercitos: { a: hoste('atenas', 'a', 1000) },
       ordens: { a: { origem: 'a', rota: ['b', 'c'], homens: 400 } },
     };
-    const r = resolverRodada(estado, 2);
+    const r = resolverRodada(estado, 2, mundoDe());
     expect(r.marchas).toEqual([{ origem: 'a', destino: 'c', homens: 400 }]);
   });
 });
@@ -272,7 +302,7 @@ describe('determinismo — a exigência que não é opcional', () => {
     });
     const uma = montar();
     const outra = montar();
-    expect(resolverRodada(uma, 2)).toEqual(resolverRodada(outra, 2));
+    expect(resolverRodada(uma, 2, mundoDe())).toEqual(resolverRodada(outra, 2, mundoDe()));
     expect(uma.exercitos).toEqual(outra.exercitos);
   });
 
@@ -293,7 +323,178 @@ describe('determinismo — a exigência que não é opcional', () => {
         zacinto: { origem: 'zacinto', rota: ['meio'], homens: 300 },
       },
     };
-    expect(resolverRodada(primeiro, 2)).toEqual(resolverRodada(invertido, 2));
+    expect(resolverRodada(primeiro, 2, mundoDe())).toEqual(resolverRodada(invertido, 2, mundoDe()));
     expect(primeiro.exercitos['meio']?.origem).toEqual(invertido.exercitos['meio']?.origem);
+  });
+});
+
+describe('a lei quadrada: vitória apertada custa caro', () => {
+  it('sobreviventes = raiz de (maior² − menor²)', () => {
+    expect(resolverChoque(1000, 900)).toEqual({ vencedor: 'a', sobreviventes: 436 });
+    expect(resolverChoque(1000, 500)).toEqual({ vencedor: 'a', sobreviventes: 866 });
+    expect(resolverChoque(1000, 200)).toEqual({ vencedor: 'a', sobreviventes: 980 });
+    expect(resolverChoque(200, 1000)).toEqual({ vencedor: 'b', sobreviventes: 980 });
+  });
+
+  it('forças iguais se aniquilam, e ninguém fica com a província', () => {
+    expect(resolverChoque(500, 500)).toEqual({ vencedor: null, sobreviventes: 0 });
+  });
+
+  it('quem vence nunca termina com zero em pé', () => {
+    // Sem o piso de 1, a província ficaria vazia e o resultado leria como aniquilamento
+    // mútuo, que é outra coisa.
+    expect(resolverChoque(1000, 999).sobreviventes).toBeGreaterThan(0);
+  });
+});
+
+describe('adjudicação: os seis casos da tabela', () => {
+  it('caso 1 — quem se cruza na estrada batalha, e o vencedor SEGUE e toma o destino', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      ordens: {
+        x: { origem: 'x', rota: ['y'], homens: 1000 },
+        y: { origem: 'y', rota: ['x'], homens: 600 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    // 1.000 × 600 → 800 sobrevivem. E a batalha não tem lugar: `provincia` é null.
+    expect(r.batalhas).toEqual([
+      { provincia: null, vencedor: 'a', perdedores: ['b'], sobreviventes: 800 },
+    ]);
+    expect(forcaDe(estado.exercitos['y'])).toBe(800);
+    expect(estado.exercitos['x']).toBeUndefined();
+    expect(mundo.donoDe('y')).toBe('a'); // seguiu e conquistou
+  });
+
+  it('caso 2 — dois que chegam na mesma província se enfrentam sem defensor', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b', z: 'c' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      ordens: {
+        x: { origem: 'x', rota: ['z'], homens: 1000 },
+        y: { origem: 'y', rota: ['z'], homens: 600 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    expect(r.batalhas[0]).toMatchObject({ provincia: 'z', vencedor: 'a', sobreviventes: 800 });
+    expect(mundo.donoDe('z')).toBe('a');
+  });
+
+  it('caso 3 — província esvaziada na partida cai sem batalha', () => {
+    const mundo = mundoDe({ x: 'a', z: 'b' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 1000), z: hoste('b', 'z', 500) },
+      ordens: {
+        x: { origem: 'x', rota: ['w'], homens: 1000 }, // sai de casa inteiro
+        z: { origem: 'z', rota: ['x'], homens: 500 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    // Fronteira desprotegida é risco real, não vantagem de interface.
+    expect(r.batalhas).toEqual([]);
+    expect(mundo.donoDe('x')).toBe('b');
+    expect(forcaDe(estado.exercitos['x'])).toBe(500);
+  });
+
+  it('caso 4 — encontro no meio da rota cancela o percurso dos DOIS', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b', w: 'c', z: 'c' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 1000), y: hoste('b', 'y', 600) },
+      ordens: {
+        x: { origem: 'x', rota: ['w', 'z'], homens: 1000 }, // ia até z
+        y: { origem: 'y', rota: ['w'], homens: 600 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    expect(r.batalhas[0]).toMatchObject({ provincia: 'w', vencedor: 'a', sobreviventes: 800 });
+    // Parou em w. Não chegou em z — ao contrário do encontro na estrada, aqui existe lugar
+    // onde ficar.
+    expect(forcaDe(estado.exercitos['w'])).toBe(800);
+    expect(estado.exercitos['z']).toBeUndefined();
+    expect(mundo.donoDe('z')).toBe('c');
+  });
+
+  it('caso 5 — três no mesmo destino resolvem aos pares, da maior força pra menor', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b', k: 'c', z: 'd' });
+    const estado: EstadoDaResolucao = {
+      exercitos: {
+        x: hoste('a', 'x', 1000),
+        y: hoste('b', 'y', 600),
+        k: hoste('c', 'k', 300),
+      },
+      ordens: {
+        x: { origem: 'x', rota: ['z'], homens: 1000 },
+        y: { origem: 'y', rota: ['z'], homens: 600 },
+        k: { origem: 'k', rota: ['z'], homens: 300 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    // 1.000 × 600 → 800; depois 800 × 300 → 742.
+    expect(r.batalhas).toHaveLength(2);
+    expect(r.batalhas[0]).toMatchObject({ vencedor: 'a', perdedores: ['b'], sobreviventes: 800 });
+    expect(r.batalhas[1]).toMatchObject({ vencedor: 'a', perdedores: ['c'], sobreviventes: 742 });
+    expect(forcaDe(estado.exercitos['z'])).toBe(742);
+  });
+
+  it('caso 6 — o reforço CHEGA a tempo de defender', () => {
+    const mundo = mundoDe({ x: 'a', y: 'a', z: 'b' });
+    const estado: EstadoDaResolucao = {
+      exercitos: {
+        y: hoste('a', 'y', 300), // guarnição
+        x: hoste('a', 'x', 700), // reforço a caminho
+        z: hoste('b', 'z', 800), // atacante
+      },
+      ordens: {
+        x: { origem: 'x', rota: ['y'], homens: 700 },
+        z: { origem: 'z', rota: ['y'], homens: 800 },
+      },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+
+    // 300 + 700 = 1.000 contra 800 → 600 sobrevivem. Sem o reforço chegar junto, 300
+    // contra 800 seria derrota — é exatamente a justiça que a simultaneidade dá.
+    expect(r.batalhas[0]).toMatchObject({ provincia: 'y', vencedor: 'a', sobreviventes: 600 });
+    expect(mundo.donoDe('y')).toBe('a');
+    expect(forcaDe(estado.exercitos['y'])).toBe(600);
+  });
+});
+
+describe('conquista', () => {
+  it('província inimiga vazia cai sem batalha nenhuma', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 100) },
+      ordens: { x: { origem: 'x', rota: ['y'], homens: 100 } },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+    expect(r.batalhas).toEqual([]);
+    expect(r.conquistas).toEqual([{ provincia: 'y', de: 'b', para: 'a' }]);
+  });
+
+  it('quem só passa pela própria terra não conquista nada', () => {
+    const mundo = mundoDe({ x: 'a', y: 'a' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 100) },
+      ordens: { x: { origem: 'x', rota: ['y'], homens: 100 } },
+    };
+    expect(resolverRodada(estado, 2, mundo).conquistas).toEqual([]);
+  });
+
+  it('aniquilamento mútuo não entrega a província a ninguém', () => {
+    const mundo = mundoDe({ x: 'a', y: 'b' });
+    const estado: EstadoDaResolucao = {
+      exercitos: { x: hoste('a', 'x', 500), y: hoste('b', 'y', 500) },
+      ordens: { x: { origem: 'x', rota: ['y'], homens: 500 } },
+    };
+    const r = resolverRodada(estado, 2, mundo);
+    expect(r.batalhas[0]).toMatchObject({ vencedor: null, sobreviventes: 0 });
+    expect(estado.exercitos['y']).toBeUndefined();
+    expect(mundo.donoDe('y')).toBe('b'); // continua de quem era
   });
 });

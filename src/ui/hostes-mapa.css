@@ -51,3 +51,67 @@
   outline: 2px solid var(--papel-claro);
   outline-offset: 1px;
 }
+
+/* A peça sob comando pulsa junto do anel desenhado pela camada de rotas. */
+.hostes__marca[data-escolhendo-destino='sim'] {
+  z-index: 3;
+  outline: 3px solid var(--ouro);
+  outline-offset: 3px;
+  animation: hoste-em-comando 650ms ease-in-out infinite alternate;
+}
+
+/* Ordem registrada: a peça ainda não se moveu, então precisa carregar um sinal de que
+   não está simplesmente parada. */
+.hostes__marca[data-ordem='sim']::after {
+  content: '↗';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--tinta);
+  border-radius: 50%;
+  background: var(--ouro);
+  color: var(--tinta);
+  font-family: sans-serif;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.hostes__marca[data-chegada='sim'] {
+  z-index: 4;
+  animation: hoste-chegou 850ms ease-out both;
+}
+
+@keyframes hoste-em-comando {
+  from {
+    filter: brightness(1);
+  }
+
+  to {
+    filter: brightness(1.35);
+  }
+}
+
+@keyframes hoste-chegou {
+  0% {
+    scale: 0.72;
+    box-shadow: 0 0 0 0 rgb(240 226 189 / 90%);
+  }
+
+  55% {
+    box-shadow: 0 0 0 13px rgb(240 226 189 / 0%);
+  }
+
+  100% {
+    scale: 1;
+    box-shadow: 0 1px 0 rgb(0 0 0 / 35%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hostes__marca[data-escolhendo-destino='sim'],
+  .hostes__marca[data-chegada='sim'] {
+    animation: none;
+  }
+}

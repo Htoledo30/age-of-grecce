@@ -9,6 +9,7 @@ import '@/ui/controles.css';
 import '@/ui/barra-turno.css';
 import '@/ui/recrutamento.css';
 import '@/ui/exercito-ficha.css';
+import '@/ui/marchas-mapa.css';
 import '@/ui/hostes-mapa.css';
 import '@/ui/destinos-mapa.css';
 
@@ -35,6 +36,8 @@ import { Recrutamento } from '@/ui/recrutamento';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import { ExercitoFicha } from '@/ui/exercito-ficha';
 import type { VistaDoExercito } from '@/ui/exercito-ficha';
+import { MarchasMapa } from '@/ui/marchas-mapa';
+import type { OrdemNoMapa, PontoDeMarcha, PrevisaoDeMarcha } from '@/ui/marchas-mapa';
 import { HostesMapa } from '@/ui/hostes-mapa';
 import type { MarcadorDeHoste } from '@/ui/hostes-mapa';
 import { DestinosMapa } from '@/ui/destinos-mapa';
@@ -87,6 +90,8 @@ async function iniciar(): Promise<void> {
       Object.entries(carregarConstrucoes().construcoes).map(([id, c]) => [id, c.nome]),
     ),
   );
+  // As rotas ficam atrás das peças: possibilidade tracejada, ordem registrada cheia.
+  const marchasMapa = new MarchasMapa(ui);
   // Os marcadores ficam numa camada própria sobre o mapa, e não dentro de painel nenhum:
   // eles pertencem ao mundo, e é a câmera que decide onde cada um aparece.
   const hostesMapa = new HostesMapa(ui);
@@ -127,6 +132,9 @@ async function iniciar(): Promise<void> {
   let marchando: string | null = null;
   /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
   let homensParaMarchar = 0;
+  /** Destinos que acabaram de receber tropa; existem só durante o pulso de chegada. */
+  let chegadasRecentes = new Set<string>();
+  let temporizadorDaChegada: number | undefined;
 
   /**
    * Monta a ficha de uma província juntando as duas verdades: o atlas diz o que ela É, a
@@ -200,6 +208,8 @@ async function iniciar(): Promise<void> {
 
     hostesMapa.mostrar(fase === 'campanha' ? marcadoresDasHostes() : []);
     hostesMapa.selecionar(hosteSelecionada);
+    const previsao = previsaoDaMarcha();
+    marchasMapa.mostrar(previsao.origem, previsao.rotas, ordensNoMapa());
     destinosMapa.mostrar(destinosDaMarcha());
     exercitoFicha.mostrar(vistaDoExercito());
 
@@ -307,16 +317,69 @@ async function iniciar(): Promise<void> {
         cor: poder.cor,
         nomeDoPoder: poder.nome,
         minha: exercito.poder === meu,
+        escolhendoDestino: marchando === provincia,
+        temOrdem: campanha.ordemEm(provincia) !== undefined,
+        chegadaRecente: chegadasRecentes.has(provincia),
       };
+    });
+  }
+
+  function pontoDe(idProvincia: string): PontoDeMarcha {
+    const centro = atlas.provincia(idProvincia).centro;
+    return { x: centro.x, y: centro.y };
+  }
+
+  /** Rotas ainda possíveis enquanto o jogador aponta um destino. */
+  function previsaoDaMarcha(): {
+    origem: PontoDeMarcha | null;
+    rotas: PrevisaoDeMarcha[];
+  } {
+    if (fase !== 'campanha' || marchando === null) return { origem: null, rotas: [] };
+    const origem = pontoDe(marchando);
+    const poder = campanha.exercitoEm(marchando)?.poder;
+    const rotas = [...campanha.rotasDaHoste(marchando)].map(([destino, rota]) => ({
+      destino,
+      pontos: [origem, ...rota.map(pontoDe)],
+      hostil: poder !== undefined && campanha.donoDe(destino) !== poder,
+    }));
+    return { origem, rotas };
+  }
+
+  /** Ordens comprometidas continuam desenhadas até a resolução da rodada. */
+  function ordensNoMapa(): OrdemNoMapa[] {
+    if (fase !== 'campanha') return [];
+    return campanha.ordens().flatMap((ordem) => {
+      const destino = ordem.rota.at(-1);
+      const hoste = campanha.exercitoEm(ordem.origem);
+      if (!destino || !hoste) return [];
+      const poder = campanha.poder(hoste.poder);
+      return [
+        {
+          origem: ordem.origem,
+          destino,
+          pontos: [pontoDe(ordem.origem), ...ordem.rota.map(pontoDe)],
+          homens: ordem.homens,
+          cor: poder.cor,
+          minha: hoste.poder === campanha.jogador?.id,
+          hostil: campanha.donoDe(destino) !== hoste.poder,
+        },
+      ];
     });
   }
 
   /** Para onde a marcha em composição pode ir. Vazio fora do modo de marcha. */
   function destinosDaMarcha(): Destino[] {
     if (marchando === null) return [];
+    const poder = campanha.exercitoEm(marchando)?.poder;
     return campanha.alcanceDaHoste(marchando).map((id) => {
       const p = atlas.provincia(id);
-      return { provincia: id, nome: p.nome, x: p.centro.x, y: p.centro.y };
+      return {
+        provincia: id,
+        nome: p.nome,
+        x: p.centro.x,
+        y: p.centro.y,
+        hostil: poder !== undefined && campanha.donoDe(id) !== poder,
+      };
     });
   }
 
@@ -412,7 +475,22 @@ async function iniciar(): Promise<void> {
     cena.pintarDonos((id) => campanha.donoDe(id));
     repintar();
   };
-  barraTurno.aoPassarTurno = () => campanha.passarTurno();
+  barraTurno.aoPassarTurno = () => {
+    // A ordem desaparece quando resolve; guardar os destinos por alguns quadros dá ao
+    // marcador novo uma confirmação de chegada em vez de fazê-lo apenas "teleportar".
+    chegadasRecentes = new Set(
+      campanha
+        .ordens()
+        .map((ordem) => ordem.rota.at(-1))
+        .filter((id): id is string => id !== undefined),
+    );
+    campanha.passarTurno();
+    if (temporizadorDaChegada !== undefined) window.clearTimeout(temporizadorDaChegada);
+    temporizadorDaChegada = window.setTimeout(() => {
+      chegadasRecentes.clear();
+      repintar();
+    }, 900);
+  };
   acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
   recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
@@ -433,6 +511,7 @@ async function iniciar(): Promise<void> {
     marchando = null;
     repintar();
   };
+  destinosMapa.aoDestacar = (destino) => marchasMapa.destacar(destino);
   hostesMapa.aoSelecionar = (idProvincia) => {
     // Clicar na hoste escolhe as DUAS coisas: a tropa e o chão sob ela. Os dois painéis
     // ficam verdadeiros ao mesmo tempo, e o jogador não precisa clicar duas vezes.
@@ -483,6 +562,7 @@ async function iniciar(): Promise<void> {
     // Os marcadores seguem o mundo: reprojetados a cada quadro, arrastar e dar zoom
     // levam a peça junto.
     hostesMapa.posicionar(cena.camera);
+    marchasMapa.posicionar(cena.camera);
     destinosMapa.posicionar(cena.camera);
     painel.atualizar(relogio, cena.camera);
     entrada.novoQuadro();
@@ -523,6 +603,11 @@ async function iniciar(): Promise<void> {
       ordenarMarcha: (origem: string, destino: string, homens: number) =>
         campanha.ordenarMarcha(origem, destino, homens),
       cancelarOrdem: (origem: string) => campanha.cancelarOrdem(origem),
+      // Põe uma hoste de qualquer poder no mapa, do nada. Só desenvolvimento: enquanto
+      // não há IA, é assim que se monta um inimigo no tabuleiro pra ver a guerra rodar.
+      plantarHoste: (idProvincia: string, idPoder: string, homens: number) =>
+        campanha.plantarHoste(idProvincia, idPoder, homens),
+      rodada: () => campanha.rodada,
       ordens: () => campanha.ordens(),
       alcanceDaHoste: (idProvincia: string) => [...campanha.alcanceDaHoste(idProvincia)],
       populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),

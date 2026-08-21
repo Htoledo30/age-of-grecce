@@ -54,7 +54,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await page.mouse.click(960, 540);
 
   await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 habitantes');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 disponíveis');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('33.697 disponíveis');
   await expect(page.locator('.recrutamento__previsao')).toContainText('3.000 moedas agora');
   await expect(page.locator('.recrutamento__previsao')).toContainText('300 por turno');
 
@@ -68,7 +68,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
 
   // Os painéis contam a mesma história.
   await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('34.697 disponíveis');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('32.697 disponíveis');
   await expect(page.locator('.barra-turno__ouro')).toContainText('+709');
   await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
 

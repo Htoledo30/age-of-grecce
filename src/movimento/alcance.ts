@@ -25,6 +25,9 @@ import type { Atlas } from '@/mundo/atlas';
  * `documentacao/design/resolucao-da-rodada.md`.
  *
  * A origem não entra no resultado — ficar parado não é destino.
+ *
+ * **Território alheio entra como destino terminal**: dá pra marchar contra ele, mas a rota
+ * acaba ali. Só o próprio território deixa a hoste seguir adiante.
  */
 export function rotasDe(
   atlas: Atlas,
@@ -51,10 +54,13 @@ export function rotasDe(
       for (const vizinha of [...atlas.vizinhasDe(atual.onde)].sort()) {
         if (visitadas.has(vizinha)) continue;
         visitadas.add(vizinha);
-        if (!ehDoPoder(vizinha)) continue;
         const rota = [...atual.rota, vizinha];
         rotas.set(vizinha, rota);
-        seguinte.push({ onde: vizinha, rota });
+        // ⚠️ **Terra alheia é destino, mas não é caminho.** Ela entra no mapa de rotas —
+        // marchar contra o vizinho é o ponto — e NÃO entra na fronteira da busca: a rota
+        // termina ali. Sem isso, uma hoste atravessaria o reino inimigo e sairia do outro
+        // lado sem que nada acontecesse, que é teletransporte com outro nome.
+        if (ehDoPoder(vizinha)) seguinte.push({ onde: vizinha, rota });
       }
     }
     fronteira = seguinte;

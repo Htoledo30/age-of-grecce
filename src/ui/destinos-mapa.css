@@ -28,6 +28,7 @@
   font-size: 12px;
   line-height: 1;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 55%);
 }
 
 .destinos__marca:hover,
@@ -35,4 +36,48 @@
   border-style: solid;
   background: var(--papel-claro);
   color: var(--tinta);
+}
+
+/* Destino inimigo é decisão de guerra. Forma, cor e verbo mudam juntos: depender só de
+   vermelho esconderia a diferença de quem não separa bem as cores. */
+.destinos__marca[data-hostil='sim'] {
+  border-style: solid;
+  border-color: var(--sangue);
+  background: rgb(91 30 25 / 58%);
+  color: var(--papel-claro);
+}
+
+.destinos__marca[data-hostil='sim'] .destinos__nome {
+  border-color: var(--sangue);
+  color: var(--sangue);
+}
+
+.destinos__simbolo {
+  display: block;
+  transform: translateX(1px);
+}
+
+/* O nome só existe durante a escolha. Mostrar sempre evita que o jogador tenha que
+   passear o mouse por círculos anônimos para descobrir o mapa. */
+.destinos__nome {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 5px;
+  border: 1px solid rgb(58 47 38 / 45%);
+  background: rgb(240 226 189 / 90%);
+  color: var(--tinta);
+  font-family: var(--fonte-titulo);
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+}
+
+.destinos__marca:hover .destinos__nome,
+.destinos__marca:focus-visible .destinos__nome {
+  background: var(--papel-claro);
+  font-weight: bold;
 }

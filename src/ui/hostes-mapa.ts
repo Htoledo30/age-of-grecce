@@ -30,6 +30,12 @@ export interface MarcadorDeHoste {
   cor: string;
   nomeDoPoder: string;
   minha: boolean;
+  /** Está recebendo uma ordem agora. */
+  escolhendoDestino: boolean;
+  /** Já possui ordem registrada nesta rodada. */
+  temOrdem: boolean;
+  /** Chegou ao local na última resolução e recebe um pulso curto. */
+  chegadaRecente: boolean;
 }
 
 export class HostesMapa {
@@ -82,6 +88,9 @@ export class HostesMapa {
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
       elemento.dataset['minha'] = hoste.minha ? 'sim' : 'nao';
       elemento.dataset['selecionada'] = this.selecionada === hoste.provincia ? 'sim' : 'nao';
+      elemento.dataset['escolhendoDestino'] = hoste.escolhendoDestino ? 'sim' : 'nao';
+      elemento.dataset['ordem'] = hoste.temOrdem ? 'sim' : 'nao';
+      elemento.dataset['chegada'] = hoste.chegadaRecente ? 'sim' : 'nao';
     }
   }
 

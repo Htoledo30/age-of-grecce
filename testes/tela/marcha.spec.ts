@@ -55,18 +55,65 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
 
   await page.getByRole('button', { name: 'Mover' }).click();
 
-  // Atenas alcança Maratona e Sunião, e só elas, dentro dos pontos da rodada.
-  await expect(page.locator('.destinos__marca')).toHaveCount(2);
+  // Terras próprias e inimigas adjacentes aparecem; terra inimiga é destino terminal.
+  await expect(page.locator('.destinos__marca')).toHaveCount(4);
+  await expect(page.locator('.destinos__nome')).toHaveText([
+    'Elêusis',
+    'Maratona',
+    'Sunião',
+    'Tanagra',
+  ]);
+  await expect(page.locator('.marchas__previsao')).toHaveCount(4);
+  await expect(page.locator('.marchas__origem')).toBeVisible();
+  await expect(page.locator('.destinos__marca[data-provincia="maratona"]')).toHaveAttribute(
+    'data-hostil',
+    'nao',
+  );
+  await expect(page.locator('.destinos__marca[data-provincia="tanagra"]')).toHaveAttribute(
+    'data-hostil',
+    'sim',
+  );
+  await expect(page.locator('.destinos__marca[data-provincia="tanagra"]')).toHaveAttribute(
+    'aria-label',
+    'Atacar Tanagra',
+  );
+  await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveAttribute(
+    'data-escolhendo-destino',
+    'sim',
+  );
+
+  // Apontar um destino engrossa exatamente a rota correspondente.
+  await page.locator('.destinos__marca[data-provincia="maratona"]').hover();
+  await expect(page.locator('.marchas__previsao[data-destino="maratona"]')).toHaveAttribute(
+    'data-destacada',
+    'sim',
+  );
   await page.locator('.destinos__marca[data-provincia="maratona"]').click();
 
   // ⚠️ O MAPA NÃO MUDOU. É o ponto inteiro da resolução simultânea.
-  expect(await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('atenas'))).toBe(1500);
-  expect(await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('maratona'))).toBe(0);
+  expect(
+    await page.evaluate(() =>
+      (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('atenas'),
+    ),
+  ).toBe(1500);
+  expect(
+    await page.evaluate(() =>
+      (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('maratona'),
+    ),
+  ).toBe(0);
 
   // A ordem está registrada, visível e desfazível.
   await expect(page.locator('.exercito__ordem')).toContainText('1.500 marcham para Maratona');
   await expect(page.getByRole('button', { name: 'Cancelar ordem' })).toBeVisible();
   await expect(page.locator('.destinos__marca')).toHaveCount(0);
+  await expect(page.locator('.marchas__previsao')).toHaveCount(0);
+  await expect(page.locator('.marchas__ordem[data-destino="maratona"]')).toHaveCount(1);
+  await expect(page.locator('.marchas__seta[data-minha="sim"]')).toHaveCount(1);
+  await expect(page.locator('.marchas__quantidade')).toHaveText('1.500');
+  await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveAttribute(
+    'data-ordem',
+    'sim',
+  );
 
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
@@ -77,6 +124,11 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
       ordens: (window as unknown as { inspecao: Ganchos }).inspecao.ordens().length,
     })),
   ).toEqual({ atenas: 0, maratona: 1500, ordens: 0 });
+  await expect(page.locator('.marchas__ordem')).toHaveCount(0);
+  await expect(page.locator('.hostes__marca[data-provincia="maratona"]')).toHaveAttribute(
+    'data-chegada',
+    'sim',
+  );
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });
@@ -90,9 +142,18 @@ test('cancelar a ordem devolve a hoste ao estado de quem não decidiu nada', asy
   await page.getByRole('button', { name: 'Cancelar ordem' }).click();
 
   await expect(page.locator('.exercito__ordem')).toBeHidden();
+  await expect(page.locator('.marchas__ordem')).toHaveCount(0);
+  await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveAttribute(
+    'data-ordem',
+    'nao',
+  );
   await expect(page.getByRole('button', { name: 'Mover' })).toBeVisible();
   await page.getByRole('button', { name: 'Passar o turno' }).click();
-  expect(await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('atenas'))).toBe(1000);
+  expect(
+    await page.evaluate(() =>
+      (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('atenas'),
+    ),
+  ).toBe(1000);
 });
 
 test('só parte da hoste marcha, e o resto fica defendendo', async ({ page }) => {
@@ -115,11 +176,13 @@ test('só parte da hoste marcha, e o resto fica defendendo', async ({ page }) =>
 test('clicar fora dos destinos cancela a escolha em vez de reclamar', async ({ page }) => {
   await comHoste(page, 1000);
   await page.getByRole('button', { name: 'Mover' }).click();
-  await expect(page.locator('.destinos__marca')).toHaveCount(2);
+  await expect(page.locator('.destinos__marca')).toHaveCount(4);
 
   await page.mouse.click(1500, 800); // mar aberto
 
   await expect(page.locator('.destinos__marca')).toHaveCount(0);
+  await expect(page.locator('.marchas__previsao')).toHaveCount(0);
+  await expect(page.locator('.marchas__origem')).toBeHidden();
   await expect(page.locator('.exercito__ordem')).toBeHidden();
 });
 
@@ -128,7 +191,7 @@ test('clicar fora dos destinos cancela a escolha em vez de reclamar', async ({ p
  * controle esconderia a mecânica, e o jogador não teria como descobrir que a marcha só
  * passa por território dele.
  */
-test('sem caminho pelo próprio território, o botão explica em vez de sumir', async ({ page }) => {
+test('terra alheia é destino de ataque, mas não caminho para além dela', async ({ page }) => {
   await comHoste(page, 1000);
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -137,8 +200,15 @@ test('sem caminho pelo próprio território, o botão explica em vez de sumir', 
   });
   await page.locator('.hostes__marca').click();
 
-  const mover = page.locator('.exercito__botao', { hasText: 'Mover' });
-  await expect(mover).toContainText('sem caminho pelo seu território');
-  await expect(mover).toBeDisabled();
-  expect(await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.alcanceDaHoste('atenas'))).toEqual([]);
+  const mover = page.getByRole('button', { name: 'Mover' });
+  await expect(mover).toBeEnabled();
+  const alcance = await page.evaluate(() =>
+    (window as unknown as { inspecao: Ganchos }).inspecao.alcanceDaHoste('atenas'),
+  );
+  expect(alcance).toContain('maratona');
+  expect(alcance).toContain('sounion');
+
+  await mover.click();
+  await expect(page.locator('.destinos__marca[data-provincia="maratona"]')).toHaveCount(1);
+  await expect(page.locator('.destinos__marca[data-provincia="sounion"]')).toHaveCount(1);
 });

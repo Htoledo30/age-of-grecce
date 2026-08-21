@@ -35,8 +35,6 @@ export interface SituacaoDaOrdem {
   minha: boolean;
   /** A rota até o destino, ou `undefined` quando ele não é alcançável nesta rodada. */
   rota: readonly string[] | undefined;
-  /** O destino pertence a quem manda. */
-  destinoEhMeu: boolean;
   /** Já existe ordem registrada para esta hoste nesta rodada. */
   jaTemOrdem: boolean;
 }
@@ -63,9 +61,10 @@ export function avaliarOrdem(
     return { pode: false, motivo: 'esta hoste já tem ordem nesta rodada' };
   }
 
-  // Duas recusas diferentes, e elas ensinam coisas diferentes: "não é sua" ensina a regra
-  // do território; "longe demais" ensina que a hoste tem pontos de movimento.
-  if (!situacao.destinoEhMeu) return { pode: false, motivo: `${nomeDoDestino} não é sua` };
+  // ⚠️ **Marchar contra terra alheia é legal — é o ponto da guerra.** O que a rota já
+  // garante é que ela não SERVE de caminho: território inimigo só pode ser o último
+  // trecho. "Longe demais" cobre tanto a distância quanto a tentativa de atravessar um
+  // reino alheio pra chegar do outro lado.
   if (!situacao.rota) {
     return { pode: false, motivo: `${nomeDoDestino} está longe demais para esta rodada` };
   }

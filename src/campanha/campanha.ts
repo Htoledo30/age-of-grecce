@@ -35,6 +35,7 @@ import { rotasDe } from '@/movimento/alcance';
 import { avaliarOrdem } from '@/movimento/ordens';
 import type { OrdemDeMarcha, RecusaDeOrdem } from '@/movimento/ordens';
 import { resolverRodada } from '@/movimento/resolucao';
+import type { RelatorioDaRodada } from '@/movimento/resolucao';
 import { calcularCrescimentoPopulacional } from '@/populacao/crescimento';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 
@@ -55,6 +56,14 @@ export class Campanha {
    */
   private readonly territorios: Territorios;
   private readonly mobilizacao: Mobilizacao;
+
+  /**
+   * O que aconteceu na última virada: marchas, batalhas e conquistas.
+   *
+   * Efêmero de propósito — é notícia, não partida, e por isso NÃO entra no estado que vai
+   * pro disco. Retomar um salvamento não deve reexibir a batalha do turno passado.
+   */
+  private ultimaRodada: RelatorioDaRodada = { marchas: [], batalhas: [], conquistas: [] };
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
@@ -454,7 +463,6 @@ export class Campanha {
       forcaNaOrigem: this.mobilizacao.forcaEm(origem),
       minha: hoste?.poder === this.estado.jogador,
       rota: this.rotasDaHoste(origem).get(destino),
-      destinoEhMeu: this.donoDe(destino) === hoste?.poder,
       jaTemOrdem: this.estado.ordens[origem] !== undefined,
     });
   }
@@ -470,6 +478,23 @@ export class Campanha {
     const r = this.podeOrdenarMarcha(origem, destino, homens);
     if (!r.pode) throw new Error(r.motivo);
     this.estado.ordens[origem] = { origem, rota: r.rota, homens };
+    this.aoMudar();
+  }
+
+  /** O relatório da última virada. Vazio antes do primeiro turno. */
+  get rodada(): RelatorioDaRodada {
+    return this.ultimaRodada;
+  }
+
+  /**
+   * Põe uma hoste de qualquer poder numa província. **Existe pra DESENVOLVIMENTO**, como
+   * o `darOuro`: montar um inimigo no tabuleiro sem esperar a IA existir.
+   *
+   * Não é regra do jogo e nenhuma mecânica chama isto — não cobra ouro e não tira ninguém
+   * da população.
+   */
+  plantarHoste(idProvincia: string, idPoder: string, homens: number): void {
+    this.mobilizacao.plantar(idProvincia, idPoder, homens);
     this.aoMudar();
   }
 
@@ -696,7 +721,16 @@ export class Campanha {
     // como ele estava quando o jogador decidiu; quem conquista na resolução colhe no turno
     // seguinte. Resolver primeiro daria ao agressor um pagamento no mesmo instante da
     // tomada, e a ordem aqui não dá erro nenhum — dá número torto em silêncio.
-    resolverRodada(this.estado, this.ajustes.combate.saltosPorRodada);
+    this.ultimaRodada = resolverRodada(this.estado, this.ajustes.combate.saltosPorRodada, {
+      donoDe: (id) => this.donoDe(id),
+      // A conquista passa pela MESMA primitiva de sempre: índice reverso e tabela de
+      // donos consertados juntos, sem um segundo caminho que possa discordar.
+      trocarDono: (id, poder) => {
+        this.territorios.trocarDono(id, poder);
+        delete this.estado.investimentos[id];
+        delete this.estado.obras[id];
+      },
+    });
 
     // Cresce com a população restante depois da folha militar. Só contam construções
     // que já estavam prontas ao começar a passagem: as obras avançam mais abaixo, então

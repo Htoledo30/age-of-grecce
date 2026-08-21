@@ -23,6 +23,8 @@ export interface Destino {
   nome: string;
   x: number;
   y: number;
+  /** Terra de outro poder: clicar aqui é atacar, não apenas transferir. */
+  hostil: boolean;
 }
 
 export class DestinosMapa {
@@ -31,6 +33,7 @@ export class DestinosMapa {
   private atuais: readonly Destino[] = [];
 
   aoEscolher: (idProvincia: string) => void = () => {};
+  aoDestacar: (idProvincia: string | null) => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.camada.className = 'destinos';
@@ -55,16 +58,32 @@ export class DestinosMapa {
         elemento.type = 'button';
         elemento.className = 'destinos__marca';
         elemento.dataset['provincia'] = destino.provincia;
+        const simbolo = document.createElement('span');
+        simbolo.className = 'destinos__simbolo';
+        simbolo.textContent = '▸';
+        const nome = document.createElement('span');
+        nome.className = 'destinos__nome';
+        elemento.append(simbolo, nome);
+        elemento.addEventListener('pointerenter', () => this.aoDestacar(destino.provincia));
+        elemento.addEventListener('pointerleave', () => this.aoDestacar(null));
+        elemento.addEventListener('focus', () => this.aoDestacar(destino.provincia));
+        elemento.addEventListener('blur', () => this.aoDestacar(null));
         elemento.addEventListener('click', () => {
+          this.aoDestacar(null);
           this.aoEscolher(destino.provincia);
           elemento?.blur();
         });
         this.camada.appendChild(elemento);
         this.marcas.set(destino.provincia, elemento);
       }
-      elemento.textContent = '▸';
-      elemento.title = `Marchar para ${destino.nome}`;
-      elemento.setAttribute('aria-label', `Marchar para ${destino.nome}`);
+      elemento.dataset['hostil'] = destino.hostil ? 'sim' : 'nao';
+      const simbolo = elemento.querySelector<HTMLElement>('.destinos__simbolo');
+      if (simbolo) simbolo.textContent = destino.hostil ? '⚔' : '▸';
+      const nome = elemento.querySelector<HTMLElement>('.destinos__nome');
+      if (nome) nome.textContent = destino.nome;
+      const acao = destino.hostil ? 'Atacar' : 'Marchar para';
+      elemento.title = `${acao} ${destino.nome}`;
+      elemento.setAttribute('aria-label', `${acao} ${destino.nome}`);
     }
   }
 
