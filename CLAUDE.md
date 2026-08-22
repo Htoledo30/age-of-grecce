@@ -1,7 +1,30 @@
 # Age of Grecce — contexto do projeto
 
-Jogo de estratégia em desenvolvimento. Este arquivo é a memória do projeto: leia antes
-de mexer em qualquer coisa.
+Jogo de estratégia em desenvolvimento.
+
+## ⚠️ Este arquivo descreve o ESTADO ATUAL, não a intenção
+
+O projeto tem cinco documentos com autoridades diferentes, e não existe uma lista linear
+entre eles: **cada pergunta tem a sua fonte.**
+
+| pergunta                       | fonte                                       |
+| ------------------------------ | ------------------------------------------- |
+| o que o jogo faz **hoje**      | código → testes → **este arquivo**          |
+| o que foi **decidido**         | `DECISOES.md`                               |
+| o que fazer **agora**          | `PATCH_ATUAL.md`                            |
+| para **onde** o projeto vai    | `ROADMAP.md`                                |
+| ideias **futuras**             | `BACKLOG.md` (não autoriza implementação)   |
+| **como** os agentes trabalham  | `AGENTS.md`                                 |
+
+**Se este arquivo e o `DECISOES.md` falarem da mesma decisão de design, o `DECISOES.md`
+prevalece.** Aqui cabe apenas descrever o que já está implementado.
+
+⚠️ **As duas coisas podem coexistir sem contradição**, porque falam de tempos diferentes:
+este arquivo diz "o Quartel é hoje requisito para recrutar"; o `DECISOES.md` diz "o Quartel
+deixará de ser requisito". Encontrar as duas não é encontrar um erro.
+
+Leia este arquivo antes de mexer em qualquer coisa — mas leia o `PATCH_ATUAL.md` antes de
+decidir o que fazer.
 
 ## O jogo
 
@@ -234,8 +257,9 @@ diagonais no zoom máximo. Consertar isso é mexer na GEOMETRIA (crescer também
 diagonal, ou traçar as fronteiras como polilinha), não na linha — e só vale a pena depois
 que a linha já estiver boa, que é o caso agora.
 
-Ideia guardada: **hierarquia por zoom** — no panorama, fronteira forte entre povos e
-fronteira provincial discreta; de perto, todas iguais.
+Ideia guardada, não autorizada: **hierarquia por zoom** — no panorama, fronteira forte
+entre povos e fronteira provincial discreta; de perto, todas iguais. Registrar em
+`BACKLOG.md` se voltar a interessar.
 
 Estado do recorte: **205 províncias, 148 poderes**, mediana de 1.158 km². Atenas tem 3.
 
@@ -507,13 +531,10 @@ hoste, não pela província; `proximaHoste` mantém a criação determinística.
 poder ainda podem se fundir ao se encontrar, mas isso agora é uma regra da mobilização,
 não uma limitação da estrutura. Ordens também são indexadas pelo id da hoste.
 
-⚠️ **Decisão tomada, ainda não implementada: o MAR VAI SER RECORTADO EM ZONAS**, como a
-terra é recortada em províncias — zona de mar com nome, vizinhas e disputa, e a frota
-andando de zona em zona. Isso substitui as duas ideias anteriores do projeto: "alcance
-naval a partir do porto" e "adjacência marítima derivada por proximidade". As duas estão
-**descartadas**. Medido no spike: a água é 56% do mapa (14,2 milhões de pixels) e o mesmo
-Dijkstra multi-origem do gerador de províncias a recorta em **1,1 s com 216 MB**, deixando
-0,01% sem dono — o algoritmo não é o problema, a distribuição das sementes é.
+**Sobre o mar, o que está MEDIDO** (a decisão de design está em `DECISOES.md` #16): a água
+é 56% do mapa, 14,2 milhões de pixels, e o mesmo Dijkstra multi-origem do gerador de
+províncias a recorta em **1,1 s com 216 MB**, deixando 0,01% sem dono. O algoritmo não é o
+problema; a distribuição das sementes é. Nada disso está implementado no jogo.
 
 ⚠️ **O relevo do mapa é ruído procedural e NÃO sustenta mecânica.** A única fonte
 geográfica real do gerador é `ne_10m_land.geojson`, ou seja, a **costa**. Medido por
@@ -684,15 +705,13 @@ comprados; o `comercioBase` continua sendo a vantagem natural do sítio. E **nen
 construção paga só em ouro** — porto paga em alcance marítimo, estrada em comércio e
 marcha, torre em informação. Se todas pagassem em ouro, escolher seria aritmética.
 
-⚠️ **Porto está bloqueado até existir o modelo marítimo**, de propósito. O movimento em
-terra já está implementado; falta decidir como a tropa embarca, ocupa zonas de mar e
-desembarca. **Não adicione porto apenas como bônus de renda antes dessa decisão.**
+**Porto ainda não existe no jogo.** A decisão sobre ele está em `DECISOES.md` #50 e a
+tarefa em `PATCH_ATUAL.md` Etapa 10.
 
-⚠️ **Todo poder que nasce isolado do continente precisa de acesso naval inicial.** Há 43
-poderes sem província no componente continental; 34 deles ocupam componentes onde nenhum
-outro poder está presente. Sem porto ou frota inicial, eles começariam congelados. Isso
-substitui a ideia antiga de derivar adjacência marítima por proximidade. **Falta o dado de
-província costeira** e falta decidir a distribuição de portos e frotas. Ver
+**O que está MEDIDO e importa para essa tarefa:** há **43 poderes sem província no
+componente continental**, e **34 deles** ocupam componentes onde nenhum outro poder está
+presente — sem acesso naval inicial, começariam congelados. **Falta o dado de província
+costeira**, que o gerador ainda não produz. Ver
 `documentacao/design/economia-e-produtos-regionais.md`.
 
 ⚠️ **Nenhum bônus temporário absorve tesouro de late game, e isso é aritmética.** O
@@ -775,8 +794,9 @@ seguinte. A passagem do turno arrecada, paga a tropa, cresce a população com a
 ativas e só então avança as obras. Assim um Celeiro concluído hoje começa a valer no
 próximo turno.
 
-⚠️ **`jogo.anosPorTurno` é decisão em aberto**, exposta no arquivo de ajustes de propósito:
-um turno por ano funciona no protótipo, mas é o que decide o ritmo da campanha inteira.
+**`jogo.anosPorTurno` vale 1 hoje**, e está exposto no arquivo de ajustes de propósito: é
+o número que decide o ritmo da campanha inteira. Decisão em aberto — se for fechada, vai
+para o `DECISOES.md`.
 
 **Estado de partida, menu de escolha, turno, data, tesouro e propriedade mutável estão
 implementados.** Faltam **salvamento** e **realce de reino** — os dois estão desenhados em
@@ -864,6 +884,35 @@ parar de crescer e não tem como saber que foi o exército que comeu.
 
 **População na ficha não é enfeite.** Ela decide imposto, recrutamento e crescimento. A
 ficha mostra a população atual e `+N por turno`; a capacidade fica no tooltip.
+
+### A leva leva uma rodada para virar hoste
+
+**Recrutar não põe tropa no mapa no mesmo turno.** A leva paga entra em
+`estado.formacoes`, indexada pela província onde vai aparecer, e só vira `Exercito` na
+virada seguinte. `src/combate/formacao-de-leva.ts`.
+
+Recrutas em formação **já saíram da população e já foram pagos**, mas ainda não são hoste:
+não marcham, não lutam e não cobram manutenção. Mantê-los separados é o que permite ter
+veteranos prontos e recrutas crus na mesma província sem congelar a hoste inteira nem
+deixar os recém-chegados entrarem numa batalha.
+
+⚠️ **A posse e a ocupação são conferidas na CONCLUSÃO, não no pagamento.** Se a terra caiu
+ou há hoste inimiga em cima dela quando o prazo vence, a formação se desfaz: o ouro não
+volta, mas os homens retornam à população da própria terra. Uma conquista não pode
+transformar recrutas pagos pelo derrotado em soldados gratuitos do vencedor.
+
+⚠️ **Consequência para quem escreve teste:** `recrutar()` seguido de `forcaEm()` devolve
+zero. É preciso passar um turno. Vários testes tropeçaram nisso.
+
+### A interface é escura
+
+Os tokens de interface em `src/estilo/tokens.css` (`--ui-fundo`, `--ui-texto`, `--ui-borda`
+e companhia) desenham painéis escuros sobre o mapa claro, e `src/ui/icones-gregos.ts`
+centraliza os ícones como SVG monocromático desenhado por código, para herdarem a cor do
+lugar onde aparecem.
+
+A direção de arte de **papel** continua valendo para o MAPA — tinta, sépia, pouca
+saturação. O que ficou escuro é a interface por cima dele.
 
 ### A hoste tem identidade própria
 
