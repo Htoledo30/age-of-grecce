@@ -29,38 +29,38 @@ function nova(): Campanha {
 }
 
 describe('economia da Ática', () => {
-  it('cada província rende o valor exato das suas três parcelas', () => {
+  it('cada parcela sai da sua própria fórmula, e o total é a soma das três', () => {
+    // ⚠️ **Derivado dos dados, nunca cravado.** População, nível e comércio-base são
+    // balanço e mudam — um teste que crava "175" quebra a cada ajuste sem que nada esteja
+    // errado. O que ele guarda é a FÓRMULA de cada parcela.
     const c = nova();
 
-    const atenas = c.economiaDe('atenas');
-    expect(atenas).toMatchObject({
-      impostos: 175, // 35.000 habitantes x 0,005
-      producao: 100, // azeite 25 x nivel 4
-      comercio: 55, // 100 x comércio-base 0,55 (o Pireu)
-      total: 330,
-    });
+    for (const id of ['atenas', 'maratona', 'sounion']) {
+      const ficha = economia.provincias[id];
+      const produto = economia.produtos[ficha?.produto ?? ''];
+      if (!ficha || !produto) throw new Error(`ficha ausente: ${id}`);
 
-    const maratona = c.economiaDe('maratona');
-    expect(maratona).toMatchObject({
-      impostos: 90, // 18.000 x 0,005
-      // Nível 2, e não 3: a Ática era POBRE em cereal — Atenas importava grão do Ponto
-      // Euxino. Maratona é província de gente e de imposto, não de produção.
-      producao: 30, // grãos 15 x nivel 2
-      comercio: 8, // 30 x 0,25, arredondado
-      total: 128,
-    });
+      const r = c.economiaDe(id);
+      const producao = produto.valor * ficha.nivel;
 
-    const sounion = c.economiaDe('sounion');
-    expect(sounion).toMatchObject({
-      impostos: 50, // 10.000 x 0,005
-      producao: 140, // metais preciosos 28 x nivel 5 (o Láurion)
-      comercio: 42, // 140 x 0,30
-      total: 232,
-    });
+      expect(r).toMatchObject({
+        impostos: Math.round(ficha.populacao * ajustes.economia.impostoPorHabitante),
+        producao,
+        comercio: Math.round(producao * ficha.comercioBase),
+      });
+      // O total é a soma das três, e cada parcela é arredondada sozinha — é isso que faz
+      // a ficha bater exata com a barra de turno, sem sobra de centavo.
+      expect(r?.total).toBe((r?.impostos ?? 0) + (r?.producao ?? 0) + (r?.comercio ?? 0));
+    }
   });
 
-  it('a renda de Atenas é a soma exata das três províncias', () => {
-    expect(nova().rendaDe('atenas')).toBe(330 + 128 + 232);
+  it('a renda de um poder é a soma das províncias dele', () => {
+    const c = nova();
+    const soma = c
+      .provinciasDe('atenas')
+      .reduce((total, id) => total + (c.economiaDe(id)?.total ?? 0), 0);
+    expect(c.rendaDe('atenas')).toBe(soma);
+    expect(soma).toBeGreaterThan(0);
   });
 
   it('os produtos não valem o mesmo por nível', () => {
@@ -208,7 +208,7 @@ describe('investimento', () => {
     c.comecar('atenas');
     c.investir('atenas', 250);
     const comBonus = c.rendaDe('atenas');
-    const semBonus = 330 + 128 + 232;
+    const semBonus = nova().rendaDe('atenas');
     expect(comBonus).toBeGreaterThan(semBonus);
 
     const tesouroAntes = c.tesouro;
@@ -266,17 +266,21 @@ describe('calendário e turno', () => {
     c.comecar('atenas');
     expect(c.turno).toBe(1);
     expect(c.ano).toBe(-700);
-    expect(c.tesouro).toBe(3000);
-    expect(c.renda).toBe(690);
+    expect(c.tesouro).toBe(ajustes.tesouroInicial);
+    expect(c.renda).toBe(c.rendaDe('atenas'));
+    expect(c.renda).toBeGreaterThan(0);
   });
 
   it('arrecada ANTES de virar o calendário', () => {
     const c = nova();
     c.comecar('atenas');
+    const antes = c.tesouro;
+    const renda = c.renda;
     c.passarTurno();
     expect(c.turno).toBe(2);
     expect(c.ano).toBe(-699);
-    expect(c.tesouro).toBe(3000 + 690);
+    // Atenas não tem tropa no turno 1, então a renda entra inteira.
+    expect(c.tesouro).toBe(antes + renda);
   });
 
   it('recusa começar duas vezes e passar turno antes de começar', () => {
@@ -304,13 +308,26 @@ describe('construções', () => {
     expect(melhor('sounion')).toBe('oficina');
   });
 
-  it('cada construção acrescenta o valor exato', () => {
+  it('cada construção acrescenta exatamente o que o fator dela promete', () => {
+    // Derivado do catálogo: os fatores são balanço e mudam. O que o teste guarda é que o
+    // ganho é a PARCELA multiplicada pelo fator, e não um número decorado.
     const c = nova();
     c.comecar('atenas');
-    // Ágora: impostos 175 x 1,4 = 245, ou seja +70
-    expect(c.retornoDaConstrucaoEm('atenas', 'agora')?.ganhoPorTurno).toBeGreaterThanOrEqual(70);
-    // Oficina em Sunião: produção 140 x 1,3 = 182 (+42), e o comércio sobe junto
-    expect(c.retornoDaConstrucaoEm('sounion', 'oficina')?.ganhoPorTurno).toBe(55);
+
+    const agora = construcoes.construcoes['agora'];
+    const impostos = c.economiaDe('atenas')?.impostos ?? 0;
+    if (agora?.efeito.tipo !== 'renda') throw new Error('Ágora deveria render moeda');
+    expect(c.retornoDaConstrucaoEm('atenas', 'agora')?.ganhoPorTurno).toBe(
+      Math.round(impostos * agora.efeito.fator) - impostos,
+    );
+
+    // A Oficina em Sunião mexe na produção — e o comércio sobe junto, porque sai dela.
+    const antes = c.economiaDe('sounion');
+    const ganho = c.retornoDaConstrucaoEm('sounion', 'oficina')?.ganhoPorTurno ?? 0;
+    const oficina = construcoes.construcoes['oficina'];
+    if (oficina?.efeito.tipo !== 'renda') throw new Error('Oficina deveria render moeda');
+    const producaoNova = Math.round((antes?.producao ?? 0) * oficina.efeito.fator);
+    expect(ganho).toBeGreaterThan(producaoNova - (antes?.producao ?? 0));
   });
 
   it('paga à vista e entrega depois: a obra leva turnos', () => {
@@ -397,8 +414,9 @@ describe('construções', () => {
     ambos.investir('sounion', 500);
     const comOficina = ambos.economiaDe('sounion')?.total ?? 0;
 
-    // a Oficina aumenta a produção, e o incentivo é uma porcentagem DELA
-    expect(comOficina).toBeGreaterThan(soIncentivo + 55);
+    // a Oficina aumenta a produção, e o incentivo é uma porcentagem DELA — então os dois
+    // se compõem, e a ordem importa. O quanto é balanço; que compõe é a regra.
+    expect(comOficina).toBeGreaterThan(soIncentivo);
   });
 
   it('uma de cada por província, e recusa com motivo', () => {
@@ -484,9 +502,11 @@ describe('propriedade: de quem é a província agora', () => {
     c.trocarDono('maratona', 'megara');
 
     expect(c.podeAgirEm('maratona')).toMatchObject({ motivo: 'esta província não é sua' });
-    // Atenas perde exatamente a renda de Maratona: 690 − 128.
-    expect(c.rendaDe('atenas')).toBe(690 - 128);
-    expect(c.rendaDe('megara')).toBe(128);
+    // Atenas perde exatamente a renda de Maratona, e Mégara ganha exatamente ela.
+    const deMaratona = c.economiaDe('maratona')?.total ?? 0;
+    expect(deMaratona).toBeGreaterThan(0);
+    expect(c.rendaDe('atenas')).toBe(nova().rendaDe('atenas') - deMaratona);
+    expect(c.rendaDe('megara')).toBe(deMaratona);
   });
 
   it('o incentivo e a obra morrem com a posse; a construção fica', () => {
@@ -494,10 +514,12 @@ describe('propriedade: de quem é a província agora', () => {
     c.comecar('atenas');
     c.investir('maratona', 100);
     c.construir('sounion', 'oficina');
-    // Quatro turnos: dois pra Oficina ficar pronta e mais dois pra juntar os 3.000 da
-    // Ágora. O incentivo de Maratona dura 20 arrecadações, então continua em pé.
-    for (let i = 0; i < 4; i++) c.passarTurno();
+    // Passa turnos até dar pra erguer a Ágora — quantos são exatamente é balanço, e
+    // cravar o número faz este teste quebrar a cada ajuste de renda. O incentivo de
+    // Maratona dura 20 arrecadações, e o laço para bem antes disso.
+    for (let i = 0; i < 20 && !c.podeConstruir('atenas', 'agora').pode; i++) c.passarTurno();
     expect(c.construcoesEm('sounion')).toContain('oficina');
+    expect(c.investimentoEm('maratona')).toBeDefined();
     c.construir('atenas', 'agora'); // obra em andamento em Atenas
     expect(c.investimentoEm('maratona')).toBeDefined();
     expect(c.obraEm('atenas')).toBeDefined();
@@ -513,7 +535,11 @@ describe('propriedade: de quem é a província agora', () => {
     // Mas a construção é da PROVÍNCIA, não de quem mandava nela: é isso que faz tomar
     // uma cidade rica valer mais que tomar uma pobre.
     expect(c.construcoesEm('sounion')).toContain('oficina');
-    expect(c.economiaDe('sounion')?.producao).toBe(182); // 28 x 5 x 1,3
+    // A produção fica multiplicada pelo fator da Oficina — nível e fator são balanço.
+    const semObra = nova().economiaDe('sounion')?.producao ?? 0;
+    const oficina = construcoes.construcoes['oficina'];
+    if (oficina?.efeito.tipo !== 'renda') throw new Error('Oficina deveria render moeda');
+    expect(c.economiaDe('sounion')?.producao).toBe(Math.round(semObra * oficina.efeito.fator));
   });
 
   it('trocar pro mesmo dono não faz nada, e poder inexistente estoura', () => {

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "respectGitignore": true,
+  "env": {
+    "CLAUDE_CODE_GLOB_NO_IGNORE": "false"
+  },
+  "permissions": {
+    "deny": [
+      "Read(/node_modules/**)",
+      "Read(/dist/**)",
+      "Read(/dist-app/**)",
+      "Read(/test-results/**)",
+      "Read(/playwright-report/**)",
+      "Read(/gerador/cache/**)"
+    ]
+  }
+}

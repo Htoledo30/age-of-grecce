@@ -8,6 +8,16 @@ import { expect, test } from '@playwright/test';
  */
 
 interface Ganchos {
+  populacaoDe: (idProvincia: string) => number;
+  crescimentoDe: (idProvincia: string) => number;
+  disponivelParaLevaEm: (idProvincia: string) => number;
+  economiaDe: (idProvincia: string) => {
+    impostos: number;
+    producao: number;
+    comercio: number;
+    total: number;
+  } | null;
+  campanha: () => { tesouro: number; renda: number };
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -69,7 +79,14 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   await expect(page.locator('dd.ficha__cerco')).toContainText('por Atenas');
 
   // A cidade sitiada perde produção e comércio e mantém só o imposto.
-  await expect(page.locator('.ficha')).toContainText('rende 61 por turno');
+  const sitiada = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return i.economiaDe('eleusis');
+  });
+  expect(sitiada?.producao).toBe(0);
+  expect(sitiada?.comercio).toBe(0);
+  expect(sitiada?.impostos).toBeGreaterThan(0);
+  await expect(page.locator('.ficha')).toContainText(`rende ${sitiada?.total} por turno`);
 
   await page.getByRole('button', { name: /Passar ao assalto/ }).click();
   await page.getByRole('button', { name: 'Passar o turno' }).click();

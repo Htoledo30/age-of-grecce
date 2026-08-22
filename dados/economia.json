@@ -27,14 +27,14 @@
       "motivo": "A planicie de Maratona e a terra de cereal da Atica - o que nao e elogio: a Atica era POBRE em cereal, e Atenas importava grao do Ponto Euxino. Nivel 2 e o que diz isso. Ela e provincia de gente e de imposto, nao de producao. Costa aberta e sem porto de peso: escoa pouco."
     },
     "eleusis": {
-      "populacao": 12000,
+      "populacao": 16000,
       "produto": "graos",
       "nivel": 3,
       "comercioBase": 0.3,
       "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 3: e a melhor terra de cereal da Atica, e a melhor da Atica ainda nao e a Tessalia nem a Messenia - o 4 e o 5 ficam guardados pra elas. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso."
     },
     "tanagra": {
-      "populacao": 9000,
+      "populacao": 17000,
       "produto": "gado",
       "nivel": 2,
       "comercioBase": 0.18,
@@ -43,7 +43,7 @@
     "sounion": {
       "populacao": 10000,
       "produto": "metais-preciosos",
-      "nivel": 5,
+      "nivel": 3,
       "comercioBase": 0.3,
       "motivo": "O Lourion fica aqui: a prata que pagou a frota de Salamina. Pouca gente, nivel maximo - e a prova de que area e populacao nao decidem riqueza."
     }

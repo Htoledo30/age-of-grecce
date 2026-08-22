@@ -22,29 +22,38 @@ function nova(): Campanha {
 }
 
 describe('crescimento populacional', () => {
-  it('começa com os números exatos definidos para a Ática', () => {
+  it('o crescimento é a taxa aplicada sobre quem está vivo, sem mais nada', () => {
+    // ⚠️ **Derivado, nunca cravado.** `taxaNatural` e as populações iniciais são balanço, e
+    // mudam. Um teste que crava "70" quebra a cada ajuste sem que nada esteja errado — e
+    // o único jeito de descobrir é rodar a suíte. Derivar da regra faz o teste guardar a
+    // REGRA e ignorar o número.
     const c = nova();
-    expect(c.crescimentoDe('atenas')).toMatchObject({
-      atual: 35_000,
-      // ⚠️ Era 175 enquanto existia capacidade: a curva logística valia 0,5 no começo, e
-      // metade da taxa era o efeito de estar na metade do teto. Sem teto, `taxaNatural`
-      // vale inteira — 1% de 35.000. O número dobrou porque o freio saiu, não porque a
-      // taxa mudou.
-      crescimento: 350,
-      proxima: 35_350,
-    });
-    expect(c.crescimentoDe('maratona')?.crescimento).toBe(180);
-    expect(c.crescimentoDe('sounion')?.crescimento).toBe(100);
+    for (const id of ['atenas', 'maratona', 'sounion']) {
+      const previsto = c.crescimentoDe(id);
+      const esperado = Math.floor(c.populacaoDe(id) * ajustes.populacao.taxaNatural);
+      expect(previsto).toMatchObject({
+        atual: c.populacaoDe(id),
+        crescimento: esperado,
+        proxima: c.populacaoDe(id) + esperado,
+      });
+    }
+    // E é um número de verdade, não zero por acidente.
+    expect(c.crescimentoDe('atenas')?.crescimento).toBeGreaterThan(0);
   });
 
   it('cresce todas as províncias configuradas ao passar o turno', () => {
     const c = nova();
     c.comecar('atenas');
+    const previsto = Object.fromEntries(
+      ['atenas', 'maratona', 'sounion'].map((id) => [id, c.crescimentoDe(id)?.proxima]),
+    );
+
     c.passarTurno();
 
-    expect(c.populacaoDe('atenas')).toBe(35_350);
-    expect(c.populacaoDe('maratona')).toBe(18_180);
-    expect(c.populacaoDe('sounion')).toBe(10_100);
+    for (const id of ['atenas', 'maratona', 'sounion']) {
+      expect(c.populacaoDe(id)).toBe(previsto[id]);
+      expect(c.populacaoDe(id)).toBeGreaterThan(0);
+    }
   });
 
   it('NÃO existe capacidade máxima: a taxa vale igual em qualquer tamanho', () => {
@@ -54,10 +63,12 @@ describe('crescimento populacional', () => {
     const calcular = (atual: number) =>
       calcularCrescimentoPopulacional(atual, [], construcoes.construcoes, ajustes.populacao);
 
-    // A mesma taxa dos 35.000 iniciais continua valendo no dobro e no décuplo.
-    expect(calcular(35_000).crescimento).toBe(350);
-    expect(calcular(70_000).crescimento).toBe(700);
-    expect(calcular(350_000).crescimento).toBe(3_500);
+    // A taxa vale igual em qualquer tamanho: dobrar a população dobra o crescimento, e
+    // não existe ponto em que ele desacelere.
+    const base = calcular(35_000).crescimento;
+    expect(base).toBeGreaterThan(0);
+    expect(calcular(70_000).crescimento).toBe(base * 2);
+    expect(calcular(350_000).crescimento).toBe(base * 10);
   });
 
   it('zero não se repovoa sozinho, e é isso que dá sentido ao piso de população', () => {
@@ -65,10 +76,15 @@ describe('crescimento populacional', () => {
       calcularCrescimentoPopulacional(atual, [], construcoes.construcoes, ajustes.populacao);
 
     expect(calcular(0)).toMatchObject({ crescimento: 0, proxima: 0 });
-    // ⚠️ `Math.floor` faz o crescimento arredondar pra zero abaixo de ~101 habitantes: dali
-    // a província nunca mais volta. É o motivo aritmético do `populacaoMinima`.
-    expect(calcular(99).crescimento).toBe(0);
-    expect(calcular(100).crescimento).toBe(1);
+
+    // ⚠️ `Math.floor` faz o crescimento arredondar pra ZERO abaixo de um certo tamanho, e
+    // dali a província nunca mais volta. É o motivo aritmético do `populacaoMinima`.
+    // O limiar depende da taxa, então é derivado: com 0,5% são 200 habitantes.
+    const limiar = Math.ceil(1 / ajustes.populacao.taxaNatural);
+    expect(calcular(limiar - 1).crescimento).toBe(0);
+    expect(calcular(limiar).crescimento).toBe(1);
+    // E o piso do recrutamento tem que ficar ACIMA dele, senão ele não protege de nada.
+    expect(ajustes.combate.populacaoMinima).toBeGreaterThan(limiar);
   });
 
   it('o Celeiro aumenta em 50% o crescimento, mas só depois de concluído', () => {
@@ -76,9 +92,14 @@ describe('crescimento populacional', () => {
     c.comecar('atenas');
     c.darOuro(500);
 
+    // O Celeiro multiplica o crescimento pelo fator do catálogo — qual é o número, o
+    // teste não precisa saber.
+    const fator = fatorDoCeleiro();
+    const antes = c.crescimentoDe('atenas')?.crescimento ?? 0;
+    expect(antes).toBeGreaterThan(0);
     expect(c.impactoPopulacionalDaConstrucaoEm('atenas', 'celeiro')).toEqual({
-      antes: 350,
-      depois: 525,
+      antes,
+      depois: Math.floor(antes * fator),
     });
     c.construir('atenas', 'celeiro');
 
@@ -94,3 +115,9 @@ describe('crescimento populacional', () => {
     expect(c.crescimentoDe('atenas')?.fatorConstrucoes).toBe(1.5);
   });
 });
+
+/** O multiplicador que o Celeiro aplica ao crescimento, lido do catálogo. */
+function fatorDoCeleiro(): number {
+  const efeito = construcoes.construcoes['celeiro']?.efeito;
+  return efeito?.tipo === 'populacao' ? efeito.fatorCrescimento : 1;
+}

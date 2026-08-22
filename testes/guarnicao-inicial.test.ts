@@ -74,11 +74,19 @@ describe('os dois vizinhos abrem a partida armados', () => {
 
   it('a população dos dois já vem descontada, e a milícia acompanha', () => {
     const c = nova();
-    expect(c.populacaoDe('eleusis')).toBe(11_500);
-    expect(c.populacaoDe('tanagra')).toBe(8_500);
-    // Derivada da população viva, não da escrita no arquivo: mobilizar esvazia a muralha,
-    // e a guarnição inicial é mobilização como qualquer outra.
-    expect(c.miliciaEm('eleusis')).toBe(Math.floor(11_500 * combate.milicia.fracao));
+    // Derivado dos dados, não cravado: população inicial e tamanho da guarnição são
+    // balanço e mudam. O que o teste guarda é a REGRA — os homens em armas saíram dali.
+    for (const id of ['eleusis', 'tanagra']) {
+      const escrita = economia.provincias[id]?.populacao ?? 0;
+      const guarnicao = exercitos.guarnicoes[id] ?? 0;
+      expect(guarnicao).toBeGreaterThan(0);
+      expect(c.populacaoDe(id)).toBe(escrita - guarnicao);
+    }
+    // A milícia vem da população VIVA, não da escrita no arquivo: mobilizar esvazia a
+    // muralha, e a guarnição inicial é mobilização como qualquer outra.
+    expect(c.miliciaEm('eleusis')).toBe(
+      Math.floor(c.populacaoDe('eleusis') * combate.milicia.fracao),
+    );
   });
 
   it('dispensar a guarnição devolve a gente, e não cria nenhuma', () => {

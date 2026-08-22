@@ -329,6 +329,32 @@ Priorizar testes para:
 Nunca "consertar" um teste alterando a expectativa apenas para fazê-lo passar sem
 verificar o comportamento real.
 
+## Teste guarda REGRA, não número de balanço
+
+⚠️ Um teste que crava `expect(populacao).toBe(35_280)` quebra a cada ajuste de taxa, sem
+que nada esteja errado. Ele deve derivar o valor esperado da regra ou do dado:
+
+```ts
+// ruim — quebra quando a taxa mudar
+expect(c.crescimentoDe('atenas')?.crescimento).toBe(70);
+
+// bom — guarda a regra, ignora o número
+const esperado = Math.floor(c.populacaoDe('atenas') * ajustes.populacao.taxaNatural);
+expect(c.crescimentoDe('atenas')?.crescimento).toBe(esperado);
+```
+
+Vale em dobro para os testes de TELA, que custam ~96 segundos por rodada contra 2
+segundos dos de unidade: número cravado ali transforma um ajuste de balanço numa hora de
+tentativa e erro.
+
+Cravar número continua certo quando o número **é** a regra — o piso de 2.000 habitantes,
+o custo de uma construção no catálogo, a fração da milícia.
+
+## Descobrir todas as falhas de uma vez
+
+⚠️ Rodar a suíte, corrigir uma falha, rodar de novo é o pior laço possível quando a suíte
+custa minutos. Rodar UMA vez, ler a lista inteira e corrigir tudo junto.
+
 ---
 
 # 12. Código e documentação divergentes

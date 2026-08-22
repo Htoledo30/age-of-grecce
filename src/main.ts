@@ -770,6 +770,11 @@ async function iniciar(): Promise<void> {
       ordens: () => campanha.ordens(),
       alcanceDaHoste: (idProvincia: string) => [...campanha.alcanceDaHoste(idProvincia)],
       populacaoDe: (idProvincia: string) => campanha.populacaoDe(idProvincia),
+      // Estes três existem para o teste de tela conferir se o que está DESENHADO bate com
+      // o que as regras dizem, em vez de cravar o número. Balanço muda; a ligação, não.
+      crescimentoDe: (idProvincia: string) => campanha.crescimentoDe(idProvincia)?.crescimento ?? 0,
+      disponivelParaLevaEm: (idProvincia: string) => campanha.disponivelParaLevaEm(idProvincia),
+      economiaDe: (idProvincia: string) => campanha.economiaDe(idProvincia),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.
       conquistar: (idProvincia: string, idPoder: string) =>

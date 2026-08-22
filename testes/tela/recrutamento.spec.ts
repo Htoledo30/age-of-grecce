@@ -11,8 +11,16 @@ import { expect, test } from '@playwright/test';
  */
 
 interface Ganchos {
+  crescimentoDe: (idProvincia: string) => number;
+  disponivelParaLevaEm: (idProvincia: string) => number;
+  economiaDe: (idProvincia: string) => {
+    impostos: number;
+    producao: number;
+    comercio: number;
+    total: number;
+  } | null;
   comecar: (idPoder: string) => void;
-  campanha: () => { tesouro: number };
+  campanha: () => { tesouro: number; renda: number };
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -49,8 +57,14 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await expect(page.locator('.recrutamento__valor')).toBeHidden();
 
   // A população aparece na ficha, e é ela que decide se a Ágora vale a pena.
-  await expect(page.locator('dd.ficha__populacao')).toContainText('35.000');
-  await expect(page.locator('dd.ficha__crescimento')).toHaveText('+350 por turno');
+  const inicial = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return { populacao: i.populacaoDe('atenas'), crescimento: i.crescimentoDe('atenas') };
+  });
+  await expect(page.locator('dd.ficha__populacao')).toContainText(comoNaTela(inicial.populacao));
+  await expect(page.locator('dd.ficha__crescimento')).toHaveText(
+    `+${comoNaTela(inicial.crescimento)} por turno`,
+  );
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -60,8 +74,16 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   });
   await page.mouse.click(960, 540);
 
-  await expect(page.locator('.recrutamento__alvo')).toContainText('36.420 habitantes');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('34.420 disponíveis');
+  const comQuartel = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return { populacao: i.populacaoDe('atenas'), disponivel: i.disponivelParaLevaEm('atenas') };
+  });
+  await expect(page.locator('.recrutamento__alvo')).toContainText(
+    `${comoNaTela(comQuartel.populacao)} habitantes`,
+  );
+  await expect(page.locator('.recrutamento__alvo')).toContainText(
+    `${comoNaTela(comQuartel.disponivel)} disponíveis`,
+  );
   const seletor = page.getByRole('slider', { name: 'Quantidade de soldados para recrutar' });
   await expect(seletor).toHaveAttribute('type', 'range');
   const tesouro = await page.evaluate(
@@ -91,7 +113,12 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
       populacao: i.populacaoDe('atenas'),
     };
   });
-  expect(depois).toEqual({ forca: 0, formacao: 1000, populacao: 35_420 });
+  // Os mil recrutas já saíram da população e já foram pagos, mas ainda não são hoste.
+  expect(depois).toEqual({
+    forca: 0,
+    formacao: 1000,
+    populacao: comQuartel.populacao - 1000,
+  });
 
   // A leva já está no mapa, mas visualmente exausta e fora da força que pode marchar.
   const formacao = page.locator('.hostes__marca[data-provincia="atenas"]');
@@ -100,10 +127,22 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await expect(formacao).toHaveAttribute('data-em-formacao', 'sim');
 
   // Os painéis contam a mesma história.
-  await expect(page.locator('dd.ficha__populacao')).toContainText('35.420');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('33.420 disponíveis');
+  const aposLeva = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return {
+      populacao: i.populacaoDe('atenas'),
+      disponivel: i.disponivelParaLevaEm('atenas'),
+      renda: i.campanha().renda,
+    };
+  });
+  // Os mil recrutas saíram da população, e os painéis contam a mesma história.
+  expect(aposLeva.populacao).toBe(comQuartel.populacao - 1000);
+  await expect(page.locator('dd.ficha__populacao')).toContainText(comoNaTela(aposLeva.populacao));
+  await expect(page.locator('.recrutamento__alvo')).toContainText(
+    `${comoNaTela(aposLeva.disponivel)} disponíveis`,
+  );
   await expect(seletor).toHaveValue('0');
-  await expect(page.locator('.barra-turno__ouro')).toContainText('+698');
+  await expect(page.locator('.barra-turno__ouro')).toContainText(`+${aposLeva.renda}`);
   await expect(page.locator('.barra-turno__ouro')).not.toContainText('−300');
 
   await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.passarTurno());
@@ -145,3 +184,16 @@ test('o Quartel promete capacidade, não retorno', async ({ page }) => {
   expect(dica).not.toContain('paga-se em');
   expect(dica).not.toContain('por turno,');
 });
+
+/**
+ * Um número como a interface o escreve — 35000 vira "35.000".
+ *
+ * ⚠️ Existe para os testes de tela pararem de CRAVAR números de balanço. Antes eles diziam
+ * "a ficha mostra 35.280 habitantes", e qualquer ajuste de taxa ou de população quebrava
+ * meia dúzia deles — descobertos um por vez, a 96 segundos por rodada. Agora eles
+ * perguntam o valor às regras e conferem se a tela mostra o MESMO: guardam a ligação, que
+ * é o que pode quebrar de verdade, e ignoram o número, que é balanço.
+ */
+function comoNaTela(valor: number): string {
+  return valor.toLocaleString('pt-BR');
+}
