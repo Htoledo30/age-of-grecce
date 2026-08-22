@@ -50,7 +50,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
 
   // A população aparece na ficha, e é ela que decide se a Ágora vale a pena.
   await expect(page.locator('dd.ficha__populacao')).toContainText('35.000');
-  await expect(page.locator('dd.ficha__crescimento')).toHaveText('+175 por turno');
+  await expect(page.locator('dd.ficha__crescimento')).toHaveText('+350 por turno');
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -60,8 +60,8 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   });
   await page.mouse.click(960, 540);
 
-  await expect(page.locator('.recrutamento__alvo')).toContainText('35.697 habitantes');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('33.697 disponíveis');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('36.420 habitantes');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('34.420 disponíveis');
   const seletor = page.getByRole('slider', { name: 'Quantidade de soldados para recrutar' });
   await expect(seletor).toHaveAttribute('type', 'range');
   const tesouro = await page.evaluate(
@@ -91,7 +91,7 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
       populacao: i.populacaoDe('atenas'),
     };
   });
-  expect(depois).toEqual({ forca: 0, formacao: 1000, populacao: 34_697 });
+  expect(depois).toEqual({ forca: 0, formacao: 1000, populacao: 35_420 });
 
   // A leva já está no mapa, mas visualmente exausta e fora da força que pode marchar.
   const formacao = page.locator('.hostes__marca[data-provincia="atenas"]');
@@ -100,10 +100,10 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await expect(formacao).toHaveAttribute('data-em-formacao', 'sim');
 
   // Os painéis contam a mesma história.
-  await expect(page.locator('dd.ficha__populacao')).toContainText('34.697');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('32.697 disponíveis');
+  await expect(page.locator('dd.ficha__populacao')).toContainText('35.420');
+  await expect(page.locator('.recrutamento__alvo')).toContainText('33.420 disponíveis');
   await expect(seletor).toHaveValue('0');
-  await expect(page.locator('.barra-turno__ouro')).toContainText('+691');
+  await expect(page.locator('.barra-turno__ouro')).toContainText('+698');
   await expect(page.locator('.barra-turno__ouro')).not.toContainText('−300');
 
   await page.evaluate(() => (window as unknown as { inspecao: Ganchos }).inspecao.passarTurno());

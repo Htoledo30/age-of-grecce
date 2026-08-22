@@ -126,12 +126,31 @@ exílio sem bug concreto.
 - [x] recrutamento futuro da IA deve consumir o tesouro do próprio poder; **CONCLUÍDA** —
       recrutar, construir e investir cobram o cofre do DONO da província, e o teto da leva
       olha o ouro dele
-- [ ] remover a dependência de "economia configurada" como trava conceitual de
-      recrutamento;
-- [ ] manter população e demais requisitos reais como regras do recrutamento;
-- [ ] remover `fatorCapacidade: 2` e a capacidade populacional artificial;
-- [ ] preparar o estado para capitais por poder;
-- [ ] manter testes atuais passando após essas mudanças.
+- [x] remover a dependência de "economia configurada" como trava conceitual de
+      recrutamento; **CONCLUÍDA** — `podeMobilizarEm` separado de `podeAgirEm`; investir e
+      construir continuam exigindo economia, porque ali a trava é real
+- [x] manter população e demais requisitos reais como regras do recrutamento;
+      **CONCLUÍDA** — a recusa passou a falar de Quartel, piso de população e ouro; nunca
+      de dado que falta
+- [x] remover `fatorCapacidade: 2` e a capacidade populacional artificial; **CONCLUÍDA** —
+      saiu do esquema, dos ajustes e de `crescimento.ts`
+- [x] preparar o estado para capitais por poder; **CONCLUÍDA** — `estado.capitais`,
+      `src/campanha/capitais.ts`, `capitalDe` e `capitalPerdida`. A capital ainda não FAZ
+      nada: o fluxo é a Etapa 9
+- [x] manter testes atuais passando após essas mudanças. **CONCLUÍDA com ressalva** — 203
+      no vitest e 20 na tela. Nove expectativas numéricas mudaram porque o comportamento
+      mudou por decisão (`DECISOES.md` #24 dobrou o crescimento inicial de 175 para 350);
+      nenhuma foi ajustada sem o comportamento ser conferido
+
+### ⚠️ Pendência aberta por esta etapa
+
+Sem capacidade máxima e sem alimento, o crescimento populacional é **exponencial e sem
+freio**. É estado intermediário conhecido: o freio verdadeiro é a Etapa 4. Até lá, partida
+muito longa infla a população.
+
+Efeito colateral de balanço a olhar quando a economia física entrar: a folha de Elêusis
+(150/turno) e a de Tanagra (150/turno) já superam a renda delas (119 e 83), e o caixa
+inicial de 3.000 dá cerca de 96 e 44 turnos antes de a deserção começar.
 
 ### Combate
 

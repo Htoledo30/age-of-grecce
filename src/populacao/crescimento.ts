@@ -1,9 +1,18 @@
 /**
  * Crescimento populacional puro: não conhece campanha, tesouro, mapa ou interface.
  *
- * A população inicial autoral define a capacidade da terra. Recrutamento altera a
- * população atual, não essa âncora; por isso uma província reduzida pode se recuperar,
- * mas não transforma investimento militar em capacidade infinita.
+ * ⚠️ **NÃO existe capacidade máxima artificial.** Havia: o teto era `população inicial × 2`,
+ * e a curva era logística contra ele. Saiu por decisão (`DECISOES.md` #24) — um número
+ * arbitrário amarrado ao dado autoral de 700 a.C. não é um limite do mundo, é um limite
+ * da planilha, e ele congelava a província justamente quando ela ia bem.
+ *
+ * ⚠️ **Consequência que é preciso saber: hoje o crescimento é EXPONENCIAL e não tem
+ * freio.** O freio verdadeiro é o alimento, que ainda não existe — é a Etapa 4 do
+ * `PATCH_ATUAL.md`. Até lá, uma partida muito longa infla a população. É estado
+ * intermediário conhecido, não descuido.
+ *
+ * Zero não se repovoa sozinho: migração, conquista ou outro sistema futuro terão que
+ * trazer gente.
  */
 
 import type { Ajustes, Construcoes } from '@/dados/esquema';
@@ -13,7 +22,6 @@ type AjustesPopulacao = Ajustes['jogo']['populacao'];
 
 export interface CrescimentoPopulacional {
   atual: number;
-  capacidade: number;
   crescimento: number;
   proxima: number;
   fatorConstrucoes: number;
@@ -35,37 +43,29 @@ function fatorDeCrescimento(construcoes: readonly string[], catalogo: Catalogo):
 /**
  * Curva logística discreta.
  *
- * Perto da capacidade, falta de espaço e alimento reduz o crescimento. Zero não se
- * repovoa sozinho: migração, conquista ou outro sistema futuro terão que trazer gente.
+ * A taxa é aplicada direta sobre quem está vivo, sem freio nenhum. O freio será o
+ * alimento (Etapa 4).
+ *
+ * ⚠️ **Zero não se repovoa sozinho**, e isso é o que dá sentido ao piso de
+ * `populacaoMinima` do recrutamento: `Math.floor` faz o crescimento arredondar pra zero
+ * abaixo de ~101 habitantes, e dali a província nunca mais volta.
  */
 export function calcularCrescimentoPopulacional(
   atual: number,
-  inicial: number,
   construcoes: readonly string[],
   catalogo: Catalogo,
   ajustes: AjustesPopulacao,
 ): CrescimentoPopulacional {
-  const capacidade = Math.floor(inicial * ajustes.fatorCapacidade);
-  const populacaoAtual = Math.max(0, Math.min(Math.floor(atual), capacidade));
+  const populacaoAtual = Math.max(0, Math.floor(atual));
   const fatorConstrucoes = fatorDeCrescimento(construcoes, catalogo);
 
-  if (populacaoAtual === 0 || populacaoAtual >= capacidade) {
-    return {
-      atual: populacaoAtual,
-      capacidade,
-      crescimento: 0,
-      proxima: populacaoAtual,
-      fatorConstrucoes,
-    };
-  }
-
-  const espacoRelativo = 1 - populacaoAtual / capacidade;
-  const bruto = populacaoAtual * ajustes.taxaNatural * espacoRelativo * fatorConstrucoes;
-  const crescimento = Math.min(capacidade - populacaoAtual, Math.floor(bruto));
+  const crescimento =
+    populacaoAtual === 0
+      ? 0
+      : Math.floor(populacaoAtual * ajustes.taxaNatural * fatorConstrucoes);
 
   return {
     atual: populacaoAtual,
-    capacidade,
     crescimento,
     proxima: populacaoAtual + crescimento,
     fatorConstrucoes,

@@ -71,10 +71,14 @@ export const Ajustes = z.object({
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({
-      /** Taxa máxima por turno, antes da falta de espaço e das construções. */
+      /**
+       * Crescimento por turno, antes das construções.
+       *
+       * ⚠️ **Não existe mais capacidade máxima** (`DECISOES.md` #24): esta taxa é aplicada
+       * direta, sem freio. O freio será o alimento, na Etapa 4. Até lá o crescimento é
+       * exponencial — estado intermediário conhecido.
+       */
       taxaNatural: z.number().gt(0).max(1),
-      /** Capacidade da província como múltiplo de sua população inicial autoral. */
-      fatorCapacidade: z.number().gt(1),
     }),
     /**
      * O que custa pôr e manter gente em armas.

@@ -68,8 +68,8 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   // A classe vai no `dt` e no `dd`: o valor é o `dd`.
   await expect(page.locator('dd.ficha__cerco')).toContainText('por Atenas');
 
-  // A cidade sitiada perde produção e comércio e mantém só o imposto: 59 em vez de 119.
-  await expect(page.locator('.ficha')).toContainText('rende 59 por turno');
+  // A cidade sitiada perde produção e comércio e mantém só o imposto.
+  await expect(page.locator('.ficha')).toContainText('rende 61 por turno');
 
   await page.getByRole('button', { name: /Passar ao assalto/ }).click();
   await page.getByRole('button', { name: 'Passar o turno' }).click();

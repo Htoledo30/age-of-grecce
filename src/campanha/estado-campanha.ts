@@ -101,6 +101,18 @@ export interface EstadoCampanha {
    */
   ordens: Record<string, OrdemDeMarcha>;
   /**
+   * A capital de cada poder, por id de poder.
+   *
+   * ⚠️ **Só o estado, por enquanto.** A capital ainda não faz nada: o fluxo de perdê-la e
+   * escolher outra é a Etapa 9 do `PATCH_ATUAL.md`. O campo existe agora porque vários
+   * sistemas futuros vão perguntar qual é — ineficiência administrativa, prioridade
+   * alimentar em escassez, revolta, comércio interno — e cada um inventar a própria
+   * resposta seria a mesma verdade em quatro lugares.
+   *
+   * Ver `capitais.ts` para a regra de derivação inicial.
+   */
+  capitais: Record<string, string>;
+  /**
    * Cercos em curso, por província sitiada.
    *
    * Ao contrário das ordens, isto sobrevive à virada enquanto o sitiante permanecer ali.

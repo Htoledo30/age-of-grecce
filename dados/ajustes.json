@@ -14,8 +14,7 @@
       }
     },
     "populacao": {
-      "taxaNatural": 0.01,
-      "fatorCapacidade": 2
+      "taxaNatural": 0.01
     },
     "combate": {
       "custoPorHomem": 3,

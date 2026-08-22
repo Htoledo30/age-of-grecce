@@ -171,3 +171,37 @@ describe('gastar cobra o cofre do DONO da província', () => {
 function manutencao(c: Campanha, idPoder: string): number {
   return c.manutencaoDe(idPoder);
 }
+
+describe('recrutar não depende de a província ter economia CONFIGURADA', () => {
+  it('a recusa passa a falar de requisito real, não de dado que falta', () => {
+    const c = emCampanha();
+    // Tebas não tem ficha econômica. Tomada por Atenas, ela vira território do jogador.
+    c.trocarDono('tebas', 'atenas');
+
+    const r = c.podeRecrutar('tebas', 100);
+
+    expect(r.pode).toBe(false);
+    // ⚠️ Antes a recusa era "esta província não tem economia configurada" — uma trava
+    // conceitual errada: recrutar depende de GENTE, não de a ficha existir.
+    // Ver `DECISOES.md` #59.
+    expect(r.pode === false && r.motivo).not.toMatch(/economia/);
+    // O que barra agora é um requisito de verdade: falta Quartel (e, atrás dele, gente).
+    expect(r.pode === false && r.motivo).toMatch(/Quartel/);
+  });
+
+  it('província alheia continua barrada, e por ser alheia', () => {
+    const c = emCampanha();
+    const r = c.podeRecrutar('eleusis', 100);
+    expect(r.pode).toBe(false);
+    expect(r.pode === false && r.motivo).toMatch(/não é sua/);
+  });
+
+  it('investir e construir CONTINUAM exigindo economia: ali a trava é real', () => {
+    const c = emCampanha();
+    c.trocarDono('tebas', 'atenas');
+    c.darOuro(60_000);
+    // Sem ficha econômica não há renda para incrementar nem parcela para multiplicar.
+    expect(c.podeInvestir('tebas', 250).pode).toBe(false);
+    expect(c.podeAgirEm('tebas').pode).toBe(false);
+  });
+});

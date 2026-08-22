@@ -31,6 +31,7 @@ import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
 import { levantarGuarnicoes } from '@/combate/guarnicao-inicial';
+import { capitaisIniciais } from './capitais';
 import type { Cerco, Postura } from '@/combate/cerco';
 import { miliciaDe, mortosDaMilicia } from '@/combate/milicia';
 import type { HosteEmProvincia } from '@/combate/mobilizacao';
@@ -132,12 +133,15 @@ export class Campanha {
       formacoes: {},
       ordens: {},
       cercos: {},
+      capitais: {},
       investimentos: {},
       construcoes: {},
       obras: {},
     };
 
     this.territorios = new Territorios(atlas, this.estado.dono);
+    // Depois do `Territorios`, que é quem sabe as províncias de cada poder.
+    this.estado.capitais = capitaisIniciais(atlas, (id) => this.territorios.provinciasDe(id));
     this.mobilizacao = new Mobilizacao(this.estado, ajustes.combate);
   }
 
@@ -269,6 +273,28 @@ export class Campanha {
   }
 
   /** O que a província é agora, tirando o incentivo: o que as contas comparam. */
+  /**
+   * A capital deste poder, ou `undefined` para quem não tem província nenhuma.
+   *
+   * ⚠️ Ela ainda não faz NADA no jogo — ver `capitais.ts`. Existe para os sistemas da
+   * Etapa 9 em diante terem uma resposta só.
+   */
+  capitalDe(idPoder: string): string | undefined {
+    return this.estado.capitais[idPoder];
+  }
+
+  /**
+   * A capital deste poder caiu em mãos alheias?
+   *
+   * Pergunta pronta para a Etapa 9, que é quem vai obrigar o jogador a escolher outra.
+   * Hoje ninguém age sobre a resposta — e é de propósito: reatribuir sozinho tiraria do
+   * jogador justamente a decisão que a Etapa 9 existe para criar.
+   */
+  capitalPerdida(idPoder: string): boolean {
+    const capital = this.capitalDe(idPoder);
+    return capital !== undefined && this.donoDe(capital) !== idPoder;
+  }
+
   /** O cerco em curso nesta província, se houver. */
   cercoEm(idProvincia: string): Cerco | undefined {
     return this.estado.cercos[idProvincia];
@@ -322,7 +348,6 @@ export class Campanha {
     if (!ficha) return null;
     return calcularCrescimentoPopulacional(
       this.populacaoDe(idProvincia),
-      ficha.populacao,
       this.construcoesEm(idProvincia),
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.populacao,
@@ -342,7 +367,6 @@ export class Campanha {
     const antes = this.crescimentoDe(idProvincia);
     const depois = calcularCrescimentoPopulacional(
       this.populacaoDe(idProvincia),
-      ficha.populacao,
       atuais.includes(idConstrucao) ? atuais : [...atuais, idConstrucao],
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.populacao,
@@ -410,10 +434,32 @@ export class Campanha {
     return capacidades;
   }
 
+  /**
+   * O portão do RECRUTAMENTO: a campanha começou e a província é minha.
+   *
+   * ⚠️ **Não pergunta se ela tem economia configurada.** Já perguntava, e isso era uma
+   * trava conceitual errada: recrutar depende de GENTE, não de a província ter ficha
+   * econômica escrita. Ver `DECISOES.md` #59. Província sem ficha continua não cedendo
+   * ninguém — mas porque a população dela é zero, que é um requisito real, e a recusa
+   * passa a dizer isso em vez de falar de dado que falta.
+   *
+   * Separado de `podeAgirEm` de propósito: investir e construir dependem MESMO de
+   * economia, e juntar as duas perguntas numa só foi o que criou a trava.
+   */
+  podeMobilizarEm(idProvincia: string): Recusa {
+    if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
+    const jogador = this.estado.jogador;
+    if (jogador === null || this.donoDe(idProvincia) !== jogador) {
+      return { pode: false, motivo: 'esta província não é sua' };
+    }
+    return { pode: true, bonus: 0 };
+  }
+
   /** Dá pra pôr gente em armas aqui? Exige o Quartel erguido e a província ser sua. */
   podeRecrutarEm(idProvincia: string): boolean {
     return (
-      this.podeAgirEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar')
+      this.podeMobilizarEm(idProvincia).pode &&
+      this.capacidadesEm(idProvincia).includes('recrutar')
     );
   }
 
@@ -466,7 +512,7 @@ export class Campanha {
    * ouro numa província que nem é do jogador.
    */
   podeRecrutar(idProvincia: string, homens: number): RecusaDeLeva {
-    const naProvincia = this.podeAgirEm(idProvincia);
+    const naProvincia = this.podeMobilizarEm(idProvincia);
     if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
     return this.mobilizacao.avaliarLevaEm(
       idProvincia,

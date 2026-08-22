@@ -837,7 +837,7 @@ mentira sobre o Quartel e o Celeiro — o `checar` lista as famílias separadame
 
 O Celeiro custa **3.500**, leva **3 turnos** e multiplica em **1,5** somente o crescimento
 natural da província. Não dá dinheiro direto e não aumenta a capacidade da terra. Na
-Atenas inicial a interface mostra o efeito concreto: `+175 → +262 habitantes por turno`.
+Atenas inicial a interface mostra o efeito concreto: `+350 → +525 habitantes por turno`.
 
 ### Soldado sai da população; não existe fração nem lote mínimo, mas existe um PISO
 
@@ -884,6 +884,46 @@ parar de crescer e não tem como saber que foi o exército que comeu.
 
 **População na ficha não é enfeite.** Ela decide imposto, recrutamento e crescimento. A
 ficha mostra a população atual e `+N por turno`; a capacidade fica no tooltip.
+
+### Recrutar depende de GENTE, não de ficha econômica
+
+`podeMobilizarEm` — campanha começada e província minha — é o portão do recrutamento, e é
+separado de `podeAgirEm`.
+
+⚠️ **Já eram a mesma pergunta, e isso criava uma trava conceitual errada.** Província sem
+economia configurada era recusada por "não tem economia configurada", como se recrutar
+dependesse de o dado existir. Ver `DECISOES.md` #59. Agora a recusa fala de requisito real:
+falta Quartel, ou a província não cede mais gente, ou falta ouro. Província sem ficha
+continua não cedendo ninguém — mas porque a população dela é zero.
+
+**Investir e construir continuam exigindo economia**, e isso está certo: sem ficha não há
+renda para incrementar nem parcela para multiplicar. Juntar as duas perguntas numa só foi
+o que criou a trava.
+
+### Não existe capacidade máxima de população
+
+O teto de `população inicial × 2` saiu, e com ele a curva logística (`DECISOES.md` #24). Um
+número amarrado ao dado autoral de 700 a.C. não é limite do mundo, é limite da planilha, e
+congelava a província justamente quando ela ia bem.
+
+⚠️ **O crescimento DOBROU na população inicial** — 350 em Atenas, não 175. Não é a taxa que
+mudou: é que a curva valia 0,5 no começo, e metade da taxa era o efeito de estar na metade
+do teto. Nove expectativas de teste mudaram por causa disso.
+
+⚠️ **Hoje o crescimento é exponencial e não tem freio.** O freio verdadeiro é o alimento,
+que ainda não existe — Etapa 4 do `PATCH_ATUAL.md`. Estado intermediário conhecido, não
+descuido.
+
+### A capital existe no estado, e ainda não faz nada
+
+`estado.capitais` guarda a capital de cada poder, e `src/campanha/capitais.ts` a deriva:
+**província homônima** quando existe e é dele (115 dos 148), senão a **maior por área**
+entre as dele, com desempate por id. Derivada e não autoral de propósito — escrever 148
+capitais à mão é conteúdo, e é a Etapa 2 que fará isso para a região de teste.
+
+⚠️ **Ela não dá bônus, não muda nada e não reage.** `capitalPerdida(idPoder)` é uma
+pergunta pronta, e ninguém age sobre a resposta: reatribuir sozinho tiraria do jogador
+justamente a decisão que a Etapa 9 existe para criar.
 
 ### O tesouro é por PODER, não do jogador
 

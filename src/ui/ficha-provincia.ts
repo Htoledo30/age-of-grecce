@@ -138,7 +138,7 @@ export class FichaProvincia {
       ...(populacao
         ? campo('crescimento', `+${moeda(populacao.crescimento)} por turno`, 'ficha__crescimento', {
             titulo:
-              `Capacidade: ${moeda(populacao.capacidade)} habitantes` +
+
               (populacao.fatorConstrucoes > 1
                 ? ` · construções ×${populacao.fatorConstrucoes.toLocaleString('pt-BR')}`
                 : ''),
