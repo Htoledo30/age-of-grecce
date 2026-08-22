@@ -190,7 +190,7 @@ A matemática de combate atual existe para fechar o loop militar.
 
 Ela NÃO representa o combate final do jogo.
 
-O objetivo do 0.0.1 é:
+O objetivo do 0.0.2 é:
 
 - coerência;
 - baixas;
@@ -219,7 +219,7 @@ Direção:
 
 # 11. Tipos de tropas ficam para depois
 
-Não entram no 0.0.1.
+Não entram no 0.0.2.
 
 Direção futura inicial:
 
@@ -472,7 +472,7 @@ Exemplos:
 
 # 27. Estoque pode ser ilimitado no início
 
-No 0.0.1, priorizar simplicidade.
+No 0.0.2, priorizar simplicidade.
 
 Depois avaliar limites porque estoque infinito pode quebrar o late game.
 
@@ -692,7 +692,7 @@ Diferença já gera problema.
 
 # 43. Migração fica para depois
 
-População não precisa se mover entre províncias no 0.0.1.
+População não precisa se mover entre províncias no 0.0.2.
 
 Futuro possível:
 
@@ -797,7 +797,7 @@ Possíveis efeitos:
 - comércio interno;
 - eficiência administrativa.
 
-Não precisam estar completas no 0.0.1.
+Não precisam estar completas no 0.0.2.
 
 ---
 
@@ -981,7 +981,7 @@ Futuro:
 
 O defensor sitiado deve poder atacar o exército sitiador.
 
-No 0.0.1, a surtida reutiliza o combate básico.
+No 0.0.2, a surtida reutiliza o combate básico.
 
 Não criar um subsistema tático separado.
 
@@ -994,7 +994,7 @@ Resultado principal:
 
 # 65. Recursos não serão exigidos no recrutamento agora
 
-Não exigir ferro, madeira etc. para criar tropas no 0.0.1.
+Não exigir ferro, madeira etc. para criar tropas no 0.0.2.
 
 Possibilidade futura permanece aberta.
 
@@ -1014,7 +1014,7 @@ Não implementar antes de haver necessidade.
 
 ---
 
-# 67. Uma região jogável basta para validar o 0.0.1
+# 67. Uma região jogável basta para validar o 0.0.2
 
 Não é necessário configurar as 205 províncias.
 
@@ -1065,7 +1065,7 @@ Isso é pré-requisito estrutural para a IA.
 
 ---
 
-# 70. IA só começa depois do 0.0.1
+# 70. IA só começa depois do 0.0.2
 
 A IA depende de:
 
@@ -1151,17 +1151,20 @@ Se não:
 
 ---
 
-# 76. Hierarquia de verdade do projeto
+# 76. Autoridade é separada por assunto
 
-Quando houver divergência:
+Não existe uma hierarquia linear única para toda divergência. Primeiro deve ser
+identificado o tipo de informação em questão:
 
-1. código atual;
-2. testes atuais;
-3. decisões registradas;
-4. documentação recente;
-5. documentação antiga.
+- comportamento atual → código, testes e `CLAUDE.md`;
+- decisão de design ou arquitetura → `DECISOES.md`;
+- trabalho autorizado agora → `PATCH_ATUAL.md`;
+- direção macro → `ROADMAP.md`;
+- ideia futura → `BACKLOG.md`;
+- processo de trabalho e coordenação → `AGENTS.md`.
 
-Documentos antigos podem estar desatualizados.
+Não resolver conflitos escolhendo simplesmente o arquivo mais novo. A regra detalhada de
+autoridade e conflito está em `AGENTS.md`.
 
 ---
 

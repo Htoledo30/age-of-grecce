@@ -1,10 +1,10 @@
 # PATCH_ATUAL.md
 
-# Age of Grecce — Patch 0.0.1
+# Age of Grecce — Patch 0.0.2
 
 ## Nome do patch
 
-**0.0.1 — Fundação do Mundo**
+**0.0.2 — Fundação do Mundo**
 
 ## Estado
 
@@ -24,7 +24,7 @@ A IA NÃO deve ser iniciada antes do fechamento deste patch.
 
 # Objetivo do patch
 
-Ao final do `0.0.1`, deve existir pelo menos uma região de teste jogável onde seja
+Ao final do `0.0.2`, deve existir pelo menos uma região de teste jogável onde seja
 possível:
 
 - possuir e conquistar províncias;
@@ -56,7 +56,7 @@ depois sem exigir refatorações constantes da base.
 
 Antes de adicionar profundidade, terminar a estrutura.
 
-Se uma ideia nova não for necessária para o fechamento do `0.0.1`, ela deve ser registrada
+Se uma ideia nova não for necessária para o fechamento do `0.0.2`, ela deve ser registrada
 no backlog e NÃO deve interromper a tarefa atual.
 
 ---
@@ -101,7 +101,7 @@ Estado confirmado:
 - milícia, cerco, assalto, conquista e exílio estão implementados;
 - testes atuais passam.
 
-O próximo trabalho do 0.0.1 deve partir dessa base, sem reimplementar o que já está
+O próximo trabalho do 0.0.2 deve partir dessa base, sem reimplementar o que já está
 concluído.
 
 ---
@@ -117,9 +117,15 @@ exílio sem bug concreto.
 
 ### Pendências estruturais antes da IA
 
-- [ ] tesouro deve existir por poder, não apenas para o jogador;
-- [ ] manutenção deve ser cobrada de todos os poderes usando a mesma regra;
-- [ ] recrutamento futuro da IA deve consumir o tesouro do próprio poder;
+- [x] tesouro deve existir por poder, não apenas para o jogador; **CONCLUÍDA** —
+      `estado.tesouros` por id de poder, os 148 começam com `tesouroInicial`;
+      `testes/tesouro.test.ts`
+- [x] manutenção deve ser cobrada de todos os poderes usando a mesma regra; **CONCLUÍDA** —
+      `pagarTropa` percorre os poderes vivos em ordem de id; quem fica sem caixa deserta,
+      seja quem for
+- [x] recrutamento futuro da IA deve consumir o tesouro do próprio poder; **CONCLUÍDA** —
+      recrutar, construir e investir cobram o cofre do DONO da província, e o teto da leva
+      olha o ouro dele
 - [ ] remover a dependência de "economia configurada" como trava conceitual de
       recrutamento;
 - [ ] manter população e demais requisitos reais como regras do recrutamento;
@@ -501,7 +507,7 @@ Necessário para conexão marítima econômica.
 
 Devem existir futuramente como construção.
 
-Não precisam estar completas no 0.0.1.
+Não precisam estar completas no 0.0.2.
 
 ### Implementar neste patch
 
@@ -553,7 +559,7 @@ O número de turnos e os bônus exatos podem mudar em teste.
 
 O defensor sitiado deve poder escolher atacar o exército sitiador.
 
-Implementar de forma simples no 0.0.1:
+Implementar de forma simples no 0.0.2:
 
 - [ ] opção de surtida durante cerco;
 - [ ] usar o mesmo sistema básico de combate;
@@ -573,11 +579,11 @@ A referência conceitual é Brasfoot:
 - jogador consegue acompanhar;
 - resultado não aparece instantaneamente.
 
-Para o `0.0.1`, basta um protótipo simples se ele não atrasar excessivamente o fechamento
+Para o `0.0.2`, basta um protótipo simples se ele não atrasar excessivamente o fechamento
 da base.
 
 A matemática atual resolve a batalha em um único cálculo. Portanto o protótipo visual do
-0.0.1 NÃO exige transformar o combate em resolução iterativa.
+0.0.2 NÃO exige transformar o combate em resolução iterativa.
 
 A interface pode apresentar progressivamente um resultado já calculado, apenas como
 playback visual.
@@ -605,7 +611,7 @@ Não implementar ainda:
 
 ---
 
-# Fora do escopo do 0.0.1
+# Fora do escopo do 0.0.2
 
 NÃO implementar neste patch:
 
@@ -636,7 +642,7 @@ Registrar ideias relacionadas no backlog.
 
 # Critério de conclusão
 
-O `0.0.1` só pode ser fechado quando:
+O `0.0.2` só pode ser fechado quando:
 
 ## Mundo
 
@@ -688,7 +694,7 @@ O `0.0.1` só pode ser fechado quando:
 
 # O que acontece depois
 
-Quando o `0.0.1` for aprovado e fechado:
+Quando o `0.0.2` for aprovado e fechado:
 
 **parar.**
 
@@ -696,9 +702,9 @@ Não iniciar automaticamente o próximo patch.
 
 O próximo patch provável é:
 
-**0.0.2 — IA mínima**
+**IA mínima — versão ainda não definida**
 
-Mas seu escopo só deve ser definido depois da aprovação formal do `0.0.1`.
+Seu número e seu escopo só devem ser definidos depois da aprovação formal do `0.0.2`.
 
 ---
 

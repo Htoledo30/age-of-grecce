@@ -153,7 +153,7 @@ Claude NÃO pode:
 - criar sistemas paralelos fora do escopo;
 - reescrever módulos grandes apenas por preferência estética;
 - alterar decisões registradas em `DECISOES.md` silenciosamente;
-- começar IA antes do fechamento do `0.0.1`.
+- começar IA antes do fechamento do `0.0.2`.
 
 ---
 
@@ -250,7 +250,7 @@ Exemplo de branches:
 
 ```text
 main
-claude/0.0.1-economia
+claude/0.0.2-economia
 codex/ui-provincia
 ```
 
@@ -569,7 +569,7 @@ Durante um patch podem existir vários commits.
 Exemplo:
 
 ```text
-0.0.1
+0.0.2
 ├── commit: hostes por ID
 ├── commit: corrige cerco
 ├── commit: estoque
@@ -598,7 +598,7 @@ Não atualizar número de versão futura sem aprovação.
 
 # 26. Estado atual do projeto
 
-Enquanto o `0.0.1` estiver aberto:
+Enquanto o `0.0.2` estiver aberto:
 
 Foco:
 

@@ -51,9 +51,9 @@ O importante é que:
 
 ---
 
-# Marco atual — 0.0.1
+# Marco atual — 0.0.2
 
-## 0.0.1 — Fundação do Mundo
+## 0.0.2 — Fundação do Mundo
 
 Objetivo:
 
@@ -113,7 +113,7 @@ Base necessária:
 
 ## Critério macro
 
-O `0.0.1` termina quando uma região de teste puder funcionar de ponta a ponta usando esses
+O `0.0.2` termina quando uma região de teste puder funcionar de ponta a ponta usando esses
 três pilares.
 
 Não é necessário preencher todas as 205 províncias antes de fechar esta versão.
@@ -124,11 +124,11 @@ possuem economia/recurso configurado e serão expandidas depois que o modelo for
 
 ---
 
-# Próximo marco provável — 0.0.2
+# Próximo marco provável — IA mínima
 
 ## IA mínima
 
-A IA só deve começar depois que o `0.0.1` estiver formalmente fechado.
+A IA só deve começar depois que o `0.0.2` estiver formalmente fechado.
 
 Objetivo provável:
 
@@ -156,7 +156,8 @@ Não aprofundar inicialmente:
 - estratégia sofisticada;
 - cheats.
 
-O escopo definitivo do `0.0.2` só será escrito depois do fechamento do `0.0.1`.
+O número e o escopo definitivos do patch de IA só serão definidos depois do fechamento do
+`0.0.2`.
 
 ---
 
@@ -415,7 +416,7 @@ Fluxo:
 
 ## Agora
 
-`0.0.1 — Fundação do Mundo`
+`0.0.2 — Fundação do Mundo`
 
 Foco:
 
@@ -427,7 +428,7 @@ Foco:
 
 Provável:
 
-`0.0.2 — IA mínima`
+`IA mínima — versão ainda não definida`
 
 ## Primeiro grande alvo
 

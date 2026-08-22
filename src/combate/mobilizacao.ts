@@ -5,9 +5,13 @@
  * `Campanha` porque ela estava virando o arquivo que sabe tudo — e movimento e batalha
  * vão ter os seus próprios. **Nada de guerra cresce aqui.**
  *
- * O recorte de estado que ele recebe é deliberadamente estreito: tesouro, população e
- * exércitos. É o que a mobilização pode mexer, e nada além — a assinatura do construtor é
+ * O recorte de estado que ele recebe é deliberadamente estreito: tesouros, população e
+ * hostes. É o que a mobilização pode mexer, e nada além — a assinatura do construtor é
  * a fronteira escrita.
+ *
+ * ⚠️ **Toda operação de dinheiro pede o PODER.** Não existe "o tesouro"; existe o tesouro
+ * de alguém. Recrutar em Elêusis gasta o cofre de Elêusis, e a folha de Tanagra sai do
+ * cofre de Tanagra — inclusive enquanto ninguém estiver jogando com eles.
  */
 
 import type { Ajustes } from '@/dados/esquema';
@@ -28,7 +32,8 @@ export interface HosteEmProvincia {
 
 /** O recorte do estado que a mobilização pode alterar. Nada além disto. */
 export interface EstadoDeMobilizacao {
-  tesouro: number;
+  /** Por id de poder. Ver `EstadoCampanha.tesouros`. */
+  tesouros: Record<string, number>;
   populacao: Record<string, number>;
   /** Por ID de hoste. Ver `exercito.ts`: a provincia deixou de ser a chave. */
   hostes: Record<string, Exercito>;
@@ -148,20 +153,30 @@ export class Mobilizacao {
     return disponivelParaLeva(this.populacaoDe(idProvincia), this.ajustes);
   }
 
-  /** Teto real da leva: população cedida e ouro disponível contam ao mesmo tempo. */
-  maximoParaLevaEm(idProvincia: string): number {
+  /** Quanto este poder tem em caixa. Zero quando ele nunca teve entrada. */
+  tesouroDe(idPoder: string): number {
+    return this.estado.tesouros[idPoder] ?? 0;
+  }
+
+  /** Teto real da leva: população cedida e ouro do PODER contam ao mesmo tempo. */
+  maximoParaLevaEm(idProvincia: string, idPoder: string): number {
     return maximoDaLeva(
-      { populacao: this.populacaoDe(idProvincia), tesouro: this.estado.tesouro },
+      { populacao: this.populacaoDe(idProvincia), tesouro: this.tesouroDe(idPoder) },
       this.ajustes,
     );
   }
 
-  avaliarLevaEm(idProvincia: string, homens: number, temQuartel: boolean): RecusaDeLeva {
+  avaliarLevaEm(
+    idProvincia: string,
+    idPoder: string,
+    homens: number,
+    temQuartel: boolean,
+  ): RecusaDeLeva {
     return avaliarLeva(
       homens,
       {
         populacao: this.populacaoDe(idProvincia),
-        tesouro: this.estado.tesouro,
+        tesouro: this.tesouroDe(idPoder),
         temQuartel,
       },
       this.ajustes,
@@ -197,7 +212,7 @@ export class Mobilizacao {
     // outro poder por acidente.
     if (alheia) throw new Error(`há tropa de ${alheia.poder} em ${idProvincia}`);
 
-    this.estado.tesouro -= leva.ouro;
+    this.estado.tesouros[poder] = this.tesouroDe(poder) - leva.ouro;
     this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - leva.homens;
     iniciarFormacao(this.estado.formacoes, idProvincia, poder, leva.homens, turnoAtual);
   }
@@ -286,13 +301,14 @@ export class Mobilizacao {
     const devido = this.manutencaoDe(idPoder);
     if (devido <= 0) return 0;
 
-    if (devido <= this.estado.tesouro) {
-      this.estado.tesouro -= devido;
+    const caixa = this.tesouroDe(idPoder);
+    if (devido <= caixa) {
+      this.estado.tesouros[idPoder] = caixa - devido;
       return 0;
     }
 
-    const pago = Math.max(0, this.estado.tesouro);
-    this.estado.tesouro -= pago;
+    const pago = Math.max(0, caixa);
+    this.estado.tesouros[idPoder] = caixa - pago;
     const fracaoNaoPaga = (devido - pago) / devido;
     let desertaram = 0;
 

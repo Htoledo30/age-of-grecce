@@ -885,6 +885,29 @@ parar de crescer e não tem como saber que foi o exército que comeu.
 **População na ficha não é enfeite.** Ela decide imposto, recrutamento e crescimento. A
 ficha mostra a população atual e `+N por turno`; a capacidade fica no tooltip.
 
+### O tesouro é por PODER, não do jogador
+
+`estado.tesouros` é indexado por id de poder, e os **148 começam com `tesouroInicial`**.
+Não existe "o tesouro"; existe o tesouro de alguém.
+
+⚠️ **Era um número só, e isso teria dado à IA um exército de graça:** sem cofre próprio ela
+recrutaria e manteria tropa sem nada sair de lugar nenhum — a vantagem secreta que
+`DECISOES.md` #71 proíbe. Ver também #69A.
+
+- **A renda entra no cofre de cada poder.** Elêusis arrecada 119 e Tanagra 83 por turno
+  sem ninguém jogando com elas.
+- **A folha militar é cobrada de todos, pela mesma regra.** As guarnições de 500 homens de
+  Elêusis e Tanagra custam 150 por turno **a elas**, e as duas gastam mais do que ganham —
+  o caixa inicial dá cerca de 96 e 44 turnos. Quem seca vê a tropa desertar, seja quem for.
+- **Recrutar, construir e investir cobram o DONO da província**, não o jogador. Hoje dá no
+  mesmo porque só o jogador age; quando a IA existir, o cofre certo já está no lugar.
+- **`Campanha.tesouro` continua sendo o do jogador**, porque é o que a interface desenha.
+  É conveniência sobre `tesouroDe(idPoder)`, e vale zero antes de a campanha começar.
+
+⚠️ **`arrecadar` e `pagarTropa` percorrem os poderes em ordem de id.** Sem a ordem, o
+resultado dependeria de quem entrou primeiro no mapa — mesmo motivo pelo qual a resolução
+da rodada é determinística.
+
 ### A leva leva uma rodada para virar hoste
 
 **Recrutar não põe tropa no mapa no mesmo turno.** A leva paga entra em

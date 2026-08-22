@@ -29,7 +29,18 @@ export interface EstadoCampanha {
   /** 0 na abertura; vira 1 quando o jogador escolhe um poder. */
   turno: number;
   /** Tesouro do jogador. Vira uma tabela por poder quando a IA entrar. */
-  tesouro: number;
+  /**
+   * Moedas de cada poder, por id. **Todos os 148, não só o jogador.**
+   *
+   * ⚠️ Era um número só, e isso teria dado à IA um exército de graça: sem cofre próprio,
+   * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver `DECISOES.md` #69A
+   * e #71 — a IA joga pelas mesmas regras, e a primeira dessas regras é que dinheiro
+   * acaba.
+   *
+   * Poder sem entrada aqui vale zero, não `undefined`: quem pergunta o tesouro de um
+   * poder qualquer tem que receber um número.
+   */
+  tesouros: Record<string, number>;
   /**
    * Dono ATUAL de cada província, por id. **Sempre completo: as 205 entradas.**
    *

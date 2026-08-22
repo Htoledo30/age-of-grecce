@@ -45,7 +45,7 @@ Não transformar o jogo em combate tático estilo Total War.
 
 ### Resolução iterativa da batalha
 
-O 0.0.1 pode usar playback visual de um resultado calculado em um passo.
+O 0.0.2 pode usar playback visual de um resultado calculado em um passo.
 
 Para permitir futuramente:
 
@@ -90,7 +90,7 @@ Futuro:
 
 ## Tipos de tropas
 
-Não implementar no 0.0.1.
+Não implementar no 0.0.2.
 
 Direção futura inicial:
 
@@ -284,7 +284,7 @@ Só implementar se trouxer decisão real de gameplay.
 
 ## Estoque limitado
 
-No 0.0.1, estoque pode ser ilimitado.
+No 0.0.2, estoque pode ser ilimitado.
 
 Problema futuro:
 
@@ -379,7 +379,7 @@ Futuramente:
 
 ## Nacionalidade
 
-Base já prevista no 0.0.1.
+Base já prevista no 0.0.2.
 
 Aprofundamentos futuros:
 
@@ -492,7 +492,7 @@ Não aplicar penalidades arbitrárias sem uma razão clara.
 
 ## Capital como centro administrativo
 
-Base prevista no 0.0.1.
+Base prevista no 0.0.2.
 
 Futuro:
 
@@ -555,7 +555,7 @@ Futuro:
 
 ## Porto
 
-Base mínima deve existir no 0.0.1 para conexão marítima.
+Base mínima deve existir no 0.0.2 para conexão marítima.
 
 Futuro:
 
@@ -640,7 +640,7 @@ Direção:
 
 # 11. IA
 
-Provável foco do `0.0.2`.
+Provável foco do próximo patch, cuja versão ainda não foi definida.
 
 IA mínima deve inicialmente:
 
@@ -714,7 +714,7 @@ Regra:
 
 ## Dados econômicos do mapa completo
 
-Não necessário para fechar 0.0.1.
+Não necessário para fechar 0.0.2.
 
 Depois do modelo ser validado na região de teste:
 
@@ -873,7 +873,7 @@ Esta ordem NÃO representa patches fixos.
 
 ## Próximos sistemas mais importantes
 
-1. Fechar 0.0.1
+1. Fechar 0.0.2
 2. IA mínima
 3. Save/Load
 4. Diplomacia mínima

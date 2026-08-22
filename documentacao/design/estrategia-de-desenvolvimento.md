@@ -44,7 +44,7 @@ Quando esse ciclo existir, haverá um jogo funcional. Ele ainda poderá ser simp
 ou desbalanceado, mas será possível jogar uma campanha e descobrir quais sistemas
 merecem profundidade.
 
-### Situação no patch 0.0.1
+### Situação no patch 0.0.2
 
 | parte do ciclo                                   | situação                                    |
 | ------------------------------------------------ | ------------------------------------------- |

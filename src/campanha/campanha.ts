@@ -118,7 +118,13 @@ export class Campanha {
       jogador: null,
       ano: ajustes.anoInicial,
       turno: 0,
-      tesouro: ajustes.tesouroInicial,
+      // ⚠️ TODOS os poderes começam com caixa, não só o jogador. Ver `DECISOES.md` #69A:
+      // sem cofre próprio a IA recrutaria de graça, e "as mesmas regras do jogador" é a
+      // decisão #71. Preencher aqui, e não na hora em que alguém precisar, evita o
+      // `undefined` viajando por uma subtração.
+      tesouros: Object.fromEntries(
+        atlas.poderes.map((poder) => [poder.id, ajustes.tesouroInicial]),
+      ),
       dono,
       populacao: tabuleiro.populacao,
       hostes: tabuleiro.hostes,
@@ -151,8 +157,18 @@ export class Campanha {
     return this.estado.turno;
   }
 
+  /**
+   * O caixa do JOGADOR. Conveniência para a interface, que só desenha o dele.
+   *
+   * Zero antes de a campanha começar — não há jogador de quem falar.
+   */
   get tesouro(): number {
-    return this.estado.tesouro;
+    return this.estado.jogador === null ? 0 : this.tesouroDe(this.estado.jogador);
+  }
+
+  /** O caixa de qualquer poder. Zero para quem nunca teve entrada. */
+  tesouroDe(idPoder: string): number {
+    return this.estado.tesouros[idPoder] ?? 0;
   }
 
   /** Renda por turno do jogador. Zero antes de a campanha começar. */
@@ -437,7 +453,9 @@ export class Campanha {
 
   /** Quantos homens a população e o tesouro permitem recrutar neste instante. */
   maximoParaLevaEm(idProvincia: string): number {
-    return this.mobilizacao.maximoParaLevaEm(idProvincia);
+    // O ouro que conta é o de quem manda na província, não o do jogador: quando a IA
+    // existir, ela vai perguntar isto sobre as províncias dela.
+    return this.mobilizacao.maximoParaLevaEm(idProvincia, this.donoDe(idProvincia));
   }
 
   /**
@@ -452,6 +470,7 @@ export class Campanha {
     if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
     return this.mobilizacao.avaliarLevaEm(
       idProvincia,
+      this.donoDe(idProvincia),
       homens,
       this.capacidadesEm(idProvincia).includes('recrutar'),
     );
@@ -643,10 +662,36 @@ export class Campanha {
    * ⚠️ Cobra DEPOIS da arrecadação, pelo mesmo motivo do incentivo e das obras: quem
    * recruta neste turno paga a manutenção deste turno, e não do que vem.
    */
+  /**
+   * Credita a renda do turno no cofre de CADA poder, não só no do jogador.
+   *
+   * ⚠️ Percorre os poderes vivos em ordem de id. Sem a ordem, o resultado dependeria de
+   * quem entrou primeiro no mapa — e a passagem de turno tem que ser determinística pelo
+   * mesmo motivo que a resolução da rodada é.
+   */
+  private arrecadar(): void {
+    for (const idPoder of [...this.poderesVivos()].sort()) {
+      const renda = this.rendaDe(idPoder);
+      if (renda !== 0) this.estado.tesouros[idPoder] = this.tesouroDe(idPoder) + renda;
+    }
+  }
+
+  /**
+   * Cobra a folha militar de TODOS os poderes, pela mesma regra.
+   *
+   * ⚠️ Antes só o jogador pagava, e isso teria dado à IA um exército sem custo — que é
+   * exatamente a vantagem secreta que `DECISOES.md` #71 proíbe. Quem não tem caixa vê a
+   * tropa desertar, seja quem for.
+   */
   private pagarTropa(): void {
-    const jogador = this.estado.jogador;
-    if (jogador === null) return;
-    this.mobilizacao.pagarManutencao(jogador);
+    for (const idPoder of [...this.poderesVivos()].sort()) {
+      this.mobilizacao.pagarManutencao(idPoder);
+    }
+  }
+
+  /** Tira moedas do cofre de um poder. Nunca deixa negativo. */
+  private gastar(idPoder: string, valor: number): void {
+    this.estado.tesouros[idPoder] = Math.max(0, this.tesouroDe(idPoder) - valor);
   }
 
   /** Cresce todas as províncias configuradas, inclusive as que não pertencem ao jogador. */
@@ -700,10 +745,13 @@ export class Campanha {
       const nome = this.catalogoDeConstrucoes.construcoes[obra.construcao]?.nome ?? obra.construcao;
       return { pode: false, motivo: `${nome} em obra aqui (${obra.turnosRestantes} turnos)` };
     }
-    if (construcao.custo > this.estado.tesouro) {
+    // Quem paga a obra é o DONO da província, não o jogador. Hoje dá no mesmo porque só o
+    // jogador constrói; quando a IA construir, o cofre certo já é o que está aqui.
+    const caixa = this.tesouroDe(this.donoDe(idProvincia));
+    if (construcao.custo > caixa) {
       return {
         pode: false,
-        motivo: `faltam ${(construcao.custo - this.estado.tesouro).toLocaleString('pt-BR')} moedas`,
+        motivo: `faltam ${(construcao.custo - caixa).toLocaleString('pt-BR')} moedas`,
       };
     }
     return { pode: true, bonus: 0 };
@@ -720,7 +768,7 @@ export class Campanha {
     if (!construcao) throw new Error(`construção inexistente: ${idConstrucao}`);
     // Paga à vista, entrega depois. Não existe cancelar: devolver o dinheiro faria da
     // obra um cofre com juros, onde estacionar tesouro sem risco nenhum.
-    this.estado.tesouro -= construcao.custo;
+    this.gastar(this.donoDe(idProvincia), construcao.custo);
     this.estado.obras[idProvincia] = {
       construcao: idConstrucao,
       turnosRestantes: construcao.turnos,
@@ -776,10 +824,11 @@ export class Campanha {
         motivo: `o máximo por província é ${maximo.toLocaleString('pt-BR')} moedas`,
       };
     }
-    if (valor > this.estado.tesouro) {
+    const caixa = this.tesouroDe(this.donoDe(idProvincia));
+    if (valor > caixa) {
       return {
         pode: false,
-        motivo: `tesouro insuficiente (${this.estado.tesouro.toLocaleString('pt-BR')} moedas)`,
+        motivo: `tesouro insuficiente (${caixa.toLocaleString('pt-BR')} moedas)`,
       };
     }
     return { pode: true, bonus: bonusDoInvestimento(valor, this.ajustes.economia) };
@@ -795,7 +844,7 @@ export class Campanha {
   investir(idProvincia: string, valor: number): void {
     const r = this.podeInvestir(idProvincia, valor);
     if (!r.pode) throw new Error(r.motivo);
-    this.estado.tesouro -= valor;
+    this.gastar(this.donoDe(idProvincia), valor);
     this.estado.investimentos[idProvincia] = {
       percentual: r.bonus,
       arrecadacoesRestantes: this.ajustes.economia.investimento.arrecadacoes,
@@ -810,8 +859,9 @@ export class Campanha {
    * Não é regra do jogo e nenhuma mecânica chama isto. O gancho que a expõe vive atrás
    * de `import.meta.env.DEV` e não existe no jogo empacotado.
    */
-  darOuro(valor: number): void {
-    this.estado.tesouro += valor;
+  darOuro(valor: number, idPoder: string | null = this.estado.jogador): void {
+    if (idPoder === null) return;
+    this.estado.tesouros[idPoder] = this.tesouroDe(idPoder) + valor;
     this.aoMudar();
   }
 
@@ -825,7 +875,7 @@ export class Campanha {
    */
   passarTurno(): void {
     if (!this.iniciada) throw new Error('a campanha ainda não começou');
-    this.estado.tesouro += this.renda;
+    this.arrecadar();
     this.pagarTropa();
 
     // ⚠️ **Arrecada ANTES de resolver as marchas.** A renda do turno pertence ao mundo
