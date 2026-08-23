@@ -31,10 +31,14 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
 
   const inspecao = () =>
     page.evaluate(() => {
-      const i = (window as unknown as { inspecao: {
-        donoDe: (id: string) => string;
-        campanha: () => { provincias: number; poderesVivos: number };
-      } }).inspecao;
+      const i = (
+        window as unknown as {
+          inspecao: {
+            donoDe: (id: string) => string;
+            campanha: () => { provincias: number; poderesVivos: number };
+          };
+        }
+      ).inspecao;
       return { dono: i.donoDe('megara'), ...i.campanha() };
     });
 
@@ -45,10 +49,9 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
   // Mégara tem DUAS províncias (Mégara e Salamina): tomar uma não a elimina, e é isso
   // que separa "perdeu território" de "morreu".
   await page.evaluate(() =>
-    (window as unknown as { inspecao: { conquistar: (a: string, b: string) => void } }).inspecao.conquistar(
-      'megara',
-      'atenas',
-    ),
+    (
+      window as unknown as { inspecao: { conquistar: (a: string, b: string) => void } }
+    ).inspecao.conquistar('megara', 'atenas'),
   );
 
   const depois = await inspecao();
@@ -62,11 +65,9 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
 
   // E agora o que o bug arruinava: a ficha da província conquistada.
   await page.evaluate(() =>
-    (window as unknown as { inspecao: { posicionar: (x: number, y: number, z: number) => void } }).inspecao.posicionar(
-      4102,
-      4203,
-      1,
-    ),
+    (
+      window as unknown as { inspecao: { posicionar: (x: number, y: number, z: number) => void } }
+    ).inspecao.posicionar(4102, 4203, 1),
   );
   await page.waitForTimeout(300);
   await page.mouse.click(960, 540);
@@ -96,14 +97,16 @@ test('tomar tudo de um poder o elimina da contagem', async ({ page }) => {
   const vivos = () =>
     page.evaluate(
       () =>
-        (window as unknown as { inspecao: { campanha: () => { poderesVivos: number } } }).inspecao.campanha()
-          .poderesVivos,
+        (
+          window as unknown as { inspecao: { campanha: () => { poderesVivos: number } } }
+        ).inspecao.campanha().poderesVivos,
     );
 
   expect(await vivos()).toBe(148);
 
   await page.evaluate(() => {
-    const i = (window as unknown as { inspecao: { conquistar: (a: string, b: string) => void } }).inspecao;
+    const i = (window as unknown as { inspecao: { conquistar: (a: string, b: string) => void } })
+      .inspecao;
     i.conquistar('megara', 'atenas');
     i.conquistar('salamina', 'atenas'); // a segunda e última de Mégara
   });

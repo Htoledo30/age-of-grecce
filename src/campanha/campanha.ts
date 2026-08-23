@@ -32,9 +32,12 @@ import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
 import { levantarGuarnicoes } from '@/combate/guarnicao-inicial';
 import { capitaisIniciais } from './capitais';
+import { perfilDaProvincia } from './perfil-da-provincia';
+import type { PerfilDaProvincia } from './perfil-da-provincia';
+import { rodadasAteOAssalto } from '@/combate/cerco';
 import type { Cerco, Postura } from '@/combate/cerco';
 import { miliciaDe, mortosDaMilicia } from '@/combate/milicia';
-import type { HosteEmProvincia } from '@/combate/mobilizacao';
+
 import { Territorios } from './territorios';
 import { rotasDe } from '@/movimento/alcance';
 import { avaliarOrdem } from '@/movimento/ordens';
@@ -49,6 +52,14 @@ type Poder = Provincias['poderes'][number];
 
 /** Por que um investimento foi recusado. A interface mostra o motivo em vez de sumir. */
 export type Recusa = { pode: true; bonus: number } | { pode: false; motivo: string };
+
+/**
+ * Pode ou não pode, com o motivo quando não pode.
+ *
+ * Igual a `Recusa` sem o `bonus`, que é coisa da mobilização. Toda permissão do jogo
+ * devolve o MOTIVO em vez de só esconder o controle: é a interface que escreve a frase.
+ */
+export type Permissao = { pode: true } | { pode: false; motivo: string };
 
 export class Campanha {
   private readonly estado: EstadoCampanha;
@@ -74,6 +85,7 @@ export class Campanha {
     conquistas: [],
     milicianosMortos: [],
     cercos: [],
+    cercosLevantados: [],
   };
 
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
@@ -86,9 +98,17 @@ export class Campanha {
     private readonly ajustes: AjustesJogo,
     exercitosIniciais: Exercitos,
   ) {
-    for (const id of Object.keys(economia.provincias)) {
+    for (const [id, ficha] of Object.entries(economia.provincias)) {
       if (!atlas.existe(id)) {
         throw new Error(`economia.json descreve província inexistente: ${id}`);
+      }
+      // As construções iniciais são ids do OUTRO arquivo, então o Zod não consegue
+      // conferir sozinho. Um id errado aqui viraria uma construção fantasma: contada na
+      // lista da ficha, sem efeito nenhum na renda.
+      for (const construcao of ficha.construcoes) {
+        if (!catalogoDeConstrucoes.construcoes[construcao]) {
+          throw new Error(`economia.json dá a ${id} uma construção inexistente: ${construcao}`);
+        }
       }
     }
 
@@ -101,8 +121,19 @@ export class Campanha {
     // é da partida — recrutar a encolhe. Província sem economia configurada não entra e
     // continua sem população, como não tem renda.
     const populacaoAutoral: Record<string, number> = {};
+    // Povo, humor, despensa e o que já está de pé em 700 a.C. — copiados do arquivo pro
+    // estado pela mesma razão que a população é: a partir daqui são da PARTIDA. Conquista
+    // captura estoque, guerra derruba humor, e nada disso pode voltar a ler o autoral.
+    const nacionalidades: Record<string, Record<string, number>> = {};
+    const felicidade: Record<string, number> = {};
+    const estoques: Record<string, Record<string, number>> = {};
+    const construcoes: Record<string, string[]> = {};
     for (const [id, ficha] of Object.entries(economia.provincias)) {
       populacaoAutoral[id] = ficha.populacao;
+      nacionalidades[id] = { ...ficha.nacionalidades };
+      felicidade[id] = ficha.felicidade;
+      estoques[id] = { ...ficha.estoque };
+      if (ficha.construcoes.length > 0) construcoes[id] = [...ficha.construcoes];
     }
 
     // A tropa de 700 a.C. entra ANTES do estado existir, e os homens dela saem da
@@ -119,23 +150,27 @@ export class Campanha {
       jogador: null,
       ano: ajustes.anoInicial,
       turno: 0,
-      // ⚠️ TODOS os poderes começam com caixa, não só o jogador. Ver `DECISOES.md` #69A:
+      // ⚠️ TODOS os poderes começam com caixa, não só o jogador. Ver `DECISOES.md` #63:
       // sem cofre próprio a IA recrutaria de graça, e "as mesmas regras do jogador" é a
-      // decisão #71. Preencher aqui, e não na hora em que alguém precisar, evita o
+      // decisão #97. Preencher aqui, e não na hora em que alguém precisar, evita o
       // `undefined` viajando por uma subtração.
       tesouros: Object.fromEntries(
         atlas.poderes.map((poder) => [poder.id, ajustes.tesouroInicial]),
       ),
       dono,
       populacao: tabuleiro.populacao,
+      nacionalidades,
+      felicidade,
+      estoques,
       hostes: tabuleiro.hostes,
       proximaHoste: tabuleiro.proximaHoste,
       formacoes: {},
       ordens: {},
+      surtidas: [],
       cercos: {},
       capitais: {},
       investimentos: {},
-      construcoes: {},
+      construcoes,
       obras: {},
     };
 
@@ -277,7 +312,7 @@ export class Campanha {
    * A capital deste poder, ou `undefined` para quem não tem província nenhuma.
    *
    * ⚠️ Ela ainda não faz NADA no jogo — ver `capitais.ts`. Existe para os sistemas da
-   * Etapa 9 em diante terem uma resposta só.
+   * O patch 0.0.9 em diante ter uma resposta só.
    */
   capitalDe(idPoder: string): string | undefined {
     return this.estado.capitais[idPoder];
@@ -286,9 +321,9 @@ export class Campanha {
   /**
    * A capital deste poder caiu em mãos alheias?
    *
-   * Pergunta pronta para a Etapa 9, que é quem vai obrigar o jogador a escolher outra.
+   * Pergunta pronta para o patch 0.0.9, que é quem vai obrigar o jogador a escolher outra.
    * Hoje ninguém age sobre a resposta — e é de propósito: reatribuir sozinho tiraria do
-   * jogador justamente a decisão que a Etapa 9 existe para criar.
+   * jogador justamente a decisão que o patch 0.0.9 existe para criar.
    */
   capitalPerdida(idPoder: string): boolean {
     const capital = this.capitalDe(idPoder);
@@ -311,6 +346,35 @@ export class Campanha {
   }
 
   /**
+   * Esta província tem obra que obriga a sitiar antes de assaltar?
+   *
+   * ⚠️ Lê o campo do CATÁLOGO, e não o id `muralha`. Amarrar a regra de combate a um id de
+   * conteúdo faria o `0.0.10`, que vai refazer as construções em slots e níveis, apagar
+   * uma regra de guerra sem ninguém perceber.
+   */
+  impedeAssaltoImediatoEm(idProvincia: string): boolean {
+    return this.construcoesEm(idProvincia).some(
+      (id) => this.catalogoDeConstrucoes.construcoes[id]?.impedeAssaltoImediato === true,
+    );
+  }
+
+  /**
+   * Dá para assaltar esta cidade agora, e se não, quantas rodadas de cerco ainda faltam?
+   *
+   * Serve às duas perguntas da interface: o botão do cerco em pé ("passar ao assalto") e a
+   * escolha de postura de uma marcha que ainda vai chegar lá. Cidade aberta responde
+   * sempre `{ pode: true, faltam: 0 }`.
+   */
+  assaltoEm(idProvincia: string): { pode: boolean; faltam: number } {
+    const faltam = rodadasAteOAssalto(
+      this.impedeAssaltoImediatoEm(idProvincia),
+      this.estado.cercos[idProvincia]?.rodadas ?? 0,
+      this.ajustes.combate.cerco,
+    );
+    return { pode: faltam === 0, faltam };
+  }
+
+  /**
    * Troca a postura de um cerco já em pé.
    *
    * É o que o desenho pedia: sentar na frente da cidade e, três turnos depois, decidir que
@@ -320,8 +384,33 @@ export class Campanha {
   mudarPostura(idProvincia: string, postura: Postura): void {
     const cerco = this.estado.cercos[idProvincia];
     if (!cerco) return;
+    // A muralha barra o assalto antes da hora. A resolução também recusa — ela é a
+    // autoridade, porque a postura ainda pode chegar por uma ordem de marcha — mas deixar
+    // a ordem ser registrada aqui mostraria ao jogador uma decisão que não vai acontecer.
+    if (postura === 'assaltar' && !this.assaltoEm(idProvincia).pode) return;
     this.estado.cercos[idProvincia] = { ...cerco, postura };
     this.aoMudar();
+  }
+
+  /**
+   * Povo, humor, despensa e ancoradouro — o retrato que não é dinheiro.
+   *
+   * `null` na província sem ficha autoral, exatamente como `economiaDe`: 200 das 205 não
+   * são simuladas, e a interface diz isso com todas as letras em vez de inventar.
+   */
+  perfilDe(idProvincia: string): PerfilDaProvincia | null {
+    return perfilDaProvincia(
+      idProvincia,
+      this.economia,
+      {
+        populacao: this.populacaoDe(idProvincia),
+        felicidade: this.estado.felicidade[idProvincia] ?? 0,
+        nacionalidades: this.estado.nacionalidades[idProvincia] ?? {},
+        estoque: this.estado.estoques[idProvincia] ?? {},
+      },
+      this.ajustes.felicidade.faixas,
+      this.ajustes.alimento.consumoPorHabitante,
+    );
   }
 
   private baseDe(idProvincia: string): BaseDaProvincia {
@@ -439,7 +528,7 @@ export class Campanha {
    *
    * ⚠️ **Não pergunta se ela tem economia configurada.** Já perguntava, e isso era uma
    * trava conceitual errada: recrutar depende de GENTE, não de a província ter ficha
-   * econômica escrita. Ver `DECISOES.md` #59. Província sem ficha continua não cedendo
+   * econômica escrita. Ver `DECISOES.md` #89. Província sem ficha continua não cedendo
    * ninguém — mas porque a população dela é zero, que é um requisito real, e a recusa
    * passa a dizer isso em vez de falar de dado que falta.
    *
@@ -458,23 +547,50 @@ export class Campanha {
   /** Dá pra pôr gente em armas aqui? Exige o Quartel erguido e a província ser sua. */
   podeRecrutarEm(idProvincia: string): boolean {
     return (
-      this.podeMobilizarEm(idProvincia).pode &&
-      this.capacidadesEm(idProvincia).includes('recrutar')
+      this.podeMobilizarEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar')
     );
   }
 
-  /** O exército parado nesta província, se houver. */
-  exercitoEm(idProvincia: string): Exercito | undefined {
-    return this.mobilizacao.exercitoEm(idProvincia);
+  /**
+   * A hoste com este id, onde quer que esteja. **É o endereço da interface.**
+   *
+   * ⚠️ Substituiu `exercitoEm(provincia)`, que devolvia "a primeira por id". Aquilo virou
+   * mentira quando sitiar deixou de engajar o exército de dentro (`DECISOES.md` #32A):
+   * com sitiante e guarnição na mesma província, "a primeira" é quem foi recrutado antes,
+   * e o mapa inteiro passou a falar do exército errado.
+   */
+  hoste(idHoste: string): Exercito | undefined {
+    return this.mobilizacao.hoste(idHoste);
   }
 
-  /** Quantos homens estão parados nesta província. */
-  forcaEm(idProvincia: string): number {
-    return this.mobilizacao.forcaEm(idProvincia);
+  /**
+   * Toda hoste parada nesta província, em ordem de id.
+   *
+   * ⚠️ **Pode haver mais de uma, e de poderes diferentes.** É o caso do cerco.
+   */
+  hostesEm(idProvincia: string): readonly Exercito[] {
+    return this.mobilizacao.hostesEm(idProvincia);
   }
 
-  /** Toda hoste em pé no mundo. É o que o mapa desenha. */
-  hostes(): readonly HosteEmProvincia[] {
+  /** Quantos homens ESTA hoste tem. */
+  forcaDaHoste(idHoste: string): number {
+    return this.mobilizacao.forcaDaHoste(idHoste);
+  }
+
+  /**
+   * Quantos homens de um PODER estão parados nesta província.
+   *
+   * ⚠️ **Sem dizer o poder, pergunta pelo dono da terra.** É o que quase sempre se quer —
+   * "quanta tropa Atenas tem em Atenas" — mas é armadilha no caso do cerco: `forcaEm` da
+   * cidade sitiada devolve a guarnição do DEFENSOR, nunca o acampamento do sitiante.
+   * Quem fala de uma hoste específica usa `forcaDaHoste(id)`.
+   */
+  forcaEm(idProvincia: string, idPoder: string = this.donoDe(idProvincia)): number {
+    return this.mobilizacao.forcaEm(idProvincia, idPoder);
+  }
+
+  /** Toda hoste em pé no mundo, em ordem de id. É o que o mapa desenha. */
+  hostes(): readonly Exercito[] {
     return this.mobilizacao.todas();
   }
 
@@ -549,48 +665,114 @@ export class Campanha {
   }
 
   /**
+   * O mesmo, dizendo QUAL hoste. É o que a interface usa.
+   *
+   * `dispensar(provincia, …)` continua existindo para quem sabe que ali só há uma — e
+   * estoura se houver duas, em vez de escolher uma por sorteio de id.
+   */
+  dispensarHoste(idHoste: string, homens: number): void {
+    this.mobilizacao.dispensarDe(idHoste, homens);
+    this.aoMudar();
+  }
+
+  /**
    * As rotas que a hoste parada aqui pode tomar nesta rodada, por destino.
    *
    * Vazio quando não há hoste, quando ela não é do jogador, ou quando ela está cercada de
    * terra alheia. É este mapa que a interface desenha como destinos clicáveis — e é dele
    * que sai a rota que a ordem guarda.
    */
-  rotasDaHoste(idProvincia: string): ReadonlyMap<string, readonly string[]> {
-    const hoste = this.mobilizacao.exercitoEm(idProvincia);
+  rotasDaHoste(idHoste: string): ReadonlyMap<string, readonly string[]> {
+    const hoste = this.mobilizacao.hoste(idHoste);
     if (!hoste) return new Map();
     return rotasDe(
       this.atlas,
-      idProvincia,
+      hoste.posicao,
       (id) => this.donoDe(id) === hoste.poder,
       this.ajustes.combate.saltosPorRodada,
     );
   }
 
   /** Só os destinos, pra quem não precisa da rota. */
-  alcanceDaHoste(idProvincia: string): readonly string[] {
-    return [...this.rotasDaHoste(idProvincia).keys()];
+  alcanceDaHoste(idHoste: string): readonly string[] {
+    return [...this.rotasDaHoste(idHoste).keys()];
   }
 
   /**
-   * A ordem registrada para a hoste desta província, se houver.
+   * A ordem registrada para ESTA hoste nesta rodada, se houver.
    *
-   * ⚠️ **As ordens são endereçadas por ID DE HOSTE, não por província.** Foi por província,
-   * e os dois são `Record<string, …>` — o compilador não distingue um do outro, então
-   * misturar as duas chaves não daria erro nenhum: daria uma ordem que a resolução nunca
-   * encontra e uma tropa que não sai do lugar. Esta função é a ponte para quem ainda
-   * pergunta por província.
+   * ⚠️ **As ordens sempre foram endereçadas por id de hoste**; a ponte que traduzia de
+   * província saiu junto com `exercitoEm`. Id de província e id de hoste são os dois
+   * `string`, e os dois registros são `Record<string, …>` — o compilador não distingue um
+   * do outro, e uma troca errada aqui não dá erro: dá uma ordem que a resolução nunca
+   * encontra e uma tropa que não sai do lugar.
    */
-  ordemEm(idProvincia: string): OrdemDeMarcha | undefined {
-    const hoste = this.mobilizacao.exercitoEm(idProvincia);
-    return hoste ? this.estado.ordens[hoste.id] : undefined;
+  ordemDaHoste(idHoste: string): OrdemDeMarcha | undefined {
+    return this.estado.ordens[idHoste];
   }
 
-  /** Todas as ordens da rodada. É o que o mapa desenha como setas. */
-  ordens(): readonly OrdemDeMarcha[] {
+  /**
+   * Esta hoste pode surtir — sair para atacar quem cerca a cidade onde ela está?
+   *
+   * As recusas saem da mais externa para a mais interna, como no resto do jogo: reclamar
+   * de "não há cerco aqui" numa hoste que nem é sua faria o jogador consertar a coisa
+   * errada.
+   */
+  podeSurtir(idHoste: string, porPoder: string | null = this.estado.jogador): Permissao {
+    if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
+    const hoste = this.mobilizacao.hoste(idHoste);
+    if (!hoste) return { pode: false, motivo: 'não há hoste aqui para lutar' };
+    if (hoste.poder !== porPoder) return { pode: false, motivo: 'esta hoste não é sua' };
+    // ⚠️ Surtir é sair da PRÓPRIA cidade. Uma hoste de passagem por uma província alheia
+    // que um terceiro sitia não tem cerco nenhum a quebrar — o problema não é dela.
+    if (this.donoDe(hoste.posicao) !== hoste.poder) {
+      return { pode: false, motivo: 'a surtida sai de dentro da própria cidade' };
+    }
+    const cerco = this.estado.cercos[hoste.posicao];
+    if (!cerco || cerco.sitiante === hoste.poder) {
+      return { pode: false, motivo: `${this.nomeDe(hoste.posicao)} não está sitiada` };
+    }
+    if (this.ordemDaHoste(idHoste) !== undefined) {
+      return { pode: false, motivo: 'esta hoste já tem ordem nesta rodada' };
+    }
+    return { pode: true };
+  }
+
+  /**
+   * Registra a surtida. **Nada se move agora**, como em toda ordem.
+   *
+   * Ela vale para a próxima virada e é excludente com a marcha: quem sai para lutar em
+   * casa não vai a lugar nenhum no mesmo turno.
+   */
+  surtir(idHoste: string, porPoder: string | null = this.estado.jogador): void {
+    const r = this.podeSurtir(idHoste, porPoder);
+    if (!r.pode) throw new Error(r.motivo);
+    if (this.estado.surtidas.includes(idHoste)) return;
+    this.estado.surtidas.push(idHoste);
+    this.aoMudar();
+  }
+
+  /** Esta hoste vai surtir nesta rodada? */
+  surtidaDe(idHoste: string): boolean {
+    return this.estado.surtidas.includes(idHoste);
+  }
+
+  /** Contra quem esta hoste surtiria, se pudesse. `undefined` quando não há cerco ali. */
+  sitianteDaHosteDe(idHoste: string): string | undefined {
+    const hoste = this.mobilizacao.hoste(idHoste);
+    if (!hoste) return undefined;
+    const cerco = this.estado.cercos[hoste.posicao];
+    return cerco && cerco.sitiante !== hoste.poder ? cerco.sitiante : undefined;
+  }
+
+  /** Todas as ordens da rodada, com a hoste de cada uma. É o que o mapa desenha. */
+  ordens(): readonly { idHoste: string; ordem: OrdemDeMarcha }[] {
     return Object.keys(this.estado.ordens)
       .sort()
-      .map((id) => this.estado.ordens[id])
-      .filter((o): o is OrdemDeMarcha => o !== undefined);
+      .flatMap((idHoste) => {
+        const ordem = this.estado.ordens[idHoste];
+        return ordem ? [{ idHoste, ordem }] : [];
+      });
   }
 
   /**
@@ -600,18 +782,20 @@ export class Campanha {
    * vez de esconder o controle.
    */
   podeOrdenarMarcha(
-    origem: string,
+    idHoste: string,
     destino: string,
     homens: number,
     porPoder: string | null = this.estado.jogador,
   ): RecusaDeOrdem {
     if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
-    const hoste = this.mobilizacao.exercitoEm(origem);
-    return avaliarOrdem(origem, destino, this.atlas.nomeDe(destino), homens, {
-      forcaNaOrigem: this.mobilizacao.forcaEm(origem),
+    const hoste = this.mobilizacao.hoste(idHoste);
+    return avaliarOrdem(hoste?.posicao ?? '', destino, this.atlas.nomeDe(destino), homens, {
+      forcaNaOrigem: this.mobilizacao.forcaDaHoste(idHoste),
       minha: hoste?.poder === porPoder,
-      rota: this.rotasDaHoste(origem).get(destino),
-      jaTemOrdem: this.ordemEm(origem) !== undefined,
+      rota: this.rotasDaHoste(idHoste).get(destino),
+      // Surtir ocupa a rodada da hoste tanto quanto marchar: são a mesma decisão em dois
+      // sentidos, e a recusa é a mesma frase de propósito.
+      jaTemOrdem: this.ordemDaHoste(idHoste) !== undefined || this.surtidaDe(idHoste),
     });
   }
 
@@ -627,17 +811,17 @@ export class Campanha {
    * outro lado ter chance de mandar reforço.
    */
   ordenarMarcha(
-    origem: string,
+    idHoste: string,
     destino: string,
     homens: number,
     porPoder: string | null = this.estado.jogador,
     postura: Postura = 'sitiar',
   ): void {
-    const r = this.podeOrdenarMarcha(origem, destino, homens, porPoder);
+    const r = this.podeOrdenarMarcha(idHoste, destino, homens, porPoder);
     if (!r.pode) throw new Error(r.motivo);
-    const hoste = this.mobilizacao.exercitoEm(origem);
-    if (!hoste) throw new Error(`não há hoste em ${origem}`);
-    this.estado.ordens[hoste.id] = { origem, rota: r.rota, homens, postura };
+    const hoste = this.mobilizacao.hoste(idHoste);
+    if (!hoste) throw new Error(`não há hoste ${idHoste}`);
+    this.estado.ordens[idHoste] = { origem: hoste.posicao, rota: r.rota, homens, postura };
     this.aoMudar();
   }
 
@@ -668,16 +852,25 @@ export class Campanha {
    * Não é regra do jogo e nenhuma mecânica chama isto — não cobra ouro e não tira ninguém
    * da população.
    */
-  plantarHoste(idProvincia: string, idPoder: string, homens: number): void {
-    this.mobilizacao.plantar(idProvincia, idPoder, homens);
+  plantarHoste(idProvincia: string, idPoder: string, homens: number): string {
+    const id = this.mobilizacao.plantar(idProvincia, idPoder, homens);
     this.aoMudar();
+    return id;
   }
 
-  /** Desfaz a ordem. Nada foi gasto, então nada é devolvido. */
-  cancelarOrdem(origem: string): void {
-    const hoste = this.mobilizacao.exercitoEm(origem);
-    if (!hoste || this.estado.ordens[hoste.id] === undefined) return;
-    delete this.estado.ordens[hoste.id];
+  /**
+   * Desfaz a ordem desta hoste. Nada foi gasto, então nada é devolvido.
+   *
+   * Cancela também a surtida: para o jogador as duas são "o que esta hoste vai fazer nesta
+   * rodada", e um botão de cancelar que desfizesse só uma das duas deixaria a outra em pé
+   * sem nada dizer.
+   */
+  cancelarOrdem(idHoste: string): void {
+    const tinhaOrdem = this.estado.ordens[idHoste] !== undefined;
+    const tinhaSurtida = this.surtidaDe(idHoste);
+    if (!tinhaOrdem && !tinhaSurtida) return;
+    delete this.estado.ordens[idHoste];
+    this.estado.surtidas = this.estado.surtidas.filter((id) => id !== idHoste);
     this.aoMudar();
   }
 
@@ -726,7 +919,7 @@ export class Campanha {
    * Cobra a folha militar de TODOS os poderes, pela mesma regra.
    *
    * ⚠️ Antes só o jogador pagava, e isso teria dado à IA um exército sem custo — que é
-   * exatamente a vantagem secreta que `DECISOES.md` #71 proíbe. Quem não tem caixa vê a
+   * exatamente a vantagem secreta que `DECISOES.md` #97 proíbe. Quem não tem caixa vê a
    * tropa desertar, seja quem for.
    */
   private pagarTropa(): void {
@@ -931,6 +1124,7 @@ export class Campanha {
     this.ultimaRodada = resolverRodada(this.estado, this.ajustes.combate, {
       donoDe: (id) => this.donoDe(id),
       miliciaDe: (id) => this.miliciaEm(id),
+      impedeAssaltoImediato: (id) => this.impedeAssaltoImediatoEm(id),
       miliciaPerdida: (id, perdidos) => {
         // ⚠️ Só os MORTOS saem da população; o resto dispersa e volta pra casa. Aniquilar
         // a milícia inteira arruinaria a província pro resto da campanha — são os mesmos

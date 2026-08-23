@@ -1,15 +1,58 @@
 {
   "versao": 1,
-  "comentario": "Economia autoral por provincia. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. A REGUA, para nao inflacionar quando as outras 200 forem escritas: 5 = o melhor do mundo grego naquele produto, um punhado no mapa inteiro (a prata do Lourion); 4 = famoso e exportado, um nome que se conhecia fora da regiao (o azeite atico); 3 = bom, alimenta a propria terra e ainda sobra pra vender; 2 = comum, alimenta a propria terra; 1 = magro, a terra da aquilo a contragosto. Se tudo que se escreve cai em 3, 4 e 5, a regua deixou de medir. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
+  "comentario": "Ficha autoral de cada provincia da regiao de teste: o que a terra tem, quem mora nela e como ela comeca. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. A REGUA, para nao inflacionar quando as outras 200 forem escritas: 5 = o melhor do mundo grego naquele produto, um punhado no mapa inteiro (a prata do Lourion); 4 = famoso e exportado, um nome que se conhecia fora da regiao (o azeite atico); 3 = bom, alimenta a propria terra e ainda sobra pra vender; 2 = comum, alimenta a propria terra; 1 = magro, a terra da aquilo a contragosto. Se tudo que se escreve cai em 3, 4 e 5, a regua deixou de medir. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
   "produtos": {
-    "graos": { "nome": "Grãos", "valor": 15 },
-    "gado": { "nome": "Gado", "valor": 16 },
-    "madeira": { "nome": "Madeira", "valor": 18 },
-    "ferro": { "nome": "Ferro", "valor": 22 },
-    "vinho": { "nome": "Vinho", "valor": 24 },
-    "azeite": { "nome": "Azeite", "valor": 25 },
-    "marmore": { "nome": "Mármore", "valor": 27 },
-    "metais-preciosos": { "nome": "Metais preciosos", "valor": 28 }
+    "graos": {
+      "nome": "Grãos",
+      "valor": 15,
+      "alimento": true
+    },
+    "gado": {
+      "nome": "Gado",
+      "valor": 16,
+      "alimento": true
+    },
+    "madeira": {
+      "nome": "Madeira",
+      "valor": 18,
+      "alimento": false
+    },
+    "ferro": {
+      "nome": "Ferro",
+      "valor": 22,
+      "alimento": false
+    },
+    "vinho": {
+      "nome": "Vinho",
+      "valor": 24,
+      "alimento": false
+    },
+    "azeite": {
+      "nome": "Azeite",
+      "valor": 25,
+      "alimento": false
+    },
+    "marmore": {
+      "nome": "Mármore",
+      "valor": 27,
+      "alimento": false
+    },
+    "metais-preciosos": {
+      "nome": "Metais preciosos",
+      "valor": 28,
+      "alimento": false
+    }
+  },
+  "nacionalidades": {
+    "ateniense": {
+      "nome": "Ateniense"
+    },
+    "eleusina": {
+      "nome": "Eleusina"
+    },
+    "tanagrea": {
+      "nome": "Tanagrea"
+    }
   },
   "provincias": {
     "atenas": {
@@ -17,35 +60,112 @@
       "produto": "azeite",
       "nivel": 4,
       "comercioBase": 0.55,
-      "motivo": "A Atica vive de azeite, e a cidade tem o Pireu: o comercio-base mais alto da Grecia arcaica vem da posicao e do porto, nao do produto."
+      "motivo": "A Atica vive de azeite, e a cidade tem o Pireu: o comercio-base mais alto da Grecia arcaica vem da posicao e do porto, nao do produto.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "ateniense": 1.0
+      },
+      "felicidade": 62,
+      "estoque": {
+        "graos": 4000,
+        "azeite": 1200
+      },
+      "construcoes": [],
+      "ancoradouro": true,
+      "motivoDaFicha": "Secundario e GRAO nivel 2, e isso e o problema historico de Atenas escrito em dado: a Atica nao se alimenta sozinha. Com 35.000 habitantes ela e a provincia que mais come e das que menos colhe - o deficit e de proposito, e e o que faz o grao de Eleusis e o mar valerem alguma coisa. Ateniense inteira: aqui nao ha tensao de nacionalidade, ela aparece quando Atenas TOMA o vizinho. Ancoradouro pelo Falero e pelo Pireu."
     },
     "maratona": {
       "populacao": 18000,
       "produto": "graos",
       "nivel": 2,
       "comercioBase": 0.25,
-      "motivo": "A planicie de Maratona e a terra de cereal da Atica - o que nao e elogio: a Atica era POBRE em cereal, e Atenas importava grao do Ponto Euxino. Nivel 2 e o que diz isso. Ela e provincia de gente e de imposto, nao de producao. Costa aberta e sem porto de peso: escoa pouco."
+      "motivo": "A planicie de Maratona e a terra de cereal da Atica - o que nao e elogio: a Atica era POBRE em cereal, e Atenas importava grao do Ponto Euxino. Nivel 2 e o que diz isso. Ela e provincia de gente e de imposto, nao de producao. Costa aberta e sem porto de peso: escoa pouco.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "ateniense": 1.0
+      },
+      "felicidade": 57,
+      "estoque": {
+        "graos": 2000,
+        "gado": 200
+      },
+      "construcoes": [],
+      "ancoradouro": false,
+      "motivoDaFicha": "O brejo da planicie da pasto magro: gado nivel 1. Ateniense inteira - a Tetrapolis entrou em Atenas cedo e sem guerra. Costa aberta, sem abrigo: nao tem ancoradouro, e por isso escoa mal apesar de estar no mar."
     },
     "eleusis": {
       "populacao": 16000,
       "produto": "graos",
       "nivel": 3,
       "comercioBase": 0.3,
-      "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 3: e a melhor terra de cereal da Atica, e a melhor da Atica ainda nao e a Tessalia nem a Messenia - o 4 e o 5 ficam guardados pra elas. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso."
+      "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 3: e a melhor terra de cereal da Atica, e a melhor da Atica ainda nao e a Tessalia nem a Messenia - o 4 e o 5 ficam guardados pra elas. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso.",
+      "secundario": {
+        "produto": "azeite",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "eleusina": 0.85,
+        "ateniense": 0.15
+      },
+      "felicidade": 60,
+      "estoque": {
+        "graos": 2000,
+        "azeite": 300
+      },
+      "construcoes": ["quartel"],
+      "ancoradouro": true,
+      "motivoDaFicha": "15% ateniense ja em 700 a.C.: Eleusis e Atenas brigaram e se misturaram por geracoes antes de a absorcao acontecer. Enquanto Eleusis se governa isso nao pesa; no dia em que Atenas tomar a cidade, os 85% eleusinos e que viram problema - e essa e a razao de a nacionalidade existir. Quartel: ela ja mantem 500 homens em armas, e tropa de pe sem lugar de treinar seria mentira."
     },
     "tanagra": {
       "populacao": 17000,
       "produto": "gado",
       "nivel": 2,
       "comercioBase": 0.18,
-      "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica, mas o rebanho de peso estava na bacia do Copais, nao aqui: nivel 2. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso."
+      "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica, mas o rebanho de peso estava na bacia do Copais, nao aqui: nivel 2. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "tanagrea": 0.85,
+        "ateniense": 0.15
+      },
+      "felicidade": 55,
+      "estoque": {
+        "graos": 900,
+        "gado": 900
+      },
+      "construcoes": ["quartel", "muralha"],
+      "ancoradouro": false,
+      "motivoDaFicha": "Vinho nivel 1 na encosta do Asopo. Os 15% atenienses sao a populacao da divisa, que sempre trocou de lado - a fronteira Atica-Beocia foi disputada a vida toda. Interior, sem ancoradouro: e o vizinho pobre, e tomar Tanagra tem que continuar rendendo menos que tomar Eleusis. Quartel pela mesma razao de Eleusis. MURALHA e Eleusis sem: os dois vizinhos de Atenas existem para serem o mesmo problema em duas versoes - a cidade aberta cai no primeiro assalto, a fortificada obriga a sentar na frente dela antes. Tanagra e a fortificada porque e a cidade de fronteira olhando a Atica, e porque ela precisava de alguma coisa que compensasse ser a mais pobre das duas."
     },
     "sounion": {
       "populacao": 10000,
       "produto": "metais-preciosos",
       "nivel": 3,
       "comercioBase": 0.3,
-      "motivo": "O Lourion fica aqui: a prata que pagou a frota de Salamina. Pouca gente, nivel maximo - e a prova de que area e populacao nao decidem riqueza."
+      "motivo": "O Lourion fica aqui: a prata que pagou a frota de Salamina. Pouca gente, nivel maximo - e a prova de que area e populacao nao decidem riqueza.",
+      "secundario": {
+        "produto": "marmore",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "ateniense": 1.0
+      },
+      "felicidade": 51,
+      "estoque": {
+        "graos": 1100,
+        "metais-preciosos": 150
+      },
+      "construcoes": [],
+      "ancoradouro": true,
+      "motivoDaFicha": "Marmore nivel 1 da pedreira de Agrileza - da pra levantar um templo, nao pra exportar. A felicidade e a mais baixa da Atica porque o Lourion e trabalho de mina, nao de lavoura. Estoque de grao curto: terra seca, ela compra o que come. Ancoradouro no cabo, que e escala obrigatoria de quem contorna a Atica."
     }
   }
 }

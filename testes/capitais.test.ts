@@ -22,7 +22,7 @@ function nova(): Campanha {
 
 /**
  * A capital ainda NÃO faz nada no jogo — ver `src/campanha/capitais.ts`. Estes testes
- * guardam o estado e a regra de derivação, que é o que a Etapa 9 vai construir em cima.
+ * guardam o estado e a regra de derivação, que é o que o patch 0.0.9 vai construir em cima.
  */
 
 describe('todo poder com província tem capital', () => {
@@ -72,9 +72,9 @@ describe('a capital perdida é uma PERGUNTA, não uma reatribuição', () => {
     c.trocarDono('eleusis', 'atenas');
 
     expect(c.capitalPerdida('eleusis')).toBe(true);
-    // ⚠️ NÃO se reatribui sozinha. Escolher outra é decisão do jogador, e é a Etapa 9 do
-    // `PATCH_ATUAL.md` que vai obrigá-lo a tomá-la. Reatribuir aqui tiraria dele
-    // justamente a decisão que aquela etapa existe para criar.
+    // ⚠️ NÃO se reatribui sozinha. Escolher outra é decisão do jogador, e é o patch 0.0.9 do
+    // `ROADMAP.md` que vai obrigá-lo a tomá-la. Reatribuir aqui tiraria dele justamente a
+    // decisão que aquele patch existe para criar.
     expect(c.capitalDe('eleusis')).toBe('eleusis');
   });
 

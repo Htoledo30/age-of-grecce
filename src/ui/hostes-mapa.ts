@@ -22,7 +22,23 @@ import { definirTooltip } from './tooltip';
 
 /** Uma hoste como o mapa precisa vê-la. */
 export interface MarcadorDeHoste {
-  /** Onde ela está. É a chave, e é o que volta no clique. */
+  /**
+   * Quem ela é. **É a chave da camada, e é o que volta no clique.**
+   *
+   * ⚠️ Era a província, e isso desabou quando sitiar deixou de engajar o exército de
+   * dentro: o sitiante e a guarnição ficam na MESMA província, e com a província por
+   * chave só cabia um marcador ali — o segundo exército sumia do mapa, e o clique
+   * selecionava sempre o mesmo dos dois.
+   *
+   * Id de hoste, ou `formacao:<provincia>` para a leva, que ainda não é hoste.
+   */
+  id: string;
+  /**
+   * Onde ela está. **Descritivo, não endereço** — e muda quando ela marcha.
+   *
+   * Continua aqui porque os testes de tela procuram a peça pelo lugar, e porque é assim
+   * que a camada sabe onde a província está desenhada.
+   */
   provincia: string;
   /** Centro da província, em unidades de mundo. */
   x: number;
@@ -41,11 +57,18 @@ export interface MarcadorDeHoste {
   temOrdem: boolean;
   /** Chegou ao local na última resolução e recebe um pulso curto. */
   chegadaRecente: boolean;
+  /**
+   * Está acampada diante da cidade que ela sitia.
+   *
+   * A peça já é desenhada na divisa por causa disso; a marca serve pro CSS poder dizer
+   * visualmente que aquele exército não está DENTRO da cidade — ele está na porta.
+   */
+  sitiando: boolean;
 }
 
 export class HostesMapa {
   private readonly camada = document.createElement('div');
-  /** Um botão por província com tropa, reaproveitado entre redesenhos. */
+  /** Um botão por HOSTE, reaproveitado entre redesenhos. A chave é o id dela. */
   private readonly marcadores = new Map<string, HTMLButtonElement>();
   private atual: readonly MarcadorDeHoste[] = [];
   private selecionada: string | null = null;
@@ -60,7 +83,7 @@ export class HostesMapa {
    */
   private ultimaCamera: Camera | null = null;
 
-  aoSelecionar: (idProvincia: string) => void = () => {};
+  aoSelecionar: (idHoste: string) => void = () => {};
 
   /**
    * Onde a peça está enquanto marcha, ou `null` se está parada na província.
@@ -68,7 +91,7 @@ export class HostesMapa {
    * A camada não sabe — nem deve saber — o que é uma marcha; ela pergunta a posição e
    * desenha. Quem responde é `AnimacaoDeMarcha`, ligada em `main.ts`.
    */
-  ondeEstaMarchando: (idProvincia: string) => Ponto | null = () => null;
+  ondeEstaMarchando: (idHoste: string) => Ponto | null = () => null;
 
   constructor(pai: HTMLElement) {
     this.camada.className = 'hostes';
@@ -84,7 +107,7 @@ export class HostesMapa {
    */
   mostrar(hostes: readonly MarcadorDeHoste[]): void {
     this.atual = hostes;
-    const vivos = new Set(hostes.map((h) => h.provincia));
+    const vivos = new Set(hostes.map((h) => h.id));
 
     for (const [id, elemento] of this.marcadores) {
       if (vivos.has(id)) continue;
@@ -93,21 +116,24 @@ export class HostesMapa {
     }
 
     for (const hoste of hostes) {
-      let elemento = this.marcadores.get(hoste.provincia);
+      let elemento = this.marcadores.get(hoste.id);
       if (!elemento) {
+        const id = hoste.id;
         elemento = document.createElement('button');
         elemento.type = 'button';
         elemento.className = 'hostes__marca';
-        elemento.dataset['provincia'] = hoste.provincia;
+        elemento.dataset['hoste'] = id;
         elemento.addEventListener('click', () => {
-          this.aoSelecionar(hoste.provincia);
+          // `id` e não `hoste.id`: o fecho sobrevive a redesenhos, e `hoste` é o objeto
+          // desta passada. O id é o único campo que não muda enquanto a peça existir.
+          this.aoSelecionar(id);
           elemento?.blur();
         });
         // Nasce escondida e só aparece quando tiver posição: é a rede que impede o
         // marcador de ser pintado no canto da tela antes do primeiro `posicionar`.
         elemento.dataset['posicionada'] = 'nao';
         this.camada.appendChild(elemento);
-        this.marcadores.set(hoste.provincia, elemento);
+        this.marcadores.set(id, elemento);
       }
       if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
       const pronta = hoste.forca.toLocaleString('pt-BR');
@@ -124,8 +150,13 @@ export class HostesMapa {
         tom: hoste.minha ? 'informacao' : 'perigo',
       });
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
+      // ⚠️ **A província é escrita na ATUALIZAÇÃO, não no nascimento.** O mesmo elemento
+      // agora sobrevive a uma marcha — a chave é a hoste, e ela muda de lugar. Escrever
+      // isto uma vez só deixaria o `data-provincia` mentindo depois do primeiro turno.
+      elemento.dataset['provincia'] = hoste.provincia;
+      elemento.dataset['sitiando'] = hoste.sitiando ? 'sim' : 'nao';
       elemento.dataset['minha'] = hoste.minha ? 'sim' : 'nao';
-      elemento.dataset['selecionada'] = this.selecionada === hoste.provincia ? 'sim' : 'nao';
+      elemento.dataset['selecionada'] = this.selecionada === hoste.id ? 'sim' : 'nao';
       elemento.dataset['escolhendoDestino'] = hoste.escolhendoDestino ? 'sim' : 'nao';
       elemento.dataset['ordem'] = hoste.temOrdem ? 'sim' : 'nao';
       elemento.dataset['chegada'] = hoste.chegadaRecente ? 'sim' : 'nao';
@@ -136,11 +167,11 @@ export class HostesMapa {
     }
   }
 
-  /** Marca uma hoste como escolhida. `null` limpa. */
-  selecionar(idProvincia: string | null): void {
-    this.selecionada = idProvincia;
+  /** Marca uma hoste como escolhida, pelo id dela. `null` limpa. */
+  selecionar(idHoste: string | null): void {
+    this.selecionada = idHoste;
     for (const [id, elemento] of this.marcadores) {
-      elemento.dataset['selecionada'] = id === idProvincia ? 'sim' : 'nao';
+      elemento.dataset['selecionada'] = id === idHoste ? 'sim' : 'nao';
     }
   }
 
@@ -154,7 +185,7 @@ export class HostesMapa {
   posicionar(camera: Camera): void {
     this.ultimaCamera = camera;
     for (const hoste of this.atual) {
-      const elemento = this.marcadores.get(hoste.provincia);
+      const elemento = this.marcadores.get(hoste.id);
       if (!elemento) continue;
       this.assentar(elemento, camera, hoste);
     }
@@ -168,7 +199,7 @@ export class HostesMapa {
    * laço de quadro — que fez a peça nascer sem posição e ser pintada no canto do palco.
    */
   private assentar(elemento: HTMLElement, camera: Camera, hoste: MarcadorDeHoste): void {
-    const emMarcha = this.ondeEstaMarchando(hoste.provincia);
+    const emMarcha = this.ondeEstaMarchando(hoste.id);
     const onde = emMarcha ?? hoste;
     const p = camera.mundoParaPalco(onde.x, onde.y);
     // ⚠️ **A posição vai na propriedade `translate`, NUNCA em `transform`.** A matriz final

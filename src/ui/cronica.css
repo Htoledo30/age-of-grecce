@@ -1,0 +1,103 @@
+/*
+ * A crônica da rodada — a notícia do que aconteceu na virada.
+ *
+ * Fica no ALTO À DIREITA, e a escolha é por eliminação: a esquerda inteira é da província
+ * selecionada (ficha, ações, recrutamento), o baixo-direita é da hoste e o rodapé é da
+ * barra de turno. O alto-direita é a única faixa que sobra, e ainda por cima é onde o olho
+ * vai depois de clicar em "passar o turno", que fica logo abaixo.
+ *
+ * ⚠️ Largura fixa e conteúdo curto de propósito: ela cobre o mapa, e cobrir o mapa é o
+ * preço de ser lida. Por isso também fecha no × e some sozinha quando não há notícia.
+ */
+.cronica {
+  position: absolute;
+  top: 24px;
+  /* 96px, e não 24: o painel lateral tem uma aba de 44px colada na direita, e a crônica
+     passaria por baixo dela. */
+  right: 96px;
+  z-index: 20;
+  width: 380px;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: 14px 16px 12px;
+  background: var(--ui-vidro);
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
+  color: var(--ui-texto);
+}
+
+.cronica__titulo {
+  margin: 0 0 10px;
+  font-family: var(--fonte-titulo);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+}
+
+.cronica__fechar {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ui-texto-fraco);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.cronica__fechar:hover {
+  color: var(--ui-texto);
+}
+
+.cronica__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+/* `flex`, e não `block`: o ícone acompanha a primeira linha do texto quando ele quebra. */
+.cronica__linha {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 9px;
+  border-left: 2px solid var(--ui-borda);
+  background: rgb(0 0 0 / 16%);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ui-texto);
+}
+.cronica__linha[data-tom='ganho'] {
+  border-left-color: var(--ui-bronze);
+}
+.cronica__linha[data-tom='perda'] {
+  border-left-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+}
+
+.cronica__icone {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  color: var(--ui-texto-fraco);
+}
+.cronica__linha[data-tom='ganho'] .cronica__icone {
+  color: var(--ui-bronze-claro);
+}
+.cronica__linha[data-tom='perda'] .cronica__icone {
+  color: var(--ui-sangue-claro);
+}
+
+.cronica__texto {
+  flex: 1;
+}

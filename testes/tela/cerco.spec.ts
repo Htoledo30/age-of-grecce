@@ -23,6 +23,15 @@ interface Ganchos {
   passarTurno: () => void;
   recrutar: (idProvincia: string, homens: number) => void;
   donoDe: (idProvincia: string) => string;
+  forcaEm: (idProvincia: string, idPoder?: string) => number;
+  hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
+  ordenarMarcha: (
+    idHoste: string,
+    destino: string,
+    homens: number,
+    porPoder?: string,
+    postura?: 'assaltar' | 'sitiar',
+  ) => void;
 }
 
 test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', async ({ page }) => {
@@ -57,7 +66,9 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   await expect(page.locator('.exercito__botao--postura').first()).toBeHidden();
 
   await page.locator('.destinos__marca[data-provincia="eleusis"]').click();
-  await expect(page.locator('.exercito__pergunta')).toContainText('Elêusis: o que fazer ao chegar?');
+  await expect(page.locator('.exercito__pergunta')).toContainText(
+    'Elêusis: o que fazer ao chegar?',
+  );
   await expect(page.locator('.exercito__botao--postura')).toHaveCount(2);
 
   // Sitiar: nada se move no clique, e a ordem fica registrada como qualquer outra.
@@ -65,16 +76,26 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   await expect(page.locator('.exercito__ordem')).toBeVisible();
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
-  // Elêusis abre a partida com 500 homens: o choque de campo aconteceu, e a CIDADE
-  // continua de pé. Antes do cerco, a província teria trocado de dono aqui.
+  // Elêusis abre a partida com 500 homens e eles CONTINUAM DE PÉ: sitiar não engaja o
+  // exército de dentro. A cidade também continua de pé — antes do cerco, a província
+  // teria trocado de dono aqui.
   expect(
-    await page.evaluate(() =>
-      (window as unknown as { inspecao: Ganchos }).inspecao.donoDe('eleusis'),
-    ),
-  ).toBe('eleusis');
+    await page.evaluate(() => {
+      const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+      return { dono: i.donoDe('eleusis'), forca: i.forcaEm('eleusis') };
+    }),
+  ).toMatchObject({ dono: 'eleusis' });
 
-  await page.locator('.hostes__marca[data-provincia="eleusis"]').click();
-  await expect(page.locator('.exercito__cerco')).toContainText('Acampado diante de Elêusis');
+  // Fogo é sempre fogo: a bandeira não herda a cor territorial de quem está sitiando.
+  await expect(page.locator('.cercos__marca[data-provincia="eleusis"] .cercos__chama')).toHaveCSS(
+    'color',
+    'rgb(239, 125, 34)',
+  );
+
+  // ⚠️ **Há DUAS peças em Elêusis** — a guarnição eleusina e o acampamento ateniense — e
+  // por isso o marcador não pode mais ser endereçado só pela província. Aqui interessa
+  // abrir a ficha da CIDADE, então o clique vai na peça de quem mora nela.
+  await page.locator('.hostes__marca[data-provincia="eleusis"][data-minha="nao"]').click();
   // A classe vai no `dt` e no `dd`: o valor é o `dd`.
   await expect(page.locator('dd.ficha__cerco')).toContainText('por Atenas');
 
@@ -87,14 +108,148 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   expect(sitiada?.comercio).toBe(0);
   expect(sitiada?.impostos).toBeGreaterThan(0);
   await expect(page.locator('.ficha')).toContainText(`rende ${sitiada?.total} por turno`);
+  expect(erros).toEqual([]);
+});
 
-  await page.getByRole('button', { name: /Passar ao assalto/ }).click();
+/**
+ * Dois exércitos inimigos na mesma província, e o jogador comandando o SEU.
+ *
+ * Este teste esteve pendente enquanto a interface endereçava hoste por província: em
+ * Elêusis o primeiro id é o da guarnição eleusina, então clicar no marcador selecionava o
+ * exército do inimigo e o painel do sitiante nunca aparecia — o jogador conseguia mandar
+ * sitiar, mas não conseguia mandar assaltar depois. Com o marcador por hoste, cada peça
+ * responde por si.
+ *
+ * ⚠️ É o caso que a **surtida** vai precisar: escolher entre duas hostes no mesmo lugar.
+ */
+test('com duas hostes na mesma província, cada marcador comanda a sua', async ({ page }) => {
+  const erros: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') erros.push(m.text());
+  });
+
+  await page.goto('/');
+  await page.waitForSelector('body[data-pronto="sim"]');
+  await page.getByRole('button', { name: 'Iniciar jogo' }).click();
+  await page.waitForTimeout(600);
+  await page.mouse.click(960, 540);
+  await page.getByRole('button', { name: 'Começar campanha' }).click();
+  await page.waitForSelector('.barra-turno');
+
+  // Elêusis mantém a guarnição de pé de propósito: é ela que faz a segunda peça existir.
+  await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.darOuro(60_000);
+    i.construir('atenas', 'quartel');
+    for (let n = 0; n < 4; n++) i.passarTurno();
+    i.recrutar('atenas', 900);
+    i.passarTurno();
+  });
+
+  await page.locator('.hostes__marca[data-provincia="atenas"]').click();
+  await page.getByRole('button', { name: 'Mover' }).click();
+  await page.locator('.destinos__marca[data-provincia="eleusis"]').click();
+  await page.getByRole('button', { name: /Sitiar/ }).click();
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
+  // Duas peças no mesmo lugar, e são de poderes diferentes.
+  const emEleusis = page.locator('.hostes__marca[data-provincia="eleusis"]');
+  await expect(emEleusis).toHaveCount(2);
+
+  // A do defensor abre a ficha do exército DELE: é do inimigo, então não aceita comando.
+  await page.locator('.hostes__marca[data-provincia="eleusis"][data-minha="nao"]').click();
+  await expect(page.locator('.exercito__nome-do-poder')).toHaveText('Eleusis');
+  await expect(page.getByRole('button', { name: 'Passar ao assalto' })).toBeHidden();
+
+  // A do sitiante abre a ficha da hoste ateniense, com o comando do cerco em pé. Antes,
+  // este era o painel inalcançável.
+  await page.locator('.hostes__marca[data-provincia="eleusis"][data-sitiando="sim"]').click();
+  await expect(page.locator('.exercito__nome-do-poder')).toHaveText('Atenas');
+  await expect(page.locator('.exercito__cerco')).toContainText('Acampado diante de Elêusis');
+  await page.getByRole('button', { name: 'Passar ao assalto' }).click();
+  await page.getByRole('button', { name: 'Passar o turno' }).click();
+
+  // A cidade cai: o assalto que o jogador não conseguia mandar agora sai pelo marcador.
   expect(
-    await page.evaluate(() =>
-      (window as unknown as { inspecao: Ganchos }).inspecao.donoDe('eleusis'),
-    ),
+    await page.evaluate(() => {
+      const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+      return i.donoDe('eleusis');
+    }),
   ).toBe('atenas');
+  expect(erros).toEqual([]);
+});
+
+/**
+ * A SURTIDA vista de dentro: o jogador sitiado sai para lutar.
+ *
+ * ⚠️ Aqui quem está cercado é ATENAS, e é isso que o teste guarda. Sitiar não engaja
+ * (`DECISOES.md` #32A), então sem a surtida o exército do jogador ficaria olhando o
+ * inimigo acampado na própria cidade, turno após turno, sem nada poder fazer.
+ */
+test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page }) => {
+  const erros: string[] = [];
+  page.on('console', (m) => {
+    if (m.type() === 'error') erros.push(m.text());
+  });
+
+  await page.goto('/');
+  await page.waitForSelector('body[data-pronto="sim"]');
+  await page.getByRole('button', { name: 'Iniciar jogo' }).click();
+  await page.waitForTimeout(600);
+  await page.mouse.click(960, 540);
+  await page.getByRole('button', { name: 'Começar campanha' }).click();
+  await page.waitForSelector('.barra-turno');
+
+  await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.darOuro(60_000);
+    i.construir('atenas', 'quartel');
+    for (let n = 0; n < 4; n++) i.passarTurno();
+    i.recrutar('atenas', 700);
+    i.passarTurno(); // a leva vira hoste
+
+    // Elêusis marcha sobre Atenas e SENTA: é o inimigo quem escolhe não lutar.
+    const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
+    if (!deles) throw new Error('Elêusis devia começar com guarnição');
+    i.ordenarMarcha(deles.id, 'atenas', 500, 'eleusis', 'sitiar');
+    i.passarTurno();
+  });
+
+  // A marcha é animada, e peça em movimento não aceita clique.
+  const minha = page.locator('.hostes__marca[data-provincia="atenas"][data-minha="sim"]');
+  await expect(minha).toHaveAttribute('data-marchando', 'nao');
+  await expect(page.locator('.cercos__marca[data-provincia="atenas"]')).toHaveCount(1);
+
+  await minha.click();
+  const surtida = page.getByRole('button', { name: /Surtida contra Eleusis/ });
+  await expect(surtida).toBeVisible();
+  await surtida.click();
+
+  // Nada se move no clique: a surtida é ordem como qualquer outra.
+  await expect(page.locator('.exercito__ordem')).toContainText('sai para atacar Eleusis');
+  expect(
+    await page.evaluate(() => {
+      const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+      return i.forcaEm('atenas', 'atenas');
+    }),
+  ).toBe(700);
+
+  // A surtida é desfeita pelo MESMO botão que desfaz uma marcha: para o jogador, as duas
+  // são "o que esta hoste vai fazer nesta rodada".
+  await page.getByRole('button', { name: 'Cancelar ordem' }).click();
+  await expect(page.locator('.exercito__ordem')).toBeHidden();
+  await expect(surtida).toBeVisible();
+  await surtida.click();
+
+  await page.getByRole('button', { name: 'Passar o turno' }).click();
+
+  // √(700² − 500²) = 490, e a cidade se solta: sem sitiante em cima, não há cerco.
+  expect(
+    await page.evaluate(() => {
+      const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+      return { meus: i.forcaEm('atenas', 'atenas'), deles: i.forcaEm('atenas', 'eleusis') };
+    }),
+  ).toEqual({ meus: 490, deles: 0 });
+  await expect(page.locator('.cercos__marca[data-provincia="atenas"]')).toHaveCount(0);
   expect(erros).toEqual([]);
 });

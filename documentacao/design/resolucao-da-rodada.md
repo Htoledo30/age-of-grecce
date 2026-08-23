@@ -74,6 +74,8 @@ Uma regra, sem exceção, e ela não depende de quem se moveu ou de quem chegou 
 | 5   | três ou mais hostes no mesmo destino     | **batalhas aos pares, da maior força para a menor**            | a maior enfrenta a segunda; quem sobrar enfrenta a terceira, e assim por diante. Determinístico e sem regra de "aliança temporária" |
 | 6   | **A** reforça a própria Y; **B** ataca Y | **o reforço CHEGA a tempo; A defende com guarnição + reforço** | é exatamente a justiça que a resolução simultânea existe para dar. Sem isso, atacar seria sempre melhor que defender                |
 
+| 7   | há cerco em Y e o dono de Y **surte** ou **chega de fora**   | **choque obrigatório em Y, mesmo com o sitiante recusando**    | sitiar é declarar que não se quer lutar, e sem uma forma de obrigar o cerco seria inquebrável por armas. Ver §5A                     |
+
 ### Notas que decorrem da tabela
 
 **Caso 3 não é injustiça.** Ele parece punir quem se move, mas é simétrico: B também
@@ -151,6 +153,40 @@ O caso 4 continua valendo e é diferente: lá as duas hostes chegam **à mesma p
 quem vence **fica** nela — porque existe um lugar onde estar. Aqui não existe, e por isso o
 vencedor segue.
 
+## 5A. O choque obrigado — a resposta do sitiado
+
+Desde que **sitiar deixou de engajar** (`DECISOES.md` #32A), o sitiante e a guarnição
+ocupam a mesma província sem se tocar. Isso é o que faz o cerco existir como coisa
+diferente do assalto — e abre um problema: se só o atacante decide se há batalha, o
+defensor não tem resposta nenhuma. O exército de dentro olharia o de fora para sempre.
+
+> **Onde há cerco, o dono da província obriga o choque de duas maneiras: surtindo de
+> dentro ou chegando de fora.**
+
+1. **Surtida** — a hoste do defensor que está na cidade declara a saída. É a ordem dela na
+   rodada, e por isso ela não marcha no mesmo turno. A milícia **não vai junto**: ela é a
+   defesa da cidade, e levá-la a campo seria abrir mão do que a muralha dá.
+2. **Socorro** — a hoste do dono que **entra** na província sitiada já entra lutando. Não
+   há o que declarar: mandar tropa para uma cidade cercada é atacar quem a cerca
+   (`DECISOES.md` #33A).
+
+O choque obrigado vale para **todos** que estiverem ali, e não só para os dois
+interessados: quem está acampado numa província onde a batalha começou está na batalha.
+Com um sitiante só — o caso de hoje — os dois casos dão no mesmo.
+
+O resultado sai do combate de sempre: vitória do defensor deixa a província sem sitiante, e
+o cerco cai por consequência, não por regra separada. Derrota desfaz a hoste que saiu, e o
+cerco continua exatamente como estava.
+
+⚠️ **Marcha para terra própria não declara postura.** As posturas são indexadas por
+província de DESTINO, e a ida do defensor para a própria cidade escrevia "sitiar" na
+entrada dela: bastava mandar qualquer hoste para lá e o assalto do sitiante virava cerco,
+sem nada ter sido lutado. A limitação restante — dois poderes marchando para a mesma
+cidade alheia compartilharem a entrada — continua valendo e só aparece em guerra de três
+lados.
+
+---
+
 ## 6. O que isso exige do estado
 
 ```ts
@@ -170,6 +206,8 @@ interface EstadoCampanha {
   // …o que já existe…
   /** Ordens da rodada corrente, por id de hoste. Zeradas na virada. */
   ordens: Record<string, OrdemDeMarcha>;
+  /** Hostes que surtem nesta rodada. Zeradas na virada, pelo mesmo motivo. */
+  surtidas: string[];
 }
 ```
 
@@ -201,6 +239,11 @@ mexer na resolução por outro motivo, é ela que avisa.
 | `a mesma rodada resolvida duas vezes dá o mesmo resultado`           | determinismo        |
 | `a ordem de recrutamento não muda o resultado da rodada`             | determinismo (§4.1) |
 | `nenhuma ordem sobrevive à virada`                                   | §6                  |
+| `vencendo, a guarnição quebra o cerco`                               | caso 7, §5A         |
+| `perdendo, o cerco continua — e a cidade não cai no mesmo golpe`     | caso 7, §5A         |
+| `a marcha para a cidade cercada engaja o sitiante`                   | caso 7, §5A         |
+| `marchar para casa não rebaixa o assalto do inimigo a cerco`         | §5A                 |
+| `a surtida é da RODADA: não sobrevive à virada`                      | §6                  |
 | `a origem fica vazia já no passo 1 de uma rota de dois trechos`      | §1                  |
 
 ---
@@ -212,7 +255,9 @@ mexer na resolução por outro motivo, é ela que avisa.
   e _entre quem_ cada choque acontece.
 - **A escolha entre cerco e assalto.** A postura viaja com a ordem e é resolvida pelo
   sistema de combate. Sitiar bloqueia produção e comércio, mas nunca toma a cidade;
-  somente o assalto pode conquistá-la.
+  somente o assalto pode conquistá-la — e contra uma cidade fortificada ele só é possível
+  depois de algumas rodadas de cerco (`src/combate/cerco.ts`). Um assalto pedido antes da
+  hora não vira erro: vira cerco, que era a única coisa que dava para fazer naquele dia.
 - **O mar.** Zonas marítimas e frota são outro grafo, com os mesmos princípios e casos
   próprios (bloqueio, tempestade, transporte afundado com a carga dentro).
 - **Bônus de movimento.** A regra-base está fechada em um salto por rodada. Estradas ou

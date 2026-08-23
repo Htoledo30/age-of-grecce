@@ -1,1199 +1,616 @@
 # DECISOES.md
 
-# Age of Grecce — Registro de Decisões
+# Age of Grecce — Decisões oficiais
 
-Este arquivo registra decisões de design, arquitetura e direção já tomadas para o Age of
-Grecce.
+Este arquivo registra decisões intencionais de design e arquitetura.
 
-Objetivo:
+Ele não descreve necessariamente o que já está implementado hoje. Para estado atual, consultar código, testes e `CLAUDE.md`.
 
-- preservar contexto;
-- evitar retrabalho;
-- impedir que decisões importantes sejam desfeitas sem discussão;
-- dar a Claude, Codex e futuros agentes uma fonte clara sobre **por que** o jogo funciona
-  de determinada forma.
-
-Regra:
-
-> Uma decisão registrada aqui não deve ser alterada silenciosamente.
-
-Se surgir motivo para mudar uma decisão:
-
-1. registrar o problema;
-2. discutir a mudança;
-3. atualizar este arquivo;
-4. só depois alterar a implementação.
+Uma decisão só deixa de valer quando for explicitamente alterada.
 
 ---
 
-# 1. Estrutura do mundo
+## 1. O jogo busca profundidade com regras compreensíveis
 
-## Atlas é imutável
+O objetivo é combinar sistemas que gerem consequências interessantes sem transformar o jogo em microgerenciamento excessivo.
 
-O Atlas representa dados permanentes do mundo.
+## 2. Realismo deve servir ao gameplay
 
-Exemplos:
+Usar plausibilidade histórica/geográfica sem exigir falsa precisão quando os dados não forem confiáveis.
 
-- identidade da província;
-- posição;
-- vizinhança;
-- dados geográficos;
-- poder inicial;
-- informações históricas de base.
+## 3. Desenvolvimento será incremental
 
-O Atlas NÃO deve guardar o estado mutável da campanha.
+Trabalhar em patches pequenos, testar cada um e só então avançar.
 
-## Campanha é mutável
+## 4. Aprovação humana fecha o patch
 
-A campanha guarda o estado atual da partida.
+Um patch não termina automaticamente quando o agente conclui código. Precisa de teste e aprovação de Henrique.
 
-Exemplos:
+## 5. Atlas representa a base imutável do mundo
 
-- dono atual das províncias;
-- população atual;
-- estoque;
-- felicidade;
-- hostes;
-- construções;
-- cerco;
-- capital atual;
-- tesouro.
+Geografia e dados-base pertencem ao Atlas.
 
-Motivo:
+## 6. Campanha representa estado mutável
 
-Evitar mistura entre dado histórico/base e estado da partida.
+Dono, população atual, hostes, construções, estoques e demais estados variáveis pertencem à campanha.
 
----
+## 7. Commit não é patch
 
-# 2. Proprietário atual da província
+Um patch pode conter vários commits.
 
-A posse territorial deve existir na campanha.
+## 8. Um turno representa aproximadamente um ano
 
-Conquista altera o estado da campanha, não os dados originais do mapa.
+Fome, crescimento e outros efeitos anuais precisam ter impacto compatível com essa escala.
 
-Um poder pode perder todas as províncias sem necessariamente desaparecer imediatamente se
-ainda possuir hostes.
+## 8A. Rodada e turno representam o mesmo ciclo
 
----
+A interface usa preferencialmente **rodada**. O código ainda pode usar **turno** como nome
+interno enquanto não houver motivo para uma refatoração mecânica. Nos documentos, ambos
+representam a mesma passagem anual, salvo decisão futura explícita.
 
-# 3. Exílio
+## 9. Dados do mundo priorizam plausibilidade relativa
 
-Um poder continua existindo enquanto ainda possuir presença militar relevante, mesmo sem
-território.
+É melhor ter relações coerentes entre províncias do que números históricos fingidamente exatos.
 
-Objetivo:
+## 10. Não criar classificação provincial sem função
 
-Permitir:
+Não adicionar categorias como cidade/campo/ilha apenas por organização. Só criar se houver consequência de gameplay.
 
-- reconquista;
-- histórias emergentes;
-- eliminação menos artificial.
+## 11. Região de teste oficial
 
-Sem território, o poder perde capacidade econômica e tende a desaparecer naturalmente se
-não conseguir se recuperar.
+A primeira validação completa usa:
 
----
+- Atenas;
+- Maratona;
+- Sunião;
+- Elêusis;
+- Tanagra.
 
-# 4. População é recurso real
+Não é necessário preencher as 205 províncias antes de validar cada sistema.
 
-População não é apenas decoração.
+## 11A. Estoques iniciais da região de teste
 
-Ela deve participar de múltiplos sistemas:
+Para validação, os estoques iniciais podem ser simples e aproximadamente suficientes para alguns turnos; a referência discutida foi cerca de **5 turnos**.
 
-- impostos;
-- produção;
-- recrutamento;
-- milícia;
-- alimentação;
-- crescimento.
+## 12. Hostes possuem identidade própria
 
-Quando soldados são recrutados, eles saem da população.
+Hostes não devem depender apenas da província em que estão. Usar identidade própria permite múltiplas forças e movimentação consistente.
 
-Mortes militares continuam representando perda real daquela população já retirada.
+## 13. Soldados preservam origem provincial
 
----
+A origem dos soldados continua importante para consistência populacional e sistemas futuros.
 
-# 5. Origem dos soldados
+## 14. Recrutamento leva uma rodada para formar a hoste
 
-Manter a origem provincial dos soldados.
+A leva não vira força disponível instantaneamente.
 
-Exemplo conceitual:
+## 15. Movimento e resolução podem produzir múltiplos encontros
 
-- 700 homens de Atenas;
-- 300 homens de Maratona.
+A base militar deve suportar ordens simultâneas, encontros em estrada e múltiplas batalhas no mesmo turno.
 
-Motivos:
+## 16. O mar será recortado em zonas
 
-- consistência populacional;
-- retorno de desertores;
-- bônus futuros de Quartel;
-- rastreabilidade militar;
-- futuras características provinciais.
+A direção naval futura usa zonas marítimas em vez de tratar todo o mar como uma única área abstrata.
 
-Não substituir isso por uma força militar genérica sem origem.
+Não implementar guerra naval antes da base terrestre estar estável.
 
----
+## 17. Naval não vem antes da IA mínima
 
-# 6. Hostes possuem identidade própria
+Portos podem existir antes por função econômica, mas frotas e guerra naval ficam para depois da fundação terrestre e da primeira IA mínima.
 
-A direção atual é que hostes tenham IDs próprios.
+## 18. Não usar teleporte entre portos
 
-Motivos:
+Movimento e comércio marítimos futuros precisam respeitar conexão física/coerente.
 
-- permitir múltiplas hostes;
-- facilitar cerco;
-- facilitar movimento;
-- permitir referência estável;
-- evitar acoplamento excessivo entre "hoste" e "província".
+## 19. Um poder pode sobreviver sem território se ainda possuir hostes
 
-Essa estrutura deve ser estabilizada antes da IA.
+Perder todas as províncias não precisa eliminar imediatamente um poder que ainda tenha força ativa.
 
----
+## 20. A matemática de combate atual é provisória
 
-# 7. Movimento por ordens
+Ela serve para fechar o esqueleto e poderá ser substituída quando o combate for aprofundado.
 
-Movimento não acontece imediatamente no clique.
+## 21. Quantidade não será o único fator militar final
 
-O jogador cria uma ordem de marcha.
+No futuro, tipo, qualidade, moral, líderes e outros fatores poderão influenciar resultado.
 
-A ordem é resolvida durante o turno.
+## 22. Aleatoriedade futura deve ser controlada
 
-Motivo:
+Evitar resultado totalmente previsível, mas preservar compreensão e testabilidade.
 
-Permitir:
+## 23. A batalha deve ser acompanhável visualmente
 
-- resolução simultânea;
-- IA tomando decisões sobre o mesmo estado;
-- encontros na estrada;
-- comportamento mais previsível.
+Direção desejada: apresentação numérica estilo Brasfoot, não campo tático estilo Total War.
 
----
+## 24. O primeiro visor pode ser apenas playback
 
-# 8. Resolução simultânea
+A interface pode mostrar progressivamente perdas de um resultado já calculado. Não é necessário criar resolução iterativa só para o primeiro visor.
 
-A ordem de processamento não deve dar vantagem artificial.
+## 25. Moral pertence ao aprofundamento futuro do combate
 
-Movimentos devem ser resolvidos de forma determinística e simultânea por etapas.
+Moral poderá quebrar e causar fuga/retirada.
 
-Casos importantes:
+## 26. Retirada pertence ao aprofundamento futuro
 
-- forças se cruzando;
-- encontros em arestas;
-- múltiplas batalhas no mesmo turno;
-- chegada de sobreviventes depois de um encontro.
+Sobreviventes poderão recuar para território amigo e, futuramente, o jogador poderá ordenar retirada.
 
----
+## 27. Tipos de tropas ficam para depois da base
 
-# 9. Combate atual é provisório
+Direção inicial discutida: infantaria, cavalaria, arqueiros e tropas/máquinas de cerco.
 
-A matemática de combate atual existe para fechar o loop militar.
+## 28. Generais não entram antes da IA mínima
 
-Ela NÃO representa o combate final do jogo.
+Líderes e comandantes serão especificados em sistema próprio depois que a base e a IA mínima estiverem estabelecidas.
 
-O objetivo do 0.0.2 é:
+## 29. Family tree é direção futura
 
-- coerência;
-- baixas;
-- sobreviventes;
-- conquista;
-- integração com cerco e milícia;
-- testes.
+Referência desejada: Rome: Total War 1, sem especificação detalhada por enquanto.
 
-Não tratar a fórmula atual como decisão definitiva.
+## 30. Terreno de combate fica para depois
 
----
+Só implementar quando houver dados confiáveis e quando trouxer decisão real.
 
-# 10. Combate futuro continua numérico
+## 31. Milícia é defesa automática provincial
 
-O Age of Grecce não deve virar um jogo de batalha tática em campo aberto.
+Milícia parte da população e pode receber modificadores como Muralha e outros fatores futuros.
+
+## 32. Cerco persiste ao longo dos turnos
+
+Cerco é um estado real, não apenas uma batalha instantânea.
+
+## 32A. A postura decide se há batalha, não só o destino da cidade
+
+Sitiar não engaja o exército que estiver na província: o sitiante acampa ao lado da guarnição e os dois ocupam o mesmo território. Assaltar engaja — o choque de campo acontece antes da muralha.
+
+Quem defende a própria terra luta sempre. A escolha do defensor é a surtida (#33), não uma postura de deixar passar.
+
+O cerco acaba quando o sitiante sai, não quando o dono aparece. Província despovoada não cai enquanto houver exército do dono nela: sem milícia, é o exército que fecha o portão.
+
+Razão: sem isso, sitiar significava "lute com o exército deles e depois sente", que é o assalto com um passo a mais — e o cerco existe justamente para quem não tem gente para vencer o exército de dentro. Depende de hostes com identidade própria, porque duas forças inimigas precisam poder ocupar a mesma província.
+
+## 33. Surtida faz parte do cerco-base
+
+O defensor sitiado pode atacar o exército sitiador usando o sistema básico de combate.
+
+Vitória defensiva quebra o cerco. Em derrota o cerco continua.
+
+Detalhamento fechado no `0.0.2`:
+
+- **a milícia não sai junto.** Ela é defesa da cidade (#31); quem surte é a hoste do
+  defensor. Sair da muralha para o campo é justamente abrir mão do que a muralha dá;
+- **a hoste derrotada na surtida se desfaz**, como qualquer perdedor do choque atual (#20).
+  Sobrevivente que recua para dentro dos muros depende de retirada, que pertence ao visor
+  de batalha (#26 e patch `0.0.13`);
+- **surtir é a ordem da rodada daquela hoste.** Quem surte não marcha no mesmo turno;
+- a surtida é o único ato do defensor que obriga o sitiante a lutar. Sem ela, sitiante e
+  guarnição continuam acampados lado a lado (#32A).
+
+## 33A. Socorro que entra em província sitiada engaja o sitiante
+
+Mandar tropa para uma cidade que está sendo sitiada é atacar quem a sitia. O choque
+acontece na chegada, sem o jogador precisar declarar nada: o destino é terra própria, e
+quem defende a própria terra luta sempre (#32A).
+
+Razão: sem isso, um exército de socorro entraria na província e acamparia ao lado do
+sitiante sem tocá-lo, e quebrar um cerco de fora seria impossível.
+
+## 34. Muralha tem duas funções
+
+Muralha:
+
+1. fortalece a defesa/milícia;
+2. impede assalto imediato.
+
+Referência inicial: 2 turnos de cerco antes do assalto.
+
+Detalhamento fechado no `0.0.2`:
+
+- **o número de rodadas é balanceamento e mora em `dados/ajustes.json`**, nunca cravado no
+  TypeScript nem em teste;
+- **quem diz que uma obra exige cerco é o catálogo de construções**, por campo próprio, e
+  não o id `muralha` escrito na regra. O `0.0.10` vai refazer o catálogo, e a regra não
+  pode depender do nome do conteúdo;
+- **a contagem começa em zero na rodada em que o exército senta** e libera o assalto depois
+  de duas viradas de cerco;
+- **a contagem zera** quando o sitiante sai, morre ou é substituído por outro poder;
+- **o botão de assaltar só existe depois das duas rodadas.** A interface diz o motivo em
+  vez de aceitar uma ordem que a resolução vai recusar.
+
+Este contador NÃO é progresso de conquista: o cerco continua não andando em direção a nada
+(#32A). Ele só marca há quanto tempo a cidade está apertada.
+
+## 35. Sem Muralha, assalto imediato é possível
+
+A regra serve para diferenciar províncias fortificadas de não fortificadas.
+
+## 36. Conquista altera propriedade da província
+
+O sistema de guerra deve manter dono, população, hostes e demais estados coerentes após conquista.
+
+## 37. Conquista pode causar perda populacional controlada
+
+Evitar extermínio arbitrário ou regras excessivamente complexas.
+
+## 38. Construções normalmente sobrevivem à conquista
+
+Assalto/saque podem futuramente causar dano ou destruição parcial.
+
+## 39. Produtos são recursos físicos
+
+Produtos não devem ser apenas abstrações de renda.
+
+Exemplos: grão, peixe, madeira, ferro etc. em quantidades.
+
+## 39A. Recursos possuem funções diferentes
+
+Recursos podem cumprir papéis como alimento, matéria-prima, luxo/comércio e outros que tenham função real. Não criar categorias sem consequência de gameplay.
+
+## 40. Cada província pode ter recurso principal e secundário
 
 Direção:
 
-- batalha continua sendo simulação numérica;
-- jogador acompanha visualmente;
-- referência conceitual: Brasfoot;
-- interação futura simples;
-- nada de controle estilo Total War.
+- 1 recurso principal forte;
+- 1 secundário mais fraco.
 
----
+A validação começa na região de teste; o restante do mapa será preenchido depois.
 
-# 11. Tipos de tropas ficam para depois
+## 41. Potencial natural é fixo
 
-Não entram no 0.0.2.
+Se uma região possui determinado potencial natural, investimento não transforma a natureza. População/construções melhoram exploração, não potencial.
 
-Direção futura inicial:
-
-- Infantaria
-- Cavalaria
-- Arqueiros
-- Siege
-
-O jogador deverá poder escolher o que recrutar.
-
----
-
-# 12. Número de soldados não será o único fator
-
-No combate futuro, quantidade deve importar, mas não dominar tudo.
-
-Outros fatores previstos:
-
-- qualidade;
-- tipo de tropa;
-- Quartel;
-- moral;
-- líderes;
-- terreno;
-- situação da batalha.
-
-Uma força menor poderá derrotar uma maior em certas circunstâncias, mas superioridade
-numérica extrema ainda deve pesar muito.
-
----
-
-# 13. Moral e retirada são futuras
-
-Direção desejada:
-
-- batalha reduz moral;
-- quando moral quebra, tropas fogem;
-- perdedor não precisa ser exterminado;
-- sobreviventes recuam.
-
-Isso será aprofundado em patch futuro.
-
----
-
-# 14. Generais e family tree são futuros
-
-Há interesse em:
-
-- líderes;
-- personagens;
-- comandantes;
-- family tree inspirado em Rome: Total War 1.
-
-Ainda não existe design fechado.
-
-Não implementar antes de uma especificação própria.
-
----
-
-# 15. Terreno não entra no combate agora
-
-Terreno pode ser importante no futuro.
-
-Porém os dados atuais de relevo ainda não são confiáveis o suficiente para virarem regra
-de gameplay.
-
-Não usar relevo procedural como verdade histórica.
-
----
-
-# 16. Naval não entra antes da base terrestre
-
-O jogo deve fechar primeiro o mundo terrestre.
-
-Direção futura:
-
-- zonas marítimas;
-- frotas;
-- portos;
-- bloqueios;
-- transporte;
-- comércio marítimo.
-
-Evitar teleport automático entre portos.
-
----
-
-# 17. Economia deve usar recursos físicos
-
-Produtos não devem existir apenas para gerar dinheiro.
-
-Eles devem ser recursos quantificáveis.
-
-Exemplos:
-
-- 100 grãos;
-- 40 peixe;
-- 25 madeira;
-- 10 ferro.
-
-Motivo:
-
-Permitir futuramente:
-
-- consumo;
-- estoque;
-- comércio;
-- fome;
-- cerco;
-- logística;
-- bloqueio.
-
----
-
-# 18. Cada província terá dois recursos naturais iniciais
-
-Direção:
-
-- 1 recurso principal;
-- 1 recurso secundário mais fraco.
-
-Cadastrar somente os recursos que realmente existem naquela província.
-
-Não cadastrar uma lista completa com vários zeros.
-
----
-
-# 19. Potencial natural é fixo
-
-O nível natural de um recurso representa a capacidade geográfica daquela região.
-
-Ele não deve aumentar com investimento.
-
-Exemplo:
-
-Se uma província possui potencial 3 em ferro, ela continua sendo 3.
-
-Construções podem aumentar a exploração, não a natureza.
-
----
-
-# 20. Produção depende de população
+## 42. Produção depende de potencial, população e modificadores
 
 Direção conceitual:
 
 `produção = potencial natural × população produtiva × modificadores`
 
-Uma província devastada populacionalmente deve produzir menos.
+## 43. Não haverá microalocação de trabalhadores
 
-Não haverá microgerenciamento manual de trabalhadores.
+Uma parcela implícita da população é produtiva.
 
-Uma porcentagem da população total representa população produtiva.
+## 44. Perda de população reduz produção
 
----
+A economia deve responder à demografia. População também participa de recrutamento, milícia, consumo, crescimento e arrecadação.
 
-# 21. Alimentos continuam individuais
+## 45. Toda província deve conseguir produzir algum alimento coerente
 
-Produtos alimentares podem ser:
+Não precisa ser grão. Ilhas e costas podem depender de peixe, por exemplo.
 
-- grãos;
-- peixe;
-- carne;
-- outros.
+## 46. Alimentos permanecem recursos individuais
 
-Na interface, podem ser agregados como "Alimento".
+Grão, peixe, carne etc. continuam separados internamente.
 
-Exemplo:
+A UI pode mostrar categoria agregada de alimento com detalhamento por tooltip.
 
-Alimento: 500
+## 47. Toda população consome alimento
 
-Tooltip:
+Consumo ocorre por turno.
 
-- 300 grãos
-- 120 peixe
-- 80 carne
-
----
-
-# 22. População consome alimento por turno
-
-Cada turno representa aproximadamente um ano.
-
-Toda população consome alimento.
-
-Falta de comida deve ter consequências relevantes.
-
----
-
-# 23. Comida modifica crescimento, não controla tudo
+## 48. Alimento modifica crescimento populacional
 
 Direção:
 
-- alimento suficiente → crescimento normal;
+- suficiente → crescimento normal;
 - excedente → pequeno bônus;
-- escassez → crescimento menor;
-- déficit → crescimento para e população cai;
-- déficit severo → queda forte.
+- escassez → crescimento reduzido;
+- déficit → perda;
+- déficit severo → perda forte.
 
-Comida não deve ser o único fator de crescimento.
+Como um turno representa aproximadamente um ano, fome precisa ter impacto perceptível.
 
----
+## 48A. Não usar capacidade populacional artificial
 
-# 24. Não usar capacidade máxima artificial de população
+Remover a regra do tipo `população inicial × 2`. Crescimento deve ser limitado por sistemas reais como alimento, felicidade e condições futuras, não por teto arbitrário.
 
-Remover a filosofia de limite fixo baseado em população inicial ×2.
+## 49. Estoque existe por província
 
-O sistema deve ser controlado por mecanismos mais naturais:
+O poder pode enxergar agregados, mas o recurso está fisicamente armazenado em províncias.
 
-- alimento;
-- felicidade;
-- economia;
-- condições futuras.
+## 50. Porto é requisito para conexão econômica marítima
 
-Se um limite físico for necessário depois, criar uma solução específica.
+Ser costeira ou possuir ancoradouro não basta para integração econômica marítima completa.
 
----
+A construção **Porto** é a infraestrutura que libera essa conexão.
 
-# 25. Estoque é provincial
+Isso também prepara sistemas navais futuros.
 
-Cada província guarda seu próprio estoque.
+## 51. Todos os recursos físicos podem ser estocados
 
-O poder pode visualizar o total agregado.
+Não limitar estoque apenas a alimento.
 
-Motivo:
+## 52. Estoque pode começar ilimitado
 
-Permitir:
+É simplificação inicial. Limites podem ser introduzidos posteriormente se estoque infinito quebrar o jogo.
 
-- cerco;
-- conquista;
-- bloqueio;
-- isolamento;
-- logística.
+## 53. Alimentos estocados deterioram
 
----
+Celeiros poderão reduzir deterioração.
 
-# 26. Todos os recursos podem ser estocados
+## 54. Mercado interno é automático
 
-Não apenas comida.
+O jogador não deve mover recurso por recurso manualmente.
 
-Exemplos:
+## 55. Ordem conceitual do fluxo interno
 
-- grãos;
-- peixe;
-- madeira;
-- ferro;
-- mármore;
-- produtos de luxo.
+1. produção local;
+2. consumo local;
+3. cobrir déficits de províncias conectadas;
+4. estoque;
+5. exportação futura.
 
----
+## 56. Escassez é distribuída proporcionalmente, com prioridade da capital
 
-# 27. Estoque pode ser ilimitado no início
+A capital recebe prioridade sem transformar todo o sistema em microgerenciamento.
 
-No 0.0.2, priorizar simplicidade.
+## 57. Recursos só circulam por conexão válida
 
-Depois avaliar limites porque estoque infinito pode quebrar o late game.
+Conexão pode ser terrestre ou marítima quando houver infraestrutura adequada.
 
----
+No comércio internacional futuro, usar rota própria/conectada; não assumir passagem abstrata por território de terceiros sem regra que permita isso.
 
-# 28. Alimento deteriora
+## 58. Comércio internacional depende de permissão/tratado
 
-Comida armazenada deve perder parte do estoque ao longo do tempo.
+Tratado abre os mercados; o jogador não negocia produto por produto manualmente.
 
-A taxa será balanceada depois.
+## 59. Comércio internacional usa dinheiro, não barter manual
 
-Celeiros devem ajudar a reduzir essa perda.
+Compras e vendas futuras são automáticas conforme oferta/necessidade.
 
----
+## 60. Sem dinheiro, importações param
 
-# 29. Mercado interno é automático
+Não criar dívida automática para sustentar importações.
 
-O jogador não deve transferir recursos manualmente entre províncias do mesmo poder.
+## 61. Preço-base global é suficiente inicialmente
 
-Fluxo:
+Oferta/demanda e preços regionais podem vir depois.
 
-1. consumo local;
-2. cobrir déficits internos;
-3. estoque;
-4. exportação futura.
+## 62. Receita de exportação entra no tesouro estatal
 
-Motivo:
+Não criar uma carteira separada por província para comércio.
 
-Evitar microgerenciamento excessivo.
+## 63. Tesouro pertence a cada poder
 
----
+Cada poder possui seu próprio tesouro.
 
-# 30. Mercado interno exige conexão
+Isso permite jogador e IA usarem as mesmas regras de recrutamento, manutenção, construção e comércio.
 
-Recursos só circulam se houver conexão válida.
+## 64. Não existe tesouro provincial independente
 
-Pode ser:
+Ao conquistar, o vencedor pode receber saque monetário aproximado à produção de um turno e capturar estoque com perdas.
 
-- terrestre;
-- marítima.
+## 64A. Batalha por si só não gera saque
 
-Ilhas isoladas não recebem recursos magicamente.
+O saque está ligado à conquista/assalto da província, não simplesmente a vencer um combate em campo.
 
----
+## 65. Imposto possui três níveis
 
-# 31. Capital tem prioridade alimentar
+- baixo;
+- normal;
+- alto.
 
-Em escassez:
+Baixo favorece felicidade; alto favorece receita e pressiona felicidade.
 
-- capital recebe prioridade;
-- o restante é distribuído proporcionalmente à necessidade.
-
----
-
-# 32. Comércio internacional será automático
-
-No futuro:
-
-- tratado/permissão abre o comércio;
-- mercado encontra oferta e demanda;
-- jogador não negocia produto por produto;
-- dinheiro é intermediário;
-- sem dinheiro, importação para.
-
----
-
-# 33. Comércio internacional exige conexão
-
-Não usar comércio abstrato atravessando qualquer território.
-
-Direção:
-
-- conexão própria por terra;
-- ou conexão marítima válida.
-
-Rotas mais avançadas podem vir depois.
-
----
-
-# 34. Preço global fixo inicialmente
-
-Cada recurso terá valor-base global.
-
-Oferta e demanda ficam para depois.
-
-Motivo:
-
-Evitar complexidade prematura.
-
----
-
-# 35. Dinheiro estatal continua existindo
-
-Recursos físicos não substituem o tesouro.
-
-Dinheiro serve para:
-
-- construções;
-- recrutamento;
-- manutenção;
-- comércio;
-- outros gastos.
-
----
-
-# 36. Impostos terão três níveis
-
-Direção:
-
-- Baixo
-- Normal
-- Alto
-
-Efeitos:
-
-Baixo:
-
-- menos receita;
-- mais felicidade.
-
-Normal:
-
-- equilíbrio.
-
-Alto:
-
-- mais receita;
-- menos felicidade;
-- mais pressão de revolta.
-
-Evitar sliders muito detalhados.
-
----
-
-# 37. Receita fiscal não será só população
+## 66. Receita fiscal considera mais que população
 
 Direção conceitual:
 
-`receita fiscal = população × atividade econômica × taxa × eficiência`
+`população × atividade econômica × taxa × eficiência administrativa`
 
-Não expor fórmula completa ao jogador.
+## 67. Atividade econômica pode gerar dinheiro automaticamente
 
----
+Não exigir ações manuais repetitivas para transformar toda produção em renda.
 
-# 38. Conquista gera saque simples
+## 68. Felicidade é provincial e internamente vai de 0 a 100
 
-Não existe tesouro provincial separado.
+Na interface usar categorias como:
 
-Ao conquistar uma província:
+- Muito feliz;
+- Satisfeita;
+- Neutra;
+- Insatisfeita;
+- Revoltosa.
 
-- ganhar aproximadamente uma renda daquela província;
-- capturar estoque;
-- perder parte do estoque durante ataque/conquista.
+## 69. Felicidade recebe efeitos coerentes dos sistemas existentes
 
----
+Exemplos:
 
-# 39. Felicidade existe por província
-
-Internamente:
-
-`0–100`
-
-Na interface:
-
-- Muito feliz
-- Satisfeita
-- Neutra
-- Insatisfeita
-- Revoltosa
-
----
-
-# 40. Felicidade é influenciada por sistemas reais
-
-Fatores previstos:
-
-- imposto;
-- alimentação;
-- fome;
+- impostos;
+- comida/fome;
 - conquista recente;
 - nacionalidade;
-- distância da capital;
-- ineficiência;
+- administração/distância da capital no futuro;
 - presença militar;
 - construções;
-- guerra;
+- guerra prolongada;
 - prosperidade.
 
-Evitar bônus aleatórios sem contexto.
+Conquista recente causa penalidade que deve se recuperar ao longo do tempo, em vez de durar para sempre.
 
----
+## 70. Nacionalidade pertence à população e pode ser misturada
 
-# 41. Nacionalidade pertence à população
+Uma província pode ter várias nacionalidades em proporções/quantidades.
 
-Uma província pode possuir múltiplas nacionalidades.
+## 71. Nacionalidade muda lentamente
 
-Exemplo:
+Não transformar população conquistada em outra nacionalidade instantaneamente.
 
-- 70% tebana;
-- 20% ateniense;
-- 10% outras.
+## 72. Nacionalidade diferente do governante gera tensão
 
-Nacionalidade muda lentamente.
+Não criar grupos culturais intermediários complexos por enquanto. Diferença de nacionalidade já basta para gerar problema.
 
----
+## 73. Província conquistada continua usando sua população normalmente
 
-# 42. Nacionalidade diferente gera tensão
+Não criar trava especial de recrutamento em recém-conquistadas. Problemas aparecem por felicidade/nacionalidade.
 
-Se o governante controla uma população de outra nacionalidade, isso deve prejudicar
-felicidade.
+## 74. Revolta vem depois de penalidades
 
-Não criar grupos culturais intermediários por enquanto.
+Felicidade baixa primeiro prejudica a província; se persistir, pode gerar risco/chance de revolta.
 
-Diferença já gera problema.
+Quando ocorrer, tentar restaurar poder local/original quando fizer sentido; caso contrário criar poder rebelde.
 
----
+## 75. Migração fica para depois
 
-# 43. Migração fica para depois
+Pode futuramente responder a fome, prosperidade, guerra e segurança.
 
-População não precisa se mover entre províncias no 0.0.2.
+## 76. Autoridade é separada por assunto
 
-Futuro possível:
+Não existe hierarquia linear única.
 
-- fome;
-- guerra;
-- prosperidade;
-- capital;
-- segurança.
-
----
-
-# 44. Revolta vem depois de deterioração
-
-Não deve ser instantânea.
-
-Direção:
-
-1. felicidade cai;
-2. surgem penalidades;
-3. risco de revolta aumenta;
-4. eventualmente explode revolta.
-
----
-
-# 45. Revolta tenta restaurar identidade local
-
-Quando uma província se revolta:
-
-1. tentar restaurar poder/nacionalidade local;
-2. se não fizer sentido, criar novo poder rebelde.
-
----
-
-# 46. População conquistada continua utilizável
-
-Não criar bloqueios complexos.
-
-Depois da conquista:
-
-- população continua existindo;
-- gera economia;
-- pode ser recrutada;
-- problemas aparecem principalmente em felicidade e nacionalidade.
-
----
-
-# 47. Capital é obrigatória
-
-Cada poder começa com uma capital.
-
-Se ela cair:
-
-- notificação no início do turno;
-- jogador deve escolher outra;
-- não pode continuar sem capital.
-
----
-
-# 48. Capital é centro administrativo
-
-A capital não precisa dar bônus artificial.
-
-Ela serve como referência para sistemas futuros:
-
-- ineficiência administrativa;
-- revolta;
-- comércio interno;
-- governadores.
-
----
-
-# 49. Corrupção não terá barra própria inicialmente
-
-Usar conceito de **ineficiência administrativa**.
-
-Fatores futuros:
-
-- distância da capital;
-- território grande;
-- felicidade baixa;
-- governador.
-
----
-
-# 50. Portos são necessários para conexão marítima
-
-Província costeira não ganha conexão marítima automaticamente.
-
-Precisa de Porto.
-
-Motivo:
-
-Dar função real à construção.
-
----
-
-# 51. Estradas devem existir futuramente
-
-Possíveis efeitos:
-
-- movimento;
-- comércio interno;
-- eficiência administrativa.
-
-Não precisam estar completas no 0.0.2.
-
----
-
-# 52. Construções têm slots
-
-Cada província terá:
-
-**4 slots de construção**
-
-Motivo:
-
-Criar especialização.
-
-Não permitir que todas as cidades tenham tudo.
-
----
-
-# 53. Construções possuem níveis
-
-Direção:
-
-- I
-- II
-- III
-
-Máximo: III.
-
----
-
-# 54. Não criar "Desenvolvimento 3/5"
-
-Não haverá um número genérico de desenvolvimento por enquanto.
-
-O desenvolvimento deve emergir de:
-
-- população;
-- construções;
-- economia;
-- felicidade;
-- estoque;
-- recursos.
-
----
-
-# 55. Ágora é econômica e administrativa
-
-Funções possíveis:
-
-- atividade econômica;
-- impostos;
-- administração;
-- felicidade.
-
-Valores serão balanceados depois.
-
----
-
-# 56. Mercado melhora circulação/comércio
-
-Função:
-
-- mercado interno;
-- comércio futuro;
-- eficiência comercial;
-- renda derivada de atividade.
-
----
-
-# 57. Oficina aumenta produção geral
-
-Ela melhora exploração dos recursos.
-
-Não altera potencial natural.
-
----
-
-# 58. Celeiro passa a trabalhar com alimento
-
-Funções:
-
-- armazenamento;
-- deterioração;
-- resistência à fome.
-
-O bônus antigo direto de crescimento deve ser revisto.
-
----
-
-# 59. Quartel não bloqueia recrutamento
-
-Uma província própria com população suficiente deve poder recrutar sem Quartel.
-
-A existência ou não de economia configurada não deve funcionar como requisito conceitual
-de recrutamento. Essa trava atual deve desaparecer conforme a economia for generalizada.
-
-Quartel melhora qualidade dos soldados recrutados naquela província.
-
-O valor exato não está definido.
-
----
-
-# 60. Muralha melhora defesa real
-
-Funções:
-
-- milícia;
-- assalto;
-- cerco;
-- resistência defensiva.
-
----
-
-# 61. Construções podem sofrer dano
-
-Conquista não destrói tudo automaticamente.
-
-Futuramente:
-
-- assalto;
-- saque;
-- guerra
-
-podem danificar ou destruir construções.
-
----
-
-# 62. Cerco deve conversar com economia
-
-Durante cerco:
-
-- comércio externo é cortado;
-- produção cai muito;
-- população continua consumindo;
-- estoque cai;
-- fome pode surgir.
-
-Motivo:
-
-Cerco deve funcionar através dos sistemas normais do jogo, não por um timer artificial
-isolado.
-
----
-
-# 63. Muralha altera regra de assalto e fortalece defesa
-
-Muralha possui duas funções:
-
-1. fortalecer a defesa/milícia no assalto;
-2. impedir assalto imediato.
-
-Direção inicial:
-
-- sem muralha → assalto pode acontecer imediatamente;
-- com muralha → período mínimo de cerco antes de assalto;
-- quando o assalto ocorrer, a muralha continua dando vantagem defensiva.
-
-Referência inicial:
-
-**2 turnos de cerco**
-
-Valores não são definitivos.
-
----
-
-# 64. Milícia é defesa automática
-
-Toda província pode levantar milícia.
-
-Base:
-
-- porcentagem da população;
-- bônus defensivos.
-
-Futuro:
-
-- felicidade;
-- muralha;
-- outros fatores.
-
-# 64A. Surtida faz parte do cerco-base
-
-O defensor sitiado deve poder atacar o exército sitiador.
-
-No 0.0.2, a surtida reutiliza o combate básico.
-
-Não criar um subsistema tático separado.
-
-Resultado principal:
-
-- vitória defensiva quebra o cerco;
-- derrota mantém o cerco e aplica as baixas normalmente.
-
----
-
-# 65. Recursos não serão exigidos no recrutamento agora
-
-Não exigir ferro, madeira etc. para criar tropas no 0.0.2.
-
-Possibilidade futura permanece aberta.
-
----
-
-# 66. Hostes podem consumir comida futuramente
-
-Direção desejada para logística.
-
-Objetivo:
-
-- limitar campanhas enormes;
-- criar valor para abastecimento;
-- evitar estoque infinito inútil.
-
-Não implementar antes de haver necessidade.
-
----
-
-# 67. Uma região jogável basta para validar o 0.0.2
-
-Não é necessário configurar as 205 províncias.
-
-Primeiro validar o sistema completo em uma região de teste.
-
-Depois escalar.
-
----
-
-# 68. Dados devem priorizar plausibilidade de gameplay
-
-População e economia não precisam fingir precisão histórica absoluta.
-
-Objetivo:
-
-- relações plausíveis;
-- boa experiência;
-- coerência histórica razoável.
-
----
-
-# 69. Estoque inicial deve permitir teste
-
-Na região de teste, valores iniciais devem permitir aproximadamente alguns turnos de
-sobrevivência, referência inicial de cerca de 5 turnos.
-
-O objetivo é permitir teste, não balanceamento final.
-
----
-
-# 69A. Tesouro existe por poder
-
-O estado da campanha deve armazenar tesouro para cada poder participante, não apenas para
-o jogador.
-
-Motivo:
-
-IA precisa recrutar, manter tropas, construir e comerciar pelas mesmas regras do jogador.
-
-Consequências:
-
-- manutenção é cobrada por poder;
-- recrutamento consome o tesouro do poder;
-- receitas entram no tesouro do poder;
-- IA não recebe economia gratuita.
-
-Isso é pré-requisito estrutural para a IA.
-
----
-
-# 70. IA só começa depois do 0.0.2
-
-A IA depende de:
-
-- mundo;
-- economia;
-- guerra.
-
-Portanto esses contratos precisam estar minimamente estáveis primeiro.
-
-Não iniciar IA por conveniência enquanto a fundação ainda muda.
-
----
-
-# 71. IA deve usar as mesmas regras do jogador
-
-Direção:
-
-- sem recursos mágicos;
-- sem tropas mágicas;
-- sem movimento mágico;
-- sem visão especial sem motivo.
-
-Dificuldade artificial pode ser discutida depois, mas não é a base.
-
----
-
-# 72. Claude é agente principal do patch
-
-Fluxo decidido:
-
-Claude:
-
-- implementação principal;
-- execução sequencial do patch;
-- testes;
-- atualização de status.
-
-Codex:
-
-- tarefas manuais;
-- revisão;
-- bugs;
-- UI;
-- pequenos ajustes;
-- auditoria.
-
----
-
-# 73. Codex não deve competir com Claude
-
-Enquanto Claude estiver responsável por um módulo:
-
-- Codex não deve mexer silenciosamente nos mesmos arquivos;
-- tarefas paralelas devem ser isoladas;
-- alterações conflitantes devem ser coordenadas.
-
----
-
-# 74. Próximo patch não começa automaticamente
-
-Mesmo que o patch atual esteja tecnicamente concluído:
-
-- agente para;
-- testes são revisados;
-- Henrique joga;
-- Henrique aprova;
-- só então a próxima versão é planejada.
-
----
-
-# 75. Ideias futuras vão para o backlog
-
-Nova ideia não deve sequestrar o patch atual.
-
-Pergunta obrigatória:
-
-> Isso é necessário para concluir o patch atual?
-
-Se não:
-
-- registrar no backlog;
-- continuar o trabalho.
-
----
-
-# 76. Autoridade é separada por assunto
-
-Não existe uma hierarquia linear única para toda divergência. Primeiro deve ser
-identificado o tipo de informação em questão:
-
-- comportamento atual → código, testes e `CLAUDE.md`;
-- decisão de design ou arquitetura → `DECISOES.md`;
-- trabalho autorizado agora → `PATCH_ATUAL.md`;
+- comportamento atual → código, testes, `CLAUDE.md`;
+- decisão de design → `DECISOES.md`;
+- trabalho atual → `PATCH_ATUAL.md`;
 - direção macro → `ROADMAP.md`;
-- ideia futura → `BACKLOG.md`;
-- processo de trabalho e coordenação → `AGENTS.md`.
+- ideias futuras → `BACKLOG.md`;
+- processo de agentes → `AGENTS.md`.
 
-Não resolver conflitos escolhendo simplesmente o arquivo mais novo. A regra detalhada de
-autoridade e conflito está em `AGENTS.md`.
+## 76A. Identificadores de decisões são estáveis
 
----
+Depois que uma decisão é referenciada pelo código, por testes ou por documentação, seu
+número não deve ser reutilizado para outro assunto. Reorganizar o arquivo não autoriza
+renumerar silenciosamente decisões existentes.
 
-# 77. Alterações estruturais exigem aviso
+## 77. Cada poder possui capital
 
-Agentes não devem realizar grandes refatorações não solicitadas só porque parecem "mais
-limpas".
+Capital é centro administrativo, não máquina arbitrária de bônus.
 
-Antes de alterar estrutura central:
+## 78. Perder a capital exige escolher outra
 
-- explicar o problema;
-- propor mudança;
-- avaliar impacto;
-- atualizar decisão se aprovada.
+No início do próximo turno, o jogador deve selecionar nova capital antes de continuar.
 
----
+## 79. Não usar barra explícita de corrupção inicialmente
 
-# 78. Simplicidade é uma regra do projeto
+Usar conceito de **ineficiência administrativa** quando esse sistema for aprofundado.
 
-O Age of Grecce pode ser profundo sem ser excessivamente complexo.
+## 80. Distância da capital é direção futura
 
-Evitar sistemas que exigem:
+Referência conceitual: Rome: Total War 1.
 
-- microgerenciamento excessivo;
-- muitas barras;
-- muitas exceções;
-- fórmulas opacas;
-- ações repetitivas.
+Pode afetar arrecadação, administração, revolta e circulação, mas só quando houver necessidade e sem fórmula excessivamente complexa.
 
-Sempre buscar:
+## 81. Estradas são construção futura
 
-> maior consequência de gameplay com menor complexidade necessária.
+Podem afetar movimento, mercado interno e administração.
+
+## 82. Província terá 4 slots de construção
+
+Objetivo: forçar especialização e impedir que toda província possua tudo.
+
+## 83. Construções terão níveis I, II e III
+
+Usar evolução clara em vez de dezenas de variantes desconectadas.
+
+## 84. Não criar atributo genérico de desenvolvimento por enquanto
+
+Desenvolvimento emerge de população, economia, construções e outros sistemas concretos.
+
+## 85. Ágora é econômica e administrativa
+
+Pode melhorar atividade, arrecadação e felicidade conforme balanceamento.
+
+## 86. Mercado melhora circulação/comércio
+
+Serve ao mercado interno e prepara comércio internacional.
+
+## 87. Oficina melhora produção geral
+
+Aumenta exploração produtiva, mas não altera potencial natural.
+
+## 88. Celeiro passa a servir alimento/estoque
+
+Deve melhorar armazenamento, reduzir deterioração e aumentar resistência a escassez.
+
+Não deve continuar sendo apenas `+50% crescimento` desconectado de alimento.
+
+## 89. Quartel não desbloqueia recrutamento
+
+Uma província própria com população suficiente pode recrutar sem Quartel.
+
+A ausência de economia configurada não deve ser uma trava conceitual do recrutamento.
+
+Quartel melhora qualidade/força dos soldados recrutados ali. Valores exatos ficam para balanceamento.
+
+## 90. Muralha integra defesa e cerco
+
+Além da decisão 34, a construção Muralha deve conservar seu papel de bônus defensivo quando o sistema de construções for refeito.
+
+## 91. Porto conecta economia marítima e prepara naval
+
+Conforme decisão 50, Porto é infraestrutura econômica necessária e depois poderá receber funções navais.
+
+## 92. A migração das construções preserva a regra de conquista
+
+Ao adaptar o catálogo para slots e níveis, preservar a decisão 38: construções normalmente
+sobrevivem à conquista. A migração estrutural não pode apagá-las silenciosamente.
+
+## 93. Cerco econômico vem depois da economia física
+
+Quando alimento/estoque/mercado existirem, cerco deve:
+
+- cortar circulação externa;
+- reduzir fortemente produção;
+- consumir estoque;
+- permitir fome.
+
+## 94. Exércitos consumindo alimento é direção futura
+
+É desejável para limitar acúmulo infinito e criar logística, mas não pertence à primeira economia física.
+
+## 95. Recursos em construções não entram na base
+
+Madeira, pedra, ferro etc. podem futuramente virar custos de construção se isso melhorar gameplay.
+
+## 96. Recursos em recrutamento não entram na base
+
+Foi considerado, mas não escolhido por enquanto.
+
+## 97. Jogador e IA devem usar as mesmas regras
+
+IA futura não deve recrutar, manter tropas ou sustentar economia gratuitamente.
+
+## 98. IA começa em patch próprio quando a base necessária estiver estável
+
+Não desenvolver IA só porque os dados já permitem.
+
+Primeiro estabilizar os contratos de mundo, economia e guerra dos quais a IA depende. Depois abrir um patch `0.0.x` específico para IA mínima.
+
+A IA mínima faz parte do caminho para o `0.1.0`, que representa a primeira campanha básica completa.
+
+## 99. IA inicial deve ser simples
+
+Começar por ações básicas e mesmas regras do jogador; personalidade, cheats e estratégia sofisticada ficam para depois.
+
+## 100. Diplomacia vem depois da IA mínima
+
+Não implementar diplomacia antes de existir IA mínima. Quando chegar a hora, começar apenas pelo mínimo que a campanha realmente precise.
+
+## 101. Save/load, vitória e derrota são patches próprios antes do 0.1.0
+
+Não empurrar esses sistemas para um patch de economia, guerra ou política provincial.
+
+Eles devem ser implementados separadamente em patches `0.0.x` e estar funcionando antes de lançar o `0.1.0`.
+
+## 101A. 0.1.0 significa primeira campanha básica completa
+
+O projeto pode usar quantos patches `0.0.x` forem necessários.
+
+Cada patch `0.0.x` deve representar um objetivo pequeno, claro e testável.
+
+O `0.1.0` só é lançado quando existe um loop básico de campanha do começo ao fim, incluindo IA mínima, save/load e condições básicas de vitória e derrota.
+
+`0.1.0` é um marco de integração, não um mega-patch.
+
+## 102. Novas ideias não desviam o patch atual
+
+Se forem indispensáveis ao objetivo atual, podem virar tarefa. Caso contrário vão para backlog/roadmap e aguardam.
+
+## 103. Claude é agente principal e Codex é agente secundário/manual
+
+Claude executa a linha principal; Codex é preferencial para bugs isolados, UI, revisão, testes e auditoria.
+
+## 104. Agentes não devem editar a mesma área simultaneamente
+
+Para paralelismo real, usar branches/worktrees separados ou dividir módulos claramente.
+
+## 105. Nenhum agente começa o próximo patch automaticamente
+
+Depois de concluir o patch atual, parar e aguardar teste/aprovação/novo `PATCH_ATUAL.md`.

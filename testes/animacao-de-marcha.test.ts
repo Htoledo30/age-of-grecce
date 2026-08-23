@@ -8,7 +8,13 @@ import { AnimacaoDeMarcha } from '../src/ui/animacao-de-marcha';
  */
 
 const RETA = [
-  { destino: 'maratona', pontos: [{ x: 0, y: 0 }, { x: 100, y: 0 }] },
+  {
+    hoste: 'maratona',
+    pontos: [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+    ],
+  },
 ];
 
 describe('a peça anda o caminho em vez de saltar para o destino', () => {
@@ -37,7 +43,16 @@ describe('a peça anda o caminho em vez de saltar para o destino', () => {
     // que a seta prometeu. O desvio no meio é justamente o que se guarda aqui.
     const a = new AnimacaoDeMarcha();
     a.comecar(
-      [{ destino: 'tebas', pontos: [{ x: 0, y: 0 }, { x: 50, y: 100 }, { x: 100, y: 0 }] }],
+      [
+        {
+          hoste: 'tebas',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 50, y: 100 },
+            { x: 100, y: 0 },
+          ],
+        },
+      ],
       1,
     );
     a.avancar(1); // metade do prazo de dois saltos
@@ -49,8 +64,21 @@ describe('a peça anda o caminho em vez de saltar para o destino', () => {
     const a = new AnimacaoDeMarcha();
     a.comecar(
       [
-        { destino: 'maratona', pontos: [{ x: 0, y: 0 }, { x: 10, y: 0 }] },
-        { destino: 'tebas', pontos: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 20, y: 0 }] },
+        {
+          hoste: 'maratona',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+          ],
+        },
+        {
+          hoste: 'tebas',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+            { x: 20, y: 0 },
+          ],
+        },
       ],
       1,
     );
@@ -69,8 +97,21 @@ describe('a peça anda o caminho em vez de saltar para o destino', () => {
     a.aoChegar = (destinos) => avisos.push([...destinos]);
     a.comecar(
       [
-        { destino: 'maratona', pontos: [{ x: 0, y: 0 }, { x: 10, y: 0 }] },
-        { destino: 'tebas', pontos: [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 20, y: 0 }] },
+        {
+          hoste: 'maratona',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+          ],
+        },
+        {
+          hoste: 'tebas',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+            { x: 20, y: 0 },
+          ],
+        },
       ],
       1,
     );
@@ -82,7 +123,18 @@ describe('a peça anda o caminho em vez de saltar para o destino', () => {
   it('marcha nova descarta a anterior: o mundo dela deixou de existir', () => {
     const a = new AnimacaoDeMarcha();
     a.comecar(RETA, 1);
-    a.comecar([{ destino: 'tebas', pontos: [{ x: 0, y: 0 }, { x: 5, y: 0 }] }], 1);
+    a.comecar(
+      [
+        {
+          hoste: 'tebas',
+          pontos: [
+            { x: 0, y: 0 },
+            { x: 5, y: 0 },
+          ],
+        },
+      ],
+      1,
+    );
     expect(a.posicaoDe('maratona')).toBeNull();
     expect(a.posicaoDe('tebas')).not.toBeNull();
     a.parar();
@@ -91,7 +143,7 @@ describe('a peça anda o caminho em vez de saltar para o destino', () => {
 
   it('trilha sem trecho nenhum não vira marcha', () => {
     const a = new AnimacaoDeMarcha();
-    a.comecar([{ destino: 'atenas', pontos: [{ x: 7, y: 7 }] }], 1);
+    a.comecar([{ hoste: 'atenas', pontos: [{ x: 7, y: 7 }] }], 1);
     expect(a.emCurso).toBe(false);
   });
 });

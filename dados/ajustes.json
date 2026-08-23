@@ -16,13 +16,41 @@
     "populacao": {
       "taxaNatural": 0.005
     },
+    "alimento": {
+      "consumoPorHabitante": 0.02
+    },
+    "felicidade": {
+      "faixas": [
+        {
+          "ate": 19,
+          "nome": "Revoltosa"
+        },
+        {
+          "ate": 39,
+          "nome": "Insatisfeita"
+        },
+        {
+          "ate": 59,
+          "nome": "Neutra"
+        },
+        {
+          "ate": 79,
+          "nome": "Satisfeita"
+        },
+        {
+          "ate": 100,
+          "nome": "Muito feliz"
+        }
+      ]
+    },
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": 0.3,
       "saltosPorRodada": 1,
       "populacaoMinima": 2000,
       "cerco": {
-        "bonusDeMuralha": 2
+        "bonusDeMuralha": 2,
+        "rodadasParaAssaltarMuralha": 2
       },
       "milicia": {
         "fracao": 0.012,

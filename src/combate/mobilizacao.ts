@@ -24,12 +24,6 @@ import type { RecusaDeLeva } from './recrutamento';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
 
-/** Uma hoste e a província onde ela está. */
-export interface HosteEmProvincia {
-  provincia: string;
-  exercito: Exercito;
-}
-
 /** O recorte do estado que a mobilização pode alterar. Nada além disto. */
 export interface EstadoDeMobilizacao {
   /** Por id de poder. Ver `EstadoCampanha.tesouros`. */
@@ -65,16 +59,36 @@ export class Mobilizacao {
   }
 
   /**
-   * A hoste parada aqui, quando ha uma so.
+   * A ÚNICA hoste parada aqui, ou `undefined`.
    *
-   * ⚠️ **Conveniencia, nao verdade estrutural.** Hoje nunca ha duas na mesma provincia
-   * porque quem chega em terra alheia briga ou senta - mas o modelo ja permite duas, e
-   * quem precisar disso pergunta por `hostesEm`. Esta funcao devolve a primeira por id, e
-   * existe pra que as regras e a interface que ainda pensam por provincia nao precisem
-   * mudar todas de uma vez.
+   * ⚠️ **Devolve `undefined` quando há mais de uma**, de propósito. Antes devolvia "a
+   * primeira por id", e isso virou mentira no dia em que sitiar deixou de engajar
+   * (`DECISOES.md` #32A): com o sitiante acampado ao lado da guarnição, "a primeira" é
+   * quem foi recrutado antes — o defensor — e a interface inteira passou a falar do
+   * exército errado. Quem lida com um lugar que pode ter duas usa `hostesEm`; quem sabe
+   * de qual hoste está falando usa `hoste(id)`.
+   *
+   * Continua servindo às regras que são mesmo da PROVÍNCIA e onde duas seriam um erro:
+   * mover uma peça de desenvolvimento, fundir uma leva.
    */
-  exercitoEm(idProvincia: string): Exercito | undefined {
-    return this.hostesEm(idProvincia)[0];
+  private unicaEm(idProvincia: string): Exercito | undefined {
+    const aqui = this.hostesEm(idProvincia);
+    return aqui.length === 1 ? aqui[0] : undefined;
+  }
+
+  /** Quantos homens tem ESTA hoste. Não é o total do lugar. */
+  forcaDaHoste(idHoste: string): number {
+    return forcaDe(this.hoste(idHoste));
+  }
+
+  /** Manda homens desta hoste pra casa. Cada um volta à SUA província de origem. */
+  dispensarDe(idHoste: string, homens: number): void {
+    if (!Number.isInteger(homens) || homens <= 0) {
+      throw new Error('o número de homens dispensados precisa ser um inteiro positivo');
+    }
+    const exercito = this.hoste(idHoste);
+    if (!exercito) throw new Error(`não há hoste ${idHoste}`);
+    this.devolver(exercito, homens);
   }
 
   /** A hoste com este id, onde quer que esteja. */
@@ -97,8 +111,11 @@ export class Mobilizacao {
       });
   }
 
-  forcaEm(idProvincia: string): number {
-    return forcaDe(this.exercitoEm(idProvincia));
+  /** Homens de um PODER parados nesta província. Zero quando ele não está aqui. */
+  forcaEm(idProvincia: string, idPoder: string): number {
+    return this.hostesEm(idProvincia)
+      .filter((h) => h.poder === idPoder)
+      .reduce((total, h) => total + forcaDe(h), 0);
   }
 
   formacaoEm(idProvincia: string): LevaEmFormacao | undefined {
@@ -113,14 +130,19 @@ export class Mobilizacao {
     }));
   }
 
-  /** Toda hoste em pé no mundo, com o lugar dela. É o que o mapa desenha. */
-  todas(): readonly HosteEmProvincia[] {
-    return this.ordenadas().map((exercito) => ({ provincia: exercito.posicao, exercito }));
+  /**
+   * Toda hoste em pé no mundo, em ordem de id. É o que o mapa desenha.
+   *
+   * ⚠️ Devolve as HOSTES, não pares `{provincia, exercito}`: a posição já vive dentro da
+   * hoste, e o par duplicado era o convite a continuar pensando por província.
+   */
+  todas(): readonly Exercito[] {
+    return this.ordenadas();
   }
 
   /** As hostes deste poder, onde quer que estejam — inclusive em terra alheia. */
-  doPoder(idPoder: string): readonly HosteEmProvincia[] {
-    return this.todas().filter((h) => h.exercito.poder === idPoder);
+  doPoder(idPoder: string): readonly Exercito[] {
+    return this.todas().filter((h) => h.poder === idPoder);
   }
 
   /**
@@ -189,12 +211,17 @@ export class Mobilizacao {
    * Serve pra montar um inimigo no tabuleiro enquanto a IA não existe. Não cobra ouro,
    * não tira gente da população, e por isso nenhuma regra do jogo pode chamar isto.
    */
-  plantar(idProvincia: string, idPoder: string, homens: number): void {
-    // Substitui o que estiver ali, como antes: e gancho de desenvolvimento, nao regra.
-    for (const antiga of this.hostesEm(idProvincia)) delete this.estado.hostes[antiga.id];
+  plantar(idProvincia: string, idPoder: string, homens: number): string {
+    // ⚠️ Substitui só o que é DESTE poder. Apagava tudo o que estivesse ali, e isso deixou
+    // de servir quando duas forças inimigas passaram a caber no mesmo lugar: plantar uma
+    // guarnição aniquilaria o sitiante sem batalha nenhuma.
+    for (const antiga of this.hostesEm(idProvincia)) {
+      if (antiga.poder === idPoder) delete this.estado.hostes[antiga.id];
+    }
     const exercito = exercitoVazio(this.proximoId(), idPoder, idProvincia);
     somarLeva(exercito, idProvincia, homens);
     this.estado.hostes[exercito.id] = exercito;
+    return exercito.id;
   }
 
   /**
@@ -238,12 +265,9 @@ export class Mobilizacao {
    * humanidade do mapa toda vez — população viraria catraca de sentido único.
    */
   dispensar(idProvincia: string, homens: number): void {
-    if (!Number.isInteger(homens) || homens <= 0) {
-      throw new Error('o número de homens dispensados precisa ser um inteiro positivo');
-    }
-    const exercito = this.exercitoEm(idProvincia);
-    if (!exercito) throw new Error(`não há exército em ${idProvincia}`);
-    this.devolver(exercito, homens);
+    const exercito = this.unicaEm(idProvincia);
+    if (!exercito) throw new Error(`não há uma hoste só em ${idProvincia}`);
+    this.dispensarDe(exercito.id, homens);
   }
 
   /**
@@ -259,11 +283,11 @@ export class Mobilizacao {
    * de guerra acabariam morando.
    */
   mover(origem: string, destino: string): void {
-    const hoste = this.exercitoEm(origem);
-    if (!hoste) throw new Error(`não há exército em ${origem}`);
+    const hoste = this.unicaEm(origem);
+    if (!hoste) throw new Error(`não há uma hoste só em ${origem}`);
     if (origem === destino) return;
 
-    const naChegada = this.exercitoEm(destino);
+    const naChegada = this.unicaEm(destino);
     if (naChegada && naChegada.poder !== hoste.poder) {
       // Entrar onde ha tropa alheia e batalha, e batalha nao e assunto desta primitiva.
       // Estourar alto e melhor que fundir exercitos inimigos num so.
@@ -283,7 +307,7 @@ export class Mobilizacao {
 
   manutencaoDe(idPoder: string): number {
     let homens = 0;
-    for (const h of this.doPoder(idPoder)) homens += forcaDe(h.exercito);
+    for (const h of this.doPoder(idPoder)) homens += forcaDe(h);
     return manutencaoDe(homens, this.ajustes);
   }
 
@@ -312,7 +336,7 @@ export class Mobilizacao {
     const fracaoNaoPaga = (devido - pago) / devido;
     let desertaram = 0;
 
-    for (const { exercito } of this.doPoder(idPoder)) {
+    for (const exercito of this.doPoder(idPoder)) {
       const desertores = Math.ceil(forcaDe(exercito) * fracaoNaoPaga);
       if (desertores <= 0) continue;
       desertaram += desertores;

@@ -33,8 +33,8 @@ export interface EstadoCampanha {
    * Moedas de cada poder, por id. **Todos os 148, não só o jogador.**
    *
    * ⚠️ Era um número só, e isso teria dado à IA um exército de graça: sem cofre próprio,
-   * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver `DECISOES.md` #69A
-   * e #71 — a IA joga pelas mesmas regras, e a primeira dessas regras é que dinheiro
+   * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver `DECISOES.md` #63
+   * e #97 — a IA joga pelas mesmas regras, e a primeira dessas regras é que dinheiro
    * acaba.
    *
    * Poder sem entrada aqui vale zero, não `undefined`: quem pergunta o tesouro de um
@@ -63,6 +63,36 @@ export interface EstadoCampanha {
    * mobilizar ter preço contínuo sem condenar uma província a encolher para sempre.
    */
   populacao: Record<string, number>;
+  /**
+   * De que povo é a população de cada província, em frações que somam 1.
+   *
+   * ⚠️ **Estado, e não dado fixo** — pela mesma razão que a população é. Nacionalidade
+   * muda devagar (`DECISOES.md` #71): gente de fora se instala, uma geração nasce sob
+   * outra bandeira. Nada disso acontece ainda; o campo está aqui porque o dia em que
+   * acontecer não pode exigir mover o dado de lugar no meio de um salvamento.
+   *
+   * Só as províncias com ficha autoral. Quem não tem não é simulada.
+   */
+  nacionalidades: Record<string, Record<string, number>>;
+  /**
+   * O humor de cada província, de 0 a 100.
+   *
+   * ⚠️ **Ainda não faz nada** — o patch 0.0.7 do `ROADMAP.md` é que liga imposto, fome,
+   * conquista e nacionalidade a este número. Existe agora porque a região de teste
+   * precisa começar completa, e porque um valor inicial escrito à mão é o único jeito de
+   * o patch 0.0.7 ter de onde partir.
+   */
+  felicidade: Record<string, number>;
+  /**
+   * O que cada província tem guardado, por produto.
+   *
+   * ⚠️ **Provincial, nunca do poder** (`DECISOES.md` #49). O império não tem um celeiro
+   * central: cada terra guarda o que colheu, e é por isso que conquistar uma província
+   * captura o que estava nela — e que sitiar dói.
+   *
+   * Ninguém consome nem produz ainda: o patch 0.0.3 enche isto por turno e o 0.0.4 esvazia.
+   */
+  estoques: Record<string, Record<string, number>>;
   /**
    * Exércitos em pé, pela província onde estão.
    *
@@ -101,10 +131,22 @@ export interface EstadoCampanha {
    */
   ordens: Record<string, OrdemDeMarcha>;
   /**
+   * Hostes que vão SURTIR nesta rodada, por id.
+   *
+   * Surtir é o sitiado sair para atacar quem o cerca. É a única coisa que obriga o
+   * sitiante a lutar: ele declarou que não quer choque (`DECISOES.md` #32A), e sem uma
+   * decisão do defensor os dois ficam acampados lado a lado até o fim dos tempos.
+   *
+   * ⚠️ **Vive ao lado das ordens e some junto com elas na virada**, pelo mesmo motivo: é
+   * decisão da rodada. E é excludente com a ordem de marcha — quem sai para lutar em casa
+   * não marcha no mesmo turno.
+   */
+  surtidas: string[];
+  /**
    * A capital de cada poder, por id de poder.
    *
    * ⚠️ **Só o estado, por enquanto.** A capital ainda não faz nada: o fluxo de perdê-la e
-   * escolher outra é a Etapa 9 do `PATCH_ATUAL.md`. O campo existe agora porque vários
+   * escolher outra é o patch 0.0.9 do `ROADMAP.md`. O campo existe agora porque vários
    * sistemas futuros vão perguntar qual é — ineficiência administrativa, prioridade
    * alimentar em escassez, revolta, comércio interno — e cada um inventar a própria
    * resposta seria a mesma verdade em quatro lugares.

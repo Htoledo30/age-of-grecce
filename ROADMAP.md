@@ -1,439 +1,383 @@
 # ROADMAP.md
 
-# Age of Grecce — Roadmap de Desenvolvimento
+# Age of Grecce — Roadmap
 
-Este documento define a direção macro do projeto.
+Este arquivo organiza o que já foi decidido em versões pequenas.
 
-Ele não substitui:
+Regra central:
 
-- `PATCH_ATUAL.md` — trabalho atual;
-- `DECISOES.md` — decisões oficiais;
-- `BACKLOG.md` — ideias futuras;
-- `CLAUDE.md` — estado técnico atual;
-- `AGENTS.md` — processo de trabalho.
+> **um patch por vez → implementar → testar → jogar → aprovar → fechar → só então abrir o próximo.**
+
+O roadmap define direção. O trabalho autorizado no momento fica somente em `PATCH_ATUAL.md`.
 
 ---
 
-# Visão do projeto
+# 0.0.1 — Primeiro checkpoint
 
-Age of Grecce é um grand strategy ambientado no mundo grego antigo.
+**Status:** lançado
 
-A direção é construir um jogo:
+Primeiro marco histórico já registrado no `CHANGELOG.md`.
 
-- simples de entender;
-- profundo nas consequências;
-- baseado em províncias;
-- com economia, população, guerra e política conectadas;
-- sem transformar cada sistema em microgerenciamento excessivo.
-
-A prioridade atual é construir uma base estável antes de aprofundar os sistemas.
+Não reabrir nem reutilizar esse número.
 
 ---
 
-# Fase atual — Fundação
+# 0.0.2 — Fechamento da guerra básica
 
-## Série de versões
+**Status:** lançado em 2026-08-23
 
-`0.0.x`
+Entregou surtida (com socorro que chega de fora), a regra de Muralha e assalto, a crônica
+da rodada e a estabilização do núcleo militar. Registrado no `CHANGELOG.md`.
+
+Não reabrir nem reutilizar esse número.
+
+---
+
+# 0.0.3 — Economia física básica
+
+**Status:** próximo da fila, **ainda não autorizado**. Só começa quando virar
+`PATCH_ATUAL.md` por decisão de Henrique.
 
 Objetivo:
 
-Construir o esqueleto funcional do jogo.
+Transformar produtos em recursos físicos quantificáveis.
 
-Durante esta fase, sistemas podem ser simples.
+Escopo:
 
-O importante é que:
+- aproveitar os dados e o estado já preparados para recurso principal, recurso secundário
+  e estoque;
+- transformar esses recursos em unidades físicas usadas pela simulação;
+- produção física;
+- potencial natural fixo;
+- produção influenciada pela população;
+- fazer o estoque provincial já existente receber a produção;
+- validar primeiro nas cinco províncias da região de teste.
 
-- existam;
-- sejam coerentes;
-- conversem entre si;
-- tenham contratos suficientemente estáveis.
+Não inclui ainda:
+
+- consumo de alimento;
+- fome;
+- mercado interno;
+- comércio internacional;
+- construções refeitas.
+
+Fechar e testar antes de abrir o próximo patch.
 
 ---
 
-# Marco atual — 0.0.2
-
-## 0.0.2 — Fundação do Mundo
+# 0.0.4 — Alimentação e população
 
 Objetivo:
 
-Fechar três pilares antes de iniciar IA:
+Dar função ao alimento e ligar alimento à população.
 
-1. **Mundo**
-2. **Economia**
-3. **Guerra terrestre**
+Escopo:
 
-O patch atual é detalhado em `PATCH_ATUAL.md`.
+- toda população consome alimento;
+- alimentos continuam recursos individuais;
+- interface pode exibir total agregado de alimento;
+- excedente dá pequeno benefício;
+- escassez reduz crescimento;
+- déficit pode causar perda populacional;
+- deterioração de alimento estocado;
+- preservar a ausência do antigo limite artificial `população inicial × 2`.
 
-## Mundo
+Não inclui mercado interno.
 
-Base necessária:
-
-- províncias;
-- poderes;
-- propriedade;
-- população;
-- nacionalidade;
-- felicidade;
-- capitais;
-- conexões;
-- região de teste jogável.
-
-## Economia
-
-Base necessária:
-
-- tesouro por poder, não apenas para o jogador;
-- recursos físicos na região de teste atual;
-- produção;
-- estoque;
-- alimentação;
-- deterioração;
-- mercado interno automático;
-- dinheiro;
-- impostos;
-- construções coerentes;
-- integração com conquista e cerco.
-
-## Guerra terrestre
-
-Base necessária:
-
-- recrutamento;
-- formação;
-- hostes;
-- movimento;
-- encontros;
-- combate;
-- milícia;
-- cerco;
-- assalto;
-- conquista;
-- rastreabilidade populacional.
-
-## Critério macro
-
-O `0.0.2` termina quando uma região de teste puder funcionar de ponta a ponta usando esses
-três pilares.
-
-Não é necessário preencher todas as 205 províncias antes de fechar esta versão.
-
-A região de validação já existente usa as cinco províncias atualmente configuradas
-economicamente: Atenas, Maratona, Sunião, Elêusis e Tanagra. As outras 200 ainda não
-possuem economia/recurso configurado e serão expandidas depois que o modelo for validado.
+Fechar e testar antes do próximo patch.
 
 ---
 
-# Próximo marco provável — IA mínima
+# 0.0.5 — Mercado interno
 
-## IA mínima
+Objetivo:
 
-A IA só deve começar depois que o `0.0.2` estiver formalmente fechado.
+Fazer recursos circularem automaticamente dentro de um mesmo poder.
 
-Objetivo provável:
+Escopo:
 
-Permitir que poderes controlados pelo computador consigam jogar usando as mesmas regras
-básicas do jogador.
+- consumo/necessidade local primeiro;
+- cobrir déficits de províncias conectadas;
+- distribuição proporcional em escassez;
+- prioridade da capital em escassez;
+- conexão física obrigatória;
+- nada de movimentação manual de recurso pelo jogador.
 
-Primeira IA deve conseguir:
+Nesta etapa, validar a circulação terrestre da região de teste. A conexão econômica marítima só deve ser ativada quando a construção Porto estiver funcional no patch de construções.
 
-- ler território;
-- entender recursos básicos;
+Não inclui comércio internacional.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.6 — Dinheiro e impostos
+
+Objetivo:
+
+Integrar tesouro e arrecadação à economia que já existe.
+
+Escopo:
+
+- usar e integrar o tesouro por poder já existente;
+- atividade econômica gerando dinheiro;
+- impostos ligados a população/atividade/eficiência;
+- três níveis de imposto: baixo, normal e alto;
+- receita entrando no tesouro do poder;
+- conquista dando saque monetário simples e capturando estoque com perdas.
+
+Não inclui comércio internacional dinâmico.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.7 — Felicidade provincial
+
+Objetivo:
+
+Dar estado social básico às províncias.
+
+Escopo:
+
+- usar o estado inicial de felicidade 0–100 e as categorias visuais que já existem;
+- fazer a felicidade mudar ao longo da campanha;
+- imposto afetando felicidade;
+- comida/fome afetando felicidade;
+- conquista recente causando penalidade temporária e recuperação gradual.
+
+Outros fatores só entram quando seus próprios sistemas existirem.
+
+Não inclui ainda revoltas completas.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.8 — Nacionalidade
+
+Objetivo:
+
+Fazer a composição populacional ter consequência básica.
+
+Escopo:
+
+- usar a composição populacional e as nacionalidades misturadas que já existem nos dados
+  e no estado da campanha;
+- composição muda lentamente;
+- nacionalidade diferente da do poder governante gera pressão de felicidade;
+- não criar grupos culturais intermediários;
+- território recém-conquistado usa população normalmente, sem trava especial de recrutamento.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.9 — Capital
+
+Objetivo:
+
+Transformar a capital em centro administrativo real do poder.
+
+Escopo:
+
+- usar o estado de capital por poder que já existe;
+- se a capital for perdida, o jogador precisa escolher outra;
+- escolha acontece no início do próximo turno antes de continuar.
+
+Este patch NÃO implementa distância da capital, corrupção ou ineficiência administrativa. Esses efeitos ficam para aprofundamento futuro.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.10 — Estrutura de construções
+
+Objetivo:
+
+Preparar o sistema de construções para escolhas reais de especialização.
+
+Escopo:
+
+- 4 slots por província;
+- níveis I, II e III;
+- estrutura de upgrade;
+- preservar construções existentes durante a migração quando possível.
+
+Este patch cria a estrutura. Os efeitos econômicos revisados entram no patch seguinte.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.11 — Construções adaptadas
+
+Objetivo:
+
+Adaptar as construções existentes aos sistemas já implementados.
+
+Escopo:
+
+- Ágora: economia/administração;
+- Mercado: circulação/comércio;
+- Oficina: produção;
+- Celeiro: alimento, armazenamento e deterioração;
+- Quartel: melhora tropas recrutadas, não desbloqueia recrutamento;
+- Muralha: defesa e regra de assalto;
+- Porto: requisito para conexão econômica marítima e para poder ter acesso ao mar.
+
+Não criar construção sem função de gameplay clara.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.12 — Cerco integrado à economia
+
+Objetivo:
+
+Fazer o cerco conversar com os sistemas econômicos já prontos.
+
+Escopo:
+
+- circulação externa cortada;
+- produção fortemente reduzida;
+- estoque consumido;
+- falta de alimento podendo causar fome;
+- manter surtida, muralha e assalto funcionando com essas regras.
+
+Fechar e testar antes do próximo patch.
+
+---
+
+# 0.0.13 — Apresentação básica de batalha
+
+Objetivo:
+
+Permitir acompanhar visualmente uma batalha sem redesenhar ainda a matemática de combate.
+
+⚠️ **A parte informativa já saiu no `0.0.2`.** A crônica da rodada — texto do que
+aconteceu, sem barra nem playback — foi feita lá porque a guerra estava sendo resolvida em
+silêncio, e um patch de guerra precisa ser verificável à mão. O que sobra aqui é o
+espetáculo: ver a batalha acontecer. Ele paga de verdade quando a IA atacar sem avisar,
+que é por isso que continua depois dela e não antes.
+
+Escopo:
+
+- local/nome da batalha;
+- lados;
+- números de soldados;
+- barras;
+- playback visual das perdas já calculadas;
+- velocidade;
+- pular.
+
+Não inclui:
+
+- resolução iterativa real;
+- moral funcional;
+- retirada manual;
+- decisões durante batalha;
+- tipos de tropa.
+
+Fechar e testar antes do marco seguinte.
+
+---
+
+# Depois do 0.0.13 — continuar em patches 0.0.x pequenos
+
+Os números abaixo podem mudar se novos patches intermediários forem necessários.
+
+A regra é continuar usando `0.0.x` pelo tempo que for preciso, sempre com um objetivo pequeno e testável.
+
+## IA mínima — patch próprio
+
+Objetivo:
+
+- IA usar as mesmas regras básicas do jogador;
+- administrar tesouro/população necessários às ações básicas;
 - recrutar;
 - formar hostes;
-- movimentar;
+- mover;
 - escolher alvos simples;
-- atacar;
+- lutar;
 - cercar;
-- conquistar;
-- sobreviver durante a campanha.
+- conquistar.
 
-Não aprofundar inicialmente:
+Não inclui personalidade sofisticada, cheats econômicos ou estratégia histórica complexa.
 
-- personalidade;
-- comportamento histórico;
-- diplomacia avançada;
-- estratégia sofisticada;
-- cheats.
+## Diplomacia mínima — patch próprio
 
-O número e o escopo definitivos do patch de IA só serão definidos depois do fechamento do
-`0.0.2`.
+Objetivo:
 
----
+Implementar somente o necessário para a campanha básica funcionar entre jogador e IA.
 
-# Caminho até 0.1.0
+Começar pelo mínimo indispensável, sem sistema diplomático avançado.
 
-## 0.1.0 — Esqueleto completo de campanha
+## Save / Load — patch próprio
 
-Esse será o primeiro grande marco do projeto.
-
-O jogo deve conseguir:
-
-1. iniciar campanha;
-2. escolher um poder;
-3. administrar território;
-4. produzir e consumir recursos;
-5. arrecadar;
-6. construir;
-7. recrutar;
-8. mover hostes;
-9. enfrentar poderes controlados pela IA;
-10. guerrear;
-11. conquistar e perder território;
-12. salvar;
-13. carregar;
-14. chegar a uma condição de vitória ou derrota.
-
-Os sistemas ainda podem ser básicos.
-
-`0.1.0` significa:
-
-> existe uma campanha completa do começo ao fim.
-
-Não significa:
-
-> o jogo está profundo ou finalizado.
-
----
-
-# Sistemas necessários antes de 0.1.0
-
-A ordem abaixo é indicativa, não uma sequência rígida de patches.
-
-## Fundação
-
-- mundo;
-- economia;
-- guerra terrestre.
-
-## IA
-
-- comportamento mínimo autônomo.
-
-## Save / Load
+Objetivo:
 
 - salvar campanha;
+- carregar campanha;
+- preservar corretamente o estado do jogo.
+
+## Vitória, derrota e fluxo de campanha — patch próprio
+
+Objetivo:
+
+- início/seleção de poder funcionando;
+- condição básica de derrota;
+- condição básica de vitória;
+- campanha podendo chegar a um fim.
+
+Outros patches `0.0.x` podem ser inseridos antes, entre ou depois desses se testes mostrarem necessidade.
+
+---
+
+# 0.1.0 — Primeira campanha básica completa
+
+**Marco, não mega-patch de features.**
+
+O `0.1.0` é lançado quando os patches `0.0.x` anteriores já entregaram, de forma integrada, a primeira campanha básica completa.
+
+O jogador deve conseguir:
+
+- iniciar campanha;
+- escolher um poder;
+- administrar províncias;
+- produzir e consumir recursos;
+- armazenar;
+- arrecadar;
+- construir;
+- recrutar;
+- mover hostes;
+- lutar;
+- cercar;
+- conquistar e perder território;
+- enfrentar poderes controlados pela IA;
+- usar a diplomacia mínima necessária;
+- salvar;
 - carregar;
-- validação;
-- compatibilidade de versão.
+- vencer;
+- perder.
 
-## Diplomacia mínima
+`0.1.0` não significa jogo finalizado ou profundo. Significa que o loop básico de campanha existe do começo ao fim.
 
-- hostilidade;
-- guerra;
-- paz;
-- relações mínimas necessárias.
+Não é necessário encaixar tudo em poucos patches. O projeto pode chegar a `0.0.20`, `0.0.50` ou mais antes do `0.1.0`.
 
-## Fluxo de campanha
-
-- escolha de poder;
-- derrota;
-- vitória;
-- mensagens importantes;
-- funcionamento contínuo.
-
-## Expansão dos dados
-
-- aplicar modelo validado a regiões maiores;
-- expandir economia para mais províncias;
-- adicionar capitais e nacionalidades;
-- aumentar cobertura do mapa conforme necessário.
-
----
-
-# Depois de 0.1.0 — Aprofundamento
-
-Quando o esqueleto estiver completo, o foco muda.
-
-Deixa de ser:
-
-> "isso existe?"
-
-e passa a ser:
-
-> "isso é divertido, interessante e profundo o suficiente?"
-
----
-
-# Combate aprofundado
-
-Direções futuras:
-
-- batalha visual estilo Brasfoot;
-- moral;
-- retirada;
-- tipos de tropa;
-- infantaria;
-- cavalaria;
-- arqueiros;
-- siege;
-- qualidade;
-- terreno;
-- líderes;
-- generais;
-- decisões simples durante batalha.
-
-Não transformar em batalha tática estilo Total War.
-
----
-
-# Economia aprofundada
-
-Direções futuras:
-
-- comércio internacional automático;
-- tratados;
-- oferta e demanda;
-- preços dinâmicos;
-- logística;
-- bloqueios;
-- armazenamento limitado;
-- recursos em construções;
-- abastecimento militar.
-
----
-
-# Naval
-
-Direções futuras:
-
-- portos;
-- zonas marítimas;
-- frotas;
-- transporte;
-- bloqueios;
-- comércio marítimo;
-- guerra naval.
-
----
-
-# Administração e política interna
-
-Direções futuras:
-
-- distância da capital;
-- ineficiência;
-- tamanho do império;
-- governadores;
-- revoltas;
-- nacionalidades;
-- assimilação;
-- decisões internas.
-
----
-
-# Personagens e liderança
-
-Direção desejada, ainda não especificada:
-
-- líderes;
-- generais;
-- sucessão;
-- personagens;
-- possível family tree inspirado em Rome: Total War 1.
-
-Só transformar em sistema depois de especificação própria.
+Sistemas como naval completo, tipos de tropas aprofundados, generais/family tree, comércio internacional avançado e outros aprofundamentos não são requisito automático do `0.1.0`, salvo decisão futura explícita.
 
 ---
 
 # Regra de planejamento
 
-Não definir dezenas de patches antecipadamente.
+Não transformar relação entre sistemas em justificativa para colocar tudo no mesmo patch.
 
-Sempre trabalhar com:
+Se uma ideia nova não for indispensável ao objetivo do patch atual:
 
-## Patch atual
+1. registrar no `BACKLOG.md`;
+2. não implementar;
+3. continuar o patch atual.
 
-Detalhado.
-
-## Próximo patch
-
-Provável.
-
-## Futuro
-
-Backlog sem numeração rígida.
-
-Motivo:
-
-O projeto ainda está sendo descoberto durante o desenvolvimento.
-
----
-
-# Regra para dependências
-
-Antes de construir um sistema dependente, estabilizar o contrato do sistema-base.
-
-Exemplos:
-
-- IA depende de economia e guerra;
-- comércio depende de recursos físicos;
-- fome depende de alimento e estoque;
-- cerco depende de economia;
-- naval depende de portos e conexão marítima.
-
-Não aprofundar tudo antes da hora, mas evitar construir sobre uma fundação que ainda muda
-constantemente.
-
----
-
-# Regra de simplicidade
-
-A direção do Age of Grecce é:
-
-> máxima consequência de gameplay com a menor complexidade necessária.
-
-Evitar:
-
-- microgerenciamento excessivo;
-- sistemas que exigem muitas ações repetitivas;
-- fórmulas impossíveis de entender;
-- dezenas de recursos sem função;
-- features que existem apenas por realismo.
-
-Realismo deve servir ao jogo.
-
----
-
-# Regra de aprovação
-
-Nenhum patch é encerrado automaticamente.
-
-Fluxo:
-
-1. implementação;
-2. testes;
-3. revisão;
-4. teste manual;
-5. aprovação de Henrique;
-6. changelog;
-7. fechamento da versão;
-8. definição do próximo patch.
-
----
-
-# Estado atual resumido
-
-## Agora
-
-`0.0.2 — Fundação do Mundo`
-
-Foco:
-
-- mundo;
-- economia;
-- guerra terrestre.
-
-## Depois
-
-Provável:
-
-`IA mínima — versão ainda não definida`
-
-## Primeiro grande alvo
-
-`0.1.0 — Esqueleto completo de campanha`
-
-## Depois de 0.1.0
-
-Aprofundar sistemas, melhorar apresentação, aumentar variedade e expandir o mundo.
+Os números futuros do roadmap podem ser reorganizados antes de seus patches começarem. Uma vez que um patch vira `PATCH_ATUAL.md`, seu escopo deve permanecer controlado.

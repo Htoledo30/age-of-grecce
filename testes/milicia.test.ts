@@ -6,6 +6,7 @@ import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/da
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { miliciaDe, mortosDaMilicia } from '../src/combate/milicia';
+import { ordenar } from './apoio/hostes';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -88,12 +89,14 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     // Gente o bastante pra vencer a milícia num assalto, e pouca demais pra abrir a
     // cidade num turno só de cerco: é a faixa em que a escolha de postura decide.
     c.plantarHoste('tanagra', 'tanagra', 800);
-    c.ordenarMarcha('tanagra', 'atenas', 800, 'tanagra');
+    ordenar(c, 'tanagra', 'atenas', 800, 'tanagra');
 
     c.passarTurno();
 
     expect(c.donoDe('atenas')).toBe('atenas');
-    expect(c.forcaEm('atenas')).toBe(800); // o invasor está lá, inteiro, sentado
+    // O INVASOR, não o dono: `forcaEm` sem poder pergunta pelo dono da terra. Ele está
+    // lá, inteiro, sentado.
+    expect(c.forcaEm('atenas', 'tanagra')).toBe(800);
     expect(c.cercoEm('atenas')).toMatchObject({ sitiante: 'tanagra', postura: 'sitiar' });
     // Sitiar não é batalha: ninguém morreu.
     expect(c.rodada.batalhas).toEqual([]);
@@ -104,7 +107,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     // Sem população não há quem feche portão nenhum. É fronteira desprotegida, e é o que
     // as 200 sem economia configurada continuam sendo.
     c.plantarHoste('tanagra', 'tanagra', 300);
-    c.ordenarMarcha('tanagra', 'tebas', 300, 'tanagra');
+    ordenar(c, 'tanagra', 'tebas', 300, 'tanagra');
     c.passarTurno();
     expect(c.donoDe('tebas')).toBe('tanagra');
     expect(c.cercoEm('tebas')).toBeUndefined();
@@ -116,7 +119,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     const invasor = Math.floor(milicia * 1.5); // maior que a milícia, menor que a muralha
     expect(invasor).toBeLessThan(milicia * combate.cerco.bonusDeMuralha);
     c.plantarHoste('tanagra', 'tanagra', invasor);
-    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
+    ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
@@ -131,7 +134,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     const invasor = milicia * 3;
     expect(invasor).toBeGreaterThan(milicia * combate.cerco.bonusDeMuralha);
     c.plantarHoste('tanagra', 'tanagra', invasor);
-    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
+    ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
@@ -153,7 +156,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     // criou e que antes não existia.
     const invasor = 700;
     c.plantarHoste('tanagra', 'tanagra', invasor);
-    c.ordenarMarcha('tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
+    ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
@@ -178,7 +181,7 @@ describe('milícia derrotada dispersa: só os mortos saem da população', () =>
     const c = comQuartel();
     const milicia = c.miliciaEm('atenas');
     c.plantarHoste('tanagra', 'tanagra', milicia * 3);
-    c.ordenarMarcha('tanagra', 'atenas', milicia * 3, 'tanagra', 'assaltar');
+    ordenar(c, 'tanagra', 'atenas', milicia * 3, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
@@ -197,7 +200,7 @@ describe('milícia derrotada dispersa: só os mortos saem da população', () =>
 
     const c = comQuartel();
     c.plantarHoste('tanagra', 'tanagra', 20_000);
-    c.ordenarMarcha('tanagra', 'atenas', 20_000, 'tanagra', 'assaltar');
+    ordenar(c, 'tanagra', 'atenas', 20_000, 'tanagra', 'assaltar');
     c.passarTurno();
 
     // Menos gente na província: menos imposto pra quem ficar com ela, e menos milícia da

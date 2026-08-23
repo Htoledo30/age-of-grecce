@@ -65,6 +65,13 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
   await expect(page.locator('.exercito__titulo')).toHaveText('Exército em Atenas');
   await expect(page.locator('.exercito__forca')).toHaveText('1.500 homens');
   await expect(page.locator('.exercito__custo')).toHaveText('custa 450 por turno');
+
+  // A ficha mora no mesmo canto do controle de rodada, mas nunca pode ficar atrás dele.
+  const ficha = await page.locator('.exercito').boundingBox();
+  const controle = await page.locator('.barra-turno__controle').boundingBox();
+  if (!ficha || !controle) throw new Error('os painéis da hoste e da rodada não apareceram');
+  expect(ficha.y + ficha.height).toBeLessThanOrEqual(controle.y - 12);
+
   // De onde vieram: é o que torna dispensar uma decisão, e não um botão.
   await expect(page.locator('.exercito__origens')).toContainText('Atenas');
   // Em casa, sem aviso de terra alheia.

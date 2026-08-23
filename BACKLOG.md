@@ -1,691 +1,342 @@
 # BACKLOG.md
 
-# Age of Grecce — Backlog de Desenvolvimento
+# Age of Grecce — Backlog
 
-Este arquivo reúne ideias, melhorias e sistemas futuros que **não pertencem necessariamente
-ao patch atual**.
+Este arquivo contém aprofundamentos e ideias futuras.
 
-Regra principal:
+**Estar aqui não autoriza implementação.**
 
-> Uma ideia estar no backlog NÃO significa que deve ser implementada agora.
-
-Ela deve permanecer aqui até ser escolhida explicitamente para um patch futuro.
+Se algo já aparece num patch futuro do `ROADMAP.md`, ainda assim só pode ser implementado quando aquele patch virar `PATCH_ATUAL.md`.
 
 ---
 
-# 1. Combate
+# Combate futuro
 
-## Alta prioridade futura
+## Resolução iterativa
 
-### Visor de batalha estilo Brasfoot
+O visor inicial pode apenas reproduzir visualmente um resultado já calculado.
 
-Problema atual:
+No futuro, uma resolução realmente iterativa poderá permitir:
 
-O combate é resolvido numericamente de forma quase instantânea e o jogador não sente a
-batalha acontecendo.
-
-Direção desejada:
-
-- abrir uma janela/painel de batalha;
-- mostrar os dois lados;
-- mostrar homens restantes;
-- mostrar perdas acontecendo progressivamente;
-- mostrar barras;
-- permitir velocidade 1x / 2x;
-- permitir pular;
-- futuramente permitir decisões simples.
-
-Referência conceitual:
-
-**Brasfoot** — simulação simples, mas visível e acompanhável.
-
-Não transformar o jogo em combate tático estilo Total War.
-
----
-
-### Resolução iterativa da batalha
-
-O 0.0.2 pode usar playback visual de um resultado calculado em um passo.
-
-Para permitir futuramente:
-
-- moral mudando durante a batalha;
-- retirada manual;
-- decisões no meio da luta;
-- eventos de combate;
-
-será necessário um modelo realmente iterativo de resolução.
-
-Essa mudança pertence a um patch futuro de aprofundamento do combate.
-
----
+- moral mudando durante a luta;
+- retirada;
+- decisões durante a batalha;
+- eventos de combate.
 
 ## Moral
 
-Direção:
+- moral por lado;
+- quebra de moral;
+- fuga;
+- sobreviventes recuando para território amigo.
 
-- cada lado possui moral;
-- moral varia ao longo da batalha;
-- quando moral quebra, soldados podem fugir;
-- força derrotada não precisa ser destruída completamente;
-- sobreviventes recuam para uma província amiga.
+## Retirada
 
-Objetivo:
-
-Criar derrotas, fugas e vitórias custosas sem precisar exterminar automaticamente um dos
-lados.
-
----
-
-### Retirada
-
-Futuro:
-
-- retirada automática quando moral quebra;
-- opção manual de retirada;
-- perdas adicionais dependendo da situação;
-- sobreviventes voltam para território amigo.
-
----
+- retirada automática por moral;
+- retirada manual futura;
+- possíveis perdas durante retirada.
 
 ## Tipos de tropas
 
-Não implementar no 0.0.2.
+Direção inicial discutida:
 
-Direção futura inicial:
+- infantaria;
+- cavalaria;
+- arqueiros;
+- tropas/máquinas de cerco.
 
-- Infantaria
-- Cavalaria
-- Arqueiros
-- Siege
-
-O jogador deverá escolher o que recrutar.
-
-A quantidade de soldados não deve ser o único fator de força.
-
-Também devem influenciar:
-
-- tipo de tropa;
-- qualidade;
-- Quartel;
-- moral;
-- situação da batalha.
-
----
+Quantidade não deve ser o único fator de força.
 
 ## Qualidade militar
 
-Possível força efetiva derivada.
+Pode ser derivada de:
 
-Exemplo conceitual:
-
-`força efetiva = quantidade × qualidade × modificadores`
-
-Qualidade pode ser influenciada por:
-
-- nível do Quartel;
+- Quartel;
 - experiência futura;
 - líder;
 - moral;
-- outros fatores.
+- outros modificadores coerentes.
 
-Evitar criar uma barra desnecessariamente complexa para o jogador.
+Evitar barra extra sem necessidade.
 
----
+## Aleatoriedade controlada
 
-## Aleatoriedade
-
-Futuramente introduzir alguma variação controlada no resultado de batalha.
-
-Objetivo:
-
-- impedir que o jogador saiba exatamente o resultado antes de atacar;
-- manter o sistema compreensível;
-- preservar possibilidade de testes determinísticos através de seed.
-
-Não usar aleatoriedade descontrolada.
-
----
+Introduzir variação suficiente para evitar resultados totalmente óbvios, preservando entendimento e testes determinísticos por seed.
 
 ## Terreno
 
-Futuramente terreno pode afetar combate:
+Futuro:
 
 - planície;
 - montanha;
 - rio;
 - floresta;
-- outros.
-
-Não implementar enquanto os dados geográficos/relevo não forem confiáveis.
-
----
+- outros somente quando dados geográficos forem confiáveis.
 
 ## Generais e líderes
 
-Desejo futuro:
-
-- líderes;
-- personagens;
-- comandantes;
-- possíveis bônus militares;
-- características próprias.
-
-Ainda sem sistema definido.
-
----
+Sistema futuro de comandantes/personagens.
 
 ## Family Tree
 
-Referência desejada:
+Referência desejada: **Rome: Total War 1**.
 
-**Rome: Total War 1**
-
-Possível sistema futuro:
+Possibilidades futuras:
 
 - família governante;
 - sucessão;
 - filhos;
 - casamentos;
-- líderes;
+- herdeiros;
 - generais;
-- morte;
-- herdeiros.
+- morte.
 
-Não projetar ainda.
+Ainda não especificar em detalhe.
 
 ---
 
-# 2. Cerco
+# Cerco futuro
 
-## Profundidade futura
+Aprofundamentos possíveis:
 
-Além do cerco básico:
-
-- moral dos defensores;
-- fome;
+- moral de defensores;
 - doença;
-- perdas graduais;
 - deserção;
-- eventos;
 - rendição;
-- chance de abrir portões;
-- efeitos de siege;
-- escolha de assalto;
-- duração baseada em muralha.
-
----
-
-## Máquinas de cerco
-
-Relacionadas ao futuro tipo de tropa `siege`.
-
-Possibilidades:
-
+- eventos;
+- máquinas de cerco;
 - aríetes;
 - torres;
-- catapultas;
-- outros coerentes com período e gameplay.
+- catapultas.
 
-Não implementar antes do sistema básico de tropas.
+A surtida e a regra básica de muralha pertencem à base, não a este aprofundamento.
 
 ---
 
-# 3. Economia
+# Economia futura
 
 ## Comércio internacional
 
-Direção já definida:
+Direção já decidida:
 
-- depende de tratado/permissão;
-- funciona automaticamente;
-- jogador não escolhe manualmente produtos numa negociação;
-- mercado procura oferta e demanda;
+- exige tratado/permissão;
+- tratado abre mercados;
+- comércio é automático;
 - dinheiro é intermediário;
 - sem dinheiro, importação para;
-- conexão válida é necessária.
-
-Futuro aprofundamento:
-
-- oferta e demanda;
-- preços variáveis;
-- rotas;
-- bloqueios;
-- custos de transporte;
-- mercado regional.
-
----
+- conexão válida é obrigatória;
+- receita de exportação entra no tesouro estatal;
+- bloqueios futuros podem cortar comércio e abastecimento marítimo.
 
 ## Oferta e demanda
 
-Não implementar inicialmente.
-
-Futuramente:
+Futuro:
 
 - excesso reduz preço;
 - escassez aumenta preço;
-- consumo influencia demanda;
-- guerra pode alterar preços;
-- bloqueios podem gerar escassez.
+- guerra/bloqueio alteram disponibilidade.
 
-Manter simples.
-
----
-
-## Preços regionais
-
-Preço-base global inicialmente.
-
-Futuramente regiões podem ter variações.
-
-Só implementar se trouxer decisão real de gameplay.
-
----
+Preço-base global deve ser suficiente inicialmente.
 
 ## Estoque limitado
 
-No 0.0.2, estoque pode ser ilimitado.
+Estoque ilimitado pode ser aceito na primeira versão do sistema físico.
 
-Problema futuro:
+Reavaliar depois:
 
-estoque infinito pode quebrar o late game.
-
-Possíveis soluções:
-
-- capacidade-base por província;
-- Celeiro aumenta capacidade;
-- diferentes limites por recurso;
-- deterioração;
-- custo de armazenamento.
-
----
-
-## Deterioração avançada
-
-Alimentos já devem deteriorar.
-
-Futuramente avaliar:
-
-- taxas diferentes;
-- clima;
+- capacidade;
 - Celeiro;
-- eventos;
-- cerco.
+- limites por produto;
+- custos;
+- deterioração.
 
----
+## Recursos em construções
 
-## Recursos para construções
+Hoje a direção imediata é dinheiro.
 
-Hoje construções usam dinheiro.
+Futuramente avaliar madeira, pedra, ferro etc. como custos físicos de construção.
 
-Futuramente avaliar uso de:
+## Recursos em recrutamento
 
-- madeira;
-- pedra/mármore;
-- ferro;
-- outros.
+Foi discutido e não escolhido para a base.
 
-Exemplo:
-
-`Muralha = moedas + pedra + madeira`
-
-Não implementar sem necessidade.
-
----
-
-## Recursos para recrutamento
-
-Possibilidade discutida e NÃO escolhida por enquanto.
-
-Exemplos futuros:
-
-- comida;
-- ferro;
-- cavalos.
-
-Reavaliar somente se trouxer gameplay melhor.
-
----
+Reavaliar somente se melhorar gameplay.
 
 ## Logística militar
 
-Futuro:
+Futuro desejado:
 
-- hostes consomem comida;
-- campanhas longas exigem abastecimento;
-- falta de suprimento reduz força/moral;
-- cercos consomem estoques;
-- linhas de abastecimento.
+- hostes consumindo alimento;
+- linhas de abastecimento;
+- falta de suprimento afetando campanha;
+- bloqueios cortando suprimento.
 
-Direção desejada, mas deve permanecer simples.
+Manter simples quando chegar a hora.
 
 ---
 
-# 4. População
+# População e política futura
 
 ## Migração
 
-Não implementar agora.
+Possíveis causas:
 
-Futuramente:
-
-- fome gera êxodo;
-- cidades ricas atraem população;
-- guerra desloca população;
-- capital pode atrair moradores;
-- regiões inseguras perdem população.
-
----
-
-## Nacionalidade
-
-Base já prevista no 0.0.2.
-
-Aprofundamentos futuros:
-
-- assimilação;
-- políticas;
-- revoltas nacionais;
-- mudanças demográficas;
-- colonização.
-
-Não criar grupos culturais complexos por enquanto.
-
----
-
-## Crescimento populacional avançado
-
-Futuramente avaliar efeitos de:
-
+- fome;
 - prosperidade;
-- segurança;
 - guerra;
-- infraestrutura;
-- doenças;
-- migração.
-
-Evitar fórmulas excessivamente opacas.
-
----
-
-# 5. Felicidade e revoltas
+- segurança;
+- atração de centros importantes.
 
 ## Revoltas
 
-Base:
+Direção:
 
-- felicidade muito baixa gera risco;
-- revolta tenta restaurar poder local;
-- se não for possível, cria poder rebelde.
+- primeiro penalidades;
+- felicidade baixa persistente aumenta risco;
+- revolta tenta restaurar poder local/original quando fizer sentido;
+- caso contrário pode criar poder rebelde.
 
-Futuro:
+Aprofundar depois:
 
-- força da revolta baseada em população;
-- apoio externo;
+- força rebelde;
 - repressão;
 - autonomia;
-- eventos;
+- apoio externo;
 - líderes rebeldes.
 
----
+## Administração
 
-## Presença militar
+Não criar barra explícita de corrupção.
 
-Futuramente decidir se tropas:
-
-- aumentam ordem;
-- reduzem felicidade;
-- fazem ambos dependendo da situação.
-
----
-
-# 6. Administração
-
-## Ineficiência administrativa
-
-Direção:
+Futuro pode usar **ineficiência administrativa** influenciada por:
 
 - distância da capital;
 - tamanho do território;
-- felicidade baixa;
-- governadores futuros.
+- felicidade;
+- governadores.
 
-Possíveis efeitos:
-
-- menor arrecadação;
-- pior comércio interno;
-- maior risco de revolta.
-
-Evitar uma barra explícita de corrupção inicialmente.
-
----
+Referência conceitual discutida: distância da capital em **Rome: Total War 1**, adaptada de forma simples.
 
 ## Governadores
 
-Sistema futuro.
-
-Possibilidades:
-
-- administrar províncias;
-- reduzir ineficiência;
-- aumentar impostos;
-- melhorar felicidade;
-- possuir características próprias;
-- participar do sistema de personagens/family tree.
+Futuro, possivelmente ligado a personagens/family tree.
 
 ---
 
-## Tamanho do império
-
-Futuramente, territórios muito grandes podem gerar:
-
-- maior ineficiência;
-- dificuldade administrativa;
-- maior risco de revolta;
-- necessidade de infraestrutura.
-
-Não aplicar penalidades arbitrárias sem uma razão clara.
-
----
-
-# 7. Capitais
-
-## Capital como centro administrativo
-
-Base prevista no 0.0.2.
-
-Futuro:
-
-- distância impacta administração;
-- comércio interno;
-- governadores;
-- revoltas;
-- infraestrutura.
-
----
-
-## Captura da capital
-
-Base:
-
-- jogador deve escolher uma nova.
-
-Futuro:
-
-- impacto de felicidade;
-- prestígio;
-- moral;
-- diplomacia;
-- saque maior.
-
----
-
-# 8. Construções
-
-## Novas construções
-
-O sistema terá apenas 4 slots por província.
-
-Isso permite adicionar novas construções futuras sem permitir que toda cidade tenha tudo.
-
-Possíveis futuras construções:
-
-- Porto avançado;
-- Estradas;
-- Templo, caso exista função real;
-- infraestrutura administrativa;
-- edifícios militares;
-- edifícios comerciais;
-- edifícios especializados em recursos.
-
-Só adicionar construção se ela criar decisão de gameplay clara.
-
----
+# Infraestrutura futura
 
 ## Estradas
 
-Futuro:
+Possíveis efeitos:
 
-- aumentar movimento terrestre;
-- melhorar comércio interno;
-- reduzir ineficiência administrativa;
-- talvez níveis I / II / III.
+- movimento;
+- mercado interno;
+- eficiência administrativa.
 
----
+## Portos avançados
 
-## Porto
+A base econômica usa Porto como requisito de conexão marítima.
 
-Base mínima deve existir no 0.0.2 para conexão marítima.
-
-Futuro:
+Aprofundamentos futuros:
 
 - níveis;
 - comércio;
-- capacidade naval;
-- construção de navios;
-- bloqueio;
-- defesa naval.
-
----
+- construção naval;
+- bloqueios;
+- defesa.
 
 ## Danos em construções
 
-Futuro:
-
-- conquista pode danificar;
-- assalto pode destruir;
-- saque pode destruir;
-- reparo pode custar dinheiro/recursos.
+Construções normalmente sobrevivem à conquista, mas futuramente assalto/saque pode danificar ou destruir algumas delas.
 
 ---
 
-# 9. Naval
+# Naval
 
-Não implementar antes da base terrestre estar estável.
+Não implementar antes da base terrestre e da IA mínima.
 
-Direção desejada:
+Direção futura:
 
 - zonas marítimas;
 - frotas;
 - movimento entre zonas;
-- portos;
-- bloqueios;
 - transporte;
+- bloqueios;
+- guerra naval;
 - comércio marítimo.
 
-Evitar teleport entre portos.
+Não usar teleporte abstrato entre portos.
 
 ---
 
-## Bloqueios
+# Diplomacia
 
-Futuro:
+Não implementar antes da IA mínima. Depois disso, começar somente quando houver necessidade clara.
 
-- cortam comércio marítimo;
-- cortam alimentação importada;
-- reduzem renda;
-- afetam cerco de cidades costeiras.
-
----
-
-# 10. Diplomacia
-
-Não implementar antes da IA mínima.
-
-Possíveis sistemas:
+Possibilidades:
 
 - guerra;
 - paz;
 - tratado comercial;
 - aliança;
 - acesso militar;
-- tributação;
+- tributo;
 - vassalagem;
 - garantias;
 - relações.
 
-Começar sempre pelo mínimo necessário.
+Tratado comercial deve liberar mercados, não criar barter manual produto por produto.
 
 ---
 
-## Tratados comerciais
+# IA
 
-Direção:
+Planejar em patch `0.0.x` próprio quando a base necessária estiver estável. A IA mínima é parte do caminho para o `0.1.0`.
 
-- tratado libera os mercados;
-- comércio acontece automaticamente;
-- jogador não escolhe produto por produto.
-
----
-
-# 11. IA
-
-Provável foco do próximo patch, cuja versão ainda não foi definida.
-
-IA mínima deve inicialmente:
+IA mínima futura deve usar as mesmas regras do jogador e poder, progressivamente:
 
 - entender território;
-- entender tesouro;
-- entender população;
+- entender tesouro/população;
 - recrutar;
 - formar hostes;
-- escolher alvo;
-- marchar;
+- mover;
+- escolher alvos;
 - lutar;
 - cercar;
 - conquistar.
 
 Não começar com:
 
+- cheats econômicos;
 - personalidade complexa;
-- comportamento histórico;
-- cheats;
-- estratégias diplomáticas avançadas.
+- comportamento histórico detalhado;
+- diplomacia avançada.
 
 ---
 
-## IA avançada
+# Campanha
 
-Futuro:
+Itens que devem continuar separados em patches próprios:
 
-- personalidades;
-- agressividade;
-- cautela;
-- prioridades econômicas;
-- expansão;
-- defesa;
-- planejamento de longo prazo;
-- diplomacia;
-- comércio;
-- comportamento por líder.
+- save/load;
+- vitória;
+- derrota;
+- seleção/início de campanha mais completo.
+
+Os quatro primeiros fazem parte do caminho para o `0.1.0`.
+
+Outros aprofundamentos continuam futuros:
+
+- mensagens/eventos de campanha;
+- expansão dos dados para as 205 províncias.
+
+A região de teste deve validar o modelo antes de preencher o mapa inteiro.
 
 ---
 
-# 12. Mundo
+# Mundo completo
 
-## Expansão dos recursos para o mapa completo
-
-Hoje apenas 5 de 205 províncias possuem economia/recurso configurado:
+Hoje a validação econômica usa cinco províncias:
 
 - Atenas;
 - Maratona;
@@ -693,226 +344,6 @@ Hoje apenas 5 de 205 províncias possuem economia/recurso configurado:
 - Elêusis;
 - Tanagra.
 
-As outras 200 ainda precisam receber dados econômicos futuramente, depois que o modelo for
-validado na região de teste.
+Depois que cada sistema estiver validado nessa região, expandir gradualmente para as demais províncias.
 
-Para cada província configurada no futuro:
-
-- definir recurso principal;
-- definir recurso secundário mais fraco;
-- população;
-- estoque;
-- nacionalidades;
-- construções e demais dados mínimos.
-
-Regra:
-
-- principal forte;
-- secundário bem menor.
-
----
-
-## Dados econômicos do mapa completo
-
-Não necessário para fechar 0.0.2.
-
-Depois do modelo ser validado na região de teste:
-
-- expandir população;
-- recursos;
-- estoques;
-- capitais;
-- nacionalidades;
-- felicidade;
-- construções;
-- economia.
-
-Priorizar plausibilidade de gameplay em vez de falsa precisão histórica.
-
----
-
-## Classificação territorial
-
-Não criar tipos de província sem função.
-
-Se futuramente surgir necessidade concreta, avaliar:
-
-- ilha;
-- costeira;
-- interior;
-- cidade importante;
-- outros.
-
----
-
-# 13. Interface
-
-## Painel econômico
-
-Futuro:
-
-- alimento agregado;
-- tooltip detalhando produtos;
-- estoques;
-- produção;
-- consumo;
-- excedente;
-- déficit;
-- conexão.
-
----
-
-## Painel de felicidade
-
-Mostrar categoria clara.
-
-Evitar despejar fórmulas no jogador.
-
-Possível tooltip:
-
-- imposto: -X
-- comida: +X
-- conquista recente: -X
-- nacionalidade: -X
-- prosperidade: +X
-
----
-
-## Painel de batalha
-
-Alta prioridade após matemática estabilizada.
-
-Ver seção Combate.
-
----
-
-## Mensagens de turno
-
-Futuro:
-
-- capital perdida;
-- fome;
-- revolta;
-- construção concluída;
-- cerco;
-- comércio interrompido;
-- eventos importantes.
-
-Evitar spam.
-
----
-
-# 14. Histórico e atmosfera
-
-## Eventos
-
-Futuro:
-
-- eventos políticos;
-- econômicos;
-- militares;
-- familiares;
-- históricos.
-
-Não criar antes do loop básico estar estável.
-
----
-
-## Identidade dos poderes
-
-Futuro:
-
-- características próprias;
-- líderes;
-- famílias;
-- comportamento;
-- possíveis vantagens.
-
-Evitar bônus arbitrários sem contexto.
-
----
-
-# 15. Vitória e derrota
-
-Ainda não definida completamente.
-
-Futuramente decidir:
-
-- conquista total;
-- objetivos;
-- hegemonia;
-- pontuação;
-- sobrevivência;
-- cenários.
-
-Não bloquear fundação por isso agora.
-
----
-
-# 16. Save / Load
-
-Sistema necessário antes de campanha longa.
-
-Possível patch futuro antes ou depois de IA, dependendo da necessidade.
-
-Deve salvar o estado mutável da campanha.
-
-Incluir futuramente:
-
-- versão do save;
-- validação;
-- incompatibilidade segura;
-- autosave;
-- slots.
-
----
-
-# 17. Prioridade aproximada do backlog
-
-Esta ordem NÃO representa patches fixos.
-
-## Próximos sistemas mais importantes
-
-1. Fechar 0.0.2
-2. IA mínima
-3. Save/Load
-4. Diplomacia mínima
-5. Combate visual / aprofundamento militar
-6. Comércio internacional
-7. Naval
-8. Administração avançada
-9. Personagens / líderes / family tree
-
-A ordem pode mudar conforme testes reais do jogo.
-
----
-
-# 18. Regra de entrada no backlog
-
-Quando surgir uma ideia:
-
-### Se for necessária para o patch atual
-
-Ela pode virar tarefa do patch.
-
-### Se não for necessária
-
-Adicionar aqui.
-
-Toda entrada deve responder, quando possível:
-
-- qual problema resolve;
-- qual direção desejada;
-- por que não entra agora.
-
----
-
-# 19. Regra de saída do backlog
-
-Uma ideia só sai deste arquivo quando:
-
-1. Henrique decidir que ela será trabalhada;
-2. ela receber escopo;
-3. ela entrar em um `PATCH_ATUAL.md`.
-
-Nenhum agente deve implementar itens deste backlog apenas porque parecem interessantes.
+Priorizar plausibilidade relativa e gameplay em vez de falsa precisão histórica.

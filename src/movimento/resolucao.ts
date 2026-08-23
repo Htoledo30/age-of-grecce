@@ -29,6 +29,7 @@ import {
   type Postura,
   defesaNoAssalto,
   milicianosPerdidos,
+  rodadasAteOAssalto,
 } from '@/combate/cerco';
 
 /** O recorte do estado que a resolução mexe. Nada além disto. */
@@ -38,6 +39,13 @@ export interface EstadoDaResolucao {
   proximaHoste: number;
   /** Por ID de hoste: **uma ordem por hoste por rodada**, agora literalmente. */
   ordens: Record<string, OrdemDeMarcha>;
+  /**
+   * Hostes que SURTEM nesta rodada, por id. Ver `quemLuta` e `choqueObrigadoEm`.
+   *
+   * Não é uma ordem de marcha porque não há marcha nenhuma: a hoste fica onde está e
+   * obriga quem a cerca a lutar. Some na virada junto com as ordens.
+   */
+  surtidas: readonly string[];
   /** Cercos em curso, por província sitiada. Sobrevive à virada — cerco leva turnos. */
   cercos: Record<string, Cerco>;
 }
@@ -48,6 +56,13 @@ export interface MundoDaResolucao {
   trocarDono: (idProvincia: string, idPoder: string) => void;
   /** Quantos milicianos esta província põe em pé. Zero onde não há população. */
   miliciaDe: (idProvincia: string) => number;
+  /**
+   * Esta província tem obra que obriga a sitiar antes de assaltar?
+   *
+   * A resolução não conhece catálogo de construções — pergunta e recebe sim ou não. Quem
+   * responde é a campanha, lendo o campo `impedeAssaltoImediato` do dado.
+   */
+  impedeAssaltoImediato: (idProvincia: string) => boolean;
   /**
    * Avisa quantos milicianos a província PERDEU no choque.
    *
@@ -95,13 +110,22 @@ export interface RelatorioDaRodada {
    * das paradas do meio: com dois saltos por rodada, a reta entre as pontas passa por
    * fora do caminho que a seta prometeu.
    */
-  marchas: readonly { trilha: readonly string[]; homens: number }[];
+  marchas: readonly { hoste: string; trilha: readonly string[]; homens: number }[];
   /** Choques resolvidos. `provincia` é `null` no encontro na estrada, que não tem lugar. */
   batalhas: readonly {
     provincia: string | null;
     vencedor: string | null;
     perdedores: readonly string[];
     sobreviventes: number;
+    /**
+     * Que tipo de choque foi.
+     *
+     * ⚠️ Existe porque um assalto produz **duas** batalhas na mesma província e na mesma
+     * rodada — o exército de fora contra o de dentro, e depois o vencedor contra a
+     * muralha. Sem distinguir, a crônica escrevia duas linhas iguais e o jogador lia como
+     * repetição de um evento só.
+     */
+    tipo: 'campo' | 'estrada' | 'assalto';
   }[];
   conquistas: readonly { provincia: string; de: string; para: string }[];
   /**
@@ -111,8 +135,22 @@ export interface RelatorioDaRodada {
    * campanha.
    */
   milicianosMortos: readonly { provincia: string; mortos: number }[];
-  /** Cidades sob cerco ao fim da rodada, com o quanto já foi feito e a postura. */
-  cercos: readonly { provincia: string; sitiante: string; postura: Postura }[];
+  /**
+   * Cidades sob cerco ao fim da rodada, com a postura de quem senta.
+   *
+   * `novo` separa quem acabou de sentar de quem já estava lá. É o que permite contar a
+   * notícia uma vez só: um cerco que dura oito rodadas não é oito notícias.
+   */
+  cercos: readonly { provincia: string; sitiante: string; postura: Postura; novo: boolean }[];
+  /**
+   * Cercos que ACABARAM nesta rodada, e por qualquer motivo: o sitiante marchou embora,
+   * morreu na surtida, foi desfeito no assalto rechaçado.
+   *
+   * ⚠️ Conquista não entra aqui. A cidade tomada também deixa de estar sitiada, mas a
+   * notícia daquele dia é a conquista — dizer as duas coisas seria contar o mesmo fato
+   * duas vezes, e a segunda soaria como alívio no dia em que a praça caiu.
+   */
+  cercosLevantados: readonly { provincia: string; sitiante: string }[];
 }
 
 export function resolverRodada(
@@ -126,26 +164,101 @@ export function resolverRodada(
     conquistas: RelatorioDaRodada['conquistas'][number][];
     milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
     cercos: RelatorioDaRodada['cercos'][number][];
-  } = { marchas: [], batalhas: [], conquistas: [], milicianosMortos: [], cercos: [] };
+    cercosLevantados: RelatorioDaRodada['cercosLevantados'][number][];
+  } = {
+    marchas: [],
+    batalhas: [],
+    conquistas: [],
+    milicianosMortos: [],
+    cercos: [],
+    cercosLevantados: [],
+  };
 
   // As posturas são lidas ANTES de qualquer coisa: as ordens são consumidas no caminho, e
   // sem isto a cidade não saberia se quem chegou veio assaltar ou sentar.
-  const posturas = posturasPorDestino(estado);
+  const posturas = posturasPorDestino(estado, mundo.donoDe);
+
+  // ⚠️ **Sitiar é declarar que não se quer lutar.** Quem senta na frente da cidade não
+  // joga o exército contra a guarnição dela — acampa ao lado e espera. Sem isto, escolher
+  // sitiar significava "lute com o exército deles e DEPOIS sente", que é o assalto com um
+  // passo a mais: a decisão que a postura devia oferecer não existia.
+  const querLutar = (forca: Forca): boolean =>
+    quemLuta(forca, mundo.donoDe(forca.posicao), posturas, estado.cercos);
+
+  // ⚠️ Lido ANTES de `partir`, que esvazia o tabuleiro: depois dele não há mais como
+  // perguntar onde a hoste que surtiu estava parada.
+  const emSurtida = provinciasEmSurtida(estado);
+  const choqueObrigado = (provincia: string, presentes: readonly Forca[]): boolean =>
+    choqueObrigadoEm(provincia, presentes, emSurtida, estado.cercos, mundo.donoDe);
 
   const saltosPorRodada = ajustes.saltosPorRodada;
   const forcas = partir(estado);
   for (let passo = 0; passo < saltosPorRodada; passo++) {
     naEstrada(forcas, passo, relatorio.batalhas);
     chegar(forcas, passo);
-    naProvincia(forcas, relatorio.batalhas);
+    naProvincia(forcas, relatorio.batalhas, querLutar, choqueObrigado);
   }
   pousar(estado, forcas, relatorio.marchas);
   resolverCidades(estado, ajustes, mundo, posturas, relatorio);
 
   // ⚠️ As ordens são da RODADA, não da partida. Se sobrevivessem à virada, executariam de
-  // novo, e o sintoma seria tropa andando sozinha.
+  // novo, e o sintoma seria tropa andando sozinha. A surtida some pelo mesmo motivo: ela é
+  // a decisão de UMA rodada, e uma que ficasse guardada faria a cidade sair para o campo
+  // sozinha, todo turno, até morrer.
   estado.ordens = {};
+  estado.surtidas = [];
   return relatorio;
+}
+
+/**
+ * As províncias onde alguém declarou surtida, pelas hostes que a declararam.
+ *
+ * Por província e não por hoste porque é assim que o choque pensa: participação já é
+ * decidida por PODER e por LUGAR (ver `naProvincia`). Se uma hoste do defensor sai para
+ * lutar, as outras dele que estão ali saem junto — um exército não assiste ao massacre do
+ * vizinho de acampamento por causa de uma ordem diferente.
+ */
+function provinciasEmSurtida(estado: EstadoDaResolucao): ReadonlySet<string> {
+  const provincias = new Set<string>();
+  for (const idHoste of [...estado.surtidas].sort()) {
+    const hoste = estado.hostes[idHoste];
+    if (hoste) provincias.add(hoste.posicao);
+  }
+  return provincias;
+}
+
+/**
+ * O choque é OBRIGATÓRIO aqui, mesmo com o sitiante recusando?
+ *
+ * ⚠️ **É a resposta do defensor ao #32A.** Sitiar é declarar que não se quer lutar, e sem
+ * uma forma de obrigar, sitiante e sitiado ficariam acampados lado a lado para sempre — o
+ * cerco seria inquebrável por armas, e só a fome (que ainda não existe) o desfaria.
+ *
+ * O dono da terra obriga o choque de **duas** formas, e as duas exigem um cerco em curso:
+ *
+ * 1. **surtindo de dentro** — a hoste que está na cidade declara a surtida e sai;
+ * 2. **chegando de fora** — o exército de socorro que entra na província sitiada já vem
+ *    lutar. Não há o que declarar: mandar tropa para uma cidade cercada é atacar quem a
+ *    cerca (`DECISOES.md` #33A). Sem isto o socorro entrava e acampava ao lado do inimigo
+ *    sem tocá-lo.
+ *
+ * Obriga TODO MUNDO que estiver ali, e não só os dois interessados: quem está acampado
+ * numa província onde a batalha começou está na batalha. Com um sitiante só — que é o caso
+ * de hoje — os dois casos dão no mesmo.
+ */
+function choqueObrigadoEm(
+  provincia: string,
+  presentes: readonly Forca[],
+  emSurtida: ReadonlySet<string>,
+  cercos: Record<string, Cerco>,
+  donoDe: (idProvincia: string) => string,
+): boolean {
+  // Sem cerco não há a quem obrigar: quem chega em terra própria sem inimigo sentado nela
+  // só está reforçando a guarnição.
+  if (cercos[provincia] === undefined) return false;
+  if (emSurtida.has(provincia)) return true;
+  const dono = donoDe(provincia);
+  return presentes.some((f) => f.viva && f.poder === dono && f.posicao !== f.partiuDe);
 }
 
 /**
@@ -260,7 +373,12 @@ function chegar(forcas: readonly Forca[], passo: number): void {
  * menor**, e o desempate é por id. É provisório e está marcado como tal: combate de três
  * lados de verdade é assunto de diplomacia, que não existe.
  */
-function naProvincia(forcas: Forca[], batalhas: RelatorioDaRodada['batalhas'][number][]): void {
+function naProvincia(
+  forcas: Forca[],
+  batalhas: RelatorioDaRodada['batalhas'][number][],
+  querLutar: (forca: Forca) => boolean,
+  choqueObrigado: (provincia: string, presentes: readonly Forca[]) => boolean,
+): void {
   const porProvincia = new Map<string, Forca[]>();
   for (const forca of forcas) {
     if (!forca.viva) continue;
@@ -271,9 +389,22 @@ function naProvincia(forcas: Forca[], batalhas: RelatorioDaRodada['batalhas'][nu
 
   for (const provincia of [...porProvincia.keys()].sort()) {
     const presentes = porProvincia.get(provincia) ?? [];
+    // A surtida e o socorro que chega são o **contrário** da postura: em vez de deixar
+    // cada força escolher, tiram a escolha de todas. Lido uma vez por província e antes
+    // do laço — o que obriga o choque é o estado da chegada, não o que sobrar dele.
+    const obrigado = choqueObrigado(provincia, presentes);
     for (;;) {
       const vivas = presentes.filter((f) => f.viva);
-      const poderes = new Set(vivas.map((f) => f.poder));
+      // ⚠️ **Estar junto não é lutar.** Só entram no choque os poderes que QUEREM lutar;
+      // quem está sitiando fica ao lado, e um poder sozinho a fim de briga não tem com
+      // quem brigar. É isto que deixa sitiante e sitiado ocuparem a mesma província sem
+      // se aniquilarem — o que a hoste com identidade própria passou a permitir na
+      // estrutura, e que a regra ainda proibia.
+      //
+      // Participação é decidida por PODER, não por hoste: se alguma força de um poder
+      // quer lutar, todas as dele que estão ali lutam. Um exército não assiste ao
+      // massacre do vizinho de acampamento por causa de uma ordem diferente.
+      const poderes = new Set(vivas.filter((f) => obrigado || querLutar(f)).map((f) => f.poder));
       if (poderes.size < 2) break;
 
       // Ordena por força, e desempata por id: sem isso o resultado dependeria da ordem em
@@ -317,6 +448,9 @@ function travarLados(
   batalhas: RelatorioDaRodada['batalhas'][number][],
   cancelarRota: boolean,
 ): void {
+  // Sem lugar é encontro na estrada; com lugar é choque de campo. O assalto é o único que
+  // não passa por aqui: ele é contra a muralha, não contra um exército.
+  const tipo = provincia === null ? ('estrada' as const) : ('campo' as const);
   const totalA = ladoA.reduce((s, f) => s + soma(f.origem), 0);
   const totalB = ladoB.reduce((s, f) => s + soma(f.origem), 0);
   const r = resolverChoque(totalA, totalB);
@@ -336,6 +470,7 @@ function travarLados(
     vencedor: vencedores[0]?.poder ?? null,
     perdedores: [...new Set(perdedores.map((f) => f.poder))].sort(),
     sobreviventes: r.sobreviventes,
+    tipo,
   });
 }
 
@@ -397,6 +532,10 @@ function pousar(
       // é o que faz a trilha ser o andado, e não o pretendido.
       const andados = forca.rota.indexOf(forca.posicao);
       marchas.push({
+        // O id de quem FICOU de pe aqui - fundida ou nao, e ela que o mapa desenha. Era a
+        // provincia de chegada, e isso deixou de identificar a peca no dia em que duas
+        // hostes passaram a poder parar no mesmo lugar.
+        hoste: naChegada.id,
         trilha: [forca.partiuDe, ...forca.rota.slice(0, andados + 1)],
         homens: soma(forca.origem),
       });
@@ -411,17 +550,62 @@ function soma(origem: Record<string, number>): number {
 }
 
 /**
+ * Esta força quer lutar aqui?
+ *
+ * Três respostas, nesta ordem:
+ *
+ * 1. **em casa, sempre.** Quem está na própria terra não escolhe — não existe postura de
+ *    "deixar passar";
+ * 2. **com ordem desta rodada, o que a ordem disser.** `assaltar` engaja, `sitiar` não;
+ * 3. **sem ordem, o cerco em curso manda** — e quem não tem nem uma coisa nem outra senta.
+ *
+ * ⚠️ Nada disto vale onde o choque foi OBRIGADO: a surtida e o socorro que chega tiram a
+ * escolha de todo mundo que está ali. Ver `choqueObrigadoEm`.
+ *
+ * ⚠️ As posturas são indexadas por província de DESTINO, não por hoste. Dois poderes
+ * marchando para o mesmo lugar compartilham a entrada, e o segundo herda a postura do
+ * primeiro. É limitação antiga e só aparece em guerra de três lados; quando aparecer, a
+ * ordem tem que passar a carregar a postura até aqui em vez de um mapa por destino.
+ */
+function quemLuta(
+  forca: Forca,
+  donoDaProvincia: string,
+  posturas: Map<string, Postura>,
+  cercos: Record<string, Cerco>,
+): boolean {
+  if (donoDaProvincia === forca.poder) return true;
+  const pelaOrdem = posturas.get(forca.posicao);
+  if (pelaOrdem) return pelaOrdem === 'assaltar';
+  const cerco = cercos[forca.posicao];
+  if (cerco?.sitiante === forca.poder) return cerco.postura === 'assaltar';
+  // Chegou em terra alheia sem dizer nada: senta. Mesmo padrão que a cidade já usava —
+  // quem não declarou não joga o exército contra ninguém por conta própria.
+  return false;
+}
+
+/**
  * A postura que cada hoste levava ao chegar, por província de destino.
  *
  * Lida antes de qualquer fase porque as ordens são consumidas no caminho — e sem ela a
  * cidade não teria como saber se quem apareceu na fronteira veio assaltar ou sentar.
  */
-function posturasPorDestino(estado: EstadoDaResolucao): Map<string, Postura> {
+function posturasPorDestino(
+  estado: EstadoDaResolucao,
+  donoDe: (idProvincia: string) => string,
+): Map<string, Postura> {
   const posturas = new Map<string, Postura>();
-  for (const origem of Object.keys(estado.ordens).sort()) {
-    const ordem = estado.ordens[origem];
+  for (const idHoste of Object.keys(estado.ordens).sort()) {
+    const ordem = estado.ordens[idHoste];
     const destino = ordem?.rota.at(-1);
     if (!ordem || destino === undefined) continue;
+    // ⚠️ **Marchar para casa não declara postura nenhuma.** A postura só significa alguma
+    // coisa em terra alheia (ver `ordens.ts`), e como a entrada é compartilhada por
+    // DESTINO, uma marcha em território próprio contaminava o inimigo sentado ali: mandar
+    // qualquer hoste para a cidade sitiada rebaixava o assalto do sitiante a cerco, sem
+    // que nada tivesse sido lutado. Ficou reservado ao socorro (#33A), que agora chega
+    // lutando por outra razão.
+    const poder = estado.hostes[idHoste]?.poder;
+    if (poder !== undefined && donoDe(destino) === poder) continue;
     posturas.set(destino, ordem.postura);
   }
   return posturas;
@@ -448,8 +632,39 @@ function resolverCidades(
     conquistas: RelatorioDaRodada['conquistas'][number][];
     milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
     cercos: RelatorioDaRodada['cercos'][number][];
+    cercosLevantados: RelatorioDaRodada['cercosLevantados'][number][];
   },
 ): void {
+  // Quem está em cada província depois da marcha. O cerco depende disto: ele acaba
+  // quando o SITIANTE sai, não quando o dono aparece — e agora os dois podem estar ali ao
+  // mesmo tempo, porque sitiar deixou de obrigar o choque.
+  const presentes = new Map<string, string[]>();
+  for (const idHoste of Object.keys(estado.hostes).sort()) {
+    const hoste = estado.hostes[idHoste];
+    if (!hoste) continue;
+    const lista = presentes.get(hoste.posicao) ?? [];
+    lista.push(hoste.poder);
+    presentes.set(hoste.posicao, lista);
+  }
+  const estaAli = (provincia: string, poder: string | undefined): boolean =>
+    poder !== undefined && (presentes.get(provincia) ?? []).includes(poder);
+
+  // ⚠️ **Os cercos de ANTES desta varredura**, guardados à parte porque o laço reescreve
+  // `estado.cercos` enquanto anda. Sem a foto, a contagem de rodadas leria o que ela mesma
+  // acabou de escrever — e dois exércitos sentados na mesma cidade fariam o relógio andar
+  // duas vezes numa rodada só.
+  const antes = { ...estado.cercos };
+
+  // ⚠️ **Um caminho só para apagar cerco**, e ele conta a notícia junto. O cerco morre em
+  // três lugares diferentes — o sitiante saiu, o assalto foi rechaçado, a cidade caiu — e
+  // com três `delete` soltos a crônica ia esquecer de um deles em silêncio.
+  const levantar = (provincia: string): void => {
+    const cerco = estado.cercos[provincia];
+    if (!cerco) return;
+    delete estado.cercos[provincia];
+    relatorio.cercosLevantados.push({ provincia, sitiante: cerco.sitiante });
+  };
+
   const tomar = (provincia: string, poder: string): void => {
     const de = mundo.donoDe(provincia);
     mundo.trocarDono(provincia, poder);
@@ -463,15 +678,25 @@ function resolverCidades(
     if (!hoste) continue;
     const provincia = hoste.posicao;
 
-    // Terra própria: se havia cerco aqui, ele acabou — ou o socorro chegou, ou o sitiante
-    // foi expulso. Levantar o cerco é consequência, não regra separada.
+    // Terra própria: o cerco acaba se o sitiante não estiver mais aqui — ele marchou
+    // embora, morreu, ou foi expulso. Levantar o cerco é consequência, não regra separada.
+    //
+    // ⚠️ **Chegar não basta para levantá-lo.** Antes, a presença do dono apagava o cerco
+    // na hora, porque era impossível os dois estarem no mesmo lugar: o choque sempre
+    // resolvia isso antes. Agora o sitiante pode continuar acampado com o exército do
+    // dono do lado, e apagar o cerco aqui teria dado ao defensor uma forma de quebrá-lo
+    // sem lutar — bastava mandar qualquer hoste voltar para casa.
     if (hoste.poder === mundo.donoDe(provincia)) {
-      delete estado.cercos[provincia];
+      if (!estaAli(provincia, estado.cercos[provincia]?.sitiante)) levantar(provincia);
       continue;
     }
 
     const milicianos = mundo.miliciaDe(provincia);
-    if (milicianos <= 0) {
+    // Cidade sem quem feche o portão cai ao primeiro ingresso — mas exército do dono
+    // acampado ali É quem fecha o portão, mesmo com a milícia zerada. Sem esta condição,
+    // sentar numa província despovoada tomava a cidade por cima do exército que a
+    // defendia.
+    if (milicianos <= 0 && !estaAli(provincia, mundo.donoDe(provincia))) {
       tomar(provincia, hoste.poder);
       continue;
     }
@@ -479,13 +704,24 @@ function resolverCidades(
     // A ordem desta rodada manda; sem ordem, o cerco em curso continua como estava; sem
     // nem uma coisa nem outra, senta-se. Sitiar é o padrão de propósito: quem chegou sem
     // dizer nada não joga o exército contra a muralha por conta própria.
-    const cerco = estado.cercos[provincia];
-    const postura =
-      posturas.get(provincia) ??
-      (cerco && cerco.sitiante === hoste.poder ? cerco.postura : 'sitiar');
+    const cerco = antes[provincia];
+    const meu = cerco !== undefined && cerco.sitiante === hoste.poder;
+    const pedida = posturas.get(provincia) ?? (meu ? cerco.postura : 'sitiar');
+
+    // ⚠️ **A MURALHA BARRA O ASSALTO DE HOJE, e o que sobra é sentar.** Cidade aberta cai
+    // no primeiro assalto; contra a fortificada é preciso ter passado algumas rodadas na
+    // frente dela. A regra vive aqui e não só na interface porque a postura também chega
+    // pela ordem de marcha — e uma ordem que a tela não deixaria dar continuaria podendo
+    // vir da IA, de um salvamento antigo ou do gancho de inspeção.
+    const faltam = rodadasAteOAssalto(
+      mundo.impedeAssaltoImediato(provincia),
+      meu ? cerco.rodadas : 0,
+      ajustes.cerco,
+    );
+    const postura: Postura = pedida === 'assaltar' && faltam > 0 ? 'sitiar' : pedida;
 
     if (postura === 'assaltar') {
-      assaltar(estado, provincia, hoste, milicianos, ajustes, mundo, relatorio, tomar);
+      assaltar(estado, provincia, hoste, milicianos, ajustes, mundo, relatorio, tomar, levantar);
       continue;
     }
 
@@ -494,9 +730,16 @@ function resolverCidades(
     // toma é o assalto, e é essa separação que dá sentido a ter duas posturas: antes o
     // cerco acumulava progresso e abria os portões sozinho, o que fazia dele um assalto
     // lento em vez de outra coisa.
-    const atual: Cerco = { sitiante: hoste.poder, postura: 'sitiar' };
+    // O relógio anda com o cerco: mais uma rodada para quem já estava sentado aqui, e zero
+    // para quem acabou de chegar ou tomou o lugar de outro sitiante. Herdar o tempo do
+    // exército anterior daria a praça de graça a quem chegasse depois do trabalho feito.
+    const atual: Cerco = {
+      sitiante: hoste.poder,
+      postura: 'sitiar',
+      rodadas: meu ? cerco.rodadas + 1 : 0,
+    };
     estado.cercos[provincia] = atual;
-    relatorio.cercos.push({ provincia, sitiante: hoste.poder, postura: 'sitiar' });
+    relatorio.cercos.push({ provincia, sitiante: hoste.poder, postura: 'sitiar', novo: !meu });
   }
 
   // Cerco sem sitiante em cima não existe: quem marchou embora ou morreu soltou a cidade.
@@ -505,7 +748,7 @@ function resolverCidades(
     const emCima = Object.values(estado.hostes).some(
       (h) => h.posicao === provincia && h.poder === sitiante,
     );
-    if (!emCima) delete estado.cercos[provincia];
+    if (!emCima) levantar(provincia);
   }
 }
 
@@ -529,6 +772,7 @@ function assaltar(
     milicianosMortos: RelatorioDaRodada['milicianosMortos'][number][];
   },
   tomar: (provincia: string, poder: string) => void,
+  levantar: (provincia: string) => void,
 ): void {
   const dono = mundo.donoDe(provincia);
   const atacantes = forcaDe(hoste);
@@ -549,6 +793,7 @@ function assaltar(
       vencedor: hoste.poder,
       perdedores: [dono],
       sobreviventes: choque.sobreviventes,
+      tipo: 'assalto',
     });
     tomar(provincia, hoste.poder);
     return;
@@ -556,7 +801,7 @@ function assaltar(
 
   // Rechaçado: o exército de assalto se desfaz diante da muralha, e a cidade fica.
   delete estado.hostes[hoste.id];
-  delete estado.cercos[provincia];
+  levantar(provincia);
   perder(
     choque.vencedor === 'b'
       ? milicianosPerdidos(milicianos, choque.sobreviventes, ajustes.cerco)
@@ -566,6 +811,8 @@ function assaltar(
     provincia,
     vencedor: choque.vencedor === 'b' ? dono : null,
     perdedores: choque.vencedor === 'b' ? [hoste.poder] : [hoste.poder, dono],
-    sobreviventes: choque.vencedor === 'b' ? Math.floor(choque.sobreviventes / ajustes.cerco.bonusDeMuralha) : 0,
+    sobreviventes:
+      choque.vencedor === 'b' ? Math.floor(choque.sobreviventes / ajustes.cerco.bonusDeMuralha) : 0,
+    tipo: 'assalto',
   });
 }

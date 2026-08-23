@@ -17,10 +17,11 @@ interface Ganchos {
   passarTurno: () => void;
   recrutar: (idProvincia: string, homens: number) => void;
   forcaEm: (idProvincia: string) => number;
-  alcanceDaHoste: (idProvincia: string) => string[];
+  alcanceDaHoste: (idHoste: string) => string[];
+  hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
   conquistar: (idProvincia: string, idPoder: string) => void;
   ordens: () => { origem: string; rota: string[]; homens: number }[];
-  ordenarMarcha: (origem: string, destino: string, homens: number, porPoder?: string) => void;
+  ordenarMarcha: (idHoste: string, destino: string, homens: number, porPoder?: string) => void;
 }
 
 async function comHoste(page: Page, homens: number) {
@@ -212,7 +213,9 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
   const mover = page.getByRole('button', { name: 'Mover' });
   await expect(mover).toBeEnabled();
   const alcance = await page.evaluate(() =>
-    (window as unknown as { inspecao: Ganchos }).inspecao.alcanceDaHoste('atenas'),
+    (window as unknown as { inspecao: Ganchos }).inspecao.alcanceDaHoste(
+      (window as unknown as { inspecao: Ganchos }).inspecao.hostesEm('atenas')[0]!.id,
+    ),
   );
   expect(alcance).toContain('maratona');
   expect(alcance).toContain('sounion');
@@ -239,7 +242,7 @@ test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page
 
   const partida = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    i.ordenarMarcha('atenas', 'maratona', 1500);
+    i.ordenarMarcha(i.hostesEm('atenas')[0]!.id, 'maratona', 1500);
     i.passarTurno();
     const marca = document.querySelector<HTMLElement>('.hostes__marca[data-provincia="maratona"]');
     const caixa = marca?.getBoundingClientRect();

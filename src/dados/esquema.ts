@@ -74,11 +74,55 @@ export const Ajustes = z.object({
       /**
        * Crescimento por turno, antes das construções.
        *
-       * ⚠️ **Não existe mais capacidade máxima** (`DECISOES.md` #24): esta taxa é aplicada
-       * direta, sem freio. O freio será o alimento, na Etapa 4. Até lá o crescimento é
+       * ⚠️ **Não existe mais capacidade máxima** (`DECISOES.md` #48A): esta taxa é aplicada
+       * direta, sem freio. O freio será o alimento, no patch 0.0.4. Até lá o crescimento é
        * exponencial — estado intermediário conhecido.
        */
       taxaNatural: z.number().gt(0).max(1),
+    }),
+    /**
+     * Quanto o mundo come.
+     *
+     * ⚠️ **O consumo ainda NÃO é cobrado de ninguém.** Isto existe hoje como a régua que
+     * dimensiona o estoque inicial da região de teste: `DECISOES.md` #11A pede cerca de
+     * cinco turnos de sobrevivência, e sem uma taxa de consumo "cinco turnos" não é uma
+     * frase verificável. O patch 0.0.4 do `ROADMAP.md` é que faz isto morder.
+     */
+    alimento: z.object({
+      /**
+       * Unidades de alimento que um habitante come por turno.
+       *
+       * 0,02 quer dizer que uma unidade alimenta cinquenta pessoas durante um turno — a
+       * escala é arbitrária e existe pra que os estoques sejam números legíveis em vez de
+       * dezenas de milhares.
+       */
+      consumoPorHabitante: z.number().positive(),
+    }),
+    /**
+     * Como o número de felicidade vira palavra na tela.
+     *
+     * Internamente é 0–100; o jogador nunca vê o número cru. Ver `DECISOES.md` #68 — as
+     * cinco faixas são a interface oficial, e ficam nos dados porque são conteúdo: mexer
+     * no ponto em que uma província passa a "Revoltosa" é balanço, não código.
+     */
+    felicidade: z.object({
+      /**
+       * Da mais infeliz para a mais feliz. `ate` é o último valor que ainda pertence à
+       * faixa, e a última tem que fechar em 100 — senão existe felicidade sem nome.
+       */
+      faixas: z
+        .array(z.object({ ate: z.number().int().min(0).max(100), nome: z.string().min(1) }))
+        .min(2)
+        .superRefine((faixas, ctx) => {
+          for (let i = 1; i < faixas.length; i++) {
+            if ((faixas[i]?.ate ?? 0) <= (faixas[i - 1]?.ate ?? 0)) {
+              ctx.addIssue({ code: 'custom', message: 'as faixas têm que subir' });
+            }
+          }
+          if (faixas[faixas.length - 1]?.ate !== 100) {
+            ctx.addIssue({ code: 'custom', message: 'a última faixa tem que terminar em 100' });
+          }
+        }),
     }),
     /**
      * O que custa pôr e manter gente em armas.
@@ -128,9 +172,10 @@ export const Ajustes = z.object({
       /**
        * O cerco.
        *
-       * ⚠️ Um número só, e é de propósito: **sitiar não toma a cidade**, então não existe
-       * velocidade de cerco para ajustar. Quem toma é o assalto, e o que decide o assalto
-       * é a muralha.
+       * ⚠️ **Nenhum destes é velocidade de cerco.** Sitiar continua não tomando a cidade e
+       * não andando em direção a nada; quem toma é o assalto, e o que decide o assalto é a
+       * muralha. O segundo número diz há quanto tempo é preciso estar sentado para poder
+       * ir para cima, não o quanto falta para a cidade cair sozinha.
        */
       cerco: z.object({
         /**
@@ -140,6 +185,14 @@ export const Ajustes = z.object({
          * disto, e os dois se multiplicam.
          */
         bonusDeMuralha: z.number().min(1),
+        /**
+         * Quantas rodadas de cerco uma cidade fortificada exige antes de poder ser
+         * assaltada.
+         *
+         * Vale só para as construções marcadas com `impedeAssaltoImediato`; cidade aberta
+         * cai no primeiro assalto. Valor inicial de teste, não de balanceamento final.
+         */
+        rodadasParaAssaltarMuralha: z.number().int().min(0),
       }),
       milicia: z.object({
         /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */
@@ -289,41 +342,169 @@ export type Provincias = z.infer<typeof Provincias>;
  * duas economias diferentes escondidas no mesmo jogo seria pior que uma economia
  * incompleta.
  */
-export const Economia = z.object({
-  versao: z.literal(1),
-  comentario: z.string().min(1),
-  produtos: z.record(
-    z.string().min(1),
-    z.object({
-      nome: z.string().min(1),
-      /** Moedas por nível. Grão e prata não valem o mesmo. */
-      valor: z.number().positive(),
-    }),
-  ),
-  provincias: z.record(
-    z.string().min(1),
-    z.object({
-      populacao: z.number().int().positive(),
-      /** Id de uma entrada do catálogo de produtos. */
-      produto: z.string().min(1),
-      /**
-       * Quanto a terra dá daquele produto, de 1 a 5. **Fixo.**
-       *
-       * Chamava-se "potencial", e o nome foi trocado porque prometia o que o sistema não
-       * faz: potencial soa como coisa que se desenvolve. Nível é grau, é identidade da
-       * terra — investir paga mais gente pra explorar o que já existe, e nunca sobe isto.
-       */
-      nivel: z.number().int().min(1).max(5),
-      /**
-       * Quanto da produção vira comércio. É posição, porto e rota — é o que deixa uma
-       * província enriquecer vendendo, e não só produzindo.
-       */
-      comercioBase: z.number().nonnegative(),
-      /** Por que esta província é assim. Documentação junto do dado, não longe dele. */
-      motivo: z.string().min(1),
-    }),
-  ),
-});
+export const Economia = z
+  .object({
+    versao: z.literal(1),
+    comentario: z.string().min(1),
+    produtos: z.record(
+      z.string().min(1),
+      z.object({
+        nome: z.string().min(1),
+        /** Moedas por nível. Grão e prata não valem o mesmo. */
+        valor: z.number().positive(),
+        /**
+         * Se este produto alimenta gente.
+         *
+         * O patch 0.0.4 soma o estoque de todos os alimentos de uma província contra o que a
+         * população dela come. Mármore e prata nunca entram nessa conta por mais valiosos
+         * que sejam — é a distinção que faz Atenas ser rica e faminta ao mesmo tempo.
+         */
+        alimento: z.boolean(),
+      }),
+    ),
+    /**
+     * Catálogo dos povos. Só nome: nacionalidade não tem número próprio.
+     *
+     * Ver `DECISOES.md` #70 — nacionalidade pertence à POPULAÇÃO, não à província nem ao
+     * poder, e uma província tem várias ao mesmo tempo. Manter um catálogo aqui é o que
+     * impede "eleusina" e "eleusino" virarem dois povos por causa de um erro de digitação.
+     */
+    nacionalidades: z.record(z.string().min(1), z.object({ nome: z.string().min(1) })),
+    provincias: z.record(
+      z.string().min(1),
+      z.object({
+        populacao: z.number().int().positive(),
+        /** Id de uma entrada do catálogo de produtos. */
+        produto: z.string().min(1),
+        /**
+         * Quanto a terra dá daquele produto, de 1 a 5. **Fixo.**
+         *
+         * Chamava-se "potencial", e o nome foi trocado porque prometia o que o sistema não
+         * faz: potencial soa como coisa que se desenvolve. Nível é grau, é identidade da
+         * terra — investir paga mais gente pra explorar o que já existe, e nunca sobe isto.
+         */
+        nivel: z.number().int().min(1).max(5),
+        /**
+         * Quanto da produção vira comércio. É posição, porto e rota — é o que deixa uma
+         * província enriquecer vendendo, e não só produzindo.
+         */
+        comercioBase: z.number().nonnegative(),
+        /**
+         * O segundo produto da terra, sempre mais fraco que o principal.
+         *
+         * ⚠️ **Mais fraco em RENDIMENTO, não em nível** — o cruzamento é conferido embaixo.
+         * "Nível menor" seria a regra errada: grão nível 3 rende menos que prata nível 2, e
+         * o que faz o principal ser o principal é o que ele entrega, não o algarismo.
+         *
+         * Ele não entra na renda atual de propósito: somar mais uma parcela à economia que
+         * o patch 0.0.3 vai substituir seria balancear duas vezes. O dado existe agora porque a
+         * região de teste precisa estar completa ANTES dos sistemas que a consomem.
+         */
+        secundario: z.object({
+          produto: z.string().min(1),
+          nivel: z.number().int().min(1).max(5),
+        }),
+        /**
+         * De que povo é a população, em frações que somam 1.
+         *
+         * Enquanto cada cidade se governa isto não pesa em nada. Ele existe pro dia em que
+         * Atenas tomar Elêusis e passar a mandar em 85% de gente que não é dela — ver
+         * `DECISOES.md` #72. A tensão é consequência de conquista, e por isso o dado tem
+         * que estar escrito antes da conquista, não depois.
+         */
+        nacionalidades: z.record(z.string().min(1), z.number().gt(0).max(1)),
+        /** Humor inicial, de 0 a 100. As faixas com nome estão em `ajustes.json`. */
+        felicidade: z.number().int().min(0).max(100),
+        /**
+         * O que a província tem guardado em 700 a.C., por produto.
+         *
+         * `DECISOES.md` #11A pede cerca de cinco turnos de alimento na região de teste — o
+         * bastante pro patch 0.0.4 poder ser testado sem que ninguém morra de fome no turno 2.
+         * Um teste confere esses cinco turnos contra `alimento.consumoPorHabitante`, pra que
+         * mexer na população não invalide o estoque em silêncio.
+         */
+        estoque: z.record(z.string().min(1), z.number().nonnegative()),
+        /** O que já está de pé em 700 a.C. Ids do catálogo de construções. */
+        construcoes: z.array(z.string().min(1)),
+        /**
+         * Se a costa daqui abriga navio.
+         *
+         * **Não é um porto construído** — é a terra permitir um. Naval está fora do 0.0.2
+         * (`PATCH_ATUAL.md`), e o Porto é adaptação do patch 0.0.11; este campo é a pergunta
+         * que os dois vão fazer. Maratona é o caso que justifica o campo existir: ela é
+         * litorânea e não tem abrigo nenhum, então estar no mar não vale de nada.
+         */
+        ancoradouro: z.boolean(),
+        /** Por que esta província é assim. Documentação junto do dado, não longe dele. */
+        motivo: z.string().min(1),
+        /** Por que ela COMEÇA assim: povo, humor, estoque e o que já está de pé. */
+        motivoDaFicha: z.string().min(1),
+      }),
+    ),
+  })
+  .superRefine((economia, ctx) => {
+    // ⚠️ Cruzamentos que o Zod não faz sozinho. Um id de produto errado numa província
+    // passaria como string válida e viraria produção zero em silêncio meses depois — o
+    // tipo de bug que aparece como "por que Tanagra não rende nada?" muito longe daqui.
+    for (const [id, ficha] of Object.entries(economia.provincias)) {
+      const onde = ['provincias', id];
+      const principal = economia.produtos[ficha.produto];
+      const segundo = economia.produtos[ficha.secundario.produto];
+
+      if (!principal) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...onde, 'produto'],
+          message: `produto desconhecido: ${ficha.produto}`,
+        });
+      }
+      if (!segundo) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...onde, 'secundario'],
+          message: `produto desconhecido: ${ficha.secundario.produto}`,
+        });
+      }
+      if (
+        principal &&
+        segundo &&
+        segundo.valor * ficha.secundario.nivel >= principal.valor * ficha.nivel
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...onde, 'secundario'],
+          message: 'o secundário tem que render menos que o principal',
+        });
+      }
+
+      const soma = Object.values(ficha.nacionalidades).reduce((total, f) => total + f, 0);
+      if (Math.abs(soma - 1) > 0.001) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...onde, 'nacionalidades'],
+          message: `as frações somam ${soma}, e têm que somar 1`,
+        });
+      }
+      for (const povo of Object.keys(ficha.nacionalidades)) {
+        if (!economia.nacionalidades[povo]) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...onde, 'nacionalidades'],
+            message: `povo desconhecido: ${povo}`,
+          });
+        }
+      }
+      for (const guardado of Object.keys(ficha.estoque)) {
+        if (!economia.produtos[guardado]) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...onde, 'estoque'],
+            message: `produto desconhecido: ${guardado}`,
+          });
+        }
+      }
+    }
+  });
 
 export type Economia = z.infer<typeof Economia>;
 
@@ -409,6 +590,15 @@ export const Construcoes = z.object({
           promessa: z.string().min(1),
         }),
       ]),
+      /**
+       * Esta obra obriga o inimigo a sitiar antes de poder assaltar.
+       *
+       * ⚠️ **Fora do `efeito`, e de propósito.** Impedir o assalto imediato não é o mesmo
+       * que multiplicar a milícia: a Muralha faz as duas coisas hoje, mas uma torre, um
+       * fosso ou uma cidadela futura podem fazer só uma. Ler a regra pelo id `muralha`
+       * amarraria o combate a um id de conteúdo, e o `0.0.10` vai refazer o catálogo.
+       */
+      impedeAssaltoImediato: z.boolean().optional(),
       /** Por que ela existe e onde ela vale. Documentação junto do dado. */
       motivo: z.string().min(1),
     }),

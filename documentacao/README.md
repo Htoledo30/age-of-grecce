@@ -5,16 +5,20 @@ recursos externos.
 
 **A divisão de trabalho entre os dois lugares, para não procurar no errado:**
 
-| onde                    | o que é                                                                                    | quando confiar                                             |
-| ----------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| `CLAUDE.md`, na raiz    | **o retrato técnico do jogo agora** — o que existe, como funciona e as armadilhas já pagas | para trabalhar no código atual                             |
-| `CHANGELOG.md`, na raiz | **o histórico de versões** — o que entrou em cada patch e o que ainda não foi lançado      | para acompanhar a evolução do jogo                         |
-| esta pasta              | **o desenho e o porquê** — decisões, especificações, referências e propostas futuras       | para entender uma regra ou planejar o que ainda não existe |
+| onde, na raiz               | autoridade                                                               |
+| --------------------------- | ------------------------------------------------------------------------ |
+| código, testes, `CLAUDE.md` | retrato técnico do jogo implementado agora                               |
+| `DECISOES.md`               | decisões oficiais de design e arquitetura                                |
+| `PATCH_ATUAL.md`            | único escopo autorizado para implementação agora                         |
+| `ROADMAP.md`                | sequência planejada de patches                                           |
+| `BACKLOG.md`                | ideias futuras ainda fora de escopo                                      |
+| `AGENTS.md`                 | regras de trabalho para Claude, Codex e outros agentes                   |
+| `CHANGELOG.md`              | histórico lançado e alterações ainda não lançadas                        |
+| esta pasta                  | referências, explicações e especificações subordinadas às fontes da raiz |
 
-Regra que mantém os dois honestos: **documento de tarefa cumprido é apagado**, e o que
-sobrou de vivo dele migra. O resultado e o motivo vão para o `CLAUDE.md`; a orientação
-técnica vira comentário no código que a executa. Documento que descreve um jogo que não
-existe mais é pior que documento nenhum, porque parece verdade.
+Nenhum texto desta pasta autoriza implementação por conta própria. Se uma referência antiga
+divergir das fontes da raiz, a fonte responsável pelo assunto prevalece e o documento antigo
+deve ser corrigido ou marcado como histórico.
 
 ## Design
 
@@ -36,7 +40,7 @@ existe mais é pior que documento nenhum, porque parece verdade.
   — decisão de manter 205 províncias e 148 poderes para que cada campanha produza uma
   história política diferente.
 - [Estratégia de desenvolvimento](design/estrategia-de-desenvolvimento.md) — construção
-  inicial do esqueleto jogável e evolução posterior sem uma ordem rígida de patches.
+  incremental do esqueleto jogável seguindo o patch ativo e a sequência do roadmap.
 - [Desempenho futuro da simulação](design/desempenho-da-simulacao.md) — diretrizes para
   fases de rodada, cortes de alcance, dados orientados à simulação, cache de rotas e Web
   Workers, adotadas somente depois de medir um gargalo real.

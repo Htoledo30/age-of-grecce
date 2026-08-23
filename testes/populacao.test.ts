@@ -57,7 +57,7 @@ describe('crescimento populacional', () => {
   });
 
   it('NÃO existe capacidade máxima: a taxa vale igual em qualquer tamanho', () => {
-    // ⚠️ O teto de `população inicial × 2` saiu por decisão (`DECISOES.md` #24). Um número
+    // ⚠️ O teto de `população inicial × 2` saiu por decisão (`DECISOES.md` #48A). Um número
     // amarrado ao dado autoral de 700 a.C. não é limite do mundo, é limite da planilha —
     // e ele congelava a província justamente quando ela ia bem.
     const calcular = (atual: number) =>

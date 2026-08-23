@@ -28,6 +28,14 @@ interface OrigemDaHoste {
 
 /** O que a ficha precisa saber sobre a hoste selecionada. */
 export interface VistaDoExercito {
+  /**
+   * Quem ela e. **E a chave de todo comando que a ficha emite.**
+   *
+   * Era a provincia, e isso passou a mentir quando sitiar deixou de engajar: numa cidade
+   * sitiada ha duas hostes, e "a hoste da provincia" nao identifica nenhuma das duas.
+   */
+  hoste: { id: string };
+  /** Onde ela esta. Titulo da ficha e texto do cerco - nunca endereco. */
   provincia: { id: string; nome: string };
   poder: { nome: string; cor: string };
   forca: number;
@@ -55,14 +63,36 @@ export interface VistaDoExercito {
    * perguntar numa marcha dentro do próprio território seria pedir uma decisão que não
    * existe.
    */
-  alvo: { nome: string } | null;
+  alvo: {
+    nome: string;
+    /**
+     * Quantas rodadas de cerco a muralha do alvo exige antes de um assalto. Zero na
+     * cidade aberta.
+     *
+     * A pergunta é feita ANTES de a hoste sair, e a resposta muda a decisão: contra uma
+     * cidade murada, "Assaltar" não é uma escolha que exista naquele dia.
+     */
+    rodadasDeCercoExigidas: number;
+  } | null;
+  /**
+   * A surtida ao alcance desta hoste: sair para atacar quem cerca a cidade onde ela está.
+   *
+   * `null` quando não há cerco inimigo ali — e aí não há pergunta a fazer. É a única
+   * decisão que o SITIADO tem: sitiar não engaja (`DECISOES.md` #32A), então sem isto o
+   * exército de dentro fica olhando o de fora para sempre.
+   */
+  surtida: { contra: string; declarada: boolean } | null;
   /**
    * O cerco que ESTA hoste está conduzindo onde ela está, se houver.
    *
    * Fica na ficha da hoste e não na da província porque quem decide assaltar ou continuar
    * sentado é o comandante, não a cidade.
    */
-  cerco: { postura: Postura } | null;
+  cerco: {
+    postura: Postura;
+    /** Zero libera o assalto; acima disso, é quanto ainda falta de cerco. */
+    faltamParaAssaltar: number;
+  } | null;
 }
 
 export class ExercitoFicha {
@@ -85,6 +115,7 @@ export class ExercitoFicha {
   private readonly seletorDePostura = document.createElement('div');
   private readonly botaoAssaltar = document.createElement('button');
   private readonly botaoSitiar = document.createElement('button');
+  private readonly botaoSurtida = document.createElement('button');
   private readonly linhaCerco = document.createElement('p');
   private readonly botaoTrocarPostura = document.createElement('button');
   private readonly botaoCancelar = document.createElement('button');
@@ -94,15 +125,17 @@ export class ExercitoFicha {
   private vista: VistaDoExercito | null = null;
 
   /** Liga e desliga o modo de marcha. Quem sabe para onde dá pra ir é a campanha. */
-  aoAlternarMarcha: (idProvincia: string) => void = () => {};
+  aoAlternarMarcha: (idHoste: string) => void = () => {};
   /** Quantos homens o jogador quer mandar. Lida quando ele escolhe o destino no mapa. */
   aoMudarQuantidade: (homens: number) => void = () => {};
-  aoCancelarOrdem: (idProvincia: string) => void = () => {};
+  aoCancelarOrdem: (idHoste: string) => void = () => {};
   /** A postura da ordem que está sendo composta. */
   aoEscolherPostura: (postura: Postura) => void = () => {};
   /** A postura de um cerco JÁ em pé. Vale na próxima virada, como toda ordem. */
   aoTrocarPosturaDoCerco: (idProvincia: string, postura: Postura) => void = () => {};
-  aoDispensar: (idProvincia: string, homens: number) => void = () => {};
+  /** Manda a hoste sitiada sair para lutar. Vale na próxima virada, como toda ordem. */
+  aoSurtir: (idHoste: string) => void = () => {};
+  aoDispensar: (idHoste: string, homens: number) => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'exercito';
@@ -172,12 +205,14 @@ export class ExercitoFicha {
     this.botaoCancelar.textContent = 'Cancelar ordem';
     definirTooltip(this.botaoCancelar, {
       titulo: 'Cancelar ordem',
-      corpo: 'A marcha ainda não foi resolvida; nenhum recurso precisa ser devolvido.',
+      corpo: 'A ordem ainda não foi resolvida; nenhum recurso precisa ser devolvido.',
     });
     this.botaoCancelar.addEventListener('click', () => {
       const vista = this.vista;
-      if (!vista?.ordem) return;
-      this.aoCancelarOrdem(vista.provincia.id);
+      // ⚠️ A surtida também é ordem aqui. Sem esta segunda condição o botão aparecia e não
+      // fazia nada: quem tivesse declarado a surtida ficava preso a ela até a virada.
+      if (!vista || (vista.ordem === null && vista.surtida?.declarada !== true)) return;
+      this.aoCancelarOrdem(vista.hoste.id);
       this.botaoCancelar.blur();
     });
 
@@ -195,7 +230,7 @@ export class ExercitoFicha {
         'Assaltar',
         'lanca' as const,
         'Assaltar a cidade',
-        'Resolve no mesmo turno, contra a milícia com o bônus da muralha. Custa homens, e um assalto rechaçado desfaz o exército.',
+        'Resolve no mesmo turno: primeiro contra o exército que estiver lá, depois contra a milícia com o bônus da muralha. Custa homens, e um assalto rechaçado desfaz o exército.',
       ],
       [
         this.botaoSitiar,
@@ -203,7 +238,7 @@ export class ExercitoFicha {
         'Sitiar',
         'muralha' as const,
         'Sitiar a cidade',
-        'Leva turnos e não custa homens. Enquanto dura, a província sitiada não produz nem comercia — mas continua cobrando imposto e levantando tropa. Quem senta fica exposto ao exército de socorro.',
+        'Não custa homens e não briga com ninguém: o exército acampa ao lado da guarnição, sem engajá-la. Enquanto dura, a província sitiada não produz nem comercia — mas continua cobrando imposto e levantando tropa. Quem senta fica exposto ao exército de socorro.',
       ],
     ] as const) {
       botao.className = 'botao exercito__botao exercito__botao--postura';
@@ -216,6 +251,15 @@ export class ExercitoFicha {
       });
       this.seletorDePostura.appendChild(botao);
     }
+
+    this.botaoSurtida.className = 'botao exercito__botao exercito__botao--surtida';
+    this.botaoSurtida.type = 'button';
+    this.botaoSurtida.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista?.minha || !vista.surtida) return;
+      this.aoSurtir(vista.hoste.id);
+      this.botaoSurtida.blur();
+    });
 
     this.linhaCerco.className = 'exercito__cerco';
     this.botaoTrocarPostura.className = 'botao exercito__botao';
@@ -235,7 +279,7 @@ export class ExercitoFicha {
     this.botaoMover.addEventListener('click', () => {
       const vista = this.vista;
       if (!vista?.minha) return;
-      this.aoAlternarMarcha(vista.provincia.id);
+      this.aoAlternarMarcha(vista.hoste.id);
       // `blur` no fim do clique: sem isso o botão fica com foco e a barra de espaço, que
       // passa o turno, dispara um clique sintético nele.
       this.botaoMover.blur();
@@ -255,7 +299,7 @@ export class ExercitoFicha {
     this.botaoDispensar.addEventListener('click', () => {
       const vista = this.vista;
       if (!vista?.minha || vista.forca <= 0) return;
-      this.aoDispensar(vista.provincia.id, vista.forca);
+      this.aoDispensar(vista.hoste.id, vista.forca);
       this.botaoDispensar.blur();
     });
 
@@ -276,6 +320,7 @@ export class ExercitoFicha {
       this.instrucao,
       this.linhaOrdem,
       this.botaoCancelar,
+      this.botaoSurtida,
       this.linhaCerco,
       this.botaoTrocarPostura,
       this.botaoDispensar,
@@ -331,18 +376,42 @@ export class ExercitoFicha {
 
     // Uma ordem em pé tranca o resto: uma por hoste por rodada. Em vez de esconder os
     // controles, mostra-se a ordem e o jeito de desfazê-la.
-    const temOrdem = vista.ordem !== null;
+    //
+    // ⚠️ **A surtida conta como ordem.** Ela não é marcha nenhuma, mas ocupa a rodada da
+    // hoste do mesmo jeito, e por isso tranca os mesmos controles e é desfeita pelo mesmo
+    // botão de cancelar. Duas maneiras diferentes de desfazer "o que esta hoste vai fazer"
+    // seriam duas maneiras de o jogador se perder.
+    const surtida = vista.surtida;
+    const vaiSurtir = surtida?.declarada === true;
+    const temOrdem = vista.ordem !== null || vaiSurtir;
     this.linhaOrdem.hidden = !temOrdem;
     this.botaoCancelar.hidden = !temOrdem;
     if (vista.ordem) {
       this.linhaOrdem.textContent = `${numero(vista.ordem.homens)} marcham para ${vista.ordem.destino} ao passar o turno`;
+    } else if (surtida && vaiSurtir) {
+      this.linhaOrdem.textContent = `a hoste sai para atacar ${surtida.contra} ao passar o turno`;
+    }
+
+    // O botão só existe para quem está sitiado: é a decisão de DENTRO, e some assim que a
+    // cidade se solta. Some também durante a escolha de destino, que é a outra decisão.
+    this.botaoSurtida.hidden = !vista.minha || surtida === null || temOrdem || vista.marchando;
+    if (surtida) {
+      rotularComIcone(this.botaoSurtida, 'capacete', `Surtida contra ${surtida.contra}`);
+      definirTooltip(this.botaoSurtida, {
+        titulo: 'Sair para atacar o cerco',
+        corpo:
+          'A hoste sai da cidade e obriga quem a cerca a lutar — sentar-se diante dos ' +
+          'muros deixa de ser uma escolha para ele. Vencendo, o cerco é levantado. ' +
+          'A milícia fica: ela defende a cidade, não vai a campo.',
+        tom: 'perigo',
+      });
     }
 
     // A barra reinicia com a força inteira quando o jogador troca de hoste — mandar tudo
     // é o caso comum. O `max` vem antes do valor para o navegador não limitá-lo ao padrão 100.
     this.campoHomens.max = String(vista.forca);
-    if (this.quantidadeDe !== vista.provincia.id) {
-      this.quantidadeDe = vista.provincia.id;
+    if (this.quantidadeDe !== vista.hoste.id) {
+      this.quantidadeDe = vista.hoste.id;
       this.campoHomens.value = String(vista.forca);
       this.aoMudarQuantidade(vista.forca);
     }
@@ -387,7 +456,21 @@ export class ExercitoFicha {
     // chegar em Elêusis?", e ela não faz sentido sem o Elêusis.
     this.seletorDePostura.hidden = vista.alvo === null;
     this.perguntaDoAlvo.hidden = vista.alvo === null;
-    if (vista.alvo) this.perguntaDoAlvo.textContent = `${vista.alvo.nome}: o que fazer ao chegar?`;
+    if (vista.alvo) {
+      // ⚠️ **Contra cidade murada, assaltar não é escolha daquele dia.** O botão continua
+      // na tela, desabilitado e dizendo por quê: escondê-lo faria a diferença entre uma
+      // cidade aberta e uma fortificada parecer defeito da interface. A pergunta em cima
+      // conta a mesma coisa em palavras, porque é ela que o jogador lê primeiro.
+      const muralha = vista.alvo.rodadasDeCercoExigidas;
+      // ⚠️ **O motivo vai na PERGUNTA, não no rótulo do botão.** Os dois botões dividem
+      // uma grade de duas colunas, e um rótulo comprido vaza por cima do vizinho — foi o
+      // que a captura mostrou. Em cima há linha inteira para escrever a frase toda.
+      this.perguntaDoAlvo.textContent =
+        muralha > 0
+          ? `${vista.alvo.nome} é murada: exige ${muralha} ${muralha === 1 ? 'rodada' : 'rodadas'} de cerco antes de um assalto`
+          : `${vista.alvo.nome}: o que fazer ao chegar?`;
+      this.botaoAssaltar.disabled = muralha > 0;
+    }
 
     const cerco = vista.cerco;
     this.linhaCerco.hidden = cerco === null;
@@ -397,16 +480,28 @@ export class ExercitoFicha {
         cerco.postura === 'sitiar'
           ? `Acampado diante de ${vista.provincia.nome} — sem produção nem comércio lá dentro`
           : `Assaltando ${vista.provincia.nome} na próxima virada`;
+      // A muralha tranca o assalto até o cerco ter durado o bastante. O botão fica na
+      // tela dizendo quanto falta — some em silêncio seria o jogador achando que o
+      // comando sumiu.
+      const faltam = cerco.faltamParaAssaltar;
+      const trancado = cerco.postura === 'sitiar' && faltam > 0;
+      this.botaoTrocarPostura.disabled = trancado;
       rotularComIcone(
         this.botaoTrocarPostura,
         cerco.postura === 'sitiar' ? 'lanca' : 'muralha',
-        cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
+        cerco.postura !== 'sitiar'
+          ? 'Voltar a sitiar'
+          : trancado
+            ? `Passar ao assalto · faltam ${faltam}`
+            : 'Passar ao assalto',
       );
       definirTooltip(this.botaoTrocarPostura, {
-        titulo: cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
-        corpo:
-          'A troca vale na próxima virada, como toda ordem. O cerco não toma a cidade por ' +
-          'si: ele aperta e espera. Quem toma é o assalto, e ele custa homens.',
+        titulo: trancado ? 'A muralha ainda segura' : cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
+        corpo: trancado
+          ? `A muralha desta cidade obriga a sitiá-la por mais ${faltam} ${faltam === 1 ? 'rodada' : 'rodadas'} antes de um assalto. Escada, aríete e rampa não se improvisam diante dos muros.`
+          : 'A troca vale na próxima virada, como toda ordem. O cerco não toma a cidade por ' +
+            'si nem briga com o exército de dentro: ele aperta e espera. Quem toma é o ' +
+            'assalto, e ele custa homens.',
       });
     }
 

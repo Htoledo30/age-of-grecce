@@ -26,19 +26,23 @@ export interface Ponto {
 
 export interface TrechoDeMarcha {
   /**
-   * A província onde a hoste JÁ ESTÁ nas regras — é a chave do marcador que anda.
+   * A HOSTE que anda — é a chave do marcador, e ela já chegou nas regras.
    *
-   * Não é "para onde ela vai": quando esta animação começa, ela já chegou. O que anda é
+   * Não é "para onde ela vai": quando esta animação começa, ela já está lá. O que anda é
    * o desenho.
+   *
+   * ⚠️ Era a província de chegada. Deixou de identificar a peça quando duas hostes
+   * passaram a poder parar no mesmo lugar — sitiante e guarnição no mesmo chão andariam
+   * as duas pela trilha de uma só.
    */
-  destino: string;
+  hoste: string;
   /** O caminho percorrido em unidades de mundo: origem, paradas do meio, destino. */
   pontos: readonly Ponto[];
 }
 
 /** Um trecho com o que só precisa ser calculado uma vez. */
 interface EmMarcha {
-  destino: string;
+  hoste: string;
   pontos: readonly Ponto[];
   /** Distância acumulada até cada ponto. O primeiro é sempre 0. */
   acumulada: readonly number[];
@@ -57,7 +61,7 @@ export class AnimacaoDeMarcha {
    * Dispara por hoste, quando cada uma termina — e não uma vez no fim de todas. Uma
    * marcha curta que chega antes tem que pulsar antes.
    */
-  aoChegar: (destinos: readonly string[]) => void = () => {};
+  aoChegar: (hostes: readonly string[]) => void = () => {};
 
   /**
    * Põe as marchas desta rodada em movimento, descartando o que ainda estivesse andando.
@@ -82,7 +86,7 @@ export class AnimacaoDeMarcha {
       if (comprimento <= 0) return [];
       return [
         {
-          destino: trecho.destino,
+          hoste: trecho.hoste,
           pontos: trecho.pontos,
           acumulada,
           comprimento,
@@ -104,7 +108,7 @@ export class AnimacaoDeMarcha {
     const chegaram: string[] = [];
     for (const marcha of this.andando) {
       marcha.decorrido += delta;
-      if (marcha.decorrido >= marcha.duracao) chegaram.push(marcha.destino);
+      if (marcha.decorrido >= marcha.duracao) chegaram.push(marcha.hoste);
     }
     if (chegaram.length === 0) return;
     this.andando = this.andando.filter((m) => m.decorrido < m.duracao);
@@ -117,8 +121,8 @@ export class AnimacaoDeMarcha {
    * `null` é a resposta normal: quase toda hoste está parada quase todo quadro, e quem
    * pergunta usa o centro da província.
    */
-  posicaoDe(destino: string): Ponto | null {
-    const marcha = this.andando.find((m) => m.destino === destino);
+  posicaoDe(idHoste: string): Ponto | null {
+    const marcha = this.andando.find((m) => m.hoste === idHoste);
     if (!marcha) return null;
 
     const bruta = Math.min(1, marcha.decorrido / marcha.duracao);

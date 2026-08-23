@@ -23,8 +23,10 @@ qualidade sem continuar como requisito.
 ## Projeto e estado atual
 
 Age of Grecce é um grand strategy por províncias no mundo grego de 700 a.C. O mapa é fixo:
-205 províncias, 53 regiões e 148 poderes. O patch em desenvolvimento é
-**`0.0.2 — Fundação do Mundo`**; IA continua fora do patch.
+205 províncias, 53 regiões e 148 poderes. A última versão fechada é
+**`0.0.2 — Fechamento da guerra básica`** (2026-08-23). **Não há patch em desenvolvimento**:
+o próximo da fila é o `0.0.3 — Economia física básica`, e ele só começa quando virar
+`PATCH_ATUAL.md`.
 
 O ciclo terrestre local já permite:
 
@@ -34,11 +36,14 @@ O ciclo terrestre local já permite:
 - formar, dividir, dispensar e mover hostes;
 - resolver movimentos simultâneos e batalhas;
 - usar milícia, assalto e cerco;
+- surtir da cidade sitiada e socorrê-la de fora;
+- sofrer e impor a regra da Muralha, que exige cerco antes do assalto;
+- ler na crônica o que aconteceu em cada rodada;
 - manter poderes em exílio enquanto ainda possuem hoste.
 
 Ainda não existem IA, diplomacia, naval, save/load nem fim de campanha. Economia física,
-alimentação, felicidade, nacionalidades e capitais funcionais pertencem ao patch atual e
-devem seguir `PATCH_ATUAL.md`; não presumir que já estejam implementadas.
+alimentação, felicidade funcional, nacionalidade funcional e fluxo de troca de capital
+pertencem a patches futuros do `ROADMAP.md`.
 
 ## Stack
 
@@ -148,7 +153,7 @@ Há três níveis diferentes:
 
 ## Economia e população atuais
 
-A economia antiga continua ativa enquanto a economia física do patch não a substituir:
+A economia antiga continua ativa enquanto o patch `0.0.3` não introduzir a produção física:
 
 `renda = impostos da população + produção do produto + comércio`
 
@@ -164,6 +169,8 @@ não arrecadam nem são simuladas economicamente. Valores atuais pertencem a
   tesouro do jogador para a interface.
 - Arrecadação e pagamento percorrem poderes em ordem de id para manter determinismo.
 - Investir e construir ainda exigem ficha econômica; recrutar não deve depender dela.
+  Elêusis e Tanagra começam com Quartel; Atenas, não — erguer o primeiro é decisão do
+  jogador, e há teste de tela contando com isso.
 
 População atual vive em `estado.populacao`; `dados/economia.json` guarda a população
 inicial. Recrutamento retira pessoas imediatamente, desmobilização devolve cada origem e
@@ -173,9 +180,31 @@ mortes são perdas reais.
 - Crescimento atual é proporcional à população e arredondado para baixo; a taxa vem de
   `dados/ajustes.json`.
 - Sem alimentação, o crescimento ainda não possui freio sistêmico. Essa é a transição até
-  a Etapa 4 do patch, não autorização para recriar um teto artificial.
+  o patch `0.0.4`, não autorização para recriar um teto artificial.
 - População zero não se repovoa sozinha; migração continua fora do escopo.
 - `populacaoMinima` preserva o piso que a província não cede ao recrutamento.
+
+### Ficha das cinco províncias
+
+Além de produto, nível e comércio-base, cada província da região de teste tem em
+`dados/economia.json`: nacionalidades da população, felicidade inicial, recurso
+secundário, estoque, construções iniciais e `ancoradouro`. Tudo é copiado para o estado na
+montagem da campanha e lido por `Campanha.perfilDe`.
+
+Quatro desses campos **existem sem fazer nada ainda**, de propósito, e cada um espera seu
+patch no `ROADMAP.md`:
+
+- o secundário não entra na renda — o `0.0.3` introduz a economia física;
+- ninguém consome alimento — `alimento.consumoPorHabitante` é só a régua que dimensiona
+  o estoque inicial em cerca de cinco turnos; o `0.0.4` faz o consumo morder;
+- a felicidade não muda nem influencia nada — isso pertence ao `0.0.7`;
+- a nacionalidade não pesa em nada — ela existe pro dia em que um poder governar gente que
+  não é dele; seus efeitos pertencem ao `0.0.8`.
+
+Não “completar” esses sistemas por conta própria: a ordem das etapas existe porque cada uma
+depende da anterior. O que vale conferir é que o dado continua coerente — o esquema recusa
+secundário que renda mais que o principal, fração de povo que não soma 1 e id de produto
+inexistente.
 
 Construções atuais: Ágora, Oficina, Mercado, Celeiro, Quartel e Muralha. Obras são pagas à
 vista, concluem após algumas rodadas, não podem ser canceladas e avançam depois da
@@ -183,7 +212,7 @@ arrecadação. Uma província executa uma obra por vez. O catálogo usa união d
 efeitos; construção que não gera renda não mostra prazo de retorno financeiro.
 
 O Porto ainda não existe. Slots, níveis de construção e a nova função do Quartel pertencem
-às etapas posteriores de `PATCH_ATUAL.md`.
+aos patches `0.0.10` e `0.0.11` do roadmap.
 
 ## Hostes, recrutamento e movimento
 
@@ -202,8 +231,14 @@ O Porto ainda não existe. Slots, níveis de construção e a nova função do Q
 id em `estado.proximaHoste`. Ordens também usam id de hoste. Não voltar a indexar hoste por
 província: o modelo precisa permitir mais de uma força no mesmo lugar.
 
-- `exercitoEm(provincia)` é conveniência e devolve a primeira hoste; para todas, usar
-  `hostesEm`.
+- **A hoste é endereçada por id, inclusive pela interface.** `hoste(id)` devolve uma;
+  `hostesEm(provincia)` devolve todas as que estão num lugar, e pode haver duas de poderes
+  diferentes — é o caso do cerco. `exercitoEm(provincia)` não existe mais: ele devolvia "a
+  primeira por id" e passou a mentir no dia em que sitiante e guarnição puderam dividir a
+  província.
+- `forcaEm(provincia)` responde **pelo dono da terra** quando o poder é omitido. Na cidade
+  sitiada isso é a guarnição do defensor, nunca o acampamento do sitiante; quem fala de uma
+  hoste específica usa `forcaDaHoste(id)`.
 - Hostes do mesmo poder podem fundir ao se encontrar por regra de mobilização, não por
   limitação estrutural.
 - Movimento é ordem resolvida ao passar o turno, uma fronteira por rodada.
@@ -222,10 +257,34 @@ moral, generais, terreno ou combate tático durante o patch atual.
 - Ela defende a cidade, não vira hoste e dispersa depois da resolução.
 - Muralha multiplica a defesa; perdas devem voltar de unidades defensivas para homens antes
   de reduzir população.
+- **A Muralha também proíbe o assalto imediato.** Cidade aberta cai no primeiro assalto;
+  contra uma província fortificada é preciso ter sentado na frente dela por
+  `combate.cerco.rodadasParaAssaltarMuralha` rodadas. Quem diz que a obra exige isso é o
+  campo `impedeAssaltoImediato` do catálogo, nunca o id `muralha` escrito na regra.
+- `Cerco.rodadas` conta há quanto tempo o exército está sentado ali e **não é progresso**:
+  nenhuma cidade abre os portões sozinha ao fim da contagem. Ele responde uma pergunta só —
+  já dá para assaltar aquela muralha? Zera quando o sitiante sai, morre ou é substituído.
+- Na região de teste, **Tanagra começa com Muralha e Elêusis não**: são os dois vizinhos de
+  Atenas, um de cada tipo, e é esse par que torna a diferença jogável sem montar cenário.
 - Entrar numa província inimiga com população não transfere automaticamente a posse.
 - Assaltar tenta tomar a cidade imediatamente e custa homens.
 - Sitiar nunca conquista sozinho: corta produção e comércio, preserva impostos e espera
   uma decisão posterior.
+- Sitiar também **não engaja o exército inimigo**: sitiante e defensor ficam acampados na
+  mesma província sem se aniquilar. Assaltar engaja — o choque de campo acontece antes da
+  muralha. A regra é `quemLuta` em `src/movimento/resolucao.ts`, e quem defende a própria
+  terra luta sempre.
+- O cerco acaba quando o SITIANTE sai, não quando o dono aparece. Apagar o cerco só porque
+  há hoste do dono ali daria ao defensor uma forma de quebrá-lo sem lutar.
+- A **surtida** é a resposta do sitiado: ele sai para atacar quem o cerca e o choque deixa
+  de ser opcional para o sitiante. Vitória levanta o cerco; derrota desfaz a hoste que
+  saiu e o cerco continua. A milícia não vai junto — ela é da cidade.
+- **Socorro que chega de fora também engaja**: marchar para a própria cidade sitiada é
+  atacar quem a sitia, sem nada a declarar. As duas regras vivem em `choqueObrigadoEm`,
+  em `src/movimento/resolucao.ts`.
+- Marcha para terra própria **não declara postura**. As posturas são indexadas por
+  província de destino, e sem isso a ida do defensor para casa rebaixava o assalto do
+  sitiante a cerco.
 - Província inimiga realmente vazia cai ao primeiro ingresso.
 - O sitiante acampa visualmente próximo da divisa; postura pertence à ordem de destino.
 - Marchar embora, morrer ou perder a condição territorial encerra o cerco como
@@ -233,7 +292,11 @@ moral, generais, terreno ou combate tático durante o patch atual.
 
 ## Interface das hostes e movimento
 
-- Marcadores de hoste são HTML sobre o canvas e usam a cor do dono da hoste.
+- Marcadores de hoste são HTML sobre o canvas e usam a cor do dono da hoste. **Um marcador
+  por HOSTE, com o id dela por chave** — por província só cabia um, e o segundo exército
+  sumia do mapa numa cidade sitiada.
+- A bandeira de cerco tem camada própria (`#ui > .cercos`) porque o sitiante é desenhado na
+  divisa e a marca precisa ficar sobre a cidade. Ela não intercepta clique.
 - A camada deve ser selecionada como `#ui > .hostes`; `.hostes` sozinho pode capturar todos
   os cliques do mapa por causa da especificidade de `#ui > *`.
 - Posição usa a propriedade CSS `translate`, não `transform`, para animação de `scale` não
@@ -246,6 +309,12 @@ moral, generais, terreno ou combate tático durante o patch atual.
   resolução anima a marcha e depois remove a seta.
 - A animação é apenas apresentação. O estado já foi resolvido e não pode depender dela.
 - Relatório guarda a trilha completa, não um resumo separado de origem/destino.
+- O relatório da rodada vira texto em `src/ui/cronica.ts`: batalhas, milícia, conquistas,
+  cercos começados e levantados. **Só notícia, nunca playback** — barra, velocidade e pular
+  são o visor de batalha do `0.0.13`. Quem escreve a frase é `main.ts`, que sabe os nomes;
+  a crônica recebe texto pronto.
+- `batalhas[].tipo` separa `campo`, `estrada` e `assalto`: um assalto produz duas batalhas
+  na mesma província e na mesma rodada, e sem o tipo a crônica escrevia duas linhas iguais.
 - `inspecao.passarTurno` deve seguir o mesmo fluxo visual do botão.
 
 ## Verificação

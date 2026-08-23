@@ -82,7 +82,8 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   const renda = await page.evaluate(
     () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().renda,
   );
-  await expect(page.locator('.barra-turno')).toContainText(`3000 moedas (+${renda})`);
+  await expect(page.locator('.barra-turno__saldo')).toHaveText('3000');
+  await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
   // o detalhe agora vive no tooltip, pra lista dar pra varrer com o olho
   await expect(page.getByRole('button', { name: /^Ágora/ })).toHaveAttribute(
     'data-tooltip-corpo',
@@ -96,7 +97,8 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await page.getByRole('button', { name: /^Ágora/ }).click();
 
   // paga à vista e ENTREGA DEPOIS: o tesouro zerou, mas a renda ainda não subiu
-  await expect(page.locator('.barra-turno')).toContainText(`0 moedas (+${renda})`);
+  await expect(page.locator('.barra-turno__saldo')).toHaveText('0');
+  await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
   await expect(page.locator('.ficha__obra')).toContainText('Ágora em obra · 3 turnos');
   await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 3 turnos');
   // as outras continuam visíveis, dizendo por que não dá

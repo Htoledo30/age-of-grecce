@@ -13,6 +13,7 @@ import {
   manutencaoDe,
   maximoDaLeva,
 } from '../src/combate/recrutamento';
+import { unicaEm } from './apoio/hostes';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -172,7 +173,7 @@ describe('recrutar custa ouro E população', () => {
     expect(c.tesouro).toBe(tesouro - custoDaLeva(1000, combate));
     expect(c.populacaoDe('atenas')).toBe(populacao - 1000);
     expect(c.forcaEm('atenas')).toBe(0);
-    expect(c.exercitoEm('atenas')).toBeUndefined();
+    expect(unicaEm(c, 'atenas')).toBeUndefined();
     expect(c.formacaoEm('atenas')).toMatchObject({
       poder: 'atenas',
       homens: 1000,
@@ -182,7 +183,7 @@ describe('recrutar custa ouro E população', () => {
     c.passarTurno();
     expect(c.formacaoEm('atenas')).toBeUndefined();
     expect(c.forcaEm('atenas')).toBe(1000);
-    expect(c.exercitoEm('atenas')?.poder).toBe('atenas');
+    expect(unicaEm(c, 'atenas')?.poder).toBe('atenas');
   });
 
   it('quem está em armas deixa de ser tributado, e a renda cai na hora', () => {
@@ -327,7 +328,7 @@ describe('dispensar devolve cada um à sua terra', () => {
     c.passarTurno();
     const populacao = c.populacaoDe('atenas');
     c.dispensar('atenas', 1000);
-    expect(c.exercitoEm('atenas')).toBeUndefined();
+    expect(unicaEm(c, 'atenas')).toBeUndefined();
     expect(c.populacaoDe('atenas')).toBe(populacao + 1000);
     expect(c.manutencao).toBe(0);
   });
@@ -351,8 +352,10 @@ describe('conquista e tropa', () => {
     c.passarTurno();
     c.trocarDono('atenas', 'megara');
     // o exército continua sendo de Atenas: quem manda no chão não manda na tropa
-    expect(c.exercitoEm('atenas')?.poder).toBe('atenas');
-    expect(c.forcaEm('atenas')).toBe(1000);
+    expect(unicaEm(c, 'atenas')?.poder).toBe('atenas');
+    // Perguntando por Atenas de propósito: sem o poder, `forcaEm` responderia por Mégara,
+    // que é a nova dona da terra e não tem homem nenhum ali.
+    expect(c.forcaEm('atenas', 'atenas')).toBe(1000);
   });
 });
 

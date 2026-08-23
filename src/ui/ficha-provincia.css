@@ -86,6 +86,22 @@
 .ficha__lista dd.ficha__total {
   color: var(--ui-bronze-claro);
 }
+/* O secundário e a despensa moram junto da produção porque respondem à mesma pergunta:
+   o que esta terra dá e o que ela tem. Tênues de propósito — nenhum dos dois mexe em
+   nada ainda, e destacá-los prometeria uma decisão que o jogador não pode tomar. */
+.ficha__secundario {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+  cursor: help;
+}
+.ficha__despensa {
+  margin-top: 4px;
+  font-family: var(--fonte-numero);
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+  cursor: help;
+}
 .ficha__construcoes {
   margin-top: 8px;
   padding-top: 8px;

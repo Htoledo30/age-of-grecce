@@ -1,744 +1,217 @@
 # PATCH_ATUAL.md
 
-# Age of Grecce — Patch 0.0.2
+> ## ⚠️ NÃO HÁ PATCH EM ANDAMENTO
+>
+> O `0.0.2` foi testado por Henrique, aprovado e **fechado em 2026-08-23**. A versão está
+> em `package.json` e o histórico em `CHANGELOG.md`.
+>
+> **Nenhum agente tem trabalho autorizado neste momento.** O próximo da fila é o
+> `0.0.3 — Economia física básica` do `ROADMAP.md`, e ele só começa quando Henrique
+> reescrever este arquivo com o escopo dele. O que está abaixo é o registro do patch
+> encerrado, mantido como memória do que foi feito e por quê.
 
-## Nome do patch
+# Age of Grecce — 0.0.2 (ENCERRADO)
 
-**0.0.2 — Fundação do Mundo**
+## Nome
 
-## Estado
+**Fechamento da guerra básica**
 
-**EM DESENVOLVIMENTO**
+## Objetivo
 
-Este patch ainda não está fechado.
+Fechar e testar o núcleo de guerra que já existe, sem iniciar economia nova nem outro sistema grande.
 
-O foco atual é estabilizar os três pilares que servirão de base para a IA:
-
-1. Mundo
-2. Economia
-3. Guerra terrestre
-
-A IA NÃO deve ser iniciada antes do fechamento deste patch.
-
----
-
-# Objetivo do patch
-
-Ao final do `0.0.2`, deve existir pelo menos uma região de teste jogável onde seja
-possível:
-
-- possuir e conquistar províncias;
-- ter população funcional;
-- produzir e consumir recursos;
-- armazenar recursos;
-- movimentar recursos dentro do poder;
-- arrecadar dinheiro;
-- construir;
-- recrutar;
-- formar hostes;
-- mover hostes;
-- entrar em combate;
-- sofrer baixas;
-- usar milícia;
-- cercar;
-- assaltar;
-- conquistar;
-- alterar o estado do mundo de forma consistente.
-
-O objetivo NÃO é profundidade.
-
-O objetivo é fechar contratos estáveis o suficiente para que a IA possa ser construída
-depois sem exigir refatorações constantes da base.
+Este patch deve terminar pequeno, jogável e verificável manualmente.
 
 ---
 
-# Regra central deste patch
+## Trabalho já existente e que deve ser preservado
 
-Antes de adicionar profundidade, terminar a estrutura.
+O núcleo militar atual já possui, segundo código/testes e revisão da Claude:
 
-Se uma ideia nova não for necessária para o fechamento do `0.0.2`, ela deve ser registrada
-no backlog e NÃO deve interromper a tarefa atual.
-
----
-
-# Estado atual conhecido
-
-O projeto já possui, em diferentes níveis de maturidade:
-
-- mapa;
-- províncias;
-- poderes;
-- propriedade territorial mutável;
-- população;
-- economia básica;
-- construções;
-- recrutamento;
-- formação de leva;
-- hostes;
-- origem provincial dos soldados;
-- manutenção;
-- deserção;
-- ordens de marcha;
-- divisão de hostes;
-- resolução simultânea;
+- hostes com identidade própria;
+- destacamentos;
+- origem dos soldados preservada;
+- recrutamento com 1 rodada de formação;
+- movimento e ordens simultâneas;
 - encontros na estrada;
-- combate numérico provisório;
+- múltiplas batalhas no mesmo turno;
+- baixas e sobreviventes;
 - milícia;
-- cerco;
+- cerco persistente;
+- postura decide se há choque: sitiar não engaja o exército de dentro, assaltar engaja;
 - assalto;
 - conquista;
-- exílio.
+- exílio de poderes que ainda possuam hostes.
 
-O núcleo militar básico foi estabilizado no estado atual do projeto.
-
-Estado confirmado:
-
-- hostes possuem identidade própria;
-- destacamentos funcionam;
-- origem dos soldados é preservada;
-- encontros na estrada funcionam;
-- múltiplas batalhas no mesmo turno funcionam;
-- milícia, cerco, assalto, conquista e exílio estão implementados;
-- testes atuais passam.
-
-O próximo trabalho do 0.0.2 deve partir dessa base, sem reimplementar o que já está
-concluído.
+Não reimplementar esses sistemas sem bug concreto.
 
 ---
 
-# Prioridade imediata
+## Trabalho que caiu antecipadamente no repositório
 
-## Etapa 1 — Consolidar contratos antes da economia nova
+Durante o escopo anterior, maior do que deveria, foram preparados também:
 
-O núcleo militar básico já está funcional e testado.
+- tesouro por poder;
+- região de teste com Atenas, Maratona, Sunião, Elêusis e Tanagra;
+- nacionalidade inicial;
+- felicidade inicial;
+- recurso secundário;
+- estoque inicial;
+- capitais;
+- conexões;
+- ancoradouro;
+- crescimento populacional sem teto artificial;
+- testes correspondentes.
 
-Não reimplementar hostes, destacamentos, encontros, milícia, cerco, assalto, conquista ou
-exílio sem bug concreto.
+Esses dados e estruturas podem permanecer se estiverem estáveis.
 
-### Pendências estruturais antes da IA
+**Eles não autorizam implementar os sistemas futuros que irão usá-los.**
 
-- [x] tesouro deve existir por poder, não apenas para o jogador; **CONCLUÍDA** —
-      `estado.tesouros` por id de poder, os 148 começam com `tesouroInicial`;
-      `testes/tesouro.test.ts`
-- [x] manutenção deve ser cobrada de todos os poderes usando a mesma regra; **CONCLUÍDA** —
-      `pagarTropa` percorre os poderes vivos em ordem de id; quem fica sem caixa deserta,
-      seja quem for
-- [x] recrutamento futuro da IA deve consumir o tesouro do próprio poder; **CONCLUÍDA** —
-      recrutar, construir e investir cobram o cofre do DONO da província, e o teto da leva
-      olha o ouro dele
-- [x] remover a dependência de "economia configurada" como trava conceitual de
-      recrutamento; **CONCLUÍDA** — `podeMobilizarEm` separado de `podeAgirEm`; investir e
-      construir continuam exigindo economia, porque ali a trava é real
-- [x] manter população e demais requisitos reais como regras do recrutamento;
-      **CONCLUÍDA** — a recusa passou a falar de Quartel, piso de população e ouro; nunca
-      de dado que falta
-- [x] remover `fatorCapacidade: 2` e a capacidade populacional artificial; **CONCLUÍDA** —
-      saiu do esquema, dos ajustes e de `crescimento.ts`
-- [x] preparar o estado para capitais por poder; **CONCLUÍDA** — `estado.capitais`,
-      `src/campanha/capitais.ts`, `capitalDe` e `capitalPerdida`. A capital ainda não FAZ
-      nada: o fluxo é a Etapa 9
-- [x] manter testes atuais passando após essas mudanças. **CONCLUÍDA com ressalva** — 203
-      no vitest e 20 na tela. Nove expectativas numéricas mudaram porque o comportamento
-      mudou por decisão (`DECISOES.md` #24 dobrou o crescimento inicial de 175 para 350);
-      nenhuma foi ajustada sem o comportamento ser conferido
+---
 
-### ⚠️ Pendência aberta por esta etapa
+# Tarefas do 0.0.2
 
-Sem capacidade máxima e sem alimento, o crescimento populacional é **exponencial e sem
-freio**. É estado intermediário conhecido: o freio verdadeiro é a Etapa 4. Até lá, partida
-muito longa infla a população.
+## 1. Surtida
 
-Efeito colateral de balanço a olhar quando a economia física entrar: a folha de Elêusis
-(150/turno) e a de Tanagra (150/turno) já superam a renda delas (119 e 83), e o caixa
-inicial de 3.000 dá cerca de 96 e 44 turnos antes de a deserção começar.
+Pré-requisito já feito: sitiar deixou de engajar, então sitiante e defensor convivem na
+mesma província. Sem isso não havia a quem dar a escolha — o choque já tinha resolvido
+tudo.
 
-### Combate
+**Surtida é o sitiado sair para atacar quem o cerca.** É o único ato que obriga o sitiante
+a lutar: ele declarou que não quer choque, e a surtida ignora essa recusa.
 
-A matemática atual continua sendo provisória.
+- [x] defensor sitiado pode escolher atacar o exército sitiador;
+- [x] reutilizar o combate básico já existente;
+- [x] vitória do defensor quebra o cerco;
+- [x] derrota mantém o cerco e aplica as baixas de forma coerente;
+- [x] a milícia NÃO sai junto: quem surte é a hoste, a milícia continua sendo da cidade;
+- [x] surtir é a ordem daquela hoste na rodada — quem surte não marcha no mesmo turno;
+- [x] **socorro que chega de fora engaja o sitiante** ao entrar, sem declarar nada
+      (`DECISOES.md` #33A);
+- [x] não criar sistema tático separado.
 
-Não adicionar agora:
+Achado durante a tarefa, corrigido junto porque a chegada do socorro o tornava comum:
+a postura é compartilhada por província de DESTINO, e uma marcha do defensor para a
+própria cidade escrevia "sitiar" na entrada dela — bastava mandar qualquer hoste para lá
+e o assalto do sitiante virava cerco sem nada ter sido lutado. Marcha para terra própria
+deixou de declarar postura.
 
+## 2. Muralha e assalto
+
+- [x] muralha continua fortalecendo a defesa/milícia;
+- [x] província sem muralha pode sofrer assalto imediato;
+- [x] província com muralha exige inicialmente 2 turnos de cerco antes do assalto;
+- [x] manter o número de 2 turnos como valor inicial de teste, não como valor final de balanceamento;
+- [x] o número vive em `dados/ajustes.json`; quem diz que a obra exige cerco é o catálogo
+      de construções, por campo próprio — não o id `muralha` escrito na regra;
+- [x] a contagem começa em zero na rodada em que o exército senta e zera se o sitiante
+      sair, morrer ou for substituído;
+- [x] o botão de assaltar só aparece depois das duas rodadas, dizendo o motivo antes disso;
+- [x] **Tanagra começa com Muralha e Elêusis não** — os dois alvos vizinhos de Atenas, um
+      de cada tipo, para o teste manual comparar assalto imediato e assalto barrado.
+
+A regra mora na resolução, e não só na interface: a postura também chega pela ordem de
+marcha, e uma ordem que a tela não deixaria dar continuaria podendo vir da IA, de um
+salvamento antigo ou do gancho de inspeção. Assalto barrado vira cerco em vez de erro.
+
+## 3. Crônica da rodada
+
+Achado ao revisar o patch antes de fechar: **a guerra estava sendo resolvida em silêncio.**
+A resolução já devolvia batalhas, conquistas, cercos e milicianos perdidos, e ninguém lia
+esse relatório — o jogador mandava a surtida, passava o turno, e a peça de 700 homens sumia
+do mapa sem uma palavra.
+
+Não é ampliação de escopo: o patch promete terminar "pequeno, jogável e **verificável
+manualmente**", e guerra que só se adivinha não é verificável à mão.
+
+- [x] uma nota por rodada com o que aconteceu: batalhas, milícia, conquistas, cercos
+      começados e cercos levantados;
+- [x] some sozinha quando a rodada não tem notícia — mundo parado não escreve linha;
+- [x] o tom (ganho/perda) é do ponto de vista do jogador;
+- [x] separar o choque de campo do assalto: um assalto produz duas batalhas na mesma
+      província, e duas linhas iguais leem como repetição;
+- [x] **não é o visor de batalha.** Sem barra, sem playback, sem velocidade, sem pular —
+      isso continua sendo o `0.0.13` do `ROADMAP.md`, e passa a valer de verdade quando a
+      IA atacar sem avisar.
+
+## 4. Estabilização
+
+- [x] **levar o id da hoste até a interface.** `Campanha.exercitoEm` saiu e deu lugar a
+      `hoste(id)` e `hostesEm(provincia)`; o mapa desenha um marcador por HOSTE; a ficha do
+      exército e as ordens endereçam por id; o sitiante é desenhado na divisa e a bandeira
+      de cerco ganhou camada própria;
+- [x] terminar o rastro desse refactor: 7 testes unitários e 1 de tela endereçavam hoste
+      por província (`forcaEm` agora responde pelo dono da terra, e `podeOrdenarMarcha`
+      recebe id de hoste);
+- [x] trocar o `test.fixme` de `testes/tela/cerco.spec.ts` por um teste real de operar o
+      cerco pelo marcador;
+- [x] corrigir regressões causadas pelas mudanças deste patch;
+- [x] manter o núcleo militar existente funcionando;
+- [x] testes unitários verdes;
+- [x] testes de tela verdes;
+- [x] tipos e lint verdes.
+
+---
+
+# Fora de escopo do 0.0.2
+
+Não implementar neste patch:
+
+- nova economia física;
+- produção física nova;
+- consumo de alimento;
+- deterioração;
+- mercado interno;
+- nova tributação;
+- felicidade funcional;
+- nacionalidade funcional;
+- efeitos funcionais de capital;
+- construções 2.0;
+- cerco econômico;
+- visor de batalha;
+- moral;
+- retirada avançada;
 - tipos de tropas;
-- moral completa;
 - generais;
-- terreno;
-- combate tático.
-
-O objetivo é preservar a base funcional enquanto mundo e economia são fechados.
-
----
-
-# Etapa 2 — Completar a região de teste existente
-
-A região de teste já está escolhida e configurada parcialmente.
-
-Ela é formada pelas cinco províncias econômicas atuais:
-
-- Atenas;
-- Maratona;
-- Sunião;
-- Elêusis;
-- Tanagra.
-
-Essa região foi escolhida porque permite testar Atenas e dois poderes vizinhos de uma
-província, além de guerra, conquista e economia sem depender do mapa inteiro.
-
-Não escolher outra região agora.
-
-### Completar nessa região
-
-- [ ] população plausível;
-- [ ] nacionalidades;
-- [ ] felicidade inicial;
-- [ ] recurso principal de cada uma;
-- [ ] recurso secundário;
-- [ ] estoque inicial;
-- [ ] construções iniciais;
-- [ ] capital dos poderes;
-- [ ] conexões terrestres;
-- [ ] portos quando necessários.
-
-As outras 200 províncias NÃO possuem recurso/economia configurados hoje e continuam fora
-do escopo desta validação.
+- terreno de combate;
+- naval;
+- diplomacia;
+- IA.
 
 ---
 
-# Etapa 3 — Refazer a economia para recursos físicos
-
-A economia atual baseada em produto como fonte direta de dinheiro deve ser substituída
-gradualmente por uma economia em que produtos existam como recursos físicos.
-
-## Estrutura mínima
-
-Cada província da região de teste deve possuir:
-
-- população;
-- recursos naturais;
-- produção;
-- estoque;
-- consumo;
-- felicidade;
-- construções;
-- conexão com outras províncias.
-
-## Recursos
-
-Cada província terá inicialmente:
-
-- 1 recurso principal;
-- 1 recurso secundário mais fraco.
-
-O nível natural do recurso é fixo.
-
-Construções e população podem melhorar exploração, mas NÃO podem aumentar o potencial
-natural.
-
-### Implementar
-
-- [ ] estrutura de recurso físico;
-- [ ] quantidade produzida por turno;
-- [ ] estoque por província;
-- [ ] agregação de estoque por poder;
-- [ ] deterioração de alimentos;
-- [ ] captura de estoque em conquista;
-- [ ] perda parcial de estoque em conquista/assalto.
-
----
-
-# Etapa 4 — Alimentação
-
-Toda população consome alimento a cada turno.
-
-Produtos alimentares continuam individuais, mas a interface pode mostrar uma categoria
-agregada.
-
-Exemplo:
-
-**Alimento: 500**
-
-Tooltip:
-
-- 300 grãos
-- 120 peixe
-- 80 carne
-
-### Implementar
-
-- [ ] consumo de alimento por população;
-- [ ] cálculo agregado da disponibilidade de alimento;
-- [ ] crescimento normal com alimentação suficiente;
-- [ ] bônus pequeno com excedente confortável;
-- [ ] redução de crescimento com escassez;
-- [ ] perda populacional com déficit;
-- [ ] perda forte com déficit severo;
-- [ ] valores iniciais simples para aproximadamente 5 turnos de sobrevivência na região de
-      teste.
-
-Não buscar balanceamento perfeito agora.
-
----
-
-# Etapa 5 — Produção e população produtiva
-
-Direção:
-
-`produção = potencial natural × população produtiva × modificadores`
-
-Não haverá distribuição manual de trabalhadores.
-
-Uma porcentagem da população total representa implicitamente a população produtiva.
-
-### Implementar
-
-- [ ] fórmula simples de produção;
-- [ ] produção reduzida quando população cai;
-- [ ] modificadores de construções;
-- [ ] testes com províncias de tamanhos e potenciais diferentes.
-
-Os valores exatos são balanceamento e podem mudar.
-
----
-
-# Etapa 6 — Mercado interno automático
-
-O jogador não movimenta recursos manualmente entre províncias do mesmo poder.
-
-Fluxo:
-
-1. consumo local;
-2. cobrir déficit de outras províncias conectadas;
-3. estoque.
-
-A capital recebe prioridade em situação de escassez.
-
-O restante é distribuído proporcionalmente à necessidade.
-
-### Regras
-
-Recursos só circulam com conexão válida:
-
-- terrestre;
-- marítima quando houver Porto.
-
-### Implementar
-
-- [ ] detectar províncias conectadas;
-- [ ] calcular excedente;
-- [ ] calcular déficit;
-- [ ] distribuir automaticamente;
-- [ ] priorizar capital;
-- [ ] distribuir restante proporcionalmente;
-- [ ] impedir transferência para província isolada.
-
-Não implementar comércio internacional ainda.
-
----
-
-# Etapa 7 — Dinheiro e impostos
-
-O tesouro continua sendo do poder.
-
-A economia física não deve eliminar o dinheiro.
-
-Direção conceitual:
-
-`receita fiscal = população × atividade econômica × taxa × eficiência`
-
-Não é necessário expor essa fórmula ao jogador.
-
-## Imposto
-
-Três níveis:
-
-- Baixo
-- Normal
-- Alto
-
-### Efeitos
-
-**Baixo**
-
-- menos arrecadação;
-- melhora felicidade.
-
-**Normal**
-
-- equilíbrio.
-
-**Alto**
-
-- mais arrecadação;
-- piora felicidade;
-- aumenta pressão de revolta.
-
-### Implementar
-
-- [ ] nova base de imposto;
-- [ ] três taxas;
-- [ ] interação com felicidade;
-- [ ] receita de atividade econômica interna;
-- [ ] saque de conquista equivalente aproximadamente a uma renda da província.
-
----
-
-# Etapa 8 — Felicidade e nacionalidade
-
-## Felicidade
-
-Internamente:
-
-`0–100`
-
-Na interface:
-
-- Muito feliz
-- Satisfeita
-- Neutra
-- Insatisfeita
-- Revoltosa
-
-### Fatores previstos
-
-- imposto;
-- alimentação;
-- fome;
-- conquista recente;
-- nacionalidade diferente;
-- distância da capital;
-- ineficiência administrativa;
-- presença militar;
-- construções;
-- guerra longa;
-- prosperidade.
-
-Não é necessário implementar todos com profundidade agora.
-
-### Implementar no mínimo
-
-- [ ] estrutura de felicidade;
-- [ ] categoria visual;
-- [ ] imposto afeta felicidade;
-- [ ] falta de alimento afeta felicidade;
-- [ ] conquista recente afeta felicidade;
-- [ ] nacionalidade diferente afeta felicidade.
-
-## Nacionalidade
-
-Uma província pode possuir múltiplas nacionalidades.
-
-### Implementar
-
-- [ ] composição populacional por nacionalidade;
-- [ ] nacionalidade dominante;
-- [ ] mudança lenta ao longo do tempo;
-- [ ] efeito básico sobre felicidade.
-
-Migração fica fora do patch.
-
----
-
-# Etapa 9 — Capital
-
-Cada poder deve possuir uma capital.
-
-### Implementar
-
-- [ ] capital inicial nos dados;
-- [ ] identificação da capital atual;
-- [ ] conquista da capital gera estado de "capital perdida";
-- [ ] mensagem no início do próximo turno;
-- [ ] jogador é obrigado a escolher nova capital antes de continuar;
-- [ ] nova capital passa a ser o centro administrativo.
-
-Ineficiência administrativa avançada pode ser simplificada inicialmente.
-
----
-
-# Etapa 10 — Construções
-
-As construções atuais precisam ser adaptadas para a nova economia.
-
-Cada província terá:
-
-- 4 slots;
-- construções com níveis I, II e III.
-
-Não implementar um atributo genérico de desenvolvimento.
-
-## Ágora
-
-Direção:
-
-- atividade econômica;
-- administração;
-- receita fiscal;
-- possível efeito em felicidade.
-
-## Mercado
-
-Direção:
-
-- eficiência do mercado interno;
-- comércio futuro;
-- renda comercial.
-
-## Oficina
-
-Direção:
-
-- bônus geral de produção.
-
-## Celeiro
-
-Direção:
-
-- armazenamento de alimento;
-- redução de deterioração;
-- resistência à escassez.
-
-## Quartel
-
-Mudança importante:
-
-Quartel NÃO será mais requisito para recrutamento.
-
-Uma província própria com população suficiente deve poder recrutar mesmo sem Quartel.
-
-A ausência de economia configurada não deve existir como uma trava conceitual do
-recrutamento; ela é apenas uma limitação temporária dos dados atuais.
-
-Quartel melhora a qualidade/força dos soldados recrutados naquela província.
-
-## Muralha
-
-Direção:
-
-- defesa;
-- milícia;
-- assalto;
-- cerco.
-
-## Porto
-
-Necessário para conexão marítima econômica.
-
-## Estradas
-
-Devem existir futuramente como construção.
-
-Não precisam estar completas no 0.0.2.
-
-### Implementar neste patch
-
-- [ ] sistema de 4 slots;
-- [ ] níveis I/II/III;
-- [ ] adaptar construções existentes;
-- [ ] Quartel deixa de bloquear recrutamento;
-- [ ] Porto mínimo para conexão marítima;
-- [ ] chance futura/estrutura para dano ou destruição de construção em conquista.
-
----
-
-# Etapa 11 — Integrar economia e cerco
-
-O cerco deve usar a economia real.
-
-Durante cerco:
-
-- circulação externa é cortada;
-- produção cai fortemente;
-- consumo continua;
-- estoque é consumido;
-- fome pode começar.
-
-### Implementar
-
-- [ ] corte de abastecimento;
-- [ ] queda de produção;
-- [ ] consumo de estoque;
-- [ ] efeitos da fome;
-- [ ] persistência entre turnos.
-
-## Muralhas
-
-A Muralha terá duas funções defensivas complementares:
-
-1. melhorar a força defensiva/milícia no assalto;
-2. impedir assalto imediato, exigindo período mínimo de cerco.
-
-Direção inicial:
-
-- sem muralha: assalto imediato possível;
-- com muralha: pelo menos 2 turnos de cerco antes de assalto;
-- muralha continua fortalecendo a defesa quando o assalto acontecer.
-
-O número de turnos e os bônus exatos podem mudar em teste.
-
-## Surtida
-
-O defensor sitiado deve poder escolher atacar o exército sitiador.
-
-Implementar de forma simples no 0.0.2:
-
-- [ ] opção de surtida durante cerco;
-- [ ] usar o mesmo sistema básico de combate;
-- [ ] se defensor vencer, cerco é quebrado;
-- [ ] se defensor perder, sobreviventes retornam à defesa quando coerente com a resolução;
-- [ ] não criar regras táticas especiais ainda.
-
----
-
-# Etapa 12 — Apresentação visual mínima de batalha
-
-A batalha final não será tática em campo aberto.
-
-A referência conceitual é Brasfoot:
-
-- simulação numérica;
-- jogador consegue acompanhar;
-- resultado não aparece instantaneamente.
-
-Para o `0.0.2`, basta um protótipo simples se ele não atrasar excessivamente o fechamento
-da base.
-
-A matemática atual resolve a batalha em um único cálculo. Portanto o protótipo visual do
-0.0.2 NÃO exige transformar o combate em resolução iterativa.
-
-A interface pode apresentar progressivamente um resultado já calculado, apenas como
-playback visual.
-
-Uma resolução realmente iterativa, necessária para moral e decisões durante a batalha,
-fica para um patch futuro de combate.
-
-### Protótipo desejado
-
-- [ ] nome/local da batalha;
-- [ ] dois lados;
-- [ ] homens de cada lado;
-- [ ] playback visual das perdas;
-- [ ] barras;
-- [ ] velocidade;
-- [ ] botão de pular.
-
-Não implementar ainda:
-
-- postura;
-- retirada manual;
-- moral completa;
-- tipos de tropas;
-- ordens táticas.
-
----
-
-# Fora do escopo do 0.0.2
-
-NÃO implementar neste patch:
-
-- IA estratégica;
-- infantaria/cavalaria/arqueiros/siege;
-- generais;
-- family tree;
-- terreno afetando combate;
-- sistema naval;
-- comércio internacional completo;
-- tratados comerciais;
-- oferta e demanda;
-- preços dinâmicos;
-- preços regionais;
-- governadores;
-- migração;
-- grupos culturais;
-- religião;
-- logística militar completa;
-- recursos obrigatórios para recrutar tropas;
-- combate tático;
-- estradas completas;
-- sistema avançado de corrupção.
-
-Registrar ideias relacionadas no backlog.
-
----
-
-# Critério de conclusão
-
-O `0.0.2` só pode ser fechado quando:
-
-## Mundo
-
-- [ ] região de teste configurada;
-- [ ] população funcionando;
-- [ ] nacionalidade funcionando;
-- [ ] felicidade funcionando;
-- [ ] capitais funcionando;
-- [ ] posse e conquista funcionando.
-
-## Economia
-
-- [ ] recursos físicos funcionando;
-- [ ] produção funcionando;
-- [ ] alimentação funcionando;
-- [ ] estoque funcionando;
-- [ ] deterioração funcionando;
-- [ ] mercado interno funcionando;
-- [ ] conexões funcionando;
-- [ ] impostos funcionando;
-- [ ] construções adaptadas;
-- [ ] conquista captura recursos.
-
-## Guerra
-
-- [ ] recrutamento funcionando;
-- [ ] formação funcionando;
-- [ ] hostes estáveis;
-- [ ] movimento funcionando;
-- [ ] encontros funcionando;
-- [ ] combate básico coerente;
-- [ ] milícia funcionando;
-- [ ] cerco funcionando;
-- [ ] assalto funcionando;
-- [ ] conquista funcionando;
-- [ ] integração cerco/economia funcionando;
-- [ ] rastreabilidade populacional preservada.
-
-## Qualidade
-
-- [ ] testes atuais passam;
-- [ ] comportamentos novos importantes possuem testes;
-- [ ] documentação afetada foi atualizada;
-- [ ] CHANGELOG atualizado;
-- [ ] fluxo principal testado manualmente;
-- [ ] Henrique aprovou o patch.
-
----
-
-# O que acontece depois
-
-Quando o `0.0.2` for aprovado e fechado:
-
-**parar.**
-
-Não iniciar automaticamente o próximo patch.
-
-O próximo patch provável é:
-
-**IA mínima — versão ainda não definida**
-
-Seu número e seu escopo só devem ser definidos depois da aprovação formal do `0.0.2`.
-
----
-
-# Instrução para o agente principal
-
-Ao trabalhar neste patch:
-
-1. leia este arquivo;
-2. trabalhe somente no escopo atual;
-3. não implemente itens de "Fora do escopo";
-4. não comece IA;
-5. quando encontrar uma ideia futura, registre-a para backlog;
-6. mantenha testes atualizados;
-7. não altere decisões estruturais importantes sem avisar;
-8. marque tarefas concluídas somente quando código e testes confirmarem;
-9. ao considerar o patch tecnicamente pronto, pare e apresente o estado para revisão
-   humana;
-10. não altere a versão para o próximo patch sem aprovação.
+# Critério de fechamento
+
+O `0.0.2` fecha somente quando:
+
+- [x] as tarefas do patch funcionarem;
+- [x] testes automatizados relevantes estiverem verdes — 237 unitários e 26 de tela, com
+      tipos, lint, código morto e validação de dados;
+- [x] não houver regressão bloqueante conhecida;
+- [x] Henrique testar manualmente o jogo;
+- [x] Henrique aprovar o patch.
+
+Depois da aprovação:
+
+1. [x] atualizar `CHANGELOG.md`;
+2. [x] marcar/registrar a versão — `0.0.2` em `package.json` e `package-lock.json`;
+3. [x] encerrar o patch;
+4. [x] parar.
+
+**Nenhum agente inicia o `0.0.3` automaticamente.**
+
+## Limites conhecidos que este patch NÃO resolveu
+
+Ficam registrados para quem abrir o próximo patch, e nenhum deles é alcançável pelo
+jogador hoje:
+
+- **dois sitiantes na mesma província**: `estado.cercos` guarda um sitiante por província,
+  então o segundo sobrescreve o registro do primeiro — e os dois acampam sem se tocar,
+  porque nenhum quer lutar. Vira problema real no patch da IA;
+- **postura compartilhada por província de destino**: dois poderes marchando sobre a mesma
+  cidade alheia compartilham a entrada, e o segundo herda a postura do primeiro. Também só
+  aparece em guerra de três lados;
+- **a matemática do combate continua provisória** (`DECISOES.md` #20), e moral, retirada e
+  tipos de tropa continuam no backlog;
+- **sem IA, ninguém ataca o jogador**: exercitar surtida e socorro à mão exige o gancho de
+  inspeção.

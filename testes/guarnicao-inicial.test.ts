@@ -6,6 +6,7 @@ import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/da
 import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { levantarGuarnicoes } from '../src/combate/guarnicao-inicial';
+import { ordenar, unicaEm } from './apoio/hostes';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -63,8 +64,8 @@ describe('os dois vizinhos abrem a partida armados', () => {
     const c = nova();
     expect(c.forcaEm('eleusis')).toBe(500);
     expect(c.forcaEm('tanagra')).toBe(500);
-    expect(c.exercitoEm('eleusis')?.poder).toBe('eleusis');
-    expect(c.exercitoEm('tanagra')?.poder).toBe('tanagra');
+    expect(unicaEm(c, 'eleusis')?.poder).toBe('eleusis');
+    expect(unicaEm(c, 'tanagra')?.poder).toBe('tanagra');
   });
 
   it('a Ática abre desarmada: o jogador tem que levantar a dele', () => {
@@ -108,7 +109,7 @@ describe('os dois vizinhos abrem a partida armados', () => {
     const invasor = milicia * 2;
     expect(invasor).toBeLessThan(500);
     c.plantarHoste('atenas', 'atenas', invasor);
-    c.ordenarMarcha('atenas', 'eleusis', invasor, 'atenas');
+    ordenar(c, 'atenas', 'eleusis', invasor, 'atenas');
     c.passarTurno();
     expect(c.donoDe('eleusis')).toBe('eleusis');
   });

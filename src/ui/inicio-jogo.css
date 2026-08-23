@@ -10,8 +10,14 @@
   display: grid;
   place-items: center;
   pointer-events: auto;
-  background: linear-gradient(var(--ui-overlay-menu), var(--ui-overlay));
-  backdrop-filter: saturate(0.65) blur(1px);
+  background-color: var(--ui-fundo);
+  background-image:
+    linear-gradient(180deg, rgb(5 9 10 / 18%) 0%, rgb(5 9 10 / 8%) 42%, rgb(5 9 10 / 62%) 100%),
+    radial-gradient(circle at center, rgb(7 12 13 / 5%) 20%, rgb(7 12 13 / 58%) 100%),
+    url('/interface/fundo-menu-principal-v1.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .inicio-jogo__cartao-menu {
@@ -21,9 +27,10 @@
   overflow: hidden;
   text-align: center;
   border: 1px solid var(--ui-borda);
-  background: linear-gradient(145deg, var(--ui-fundo-elevado), var(--ui-fundo));
+  background: linear-gradient(145deg, rgb(25 33 36 / 94%), rgb(10 15 17 / 91%));
   color: var(--ui-texto);
   box-shadow: 0 24px 70px var(--ui-sombra);
+  backdrop-filter: blur(8px) saturate(0.8);
 }
 .inicio-jogo__cartao-menu::after {
   content: 'Α  Ω';

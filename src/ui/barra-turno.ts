@@ -11,7 +11,7 @@
 
 import { formatarAno } from '@/campanha/estado-campanha';
 import type { NomeDoIconeGrego } from './icones-gregos';
-import { rotularComIcone } from './icones-gregos';
+import { iconeGrego, rotularComIcone } from './icones-gregos';
 import { definirTooltip } from './tooltip';
 
 export interface VistaDoTurno {
@@ -33,8 +33,12 @@ export interface VistaDoTurno {
 
 export class BarraTurno {
   private readonly raiz = document.createElement('div');
+  private readonly nacao = document.createElement('section');
+  private readonly cabecalhoNacao = document.createElement('div');
+  private readonly tesouro = document.createElement('p');
+  private readonly controleTurno = document.createElement('section');
+  private readonly cronologia = document.createElement('p');
   private readonly tinta = document.createElement('span');
-  private readonly linha = document.createElement('p');
   private readonly botao = document.createElement('button');
   private readonly botaoGoverno = document.createElement('button');
 
@@ -47,8 +51,12 @@ export class BarraTurno {
     this.raiz.className = 'barra-turno';
     this.raiz.hidden = true;
 
+    this.nacao.className = 'barra-turno__nacao';
+    this.cabecalhoNacao.className = 'barra-turno__cabecalho-nacao';
+    this.tesouro.className = 'barra-turno__tesouro';
+    this.controleTurno.className = 'barra-turno__controle';
+    this.cronologia.className = 'barra-turno__cronologia';
     this.tinta.className = 'barra-turno__tinta';
-    this.linha.className = 'barra-turno__linha';
 
     this.botao.className = 'botao botao--principal';
     this.botao.type = 'button';
@@ -74,7 +82,10 @@ export class BarraTurno {
       this.botaoGoverno.blur();
     });
 
-    this.raiz.append(this.tinta, this.linha, this.botaoGoverno, this.botao);
+    this.cabecalhoNacao.append(this.tinta, this.botaoGoverno);
+    this.nacao.append(this.cabecalhoNacao, this.tesouro);
+    this.controleTurno.append(this.cronologia, this.botao);
+    this.raiz.append(this.nacao, this.controleTurno);
     pai.appendChild(this.raiz);
   }
 
@@ -85,21 +96,46 @@ export class BarraTurno {
       return;
     }
     this.tinta.style.background = vista.poder.cor;
-    this.linha.replaceChildren(
-      trecho('barra-turno__poder', vista.poder.nome, 'capacete'),
-      trecho('barra-turno__dado', formatarAno(vista.ano)),
-      trecho('barra-turno__dado', `turno ${vista.turno}`),
+    const identidade = document.createElement('span');
+    identidade.className = 'barra-turno__identidade-poder';
+    identidade.append(
+      trecho('barra-turno__poder', vista.poder.nome),
       trecho(
-        'barra-turno__ouro',
-        vista.manutencao > 0
-          ? `${vista.tesouro} moedas (+${vista.renda} −${vista.manutencao})`
-          : `${vista.tesouro} moedas (+${vista.renda})`,
-        'moeda',
+        'barra-turno__provincias',
+        `${vista.provincias} ${vista.provincias === 1 ? 'província' : 'províncias'}`,
       ),
-      trecho('barra-turno__dado', `${vista.provincias} províncias`, 'territorio'),
+    );
+    this.cabecalhoNacao.replaceChildren(this.tinta, identidade, this.botaoGoverno);
+    this.tesouro.replaceChildren(trechoTesouro(vista));
+    this.cronologia.replaceChildren(
+      trecho('barra-turno__dado', formatarAno(vista.ano)),
+      trecho('barra-turno__dado', `rodada ${vista.turno}`),
     );
     this.raiz.hidden = false;
   }
+}
+
+function trechoTesouro(vista: VistaDoTurno): HTMLElement {
+  const linha = document.createElement('span');
+  linha.className = 'barra-turno__ouro rotulo-com-icone';
+
+  const valores = document.createElement('span');
+  valores.className = 'barra-turno__valores';
+  const saldo = document.createElement('strong');
+  saldo.className = 'barra-turno__saldo';
+  saldo.textContent = String(vista.tesouro);
+  const variacao = document.createElement('span');
+  variacao.className = 'barra-turno__variacao';
+  variacao.textContent =
+    vista.manutencao > 0 ? `(+${vista.renda} −${vista.manutencao})` : `(+${vista.renda})`;
+
+  valores.append(saldo, variacao);
+  linha.append(iconeGrego('moeda'), valores);
+  linha.setAttribute(
+    'aria-label',
+    `Tesouro ${vista.tesouro}; renda ${vista.renda}; manutenção ${vista.manutencao}`,
+  );
+  return linha;
 }
 
 function trecho(classe: string, texto: string, icone?: NomeDoIconeGrego): HTMLElement {

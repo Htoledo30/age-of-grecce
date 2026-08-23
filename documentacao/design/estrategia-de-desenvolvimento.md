@@ -1,153 +1,106 @@
 # Estratégia de desenvolvimento
 
+## Autoridade deste documento
+
+Este texto explica a filosofia de desenvolvimento. Ele não define o patch autorizado nem
+substitui as fontes de verdade da raiz:
+
+- `PATCH_ATUAL.md` define o que pode ser implementado agora;
+- `ROADMAP.md` define a sequência planejada;
+- `DECISOES.md` registra decisões oficiais;
+- `BACKLOG.md` guarda ideias sem autorização atual;
+- `CLAUDE.md` descreve o jogo implementado.
+
+Em caso de divergência, prevalece a fonte responsável pelo assunto, conforme `AGENTS.md`.
+
 ## Princípio central
 
-O projeto será construído em duas etapas conceituais:
+O jogo será construído em patches `0.0.x` pequenos, jogáveis e testáveis. Cada patch deve
+fechar um objetivo principal antes de o seguinte começar.
 
-1. criar um esqueleto completamente jogável;
-2. aprofundar um sistema de cada vez, escolhendo a prioridade conforme o estado real do
-   jogo.
-
-Não existe uma ordem fixa para os patches posteriores. Batalha, comércio, diplomacia,
-política, personagens ou qualquer outro sistema só receberão prioridade depois que o
-esqueleto estiver funcionando e for possível jogar e avaliar o que realmente faz falta.
-
-Exemplo: depois de terminar o esqueleto, pode ficar evidente que o combate é a parte mais
-fraca ou mais interessante. Nesse caso, o primeiro grande ciclo de expansão será focado
-em batalha. Se o comércio parecer mais urgente, ele poderá vir primeiro. A decisão será
-tomada jogando, não seguindo antecipadamente um roadmap rígido.
+O projeto não precisa comprimir sua fundação em poucas versões. Pode haver quantos patches
+`0.0.x` forem necessários até que a primeira campanha básica completa esteja pronta.
 
 ## O que significa esqueleto jogável
 
 O esqueleto deve formar um ciclo completo de campanha, mesmo usando regras provisórias,
 interface simples e pouca variedade de conteúdo.
 
-O jogador precisa conseguir:
+Ao chegar ao marco `0.1.0`, o jogador precisa conseguir:
 
-- iniciar uma campanha;
-- escolher um dos poderes disponíveis;
-- navegar pelo mapa;
-- selecionar e inspecionar províncias;
-- entender quem controla cada território;
-- passar o turno;
-- possuir algum recurso genérico para tomar decisões;
-- criar ou controlar uma força militar simples;
-- mover essa força entre províncias válidas;
-- entrar em guerra;
-- resolver uma batalha por um método provisório;
-- conquistar e perder províncias;
-- eliminar poderes e também ser eliminado;
-- enfrentar poderes controlados por uma IA básica;
+- iniciar uma campanha e escolher um poder;
+- navegar, selecionar e compreender o mapa;
+- administrar recursos e população;
+- recrutar e mover forças;
+- guerrear, sitiar, conquistar e perder territórios;
+- enfrentar poderes controlados por IA sob as mesmas regras;
+- chegar a uma condição de vitória ou derrota;
 - salvar e continuar a campanha.
 
-Quando esse ciclo existir, haverá um jogo funcional. Ele ainda poderá ser simples, feio
-ou desbalanceado, mas será possível jogar uma campanha e descobrir quais sistemas
-merecem profundidade.
-
-### Situação no patch 0.0.2
-
-| parte do ciclo                                   | situação                                    |
-| ------------------------------------------------ | ------------------------------------------- |
-| iniciar campanha e escolher Atenas               | feito                                       |
-| navegar, selecionar e inspecionar o mapa         | feito                                       |
-| turno, economia, construções e população         | feito na primeira fatia de cinco províncias |
-| recrutar, mover, combater, sitiar e conquistar   | feito com regras terrestres provisórias     |
-| propriedade mutável, perda de terra e eliminação | feito                                       |
-| escolher qualquer um dos 148 poderes             | a fazer                                     |
-| IA sob as mesmas regras                          | a fazer                                     |
-| guerra, paz e diplomacia mínimas                 | a fazer                                     |
-| derrota, domínio e fim da campanha               | a fazer                                     |
-| salvar e continuar                               | a fazer                                     |
-
-O esqueleto, portanto, já possui um **ciclo local testável**, mas ainda não uma campanha
-completa. O próximo trabalho deve fechar as linhas ausentes, sem aprofundar todos os
-sistemas que já funcionam ao mesmo tempo.
+O `0.1.0` é o marco produzido pela soma dos patches anteriores, não um mega-patch separado.
 
 ## Sistemas provisórios são permitidos
 
-Durante a construção do esqueleto, uma solução simples é preferível a um sistema grande
-e incompleto.
+Durante a fundação, uma solução simples é preferível a um sistema grande e incompleto.
+Sistemas provisórios devem possuir contratos claros e ser substituídos apenas no patch que
+autoriza essa mudança.
 
-Exemplos que orientaram a construção — alguns já foram substituídos por sistemas reais:
+Exemplos:
 
-- renda pode começar em poucas províncias autoradas;
-- exércitos podem ser representados apenas por quantidade de homens;
-- combate pode usar uma conta determinística simples, sem terreno enquanto o relevo for
-  apenas visual;
-- guerra e paz podem usar regras mínimas;
-- IA pode avaliar somente vizinhos, força relativa e oportunidades;
-- produtos comerciais podem ser preenchidos região por região;
-- tecnologias e personagens podem não existir.
+- tropas podem continuar representadas por quantidade de homens antes dos tipos militares;
+- combate pode permanecer determinístico antes de moral, terreno e generais;
+- economia monetária atual permanece até o patch da economia física;
+- conteúdo pode ser validado primeiro na região de teste oficial.
 
-Essas soluções não representam necessariamente o design final. Elas existem para fechar
-o ciclo jogável e permitir testes reais.
+Uma solução provisória não autoriza aprofundamento antecipado.
 
-## Sem melhorias específicas prematuras
+## Ordem de trabalho
 
-Não serão criadas antecipadamente árvores separadas de melhorias para cada produto,
-unidade, cultura ou região.
+A sequência vigente está em `ROADMAP.md`. Ela existe para impedir que um sistema dependa de
+outro ainda instável e para tornar cada mudança testável separadamente.
 
-Na economia, por exemplo, madeira, ferro, vinho, azeite, mármore e outros produtos podem
-começar apenas com valores comerciais diferentes. Serrarias, minas avançadas, vinhedos,
-oficinas e cadeias produtivas só serão considerados quando o comércio ou a economia se
-tornarem uma prioridade escolhida.
+Ideias novas não interrompem automaticamente essa sequência:
+
+1. verificar se são indispensáveis ao `PATCH_ATUAL.md`;
+2. se forem, discutir e integrar conscientemente;
+3. se não forem, registrar em `BACKLOG.md`;
+4. continuar o patch atual.
+
+Depois dos patches já ordenados no roadmap, as prioridades futuras ainda podem ser
+reavaliadas jogando. Essa liberdade não cancela o patch em execução nem permite iniciar o
+seguinte sem aprovação.
+
+## Sem aprofundamento prematuro
+
+Não criar antecipadamente árvores ou subsistemas separados para cada produto, unidade,
+cultura ou região. Primeiro fechar o contrato comum; depois aprofundar onde o jogo demonstrar
+necessidade real.
 
 O mesmo princípio vale para todos os sistemas:
 
-- não criar dezenas de unidades antes de o movimento militar funcionar;
-- não criar diplomacia complexa antes de guerra e paz básicas existirem;
-- não criar eventos de personagens antes de haver uma campanha persistente;
-- não criar combate naval antes de o combate terrestre básico ser testável;
-- não criar conteúdo exclusivo para 148 poderes antes de os sistemas compartilhados
-  funcionarem.
+- não criar variedade militar antes de a base de guerra estar estável;
+- não criar diplomacia complexa antes da IA e da guerra mínima;
+- não criar eventos de personagens antes de haver campanha persistente;
+- não criar combate naval antes da fundação terrestre e da IA mínima;
+- não criar conteúdo exclusivo para todos os poderes antes dos sistemas compartilhados.
 
-## Como escolher a expansão seguinte
+## Controle de escopo
 
-Depois que o esqueleto estiver pronto, a próxima prioridade será escolhida por perguntas
-práticas:
+1. Trabalhar somente no objetivo do patch atual.
+2. Não aprofundar um sistema apenas porque ele é relacionado.
+3. Preferir soluções substituíveis e testáveis.
+4. Não juntar vários sistemas grandes em um patch.
+5. Reavaliar prioridades nos pontos previstos pelo roadmap.
+6. Preservar dados e contratos compartilhados para evitar retrabalho.
+7. Tratar ideia documentada como direção, não como autorização de implementação.
+8. Parar após o fechamento do patch e aguardar aprovação humana.
 
-- Qual parte está impedindo a campanha de ser divertida?
-- Qual sistema produz mais decisões interessantes para o jogador?
-- O que está repetitivo ou superficial?
-- O que o mapa e os 148 poderes estão pedindo naturalmente?
-- Qual melhoria pode ser concluída e testada sem exigir cinco outros sistemas?
-- O que o desenvolvedor está mais motivado a aprofundar naquele momento?
+## Situação atual
 
-Motivação também é um critério válido. Um projeto independente precisa continuar
-interessante de desenvolver.
+O checkpoint `0.0.1` já foi lançado. O patch ativo é o `0.0.2 — Fechamento da guerra
+básica`, cujo escopo completo está em `PATCH_ATUAL.md`.
 
-## Possíveis focos posteriores, sem ordem definida
-
-- batalha e variedade militar;
-- comércio e produtos provinciais;
-- diplomacia, alianças e tratados;
-- formação de ligas e reinos;
-- estabilidade e integração territorial;
-- marinhas, bloqueios e desembarques;
-- líderes, personagens e sucessões;
-- construções e desenvolvimento provincial;
-- tecnologias;
-- culturas, religiões e santuários;
-- eventos e conteúdo regional;
-- interface, apresentação e qualidade de vida.
-
-Esta lista é um conjunto de possibilidades, não um cronograma.
-
-## Regras de controle de escopo
-
-1. Primeiro fechar o ciclo jogável.
-2. Não aprofundar um sistema que ainda não é necessário ao ciclo.
-3. Usar soluções provisórias substituíveis quando elas permitirem testar o jogo antes.
-4. Escolher apenas um grande foco de expansão por vez.
-5. Não comprometer agora a ordem dos patches posteriores.
-6. Reavaliar prioridades jogando a versão atual.
-7. Preservar os dados e sistemas compartilhados para evitar trabalho repetido.
-8. Uma ideia documentada não é automaticamente uma funcionalidade prometida.
-
-## Critério para considerar o esqueleto concluído
-
-O esqueleto estará pronto quando for possível começar com qualquer poder, disputar
-territórios contra a IA, ver potências crescerem ou desaparecerem, chegar a uma condição
-de derrota ou domínio e salvar a campanha para continuar depois.
-
-Somente então será decidido qual será o foco do primeiro grande patch de expansão.
+A economia física, a alimentação, o mercado interno, a tributação, a felicidade funcional,
+a nacionalidade funcional, a capital funcional e as construções serão tratados em patches
+posteriores separados. A IA permanece como próximo patch provável depois que a base
+necessária estiver estável, ainda sem número definitivo.

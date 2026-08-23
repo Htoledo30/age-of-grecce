@@ -31,7 +31,7 @@ function emCampanha(): Campanha {
  *
  * ⚠️ Era um número só, o do jogador, e isso teria dado à IA um exército de graça: sem
  * cofre próprio ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver
- * `DECISOES.md` #69A e #71 — a IA joga pelas mesmas regras, e a primeira delas é que
+ * `DECISOES.md` #63 e #97 — a IA joga pelas mesmas regras, e a primeira delas é que
  * dinheiro acaba.
  */
 
@@ -183,7 +183,7 @@ describe('recrutar não depende de a província ter economia CONFIGURADA', () =>
     expect(r.pode).toBe(false);
     // ⚠️ Antes a recusa era "esta província não tem economia configurada" — uma trava
     // conceitual errada: recrutar depende de GENTE, não de a ficha existir.
-    // Ver `DECISOES.md` #59.
+    // Ver `DECISOES.md` #89.
     expect(r.pode === false && r.motivo).not.toMatch(/economia/);
     // O que barra agora é um requisito de verdade: falta Quartel (e, atrás dele, gente).
     expect(r.pode === false && r.motivo).toMatch(/Quartel/);

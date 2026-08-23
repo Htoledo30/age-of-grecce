@@ -11,6 +11,7 @@
  * decisão em vez de um chute.
  */
 
+import type { PerfilDaProvincia } from '@/campanha/perfil-da-provincia';
 import type { RendaDaProvincia } from '@/campanha/economia';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 import { definirTooltip } from './tooltip';
@@ -49,6 +50,7 @@ export class FichaProvincia {
   /** Nomes das construções, pra ficha não ter que repetir o catálogo. */
   private nomes: Readonly<Record<string, string>> = {};
   private obra: { nome: string; turnosRestantes: number } | null = null;
+  private perfil: PerfilDaProvincia | null = null;
   private readonly raiz = document.createElement('div');
   private readonly nome = document.createElement('h2');
   private readonly dono = document.createElement('p');
@@ -89,8 +91,10 @@ export class FichaProvincia {
     renda: RendaDaProvincia | null = null,
     obra: { nome: string; turnosRestantes: number } | null = null,
     populacao: CrescimentoPopulacional | null = null,
+    perfil: PerfilDaProvincia | null = null,
   ): void {
     this.obra = obra;
+    this.perfil = perfil;
     if (!provincia) {
       this.raiz.hidden = true;
       return;
@@ -108,20 +112,39 @@ export class FichaProvincia {
     // esse número na tela o jogador não tinha como fazer a conta que a escolha exige.
     // Ficou escondida até agora, o que tornava a decisão da Ágora um chute informado.
     this.lista.replaceChildren(
-      ...campo('povo', provincia.poder.povo),
+      // O povo da FICHA é quem mora aqui, não quem manda. São coisas diferentes desde
+      // que a nacionalidade existe, e é justamente a diferença entre as duas que vai
+      // machucar quando Atenas tomar Elêusis — ver `DECISOES.md` #72. Sem ficha autoral
+      // não há composição escrita, e aí a única resposta honesta é o povo do poder.
+      ...campo(
+        'povo',
+        perfil ? povos(perfil) : provincia.poder.povo,
+        undefined,
+        perfil
+          ? {
+              titulo:
+                'De que gente é a população daqui. População de outro povo que a de quem ' +
+                'governa gera descontentamento — e é por isso que conquistar é mais fácil ' +
+                'que manter.',
+            }
+          : undefined,
+      ),
+      ...(perfil
+        ? campo('humor', perfil.felicidade.faixa, 'ficha__humor', {
+            titulo:
+              'Como esta província se sente sob quem a governa. Imposto, comida, ' +
+              'conquista recente e nacionalidade puxam este número — e província ' +
+              'revoltosa deixa de ser um território e vira um problema.',
+          })
+        : []),
       ...campo('região', provincia.regiao),
       ...(provincia.cerco
-        ? campo(
-            'sitiada',
-            `por ${provincia.cerco.sitiante}`,
-            'ficha__cerco',
-            {
-              titulo:
-                'Há exército inimigo acampado na divisa. Enquanto ele ficar, esta província ' +
-                'não produz nem comercia. O cerco não toma a cidade por si — o imposto ' +
-                'continua e ela ainda pode levantar tropa para expulsá-lo.',
-            },
-          )
+        ? campo('sitiada', `por ${provincia.cerco.sitiante}`, 'ficha__cerco', {
+            titulo:
+              'Há exército inimigo acampado na divisa. Enquanto ele ficar, esta província ' +
+              'não produz nem comercia. O cerco não toma a cidade por si — o imposto ' +
+              'continua e ela ainda pode levantar tropa para expulsá-lo.',
+          })
         : []),
       ...campo('milícia', `${moeda(provincia.milicia)} homens`, 'ficha__milicia', {
         titulo:
@@ -138,10 +161,11 @@ export class FichaProvincia {
       ...(populacao
         ? campo('crescimento', `+${moeda(populacao.crescimento)} por turno`, 'ficha__crescimento', {
             titulo:
-
+              `${moeda(populacao.atual)} habitantes hoje, ${moeda(populacao.proxima)} no ` +
+              'turno que vem. Sem alimento no jogo ainda, este crescimento não tem freio' +
               (populacao.fatorConstrucoes > 1
-                ? ` · construções ×${populacao.fatorConstrucoes.toLocaleString('pt-BR')}`
-                : ''),
+                ? ` · construções ×${populacao.fatorConstrucoes.toLocaleString('pt-BR')}.`
+                : '.'),
           })
         : []),
     );
@@ -198,6 +222,38 @@ export class FichaProvincia {
     });
 
     const filhos: HTMLElement[] = [titulo, renderimento];
+    if (this.perfil) {
+      // O secundário é uma LINHA, não uma segunda parcela: ele ainda não entra na renda,
+      // porque somar dinheiro à economia que o patch 0.0.3 vai jogar fora seria balancear
+      // duas vezes. Ele está na tela porque é identidade da terra — Atenas dar grão
+      // nível 2 é o que explica a fome dela.
+      const segundo = document.createElement('p');
+      segundo.className = 'ficha__secundario';
+      segundo.textContent = `também dá ${this.perfil.secundario.nome} ${romano(this.perfil.secundario.nivel)}`;
+      definirTooltip(segundo, {
+        titulo: 'Recurso secundário',
+        corpo:
+          'O que a terra ainda dá, sempre mais fraco que o principal. Ele não entra na ' +
+          'renda por enquanto: vira produção física quando a economia nova entrar.',
+      });
+      filhos.push(segundo);
+
+      const despensa = document.createElement('p');
+      despensa.className = 'ficha__despensa';
+      const p = this.perfil;
+      despensa.textContent =
+        `${moeda(p.alimento.guardado)} de alimento · ${p.alimento.turnos} ` +
+        `${p.alimento.turnos === 1 ? 'turno' : 'turnos'}`;
+      definirTooltip(despensa, {
+        titulo: 'Despensa',
+        corpo:
+          p.estoque.map((i) => `${moeda(i.quantidade)} de ${i.nome}`).join('\n') +
+          `\n\nEsta província come ${moeda(p.alimento.consumoPorTurno)} por turno. ` +
+          'Ninguém passa fome ainda — o consumo entra com a alimentação.',
+        tom: 'custo',
+      });
+      filhos.push(despensa);
+    }
     if (this.obra) {
       const emObra = document.createElement('p');
       emObra.className = 'ficha__obra';
@@ -215,6 +271,18 @@ export class FichaProvincia {
     }
     this.economia.replaceChildren(...filhos);
   }
+}
+
+/**
+ * A composição da população numa linha: "Eleusina 85% · Ateniense 15%".
+ *
+ * Povo único sai sem porcentagem — "Ateniense 100%" é ruído, e a maioria das províncias
+ * é assim. A porcentagem só aparece quando ela significa alguma coisa.
+ */
+function povos(perfil: PerfilDaProvincia): string {
+  const fatias = perfil.nacionalidades;
+  if (fatias.length === 1) return fatias[0]?.nome ?? '';
+  return fatias.map((f) => `${f.nome} ${Math.round(f.fracao * 100)}%`).join(' · ');
 }
 
 /** Grau de 1 a 5 em algarismo romano. A tabela é o mapa inteiro: não existe nível 6. */

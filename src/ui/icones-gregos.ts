@@ -13,6 +13,7 @@ export type NomeDoIconeGrego =
   | 'celeiro'
   | 'coruja'
   | 'escudo'
+  | 'fogo'
   | 'lanca'
   | 'mapa'
   | 'martelo'
@@ -40,11 +41,10 @@ const FORMAS: Record<NomeDoIconeGrego, readonly Forma[]> = {
     ['line', { x1: '17', y1: '10', x2: '17', y2: '19' }],
   ],
   moeda: [
-    ['circle', { cx: '12', cy: '12', r: '9' }],
-    ['circle', { cx: '9', cy: '10', r: '1.4' }],
-    ['circle', { cx: '15', cy: '10', r: '1.4' }],
-    ['polyline', { points: '10 14 12 16 14 14' }],
-    ['path', { d: 'M7 7 9 5l3 2 3-2 2 2' }],
+    ['path', { d: 'M4 6.5C4 4.6 7.6 3 12 3s8 1.6 8 3.5S16.4 10 12 10 4 8.4 4 6.5Z' }],
+    ['path', { d: 'M4 6.5V11c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5V6.5' }],
+    ['path', { d: 'M4 11v4.5C4 17.4 7.6 19 12 19s8-1.6 8-3.5V11' }],
+    ['path', { d: 'M4 15.5V18c0 1.7 3.6 3 8 3s8-1.3 8-3v-2.5' }],
   ],
   territorio: [
     ['path', { d: 'M4 5 9 3l6 2 5-2v16l-5 2-6-2-5 2Z' }],
@@ -68,6 +68,28 @@ const FORMAS: Record<NomeDoIconeGrego, readonly Forma[]> = {
   escudo: [
     ['path', { d: 'M12 2 20 5v6c0 5-3 8-8 11-5-3-8-6-8-11V5Z' }],
     ['path', { d: 'm8.5 17 3.5-9 3.5 9M10 14h4' }],
+  ],
+  /**
+   * A fogueira do acampamento sitiante — o sinal de que uma cidade está cercada.
+   *
+   * Duas chamas e uma brasa: a de fora dá a silhueta e a de dentro dá o miolo, que é o
+   * que faz o desenho continuar legível a 16 px. Não é uma tocha nem um incêndio: a
+   * cidade não está queimando, o exército é que está acampado à porta dela.
+   */
+  fogo: [
+    [
+      'path',
+      {
+        d: 'M12 2c3 3.5 5 6.2 5 9a5 5 0 0 1-10 0c0-1.6.6-3 1.7-4.4.4 1 1 1.8 1.8 2.3C10.8 6.6 11.2 4.2 12 2Z',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M12 20a2.6 2.6 0 0 1-2.6-2.6c0-1.3.9-2.4 2.6-4 1.7 1.6 2.6 2.7 2.6 4A2.6 2.6 0 0 1 12 20Z',
+      },
+    ],
+    ['line', { x1: '6', y1: '22', x2: '18', y2: '22' }],
   ],
   lanca: [
     ['line', { x1: '4', y1: '21', x2: '18', y2: '7' }],

@@ -66,7 +66,8 @@
         "fatorMilicia": 2,
         "promessa": "Dobra a milicia que esta provincia poe em pe para se defender."
       },
-      "motivo": "Pedra em volta da cidade. Nao rende moeda nenhuma e nao cria gente: faz a mesma populacao valer o dobro na defesa. E a unica obra que so importa no dia em que alguem vier - e nesse dia importa mais que todas as outras."
+      "impedeAssaltoImediato": true,
+      "motivo": "Pedra em volta da cidade. Nao rende moeda nenhuma e nao cria gente: faz a mesma populacao valer o dobro na defesa, e obriga quem quiser toma-la a sitiar antes: nao se sobe uma muralha no mesmo dia em que se chega. E a unica obra que so importa no dia em que alguem vier - e nesse dia importa mais que todas as outras."
     }
   }
 }

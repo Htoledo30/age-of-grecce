@@ -84,13 +84,19 @@ export function concluirFormacoes(
     if (!formacao || formacao.prontaNoTurno > turnoAtual) continue;
 
     // Por posicao, e nao por chave: a provincia deixou de ser o endereco da hoste.
-    const hoste = Object.keys(estado.hostes)
+    //
+    // ⚠️ **A hoste que recebe a leva é a do MESMO poder.** Procurava só por posição, e isso
+    // quebrou quando sitiar deixou de engajar: numa cidade sitiada há duas hostes ali, e a
+    // primeira por id podia ser a do sitiante — a leva do defensor engordava o exército
+    // que estava cercando a cidade dele.
+    const daTerra = Object.keys(estado.hostes)
       .sort()
       .map((id) => estado.hostes[id])
-      .find((h) => h !== undefined && h.posicao === idProvincia);
-    const perdeuAFormacao =
-      donoDe(idProvincia) !== formacao.poder ||
-      (hoste !== undefined && hoste.poder !== formacao.poder);
+      .filter((h) => h !== undefined && h.posicao === idProvincia);
+    const hoste = daTerra.find((h) => h !== undefined && h.poder === formacao.poder);
+    // E a leva se perde quando a TERRA cai, não quando alguém acampa na porta: cidade
+    // sitiada continua levantando tropa — é o que `cerco.ts` promete com todas as letras.
+    const perdeuAFormacao = donoDe(idProvincia) !== formacao.poder;
 
     if (perdeuAFormacao) {
       estado.populacao[formacao.origem] =

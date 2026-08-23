@@ -1,0 +1,70 @@
+/* ⚠️ `#ui > .cercos`, nunca `.cercos`: `base.css` devolve `pointer-events: auto` a todo
+   filho direto de `#ui`, e id vence classe. Esta camada cobre o palco inteiro — escrita só
+   com a classe, ela engoliria todos os cliques do mapa, sem erro nenhum no console. */
+#ui > .cercos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cercos__marca {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  /* A camada inteira já é `pointer-events: none`; repetir aqui é a rede pra caso alguém
+     um dia dê `auto` na camada por engano. A bandeira nunca pode roubar o clique da
+     província: ela cai justo em cima do centro, que é onde se clica pra selecionar. */
+  pointer-events: none;
+  opacity: 0;
+  /* Ver `hostes-mapa.ts`: nasce invisível e só aparece depois de receber coordenada, senão
+     pisca uma vez no canto do palco antes do primeiro quadro. */
+  transition: opacity 160ms ease;
+}
+
+.cercos__marca[data-posicionada='sim'] {
+  opacity: 1;
+}
+
+/* A chama tem cor de fogo fixa. A identidade do sitiante continua nas hostes e na ficha da
+   província; tingir o fogo com a cor do poder fazia a chama parecer parte do território. */
+.cercos__chama {
+  width: 22px;
+  height: 22px;
+  color: var(--ui-fogo);
+  /* O brilho é o que separa a bandeira do terreno escuro embaixo dela sem precisar de
+     caixa, borda ou fundo — a marca tem que ser leve, porque o mapa já está cheio. */
+  filter: drop-shadow(0 0 5px var(--ui-fogo-claro))
+    drop-shadow(0 1px 2px var(--ui-sombra));
+  animation: cerco-arde 2.4s ease-in-out infinite;
+}
+
+/* Sitiando, a chama respira devagar: o cerco é espera. Assaltando, ela bate rápido — o
+   assalto acontece na próxima virada, e a diferença tem que ser visível sem tooltip. */
+.cercos__marca[data-postura='assaltar'] .cercos__chama {
+  animation-duration: 0.9s;
+}
+
+@keyframes cerco-arde {
+  0%,
+  100% {
+    scale: 1;
+    opacity: 0.85;
+  }
+  50% {
+    scale: 1.12;
+    opacity: 1;
+  }
+}
+
+/* Quem pediu menos movimento vê a bandeira parada — ela continua dizendo tudo o que
+   precisa dizer pela cor e pela forma. */
+@media (prefers-reduced-motion: reduce) {
+  .cercos__chama {
+    animation: none;
+  }
+}
