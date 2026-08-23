@@ -234,9 +234,38 @@ export class FichaProvincia {
         titulo: 'Recurso secundário',
         corpo:
           'O que a terra ainda dá, sempre mais fraco que o principal. Ele não entra na ' +
-          'renda por enquanto: vira produção física quando a economia nova entrar.',
+          'renda em moeda, mas PRODUZ: as unidades dele entram no estoque desta província ' +
+          'todo turno, do mesmo jeito que as do principal.',
       });
       filhos.push(segundo);
+
+      // ⚠️ **A colheita é a economia FÍSICA, e ela convive com a renda em moeda logo
+      // acima.** Duas linhas dizendo "produção" na mesma ficha seria confuso, então esta
+      // fala em COLHER e usa unidades; a de cima fala em RENDER e usa moeda. A troca de
+      // uma pela outra é dos patches de dinheiro e mercado.
+      const colheita = document.createElement('p');
+      colheita.className = 'ficha__colheita';
+      const colhido = this.perfil.producao;
+      colheita.textContent = `colhe ${colhido
+        .map((r) => `${moeda(r.unidades)} de ${r.nome}`)
+        .join(' e ')} por turno`;
+      const guardadoDe = (id: string): number =>
+        this.perfil?.estoque.find((i) => i.id === id)?.quantidade ?? 0;
+      definirTooltip(colheita, {
+        titulo: 'Colheita do ano',
+        corpo:
+          colhido
+            .map(
+              (r) =>
+                `${r.nome} ${romano(r.nivel)}: ${moeda(r.unidades)} por turno · ` +
+                `${moeda(guardadoDe(r.id))} guardados`,
+            )
+            .join('\n') +
+          '\n\nO que sai da terra depende do potencial dela e de quanta gente mora aqui: ' +
+          'recrutar ou perder população faz a colheita encolher. Nada é consumido nem ' +
+          'vendido ainda — por enquanto o estoque só enche.',
+      });
+      filhos.push(colheita);
 
       const despensa = document.createElement('p');
       despensa.className = 'ficha__despensa';

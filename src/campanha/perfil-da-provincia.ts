@@ -11,6 +11,8 @@
  */
 
 import type { Economia } from '@/dados/esquema';
+import { producaoFisicaDe } from '@/producao/producao-fisica';
+import type { AjustesDeProducao } from '@/producao/producao-fisica';
 
 /** Uma faixa nomeada de felicidade, como vem de `ajustes.json`. */
 export interface FaixaDeFelicidade {
@@ -54,6 +56,13 @@ export interface PerfilDaProvincia {
   /** Da maior fatia para a menor; empate desempata por id, pra ordem ser determinística. */
   nacionalidades: readonly FatiaDoPovo[];
   secundario: { id: string; nome: string; nivel: number };
+  /**
+   * O que a terra tira por turno, principal primeiro.
+   *
+   * Fica ao lado do estoque de propósito: colher é encher o celeiro, e é essa ligação que
+   * o jogador precisa enxergar — quanto entra por ano, e quanto já está guardado.
+   */
+  producao: readonly { id: string; nome: string; nivel: number; unidades: number; principal: boolean }[];
   /** Alimentos primeiro, e dentro de cada grupo do mais guardado para o menos. */
   estoque: readonly ItemGuardado[];
   /**
@@ -87,6 +96,7 @@ export function perfilDaProvincia(
   },
   faixas: readonly FaixaDeFelicidade[],
   consumoPorHabitante: number,
+  ajustesDeProducao: AjustesDeProducao,
 ): PerfilDaProvincia | null {
   const ficha = economia.provincias[idProvincia];
   if (!ficha) return null;
@@ -121,6 +131,13 @@ export function perfilDaProvincia(
       nivel: ficha.secundario.nivel,
     },
     estoque,
+    producao: producaoFisicaDe(ficha, agora.populacao, ajustesDeProducao).map((r) => ({
+      id: r.produto,
+      nome: economia.produtos[r.produto]?.nome ?? r.produto,
+      nivel: r.nivel,
+      unidades: r.unidades,
+      principal: r.principal,
+    })),
     alimento: {
       guardado,
       consumoPorTurno,

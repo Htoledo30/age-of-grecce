@@ -35,10 +35,15 @@ Não reabrir nem reutilizar esse número.
 
 # 0.0.3 — Economia física básica
 
-**Status:** próximo da fila, **ainda não autorizado**. Só começa quando virar
-`PATCH_ATUAL.md` por decisão de Henrique.
+**Status:** lançado em 2026-08-23
 
-Objetivo:
+Entregou a produção física do recurso principal **e** do secundário, entrando no estoque da
+própria província a cada turno, com a escala em `dados/ajustes.json` e a colheita visível na
+ficha. A economia em moeda continua ao lado, intacta. Registrado no `CHANGELOG.md`.
+
+Não reabrir nem reutilizar esse número.
+
+Objetivo original:
 
 Transformar produtos em recursos físicos quantificáveis.
 
@@ -83,6 +88,79 @@ Escopo:
 - preservar a ausência do antigo limite artificial `população inicial × 2`.
 
 Não inclui mercado interno.
+
+## ⚠️ A pergunta que este patch precisa responder
+
+Levantada por Henrique ao ver a economia física do `0.0.3` funcionando, e medida antes de
+virar escopo. **Do jeito que a matemática está, ligar o consumo criaria uma mecânica
+morta** — e o motivo não é o valor dos números:
+
+- produção e consumo são os DOIS proporcionais à população, então a razão entre eles é uma
+  constante da terra. Atenas produz 90% da própria comida com zero soldados, com 5.000 e
+  com 20.000 em armas: **exatamente 90% nos três casos**;
+- o soldado sai da população e, por isso, **para de comer** ao pegar a lança. Um exército
+  gigante é neutro em alimento. Nenhum ajuste de rendimento muda isso;
+- a 90%, a despensa de 5 turnos dura ~50 turnos. Simulando o consumo com os números de
+  hoje: Sunião passa fome no turno 6, Tanagra no 47, Atenas no 50, Elêusis e Maratona
+  nunca.
+
+O que faz a comida virar pergunta de verdade é a **decisão #94 — exércitos consumindo
+alimento**, hoje registrada como direção futura. Com ela, um soldado custa de 1,9× (terra
+nível 2) a 2,8× (nível 4) o que custa um camponês, porque ele come e não colhe; 5.000
+homens levam o déficit de Atenas de 70 para 160 por turno, e a sobra inteira de Elêusis
+paga menos de 3.000 soldados permanentes.
+
+Recomendação registrada: **puxar #94 para este patch** e NÃO subir o rendimento da terra
+para tirar a Ática do déficit — a região ser pobre de pão é dado autoral, é o que dá valor
+ao celeiro de Elêusis e ao mar, e é o problema histórico de Atenas. A condição é o jogador
+ter como responder ao déficit: conquistar já existe, e o mercado interno é o patch
+seguinte. Fome sem resposta possível é relógio de condenação, não decisão.
+
+## O que já custa hoje, medido antes de somar mais uma trava
+
+Henrique: *"tem que custar chamar tropa e custar para manter."* Já custa, e o número
+precisa estar aqui para que a trava de alimento não seja calibrada no escuro. Contra a
+renda real de Atenas (**617 por turno**, três províncias, sem gancho de desenvolvimento):
+
+| exército | recrutar | manter |
+| --- | --- | --- |
+| 1.000 | 3.000 moedas — o tesouro inicial inteiro (4,9 turnos de renda) | 300/turno = 49% da renda |
+| 2.000 | 6.000 (9,7 turnos) | 600/turno = 97% da renda |
+| 5.000 | 15.000 (24,3 turnos) | 1.500/turno = 243% da renda |
+
+**Teto absoluto: 2.056 homens** gastando 100% da renda em soldo. Quem não paga sofre
+deserção proporcional. Recrutar também tira população na hora — e, desde o `0.0.3`, tira
+produção junto.
+
+⚠️ **As duas travas mordem no MESMO ponto.** Com o soldado comendo, 1.000 homens custam
+38 unidades por turno numa região que já está em −66; 3.000 levam a −180. Ou seja: ouro e
+comida apertariam os dois entre 1.000 e 2.000 homens, e duas travas duras no mesmo número
+não criam decisão — criam "não faça exército", e uma das duas vira decoração.
+
+Direção registrada para quando este patch for escrito:
+
+- **ouro limita o TAMANHO** do exército — quantos homens ficam em pé agora. Já calibrado,
+  já com consequência própria (deserção);
+- **alimento limita a DURAÇÃO e a DISTÂNCIA** — por quantos anos aquela gente se sustenta
+  em campo e quão longe de casa. Não deve ser um segundo imposto por turno cobrado igual
+  ao soldo: o exército come do ESTOQUE da província onde está, o que faz cerco longo virar
+  aposta de quem tem mais comida e campanha longe de casa ficar cara de um jeito que ouro
+  nenhum resolve;
+- **as duas falhas precisam ser diferentes.** Falta de ouro já manda o homem para casa
+  (deserção); falta de comida deveria fazer outra coisa — baixas, ou perda de força — senão
+  uma das travas é redundante;
+- **o soldo em ouro FICA.** Ele sai do tesouro do poder (#63) e a comida sairia do celeiro
+  da província (#49): bolsos diferentes, um central e abstrato, outro local e físico — é
+  essa diferença que faz as duas mecânicas não serem a mesma coisa com dois nomes. Além
+  disso, o teto de ouro **cresce com o império** (Atenas sustenta 2.056 homens; tomando
+  Elêusis e Tanagra, ~2.930), o que já dá a resposta certa para "como faço um exército
+  maior?". E a região de teste conta essa história sozinha: Sunião é prata pura e **zero
+  alimento**, Elêusis é o grão — uma paga o soldo, a outra alimenta, e nenhuma faz o
+  serviço da outra;
+- **não afrouxar a manutenção por precaução.** Se as duas travas ficarem apertadas demais
+  juntas, baixar `manutencaoPorHomem` de 0,3 para ~0,15 abriria espaço para ~4.000 homens e
+  deixaria a comida ser a trava real. Mas isso é decisão de quem jogou: afrouxar depois é
+  mudar um número, apertar depois é frustrar quem já se acostumou.
 
 Fechar e testar antes do próximo patch.
 

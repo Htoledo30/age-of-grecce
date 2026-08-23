@@ -2,16 +2,20 @@
 
 ## Estado da ideia
 
-**Proposta guardada para desenvolvimento futuro. Não está implementada e ainda não
-substitui a economia atual.**
+**A primeira camada está implementada desde o patch `0.0.3`; o resto continua proposta.**
 
-Esta ideia transforma os produtos provinciais em mercadorias físicas. Em vez de o
-produto existir somente como uma parcela abstrata de dinheiro, cada província gera uma
-quantidade de unidades do produto que pode ser armazenada, utilizada ou vendida.
+O que já existe: cada província da região de teste tira do chão, por turno, unidades do
+recurso principal e do secundário, e essas unidades entram no estoque da própria província
+(`src/producao/producao-fisica.ts`). A fórmula é `potencial natural × população produtiva`,
+com a escala em `dados/ajustes.json`.
 
-O combate terrestre básico já existe. A implementação ainda deve esperar testes de
-campanha e uma necessidade concreta de abastecimento; existir combate não autoriza, por si
-só, uma segunda economia inteira.
+O que ainda é proposta, e cada um tem patch próprio no `ROADMAP.md`: consumo de alimento e
+fome (`0.0.4`), mercado interno (`0.0.5`), virar dinheiro por imposto e comércio (`0.0.6`),
+materiais em construções e o efeito do cerco sobre estoque e produção (`0.0.11` e `0.0.12`).
+
+⚠️ **A economia monetária antiga continua funcionando ao lado.** As duas camadas convivem
+de propósito enquanto os patches de dinheiro e mercado não chegam: somar uma na outra
+contaria o mesmo trigo duas vezes.
 
 ## Objetivo
 

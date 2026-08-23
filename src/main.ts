@@ -989,6 +989,10 @@ async function iniciar(): Promise<void> {
       crescimentoDe: (idProvincia: string) => campanha.crescimentoDe(idProvincia)?.crescimento ?? 0,
       disponivelParaLevaEm: (idProvincia: string) => campanha.disponivelParaLevaEm(idProvincia),
       economiaDe: (idProvincia: string) => campanha.economiaDe(idProvincia),
+      // A economia física: o que sai da terra por turno e o que está guardado. Os dois
+      // juntos são o que o teste manual precisa observar — colheita entra, estoque sobe.
+      producaoFisicaEm: (idProvincia: string) => campanha.producaoFisicaEm(idProvincia),
+      estoqueEm: (idProvincia: string) => campanha.estoqueEm(idProvincia),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.
       conquistar: (idProvincia: string, idPoder: string) =>

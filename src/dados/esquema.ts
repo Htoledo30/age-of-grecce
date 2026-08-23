@@ -47,6 +47,24 @@ export const Ajustes = z.object({
        * impostos acompanham nascimentos, recrutamento, deserção e desmobilização.
        */
       impostoPorHabitante: z.number().positive(),
+      /**
+       * A escala da produção FÍSICA — quanta unidade de grão, gado ou prata sai da terra
+       * por turno.
+       *
+       * ⚠️ **Os dois números existem separados porque significam coisas diferentes.** Um
+       * diz quanta gente trabalha a terra; o outro, quanto cada uma tira por ponto de
+       * potencial. Multiplicados dariam o mesmo resultado num número só — e aí o dia de
+       * balancear "a Grécia tem mais camponeses" ficaria indistinguível de "a terra rende
+       * mais", que são decisões de design opostas.
+       *
+       * Valores iniciais de teste: o patch 0.0.4 ajusta ao ligar o consumo de alimento.
+       */
+      producao: z.object({
+        /** Fatia implícita da população que trabalha a terra (`DECISOES.md` #43). */
+        fracaoProdutiva: z.number().gt(0).max(1),
+        /** Unidades por produtor, por ponto de potencial natural, por turno. */
+        porProdutorPorNivel: z.number().gt(0),
+      }),
       investimento: z.object({
         /**
          * Maior quantia que se pode pôr numa província de uma vez, e a que compra o teto.
@@ -463,6 +481,17 @@ export const Economia = z
           code: 'custom',
           path: [...onde, 'secundario'],
           message: `produto desconhecido: ${ficha.secundario.produto}`,
+        });
+      }
+      // ⚠️ A terra dá duas coisas DIFERENTES. Repetir o produto passaria pela regra de
+      // rendimento (basta o nível ser menor) e chegaria à produção física como duas
+      // fontes do mesmo item — duas linhas iguais na ficha e uma soma que ninguém
+      // entenderia ao ler o dado.
+      if (ficha.secundario.produto === ficha.produto) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...onde, 'secundario'],
+          message: `o secundário não pode ser o próprio principal: ${ficha.produto}`,
         });
       }
       if (

@@ -113,6 +113,23 @@ A surtida e a regra básica de muralha pertencem à base, não a este aprofundam
 
 ---
 
+# Dívida conhecida da guerra básica (deixada pelo 0.0.2)
+
+Nenhuma delas é alcançável pelo jogador hoje, e todas viram problema real no patch da IA.
+Registradas aqui porque o `PATCH_ATUAL.md` é reescrito a cada patch e elas não podem morrer
+junto com o arquivo.
+
+- **dois sitiantes na mesma província**: `estado.cercos` guarda um sitiante por província,
+  então o segundo sobrescreve o registro do primeiro — e os dois acampam sem se tocar,
+  porque nenhum deles quer lutar;
+- **postura compartilhada por província de destino**: dois poderes marchando sobre a mesma
+  cidade alheia compartilham a entrada, e o segundo herda a postura do primeiro. Só aparece
+  em guerra de três lados;
+- **sem IA, ninguém ataca o jogador**: exercitar surtida e socorro à mão exige o gancho de
+  inspeção.
+
+---
+
 # Economia futura
 
 ## Comércio internacional

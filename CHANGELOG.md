@@ -7,6 +7,27 @@ O processo completo está em [documentacao/versionamento.md](documentacao/versio
 
 ## Não lançado
 
+## 0.0.3 — 2026-08-23 — Economia física básica
+
+Os produtos deixaram de ser só uma parcela de dinheiro: a terra passou a dar coisa, e a
+coisa fica guardada na província que a produziu.
+
+### Adicionado
+
+- **a terra passou a dar coisa, e não só dinheiro**: cada província da região de teste
+  colhe por turno unidades do seu recurso principal **e** do secundário, e elas entram no
+  estoque da própria província. O quanto sai depende do potencial natural da terra e de
+  quanta gente mora ali — recrutar mil homens hoje faz a colheita do ano que vem encolher;
+- a ficha da província mostra o que ela colhe por turno, e a dica de tela abre o
+  detalhamento: quanto de cada produto sai por ano e quanto já está guardado.
+
+### Alterado
+
+- o recurso secundário deixou de ser decorativo: ele não entra na renda em moeda, mas
+  produz unidades como o principal;
+- a economia em moeda continua intacta ao lado da física — nada do que é colhido vira
+  dinheiro, comida ou pedra ainda. Consumo, mercado e dinheiro têm patches próprios.
+
 ## 0.0.2 — 2026-08-23 — Fechamento da guerra básica
 
 O ciclo de guerra terrestre fecha: sitiar deixou de ser um assalto lento, o sitiado passou

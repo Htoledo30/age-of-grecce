@@ -1,217 +1,228 @@
 # PATCH_ATUAL.md
 
-> ## ⚠️ NÃO HÁ PATCH EM ANDAMENTO
->
-> O `0.0.2` foi testado por Henrique, aprovado e **fechado em 2026-08-23**. A versão está
-> em `package.json` e o histórico em `CHANGELOG.md`.
->
-> **Nenhum agente tem trabalho autorizado neste momento.** O próximo da fila é o
-> `0.0.3 — Economia física básica` do `ROADMAP.md`, e ele só começa quando Henrique
-> reescrever este arquivo com o escopo dele. O que está abaixo é o registro do patch
-> encerrado, mantido como memória do que foi feito e por quê.
-
-# Age of Grecce — 0.0.2 (ENCERRADO)
+# Age of Grecce — 0.0.3
 
 ## Nome
 
-**Fechamento da guerra básica**
+**Economia física básica**
 
 ## Objetivo
 
-Fechar e testar o núcleo de guerra que já existe, sem iniciar economia nova nem outro sistema grande.
+Fazer as cinco províncias da região de teste produzirem recursos físicos por turno e
+adicionarem essa produção ao estoque provincial.
 
-Este patch deve terminar pequeno, jogável e verificável manualmente.
+Este patch NÃO refaz ainda dinheiro, comércio, alimentação ou construções.
 
----
-
-## Trabalho já existente e que deve ser preservado
-
-O núcleo militar atual já possui, segundo código/testes e revisão da Claude:
-
-- hostes com identidade própria;
-- destacamentos;
-- origem dos soldados preservada;
-- recrutamento com 1 rodada de formação;
-- movimento e ordens simultâneas;
-- encontros na estrada;
-- múltiplas batalhas no mesmo turno;
-- baixas e sobreviventes;
-- milícia;
-- cerco persistente;
-- postura decide se há choque: sitiar não engaja o exército de dentro, assaltar engaja;
-- assalto;
-- conquista;
-- exílio de poderes que ainda possuam hostes.
-
-Não reimplementar esses sistemas sem bug concreto.
+A economia monetária antiga continua funcionando temporariamente até os patches próprios
+de dinheiro/mercado.
 
 ---
 
-## Trabalho que caiu antecipadamente no repositório
+# Decisão fechada para este patch
 
-Durante o escopo anterior, maior do que deveria, foram preparados também:
+## Recurso secundário entra agora
 
-- tesouro por poder;
-- região de teste com Atenas, Maratona, Sunião, Elêusis e Tanagra;
-- nacionalidade inicial;
-- felicidade inicial;
-- recurso secundário;
-- estoque inicial;
-- capitais;
-- conexões;
-- ancoradouro;
-- crescimento populacional sem teto artificial;
-- testes correspondentes.
+Sim.
 
-Esses dados e estruturas podem permanecer se estiverem estáveis.
+Tanto o recurso principal quanto o secundário produzem unidades físicas no `0.0.3`.
 
-**Eles não autorizam implementar os sistemas futuros que irão usá-los.**
+Motivo:
+
+- os dois já existem nos dados;
+- ambos representam potencial natural da província;
+- ativar somente o principal deixaria metade da ficha sem função;
+- a mesma regra genérica deve calcular os dois, então não é necessário criar outro sistema.
+
+O secundário continua naturalmente menor porque possui nível/potencial inferior.
 
 ---
 
-# Tarefas do 0.0.2
+# Regra de produção
 
-## 1. Surtida
+Seguir `DECISOES.md`:
 
-Pré-requisito já feito: sitiar deixou de engajar, então sitiante e defensor convivem na
-mesma província. Sem isso não havia a quem dar a escolha — o choque já tinha resolvido
-tudo.
+`produção = potencial natural × população produtiva × modificadores`
 
-**Surtida é o sitiado sair para atacar quem o cerca.** É o único ato que obriga o sitiante
-a lutar: ele declarou que não quer choque, e a surtida ignora essa recusa.
+Para este patch:
 
-- [x] defensor sitiado pode escolher atacar o exército sitiador;
-- [x] reutilizar o combate básico já existente;
-- [x] vitória do defensor quebra o cerco;
-- [x] derrota mantém o cerco e aplica as baixas de forma coerente;
-- [x] a milícia NÃO sai junto: quem surte é a hoste, a milícia continua sendo da cidade;
-- [x] surtir é a ordem daquela hoste na rodada — quem surte não marcha no mesmo turno;
-- [x] **socorro que chega de fora engaja o sitiante** ao entrar, sem declarar nada
-      (`DECISOES.md` #33A);
-- [x] não criar sistema tático separado.
+- potencial natural = `nivel` do recurso;
+- população produtiva = derivada da população atual da província, sem classes de trabalhadores;
+- modificadores = somente os que já fizerem sentido sem puxar sistemas futuros;
+- perda de população deve reduzir produção;
+- potencial natural nunca aumenta por investimento;
+- produção deve ser determinística.
 
-Achado durante a tarefa, corrigido junto porque a chegada do socorro o tornava comum:
-a postura é compartilhada por província de DESTINO, e uma marcha do defensor para a
-própria cidade escrevia "sitiar" na entrada dela — bastava mandar qualquer hoste para lá
-e o assalto do sitiante virava cerco sem nada ter sido lutado. Marcha para terra própria
-deixou de declarar postura.
+A escala numérica usada para converter população × nível em unidades físicas deve ficar em
+dados/ajustes, e não espalhada como número mágico no TypeScript.
 
-## 2. Muralha e assalto
-
-- [x] muralha continua fortalecendo a defesa/milícia;
-- [x] província sem muralha pode sofrer assalto imediato;
-- [x] província com muralha exige inicialmente 2 turnos de cerco antes do assalto;
-- [x] manter o número de 2 turnos como valor inicial de teste, não como valor final de balanceamento;
-- [x] o número vive em `dados/ajustes.json`; quem diz que a obra exige cerco é o catálogo
-      de construções, por campo próprio — não o id `muralha` escrito na regra;
-- [x] a contagem começa em zero na rodada em que o exército senta e zera se o sitiante
-      sair, morrer ou for substituído;
-- [x] o botão de assaltar só aparece depois das duas rodadas, dizendo o motivo antes disso;
-- [x] **Tanagra começa com Muralha e Elêusis não** — os dois alvos vizinhos de Atenas, um
-      de cada tipo, para o teste manual comparar assalto imediato e assalto barrado.
-
-A regra mora na resolução, e não só na interface: a postura também chega pela ordem de
-marcha, e uma ordem que a tela não deixaria dar continuaria podendo vir da IA, de um
-salvamento antigo ou do gancho de inspeção. Assalto barrado vira cerco em vez de erro.
-
-## 3. Crônica da rodada
-
-Achado ao revisar o patch antes de fechar: **a guerra estava sendo resolvida em silêncio.**
-A resolução já devolvia batalhas, conquistas, cercos e milicianos perdidos, e ninguém lia
-esse relatório — o jogador mandava a surtida, passava o turno, e a peça de 700 homens sumia
-do mapa sem uma palavra.
-
-Não é ampliação de escopo: o patch promete terminar "pequeno, jogável e **verificável
-manualmente**", e guerra que só se adivinha não é verificável à mão.
-
-- [x] uma nota por rodada com o que aconteceu: batalhas, milícia, conquistas, cercos
-      começados e cercos levantados;
-- [x] some sozinha quando a rodada não tem notícia — mundo parado não escreve linha;
-- [x] o tom (ganho/perda) é do ponto de vista do jogador;
-- [x] separar o choque de campo do assalto: um assalto produz duas batalhas na mesma
-      província, e duas linhas iguais leem como repetição;
-- [x] **não é o visor de batalha.** Sem barra, sem playback, sem velocidade, sem pular —
-      isso continua sendo o `0.0.13` do `ROADMAP.md`, e passa a valer de verdade quando a
-      IA atacar sem avisar.
-
-## 4. Estabilização
-
-- [x] **levar o id da hoste até a interface.** `Campanha.exercitoEm` saiu e deu lugar a
-      `hoste(id)` e `hostesEm(provincia)`; o mapa desenha um marcador por HOSTE; a ficha do
-      exército e as ordens endereçam por id; o sitiante é desenhado na divisa e a bandeira
-      de cerco ganhou camada própria;
-- [x] terminar o rastro desse refactor: 7 testes unitários e 1 de tela endereçavam hoste
-      por província (`forcaEm` agora responde pelo dono da terra, e `podeOrdenarMarcha`
-      recebe id de hoste);
-- [x] trocar o `test.fixme` de `testes/tela/cerco.spec.ts` por um teste real de operar o
-      cerco pelo marcador;
-- [x] corrigir regressões causadas pelas mudanças deste patch;
-- [x] manter o núcleo militar existente funcionando;
-- [x] testes unitários verdes;
-- [x] testes de tela verdes;
-- [x] tipos e lint verdes.
+Não tentar balancear alimentação neste patch. O `0.0.4` fará consumo, fome e ajuste fino da
+relação entre produção e necessidade.
 
 ---
 
-# Fora de escopo do 0.0.2
+# Tarefas
 
-Não implementar neste patch:
+## 1. Representar produção física
 
-- nova economia física;
-- produção física nova;
+- [x] criar uma forma clara de obter a produção física de uma província por recurso;
+- [x] usar a população ATUAL do estado, não somente a população inicial do JSON;
+- [x] calcular o recurso principal;
+- [x] calcular o recurso secundário;
+- [x] retornar quantidades inteiras e não negativas;
+- [x] província sem ficha econômica continua sem produção física.
+
+## 2. Produzir ao passar o turno
+
+- [x] a cada virada de turno, cada uma das cinco províncias configuradas produz seus recursos;
+- [x] produção do principal é adicionada ao estoque provincial;
+- [x] produção do secundário é adicionada ao estoque provincial;
+- [x] estoques permanecem provinciais;
+- [x] não criar estoque global do poder;
+- [x] não consumir nada ainda;
+- [x] não deteriorar nada ainda.
+
+## 3. População influencia produção
+
+- [x] reduzir população deve reduzir a produção física;
+- [x] recrutamento, mortes ou outras mudanças demográficas já existentes devem refletir na produção seguinte;
+- [x] não criar sistema de trabalhadores;
+- [x] não criar alocação manual de população.
+
+## 4. Preservar a economia monetária atual
+
+- [x] não remover a renda atual;
+- [x] não transformar estoque em dinheiro;
+- [x] não vender automaticamente os recursos físicos;
+- [x] não alterar impostos;
+- [x] não alterar comércio;
+- [x] não refazer investimento além do estritamente necessário para manter compatibilidade.
+
+A camada física nasce ao lado da economia monetária antiga por enquanto.
+
+A substituição/integração da renda será feita nos patches próprios do roadmap.
+
+## 5. Exposição mínima para teste
+
+- [x] permitir verificar quanto cada recurso da província produz por turno;
+- [x] a ficha pode mostrar essa informação de forma simples se isso for necessário para o teste manual;
+- [x] não redesenhar a interface;
+- [x] não criar novos painéis econômicos grandes.
+
+A prioridade é conseguir observar:
+
+`estoque antes → passar turno → produção → estoque depois`
+
+---
+
+# Região de teste
+
+Validar somente:
+
+- Atenas;
+- Maratona;
+- Sunião;
+- Elêusis;
+- Tanagra.
+
+Não preencher nem simular economicamente as outras 200 províncias neste patch.
+
+---
+
+# Fora de escopo
+
+NÃO implementar no `0.0.3`:
+
 - consumo de alimento;
+- fome;
+- bônus por excedente alimentar;
 - deterioração;
 - mercado interno;
-- nova tributação;
+- transferência de recursos entre províncias;
+- comércio internacional;
+- preços dinâmicos;
+- novos impostos;
 - felicidade funcional;
 - nacionalidade funcional;
-- efeitos funcionais de capital;
+- capital funcional;
 - construções 2.0;
-- cerco econômico;
-- visor de batalha;
-- moral;
-- retirada avançada;
-- tipos de tropas;
-- generais;
-- terreno de combate;
-- naval;
-- diplomacia;
+- Porto funcional;
+- cerco afetando estoque/produção;
+- logística militar;
 - IA.
+
+Se alguma dessas coisas parecer necessária, parar e reportar antes de ampliar o patch.
 
 ---
 
-# Critério de fechamento
+# Testes mínimos
 
-O `0.0.2` fecha somente quando:
+Criar ou adaptar testes para garantir:
 
-- [x] as tarefas do patch funcionarem;
-- [x] testes automatizados relevantes estiverem verdes — 237 unitários e 26 de tela, com
-      tipos, lint, código morto e validação de dados;
-- [x] não houver regressão bloqueante conhecida;
-- [x] Henrique testar manualmente o jogo;
-- [x] Henrique aprovar o patch.
+- [x] principal produz;
+- [x] secundário produz;
+- [x] produção entra no estoque correto;
+- [x] dois turnos acumulam duas produções;
+- [x] população menor gera produção menor;
+- [x] potencial maior gera produção maior em condições comparáveis;
+- [x] potencial natural do dado não é alterado;
+- [x] província sem ficha não passa a produzir;
+- [x] produção não cria/retira dinheiro por si só;
+- [x] economia monetária atual continua funcionando;
+- [x] testes unitários existentes continuam verdes;
+- [x] tipos e lint verdes;
+- [x] testes de tela verdes se a UI for tocada.
 
-Depois da aprovação:
+Não cravar em teste números de balanceamento que vêm de `dados/*.json`.
+Testar fórmulas e relações.
+
+---
+
+# Teste manual de Henrique
+
+Antes de fechar o patch:
+
+1. iniciar campanha;
+2. abrir uma das cinco províncias;
+3. anotar estoque e produção dos dois recursos;
+4. passar um turno;
+5. conferir que ambos aumentaram corretamente;
+6. recrutar homens de uma província;
+7. após a formação/mudança populacional, conferir que sua produção caiu;
+8. confirmar que dinheiro/renda antiga ainda funciona;
+9. jogar alguns turnos e procurar crescimento absurdo ou comportamento quebrado.
+
+---
+
+# Definition of Done
+
+O `0.0.3` fecha quando:
+
+- [x] produção física existe;
+- [x] principal e secundário produzem;
+- [x] estoque provincial recebe a produção;
+- [x] população atual influencia a produção;
+- [x] nenhuma mecânica de consumo foi antecipada;
+- [x] nenhuma economia monetária futura foi antecipada;
+- [x] testes automatizados relevantes passam;
+- [x] Henrique testou manualmente;
+- [x] Henrique aprovou.
+
+Depois:
 
 1. [x] atualizar `CHANGELOG.md`;
-2. [x] marcar/registrar a versão — `0.0.2` em `package.json` e `package-lock.json`;
-3. [x] encerrar o patch;
-4. [x] parar.
+2. [x] fechar `0.0.3` — versão `0.0.3` em `package.json` e `package-lock.json`;
+3. [x] parar;
+4. [ ] não iniciar `0.0.4` sem novo `PATCH_ATUAL.md`.
 
-**Nenhum agente inicia o `0.0.3` automaticamente.**
+---
 
-## Limites conhecidos que este patch NÃO resolveu
+# Encerrado em 2026-08-23
 
-Ficam registrados para quem abrir o próximo patch, e nenhum deles é alcançável pelo
-jogador hoje:
+Os números que este patch deixou medidos, para o `0.0.4` não calibrar no escuro:
 
-- **dois sitiantes na mesma província**: `estado.cercos` guarda um sitiante por província,
-  então o segundo sobrescreve o registro do primeiro — e os dois acampam sem se tocar,
-  porque nenhum quer lutar. Vira problema real no patch da IA;
-- **postura compartilhada por província de destino**: dois poderes marchando sobre a mesma
-  cidade alheia compartilham a entrada, e o segundo herda a postura do primeiro. Também só
-  aparece em guerra de três lados;
-- **a matemática do combate continua provisória** (`DECISOES.md` #20), e moral, retirada e
-  tipos de tropa continuam no backlog;
-- **sem IA, ninguém ataca o jogador**: exercitar surtida e socorro à mão exige o gancho de
-  inspeção.
+- `unidades = população × nível × 0,009` (`0,3` de fatia produtiva × `0,03` por produtor
+  por nível). Uma unidade de alimento = ração anual de **50 pessoas**;
+- **autossuficiência = soma dos níveis de alimento × 0,45.** A província se alimenta a
+  partir de soma ≈ 2,3, e o tamanho da população não muda nada;
+- na região de teste: Atenas 90%, Tanagra 90%, Maratona 135%, Elêusis 135%, Sunião 0%. A
+  Ática inteira fecha em 96,5% do que come.

@@ -6,6 +6,10 @@
     "tesouroInicial": 3000,
     "economia": {
       "impostoPorHabitante": 0.005,
+      "producao": {
+        "fracaoProdutiva": 0.3,
+        "porProdutorPorNivel": 0.03
+      },
       "investimento": {
         "maximo": 500,
         "teto": 0.25,

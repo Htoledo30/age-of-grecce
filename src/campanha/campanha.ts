@@ -44,6 +44,8 @@ import { avaliarOrdem } from '@/movimento/ordens';
 import type { OrdemDeMarcha, RecusaDeOrdem } from '@/movimento/ordens';
 import { resolverRodada } from '@/movimento/resolucao';
 import type { RelatorioDaRodada } from '@/movimento/resolucao';
+import { creditarNoEstoque, producaoFisicaDe } from '@/producao/producao-fisica';
+import type { RecursoProduzido } from '@/producao/producao-fisica';
 import { calcularCrescimentoPopulacional } from '@/populacao/crescimento';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 
@@ -314,6 +316,28 @@ export class Campanha {
    * ⚠️ Ela ainda não faz NADA no jogo — ver `capitais.ts`. Existe para os sistemas da
    * O patch 0.0.9 em diante ter uma resposta só.
    */
+  /**
+   * O que esta província tira da terra por turno, principal e secundário.
+   *
+   * Vazio na província sem ficha autoral — as 200 sem economia configurada não produzem
+   * nada, exatamente como não arrecadam. Inventar produção para elas seria encher o mapa
+   * de recurso que ninguém escreveu.
+   *
+   * ⚠️ **Calculado na hora, a partir da população ATUAL.** Não existe número de produção
+   * guardado no estado: recrutar mil homens hoje faz a colheita do ano que vem ser menor
+   * sem que nenhuma regra precise avisar ninguém.
+   */
+  producaoFisicaEm(idProvincia: string): readonly RecursoProduzido[] {
+    const ficha = this.economia.provincias[idProvincia];
+    if (!ficha) return [];
+    return producaoFisicaDe(ficha, this.populacaoDe(idProvincia), this.ajustes.economia.producao);
+  }
+
+  /** O que esta província tem guardado, por produto. Vazio onde nunca houve nada. */
+  estoqueEm(idProvincia: string): Readonly<Record<string, number>> {
+    return this.estado.estoques[idProvincia] ?? {};
+  }
+
   capitalDe(idPoder: string): string | undefined {
     return this.estado.capitais[idPoder];
   }
@@ -410,6 +434,7 @@ export class Campanha {
       },
       this.ajustes.felicidade.faixas,
       this.ajustes.alimento.consumoPorHabitante,
+      this.ajustes.economia.producao,
     );
   }
 
@@ -840,6 +865,27 @@ export class Campanha {
     );
   }
 
+  /**
+   * A colheita do ano: cada província com ficha tira da terra e guarda no próprio celeiro.
+   *
+   * ⚠️ **Ninguém consome, ninguém vende e nada estraga ainda** — é só entrada. O consumo é
+   * o patch 0.0.4, a deterioração vem com ele, o mercado interno é o 0.0.5 e virar dinheiro
+   * é o 0.0.6. Enquanto isso, o estoque só cresce, e crescer é o comportamento certo: sem
+   * a camada física existindo primeiro, não há o que consumir nem o que circular.
+   *
+   * Percorre em ordem de id para a mesma partida render sempre a mesma coisa.
+   */
+  private colher(): void {
+    for (const idProvincia of Object.keys(this.economia.provincias).sort()) {
+      const colheita = this.producaoFisicaEm(idProvincia);
+      if (colheita.length === 0) continue;
+      // O celeiro pode não existir ainda: província sem estoque inicial escrito começa
+      // sem a chave, e a primeira colheita é que a cria.
+      const estoque = (this.estado.estoques[idProvincia] ??= {});
+      creditarNoEstoque(estoque, colheita);
+    }
+  }
+
   /** O relatório da última virada. Vazio antes do primeiro turno. */
   get rodada(): RelatorioDaRodada {
     return this.ultimaRodada;
@@ -1116,6 +1162,11 @@ export class Campanha {
     if (!this.iniciada) throw new Error('a campanha ainda não começou');
     this.arrecadar();
     this.pagarTropa();
+    // A colheita é do MESMO instante que a arrecadação: o ano que se fecha pertence ao
+    // mundo como o jogador o deixou. Colher depois da resolução daria a safra ao invasor
+    // que tomou a província naquela mesma virada — e a safra é do ano inteiro, não do dia
+    // da batalha.
+    this.colher();
 
     // ⚠️ **Arrecada ANTES de resolver as marchas.** A renda do turno pertence ao mundo
     // como ele estava quando o jogador decidiu; quem conquista na resolução colhe no turno

@@ -153,9 +153,29 @@ Há três níveis diferentes:
 
 ## Economia e população atuais
 
-A economia antiga continua ativa enquanto o patch `0.0.3` não introduzir a produção física:
+Existem **duas camadas econômicas ao mesmo tempo**, e é de propósito.
+
+A antiga, em moeda, continua sendo a única que paga tropa e obra:
 
 `renda = impostos da população + produção do produto + comércio`
+
+A física, do patch `0.0.3`, vive ao lado dela e ainda não vira dinheiro:
+
+`unidades por turno = potencial natural (nível) × população produtiva`
+
+- a conta está em `src/producao/producao-fisica.ts` e a escala em
+  `dados/ajustes.json` (`economia.producao`), nunca cravada no TypeScript;
+- **principal e secundário produzem pela mesma regra**; o secundário sai menor porque o
+  nível dele é menor, não porque exista multiplicador de "ser secundário";
+- a colheita entra no **estoque da própria província** (`estado.estoques`) ao passar o
+  turno, no mesmo instante da arrecadação — antes da resolução das marchas, para a safra
+  do ano não cair no colo de quem tomou a província naquela virada;
+- **ninguém consome, vende ou deteriora nada ainda**: o estoque só enche. Consumo é o
+  `0.0.4`, mercado o `0.0.5`, dinheiro o `0.0.6`;
+- não somar a colheita na renda: o mesmo trigo seria contado duas vezes. A troca de uma
+  camada pela outra pertence aos patches de dinheiro e mercado;
+- modificadores (Oficina, incentivo) **ainda não entram** na produção física; eles são
+  reescritos no `0.0.11` e no `0.0.6`, e é lá que voltam a esta conta.
 
 Somente Atenas, Maratona, Sunião, Elêusis e Tanagra possuem ficha econômica. As outras 200
 não arrecadam nem são simuladas economicamente. Valores atuais pertencem a
@@ -350,6 +370,9 @@ paralela demais instável.
 - O título usado para reconhecer o servidor vem de `index.html`; não duplicar a string no
   código.
 - `jogar.bat` é a entrada por duplo clique e deve encerrar também o servidor ao fechar.
+- **Duas execuções de `vitest` ao mesmo tempo fazem TODOS os arquivos falharem na carga**,
+  não em asserção — duas sessões trabalhando no repositório disputam o cache de transformação.
+  O sintoma é assustador e o conserto é rodar de novo. Confirmar antes de investigar.
 
 Antes de marcar qualquer tarefa como concluída, siga a Definition of Done de `AGENTS.md`,
 atualize o status no `PATCH_ATUAL.md` e registre mudanças concluídas em `CHANGELOG.md` sob
