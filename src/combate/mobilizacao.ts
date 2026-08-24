@@ -62,8 +62,8 @@ export class Mobilizacao {
    * A ÚNICA hoste parada aqui, ou `undefined`.
    *
    * ⚠️ **Devolve `undefined` quando há mais de uma**, de propósito. Antes devolvia "a
-   * primeira por id", e isso virou mentira no dia em que sitiar deixou de engajar
-   * (`DECISOES.md` #32A): com o sitiante acampado ao lado da guarnição, "a primeira" é
+   * primeira por id", e isso virou mentira no dia em que sitiar deixou de engajar: com o
+   * sitiante acampado ao lado da guarnição, "a primeira" é
    * quem foi recrutado antes — o defensor — e a interface inteira passou a falar do
    * exército errado. Quem lida com um lugar que pode ter duas usa `hostesEm`; quem sabe
    * de qual hoste está falando usa `hoste(id)`.
@@ -158,6 +158,21 @@ export class Mobilizacao {
     );
   }
 
+  /**
+   * O que a tropa NASCIDA nesta província custa por turno, onde quer que esteja.
+   *
+   * É a resposta de "esta terra me puxa pra baixo?": a origem de cada soldado já é
+   * rastreada, então a folha militar pode ser lida terra a terra. Só hostes ativas —
+   * a leva em formação ainda não recebe soldo.
+   */
+  custoDaTropaDe(idProvincia: string): number {
+    let homens = 0;
+    for (const exercito of Object.values(this.estado.hostes)) {
+      homens += exercito.origem[idProvincia] ?? 0;
+    }
+    return manutencaoDe(homens, this.ajustes);
+  }
+
   /** Quantos homens nascidos nesta província estão em armas em todo o mapa. */
   homensEmArmasDe(idProvincia: string): number {
     let total = 0;
@@ -192,14 +207,12 @@ export class Mobilizacao {
     idProvincia: string,
     idPoder: string,
     homens: number,
-    temQuartel: boolean,
   ): RecusaDeLeva {
     return avaliarLeva(
       homens,
       {
         populacao: this.populacaoDe(idProvincia),
         tesouro: this.tesouroDe(idPoder),
-        temQuartel,
       },
       this.ajustes,
     );
@@ -234,11 +247,10 @@ export class Mobilizacao {
     leva: { ouro: number; homens: number },
     turnoAtual: number,
   ): void {
-    const alheia = this.hostesEm(idProvincia).find((h) => h.poder !== poder);
-    // Guarda contra tropa alheia parada aqui: recrutar nao pode engordar o exercito de
-    // outro poder por acidente.
-    if (alheia) throw new Error(`há tropa de ${alheia.poder} em ${idProvincia}`);
-
+    // ⚠️ Tropa alheia parada aqui NÃO bloqueia mais: a cidade sitiada continua levantando
+    // gente, como `cerco.ts` promete. A guarda que existia era do tempo em que a hoste
+    // tinha a província como chave e a leva podia engordar o exército errado; hoje a
+    // formação carrega o poder e `concluirFormacoes` entrega à hoste do MESMO poder.
     this.estado.tesouros[poder] = this.tesouroDe(poder) - leva.ouro;
     this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - leva.homens;
     iniciarFormacao(this.estado.formacoes, idProvincia, poder, leva.homens, turnoAtual);
@@ -303,6 +315,122 @@ export class Mobilizacao {
       naChegada.origem[terra] = (naChegada.origem[terra] ?? 0) + homens;
     }
     delete this.estado.hostes[hoste.id];
+  }
+
+  /**
+   * Quantos homens em armas este poder sustenta, contando as levas em formação.
+   *
+   * ⚠️ **A leva conta.** Ela já saiu da população e já come — só não marcha nem luta. Não
+   * contá-la abriria uma brecha em que recrutar na véspera da fome sairia de graça.
+   */
+  homensDe(idPoder: string): number {
+    let homens = 0;
+    for (const h of this.doPoder(idPoder)) homens += forcaDe(h);
+    for (const { formacao } of this.formacoes()) {
+      if (formacao.poder === idPoder) homens += formacao.homens;
+    }
+    return homens;
+  }
+
+  /**
+   * A fome cobra do exército: tira homens e **não devolve ninguém à terra natal**.
+   *
+   * ⚠️ É o contrário de `dispensarDe` e de deserção, e a diferença é o ponto: quem não
+   * recebe soldo vai embora vivo, e a província de origem recupera aquela gente; quem
+   * passa fome no campo morre, e a população não volta. Duas travas do exército, duas
+   * consequências — se as duas devolvessem gente, uma seria redundante.
+   *
+   * Reparte as baixas proporcionalmente entre as hostes do poder, e depois entre as levas
+   * ainda em formação, que também já comem. `pouparEm` lista as províncias cujas tropas
+   * ficam de fora — as cidades sitiadas do próprio poder, que já pagam o relógio da
+   * despensa e não podem pagar a mesma fome duas vezes. Devolve quantos de fato caíram.
+   */
+  matarPorFome(
+    idPoder: string,
+    homens: number,
+    pouparEm: ReadonlySet<string> = new Set(),
+  ): number {
+    const alvo = Math.floor(homens);
+    if (alvo <= 0) return 0;
+
+    const hostes = this.doPoder(idPoder).filter((h) => !pouparEm.has(h.posicao));
+    const emArmas = hostes.reduce((total, h) => total + forcaDe(h), 0);
+    let mortos = 0;
+
+    for (const hoste of hostes) {
+      if (mortos >= alvo) break;
+      const fatia = emArmas > 0 ? Math.floor((forcaDe(hoste) * alvo) / emArmas) : 0;
+      const tirar = Math.min(Math.max(fatia, 0), forcaDe(hoste), alvo - mortos);
+      if (tirar <= 0) continue;
+      retirar(hoste, tirar);
+      mortos += tirar;
+      if (forcaDe(hoste) <= 0) delete this.estado.hostes[hoste.id];
+    }
+
+    // O resto do arredondamento, e o caso de o poder só ter leva em formação.
+    for (const hoste of this.doPoder(idPoder)) {
+      if (mortos >= alvo) break;
+      if (pouparEm.has(hoste.posicao)) continue;
+      const tirar = Math.min(alvo - mortos, forcaDe(hoste));
+      if (tirar <= 0) continue;
+      retirar(hoste, tirar);
+      mortos += tirar;
+      if (forcaDe(hoste) <= 0) delete this.estado.hostes[hoste.id];
+    }
+    for (const { provincia, formacao } of this.formacoes()) {
+      if (mortos >= alvo) break;
+      if (formacao.poder !== idPoder || pouparEm.has(provincia)) continue;
+      const tirar = Math.min(alvo - mortos, formacao.homens);
+      if (tirar <= 0) continue;
+      formacao.homens -= tirar;
+      mortos += tirar;
+      if (formacao.homens <= 0) delete this.estado.formacoes[provincia];
+    }
+    return mortos;
+  }
+
+  /**
+   * A fome do cerco: mata homens DESTA hoste, sem devolver ninguém à origem.
+   *
+   * Par do `matarPorFome`, que reparte pelo poder inteiro: aqui quem morre é quem está
+   * preso atrás da muralha, e a campanha diz exatamente quantos. Devolve quantos caíram.
+   */
+  matarDaHoste(idHoste: string, homens: number): number {
+    const exercito = this.hoste(idHoste);
+    if (!exercito) return 0;
+    const tirar = Math.min(Math.max(0, Math.floor(homens)), forcaDe(exercito));
+    if (tirar <= 0) return 0;
+    retirar(exercito, tirar);
+    if (forcaDe(exercito) <= 0) delete this.estado.hostes[exercito.id];
+    return tirar;
+  }
+
+  /** O mesmo para a leva em formação desta província: ela também está dentro dos muros. */
+  matarDaFormacao(idProvincia: string, homens: number): number {
+    const formacao = this.estado.formacoes[idProvincia];
+    if (!formacao) return 0;
+    const tirar = Math.min(Math.max(0, Math.floor(homens)), formacao.homens);
+    if (tirar <= 0) return 0;
+    formacao.homens -= tirar;
+    if (formacao.homens <= 0) delete this.estado.formacoes[idProvincia];
+    return tirar;
+  }
+
+  /**
+   * O levante: parte da população pega em armas CONTRA o dono atual da província.
+   *
+   * Os rebeldes saem da população — o manancial humano é um só, como no recrutamento — e
+   * nascem como hoste do poder a que a terra pertencia em 700 a.C. Se esse poder tinha
+   * sido eliminado, a hoste o traz de volta ao jogo: restauração pela arma do povo.
+   */
+  levantarRebeldes(idProvincia: string, idPoder: string, homens: number): string | null {
+    const disponivel = Math.min(Math.max(0, Math.floor(homens)), this.populacaoDe(idProvincia));
+    if (disponivel <= 0) return null;
+    this.estado.populacao[idProvincia] = this.populacaoDe(idProvincia) - disponivel;
+    const exercito = exercitoVazio(this.proximoId(), idPoder, idProvincia);
+    somarLeva(exercito, idProvincia, disponivel);
+    this.estado.hostes[exercito.id] = exercito;
+    return exercito.id;
   }
 
   manutencaoDe(idPoder: string): number {

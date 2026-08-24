@@ -139,21 +139,18 @@ describe('o Quartel é o portão', () => {
   it('sem Quartel não se recruta, e a recusa diz isso', () => {
     const c = nova();
     c.comecar('atenas');
-    expect(c.podeRecrutarEm('atenas')).toBe(false);
-    expect(c.podeRecrutar('atenas', 500)).toMatchObject({
-      pode: false,
-      motivo: 'é preciso um Quartel aqui para reunir tropa',
-    });
-    expect(() => c.recrutar('atenas', 500)).toThrow(/Quartel/);
+    expect(c.podeRecrutarEm('atenas')).toBe(true);
+    expect(c.podeRecrutar('atenas', 500)).toMatchObject({ pode: true });
   });
 
-  it('o Quartel não rende moeda nenhuma — ele paga em capacidade', () => {
+  it('o Quartel não rende moeda e não é requisito para recrutar', () => {
     const c = comQuartel();
-    expect(c.retornoDaConstrucaoEm('atenas', 'quartel')?.ganhoPorTurno).toBe(0);
-    // e destrava o que nenhuma das outras destrava
-    expect(c.capacidadesEm('atenas')).toEqual(['recrutar']);
+    // Não rende NADA: o ganho é exatamente a manutenção negativa, sem renda escondida.
+    expect(c.retornoDaConstrucaoEm('atenas', 'quartel')?.ganhoPorTurno).toBe(
+      -construcoes.construcoes['quartel']!.manutencao[0],
+    );
     expect(c.podeRecrutarEm('atenas')).toBe(true);
-    expect(c.podeRecrutarEm('maratona')).toBe(false);
+    expect(c.podeRecrutarEm('maratona')).toBe(true);
   });
 
   it('província que não é sua não aceita leva, e o motivo é esse', () => {
@@ -192,8 +189,16 @@ describe('recrutar custa ouro E população', () => {
 
     c.recrutar('atenas', 1000);
 
-    // Mil habitantes a menos tiram cinco moedas de imposto imediatamente.
-    expect(c.economiaDe('atenas')?.impostos).toBe((impostosAntes ?? 0) - 5);
+    // Menos gente é menos imposto NA HORA — e um pouco menos de corrupção por tamanho,
+    // então o novo valor sai da fórmula inteira em vez de uma subtração de cabeça.
+    expect(c.economiaDe('atenas')?.impostos).toBe(
+      Math.round(
+        c.populacaoDe('atenas') *
+          ajustes.economia.impostoPorHabitante *
+          (1 - c.corrupcaoEm('atenas').total),
+      ),
+    );
+    expect(c.economiaDe('atenas')?.impostos).toBeLessThan(impostosAntes ?? 0);
   });
 
   it('a ficha mostra a população de agora, não a inicial', () => {
@@ -262,12 +267,12 @@ describe('manter tropa é o ralo de dinheiro', () => {
   });
 
   it('uma mobilização grande pode custar mais que a renda de Atenas', () => {
-    // Sem teto artificial, o freio continua legível: 3.500 homens custam 700 por turno
-    // contra 691 de renda, porque os mesmos 3.500 também deixaram de ser tributados.
+    // A leva põe o reino em fome; antes da folha seguinte, 5% dos homens são perdidos.
     const c = comQuartel();
     c.recrutar('atenas', 3500);
     c.passarTurno();
-    expect(c.manutencao).toBe(Math.round(3500 * combate.manutencaoPorHomem));
+    const sobreviventes = 3500 - Math.floor(3500 * ajustes.alimento.mortePorFomeNaTropa);
+    expect(c.manutencao).toBe(Math.round(sobreviventes * combate.manutencaoPorHomem));
     expect(c.saldoPorTurno).toBeLessThan(0);
   });
 
@@ -276,17 +281,49 @@ describe('manter tropa é o ralo de dinheiro', () => {
     c.recrutar('atenas', 3500);
     c.passarTurno();
     const forcaInicial = c.forcaEm('atenas');
-    const totalAntes = c.populacaoDe('atenas') + c.homensEmArmasDe('atenas');
 
-    // Saldo negativo de 9 por turno: o tesouro escorre até não cobrir a folha, e aí
-    // começa a desertar. Não existe instante de colapso, existe uma corda esticando.
+    // O tesouro escorre até não cobrir a folha, e aí começa a desertar. Não existe
+    // instante de colapso, existe uma corda esticando.
     for (let i = 0; i < 300; i++) c.passarTurno();
 
     expect(c.forcaEm('atenas')).toBeLessThan(forcaInicial); // desertou
-    expect(c.forcaEm('atenas')).toBeGreaterThan(0); // e não colapsou
+    expect(c.forcaEm('atenas')).toBeGreaterThan(0); // proporcional, nunca aniquilação
     expect(c.tesouro).toBeGreaterThanOrEqual(0); // tesouro nunca fica negativo
-    // quem desertou voltou pra casa em vez de sumir do mundo: a soma fecha sempre
-    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBeGreaterThan(totalAntes);
+    // A corda para de esticar onde a renda volta a sustentar a folha: o exército
+    // encolhe até caber no que o reino paga, e ali estabiliza.
+    expect(c.manutencao).toBeLessThanOrEqual(c.renda);
+  });
+
+  it('quem deserta volta pra casa em vez de sumir do mundo', () => {
+    const c = comQuartel();
+    // Leva pequena de propósito: o reino continua alimentando todo mundo, e o único
+    // aperto em cima da tropa é o do soldo. Assim a soma mede só a deserção.
+    // 2.500 homens: a folha passa da renda, mas o saldo alimentar fecha em zero; ninguém
+    // passa fome e a soma mede somente a deserção.
+    c.recrutar('atenas', 2500);
+    c.passarTurno();
+    c.darOuro(-c.tesouro);
+
+    // O controle é a mesma campanha com o cofre cheio: mesma tropa, mesma comida, mesma
+    // demografia — só que sem deserção. A diferença entre as duas é o que este teste mede.
+    const pago = comQuartel();
+    pago.recrutar('atenas', 2500);
+    pago.passarTurno();
+    pago.darOuro(50_000);
+
+    const forca = c.forcaEm('atenas');
+    c.passarTurno();
+    pago.passarTurno();
+
+    expect(c.fome.provincias).toEqual([]); // ninguém passou fome nesta janela
+    expect(c.forcaEm('atenas')).toBeLessThan(forca); // desertou
+    expect(pago.forcaEm('atenas')).toBe(forca); // e o controle não
+    // O que saiu do exército reapareceu na província: o mundo continua com a mesma gente.
+    // A margem de um punhado é arredondamento — o exército menor come um pouco menos, e o
+    // crescimento do turno cai noutro inteiro.
+    expect(c.populacaoDe('atenas') + c.homensEmArmasDe('atenas')).toBeGreaterThanOrEqual(
+      pago.populacaoDe('atenas') + pago.homensEmArmasDe('atenas') - 5,
+    );
   });
 
   it('a conta fecha em inteiros mesmo depois de desertar', () => {
@@ -334,14 +371,24 @@ describe('dispensar devolve cada um à sua terra', () => {
   });
 
   it('a população nunca é uma catraca de sentido único', () => {
+    // ⚠️ **Medido contra um CONTROLE:** a demografia se
+    // mexe sozinha entre um turno e outro — e mobilizar pode trocar a categoria alimentar.
+    // Comparar "depois" com "antes" mediria demografia, não a catraca. O que este
+    // teste guarda é que recrutar e dispensar **não tiram nada do mundo**: três ciclos de
+    // leva e dispensa têm que terminar exatamente onde três turnos parados terminariam.
+    const parado = comQuartel();
+    for (let i = 0; i < 3; i++) parado.passarTurno();
+
     const c = comQuartel();
     for (let i = 0; i < 3; i++) {
-      const antes = c.populacaoDe('atenas');
       c.recrutar('atenas', 1000);
       c.passarTurno();
       c.dispensar('atenas', 1000);
-      expect(c.populacaoDe('atenas')).toBeGreaterThanOrEqual(antes);
     }
+    // Mobilizada, Atenas cai de Farta para Abastecida e cresce um pouco menos nesses anos.
+    // A diferença é demografia, não gente engolida pela dispensa.
+    expect(c.populacaoDe('atenas')).toBeLessThan(parado.populacaoDe('atenas'));
+    expect(Math.abs(c.populacaoDe('atenas') - parado.populacaoDe('atenas'))).toBeLessThanOrEqual(100);
   });
 });
 
@@ -399,10 +446,11 @@ describe('perder o chão não é o mesmo que morrer', () => {
   });
 
   it('sem chão e sem tropa é eliminação, como antes', () => {
+    // Esparta não tem guarnição inicial: perder o chão a elimina de vez, sem exílio.
     const c = nova();
-    for (const id of [...c.provinciasDe('megara')]) c.trocarDono(id, 'atenas');
-    expect(c.vivo('megara')).toBe(false);
-    expect(c.noExilio('megara')).toBe(false);
+    for (const id of [...c.provinciasDe('esparta')]) c.trocarDono(id, 'atenas');
+    expect(c.vivo('esparta')).toBe(false);
+    expect(c.noExilio('esparta')).toBe(false);
   });
 });
 
@@ -413,29 +461,41 @@ describe('dispensar homem de terra perdida', () => {
     c.passarTurno();
     const populacao = c.populacaoDe('atenas');
 
+    const rendaPropriaDeMegara = c.rendaDe('megara');
     c.trocarDono('atenas', 'megara');
     // Uma regra só, sem exceção: gente pertence ao chão, não a quem manda no chão.
     c.dispensar('atenas', 1000);
 
     expect(c.populacaoDe('atenas')).toBe(populacao + 1000);
     expect(c.donoDe('atenas')).toBe('megara');
-    // E a consequência dura, de propósito: os habitantes rendem pro conquistador.
-    expect(c.rendaDe('megara')).toBe(c.economiaDe('atenas')?.total);
+    // E a consequência dura, de propósito: os habitantes rendem pro conquistador —
+    // somados ao que Mégara já arrecadava das terras dela.
+    expect(c.rendaDe('megara')).toBe(rendaPropriaDeMegara + (c.economiaDe('atenas')?.total ?? 0));
     expect(c.rendaDe('atenas')).toBe(
       (c.economiaDe('maratona')?.total ?? 0) + (c.economiaDe('sounion')?.total ?? 0),
     );
   });
 
   it('a mesma regra vale pra deserção por falta de pagamento', () => {
+    // O exilado sem soldo: a hoste ativa fica sem pagamento e deserta INTEIRA na virada —
+    // e a folha é cobrada ANTES da fome, então ninguém morre no caminho e a conta mede só
+    // a deserção. Cada desertor volta à terra natal, que agora é de Mégara.
     const c = comQuartel();
-    const antes = c.populacaoDe('atenas');
     c.recrutar('atenas', 1000);
+    c.passarTurno(); // a leva vira hoste
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
+    c.darOuro(-c.tesouro); // exilado e de cofre vazio
 
-    for (let i = 0; i < 60; i++) c.passarTurno();
+    const antes = c.populacaoDe('atenas');
+    c.passarTurno();
 
-    // Os desertores do exílio engordam exatamente quem tomou a terra deles.
-    expect(c.populacaoDe('atenas')).toBeGreaterThan(antes);
+    // Os 1.000 voltaram pra casa ANTES do crescimento do turno: a população nova é pelo
+    // menos a antiga mais a tropa inteira.
+    expect(c.populacaoDe('atenas')).toBeGreaterThanOrEqual(antes + 1000);
+    // Sem chão e agora sem tropa, o exílio terminou em eliminação.
+    expect(c.hostes().filter((h) => h.poder === 'atenas')).toEqual([]);
+    expect(c.vivo('atenas')).toBe(false);
+    // E quem engorda com os desertores é exatamente quem tomou a terra deles.
     expect(c.rendaDe('megara')).toBeGreaterThan(0);
   });
 

@@ -171,11 +171,20 @@ export function rotularComIcone(alvo: HTMLElement, nome: NomeDoIconeGrego, texto
 export function iconeDaConstrucao(id: string): NomeDoIconeGrego {
   const conhecidos: Record<string, NomeDoIconeGrego> = {
     agora: 'templo',
-    oficina: 'martelo',
     mercado: 'mercado',
-    celeiro: 'celeiro',
     quartel: 'quartel',
     muralha: 'muralha',
+    templo: 'templo',
+    porto: 'territorio',
+    estrada: 'mapa',
+    fazenda: 'celeiro',
+    pastagem: 'celeiro',
+    'porto-pesqueiro': 'territorio',
+    lagar: 'martelo',
+    vinhedo: 'mercado',
+    serraria: 'martelo',
+    mina: 'martelo',
+    pedreira: 'martelo',
   };
   return conhecidos[id] ?? 'martelo';
 }

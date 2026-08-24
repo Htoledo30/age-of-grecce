@@ -1,0 +1,42 @@
+/* A tela de fim de campanha: um véu sobre o mapa e um cartão no centro. */
+#ui > .fim-de-jogo {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  background: rgb(5 9 10 / 62%);
+  backdrop-filter: blur(3px);
+}
+.fim-de-jogo__cartao {
+  width: 520px;
+  padding: 44px 48px 38px;
+  text-align: center;
+  border: 1px solid var(--ui-borda);
+  background: linear-gradient(145deg, rgb(25 33 36 / 96%), rgb(10 15 17 / 93%));
+  color: var(--ui-texto);
+  box-shadow: 0 24px 70px var(--ui-sombra);
+}
+.fim-de-jogo__emblema {
+  margin-bottom: 10px;
+}
+.fim-de-jogo__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 44px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.fim-de-jogo__titulo[data-resultado='derrota'] {
+  color: var(--ui-perigo, #b4433a);
+}
+.fim-de-jogo__texto {
+  margin: 14px 0 26px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.fim-de-jogo__acoes {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

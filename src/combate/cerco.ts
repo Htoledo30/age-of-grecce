@@ -58,7 +58,16 @@ type AjustesCerco = Ajustes['jogo']['combate']['cerco'];
 /** O que o sitiante está fazendo neste turno. */
 export type Postura = 'assaltar' | 'sitiar';
 
-/** Um cerco em curso, guardado por província sitiada. */
+/**
+ * Um cerco em curso, guardado por província sitiada.
+ *
+ * ⚠️ **Limite conhecido: um sitiante por província.** Se dois poderes diferentes sentarem
+ * na frente da mesma cidade, o segundo sobrescreve o registro do primeiro — e a contagem
+ * de rodadas dele recomeça do zero, como se ninguém estivesse ali antes. Hoje isso é
+ * inalcançável jogando (só a mão do desenvolvedor planta duas hostes inimigas no mesmo
+ * lugar), mas vira problema real no dia em que houver IA. O conserto, quando vier, é este
+ * registro passar a ser uma lista por província em vez de um cerco só.
+ */
 export interface Cerco {
   /** Quem sitia. Não é o dono da província — é quem está sentado em cima dela. */
   sitiante: string;

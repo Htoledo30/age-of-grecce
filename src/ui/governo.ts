@@ -75,6 +75,10 @@ export class Governo {
       this.botoes.set(aba.id, botao);
       this.barraDeAbas.appendChild(botao);
       aba.elemento.classList.add('governo__conteudo');
+      // ⚠️ O id da aba vai para o DOM porque duas abas podem compartilhar as classes de
+      // tabela — e aí "a linha da tabela" deixa de identificar uma tabela só. Quem procura
+      // conteúdo de uma aba específica procura por este atributo.
+      aba.elemento.dataset['aba'] = aba.id;
       this.conteudo.appendChild(aba.elemento);
     }
 

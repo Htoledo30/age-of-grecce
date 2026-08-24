@@ -4,9 +4,9 @@
   left: 0;
   z-index: 1000;
   width: max-content;
-  min-width: 210px;
-  max-width: 360px;
-  padding: 14px 16px;
+  min-width: 190px;
+  max-width: 320px;
+  padding: 12px 14px;
   pointer-events: none !important;
   border: 1px solid var(--ui-borda);
   border-left: 3px solid var(--ui-bronze);
@@ -35,10 +35,10 @@
   color: var(--ui-bronze-claro);
 }
 .tooltip-jogo__corpo {
-  margin-top: 7px;
+  margin-top: 5px;
   white-space: pre-line;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--ui-texto-fraco);
 }
 .tooltip-jogo[data-tom='custo'] {

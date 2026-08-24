@@ -107,7 +107,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   expect(sitiada?.producao).toBe(0);
   expect(sitiada?.comercio).toBe(0);
   expect(sitiada?.impostos).toBeGreaterThan(0);
-  await expect(page.locator('.ficha')).toContainText(`rende ${sitiada?.total} por turno`);
+  await expect(page.locator('.ficha__renda')).toHaveText(/saldo [−+][\d.]+ por turno/);
   expect(erros).toEqual([]);
 });
 
@@ -182,8 +182,8 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
 /**
  * A SURTIDA vista de dentro: o jogador sitiado sai para lutar.
  *
- * ⚠️ Aqui quem está cercado é ATENAS, e é isso que o teste guarda. Sitiar não engaja
- * (`DECISOES.md` #32A), então sem a surtida o exército do jogador ficaria olhando o
+ * ⚠️ Aqui quem está cercado é ATENAS, e é isso que o teste guarda. Sitiar não engaja,
+ * então sem a surtida o exército do jogador ficaria olhando o
  * inimigo acampado na própria cidade, turno após turno, sem nada poder fazer.
  */
 test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page }) => {
@@ -243,7 +243,9 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
 
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
-  // √(700² − 500²) = 490, e a cidade se solta: sem sitiante em cima, não há cerco.
+  // A despensa de Atenas ainda aguenta (mantimentos = base + grão da terra): ninguém
+  // passou fome antes da surtida, e √(700² − 500²) = 490. A cidade se solta: sem
+  // sitiante em cima, não há cerco.
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;

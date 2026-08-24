@@ -8,7 +8,7 @@ import type { Page } from '@playwright/test';
  * O que este teste guarda é justamente o que não acontece no clique. Mover registra uma
  * ORDEM; a marcha só ocorre na virada do turno, junto com as de todo mundo. É isso que
  * impede quem age primeiro de tomar uma fronteira vazia antes de o outro lado ter chance
- * de mandar reforço. Ver `documentacao/design/resolucao-da-rodada.md`.
+ * de mandar reforço.
  */
 
 interface Ganchos {

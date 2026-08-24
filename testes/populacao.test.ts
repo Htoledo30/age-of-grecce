@@ -28,9 +28,17 @@ describe('crescimento populacional', () => {
     // o único jeito de descobrir é rodar a suíte. Derivar da regra faz o teste guardar a
     // REGRA e ignorar o número.
     const c = nova();
+    c.comecar('atenas');
+    // O crescimento segue a categoria do saldo anual; não existe reserva escondida.
     for (const id of ['atenas', 'maratona', 'sounion']) {
       const previsto = c.crescimentoDe(id);
-      const esperado = Math.floor(c.populacaoDe(id) * ajustes.populacao.taxaNatural);
+      // ⚠️ **A mesa posta entra na conta.** Reino com folga de comida
+      // cresce mais rápido, faminto não cresce — e o fator vem do próprio resultado em
+      // vez de ser recalculado aqui, senão o teste passaria a duplicar a regra em vez de
+      // guardá-la.
+      const esperado = Math.floor(
+        c.populacaoDe(id) * ajustes.populacao.taxaNatural * (previsto?.fatorAlimento ?? 1),
+      );
       expect(previsto).toMatchObject({
         atual: c.populacaoDe(id),
         crescimento: esperado,
@@ -57,11 +65,11 @@ describe('crescimento populacional', () => {
   });
 
   it('NÃO existe capacidade máxima: a taxa vale igual em qualquer tamanho', () => {
-    // ⚠️ O teto de `população inicial × 2` saiu por decisão (`DECISOES.md` #48A). Um número
+    // ⚠️ O teto de `população inicial × 2` foi removido. Um número
     // amarrado ao dado autoral de 700 a.C. não é limite do mundo, é limite da planilha —
     // e ele congelava a província justamente quando ela ia bem.
     const calcular = (atual: number) =>
-      calcularCrescimentoPopulacional(atual, [], construcoes.construcoes, ajustes.populacao);
+      calcularCrescimentoPopulacional(atual, {}, construcoes.construcoes, ajustes.populacao);
 
     // A taxa vale igual em qualquer tamanho: dobrar a população dobra o crescimento, e
     // não existe ponto em que ele desacelere.
@@ -73,7 +81,7 @@ describe('crescimento populacional', () => {
 
   it('zero não se repovoa sozinho, e é isso que dá sentido ao piso de população', () => {
     const calcular = (atual: number) =>
-      calcularCrescimentoPopulacional(atual, [], construcoes.construcoes, ajustes.populacao);
+      calcularCrescimentoPopulacional(atual, {}, construcoes.construcoes, ajustes.populacao);
 
     expect(calcular(0)).toMatchObject({ crescimento: 0, proxima: 0 });
 
@@ -87,37 +95,9 @@ describe('crescimento populacional', () => {
     expect(ajustes.combate.populacaoMinima).toBeGreaterThan(limiar);
   });
 
-  it('o Celeiro aumenta em 50% o crescimento, mas só depois de concluído', () => {
+  it('nenhuma construção atual multiplica crescimento por uma regra escondida', () => {
     const c = nova();
     c.comecar('atenas');
-    c.darOuro(500);
-
-    // O Celeiro multiplica o crescimento pelo fator do catálogo — qual é o número, o
-    // teste não precisa saber.
-    const fator = fatorDoCeleiro();
-    const antes = c.crescimentoDe('atenas')?.crescimento ?? 0;
-    expect(antes).toBeGreaterThan(0);
-    expect(c.impactoPopulacionalDaConstrucaoEm('atenas', 'celeiro')).toEqual({
-      antes,
-      depois: Math.floor(antes * fator),
-    });
-    c.construir('atenas', 'celeiro');
-
-    for (let turno = 0; turno < 3; turno += 1) {
-      const antes = c.populacaoDe('atenas');
-      const previsto = c.crescimentoDe('atenas');
-      expect(previsto?.fatorConstrucoes).toBe(1);
-      c.passarTurno();
-      expect(c.populacaoDe('atenas') - antes).toBe(previsto?.crescimento);
-    }
-
-    expect(c.construcoesEm('atenas')).toContain('celeiro');
-    expect(c.crescimentoDe('atenas')?.fatorConstrucoes).toBe(1.5);
+    expect(c.crescimentoDe('atenas')?.fatorConstrucoes).toBe(1);
   });
 });
-
-/** O multiplicador que o Celeiro aplica ao crescimento, lido do catálogo. */
-function fatorDoCeleiro(): number {
-  const efeito = construcoes.construcoes['celeiro']?.efeito;
-  return efeito?.tipo === 'populacao' ? efeito.fatorCrescimento : 1;
-}

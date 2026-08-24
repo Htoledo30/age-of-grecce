@@ -2,9 +2,8 @@
  * A milícia: quem defende a província sem ter sido recrutado.
  *
  * ⚠️ **Derivada da população, calculada na hora e NUNCA guardada.** Um campo `guarnicao`
- * no estado seria um segundo manancial humano escondido — exatamente o que o `CLAUDE.md`
- * proíbe quando diz que duas economias no mesmo jogo é pior que uma economia incompleta.
- * O manancial é um só: a população.
+ * no estado seria um segundo manancial humano escondido. O manancial é um só: a
+ * população.
  *
  * Três propriedades nascem dessa escolha, sem nenhuma regra escrita para elas:
  *
@@ -29,15 +28,19 @@ type Catalogo = Construcoes['construcoes'];
 /**
  * Multiplicador das obras que fortalecem a defesa local.
  *
- * Mesmo desenho do Celeiro sobre o crescimento: a construção multiplica a derivação, e não
- * acrescenta um número guardado em lugar nenhum.
+ * A construção multiplica a derivação, e não acrescenta uma guarnição escondida.
  */
-function fatorDaMilicia(construcoes: readonly string[], catalogo: Catalogo): number {
+function fatorDaMilicia(
+  construcoes: Readonly<Record<string, number>>,
+  catalogo: Catalogo,
+): number {
   let fator = 1;
-  for (const id of construcoes) {
+  for (const [id, nivel] of Object.entries(construcoes)) {
     const construcao = catalogo[id];
     if (!construcao) throw new Error(`construção inexistente na província: ${id}`);
-    if (construcao.efeito.tipo === 'milicia') fator *= construcao.efeito.fatorMilicia;
+    if (construcao.efeito.tipo === 'milicia') {
+      fator *= construcao.efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] ?? 1;
+    }
   }
   return fator;
 }
@@ -50,7 +53,7 @@ function fatorDaMilicia(construcoes: readonly string[], catalogo: Catalogo): num
  */
 export function miliciaDe(
   populacao: number,
-  construcoes: readonly string[],
+  construcoes: Readonly<Record<string, number>>,
   catalogo: Catalogo,
   ajustes: AjustesCombate,
 ): number {

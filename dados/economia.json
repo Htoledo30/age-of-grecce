@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "Ficha autoral de cada provincia da regiao de teste: o que a terra tem, quem mora nela e como ela comeca. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. A REGUA, para nao inflacionar quando as outras 200 forem escritas: 5 = o melhor do mundo grego naquele produto, um punhado no mapa inteiro (a prata do Lourion); 4 = famoso e exportado, um nome que se conhecia fora da regiao (o azeite atico); 3 = bom, alimenta a propria terra e ainda sobra pra vender; 2 = comum, alimenta a propria terra; 1 = magro, a terra da aquilo a contragosto. Se tudo que se escreve cai em 3, 4 e 5, a regua deixou de medir. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada - ver documentacao/design/economia-e-produtos-regionais.md.",
+  "comentario": "Ficha autoral de cada provincia da regiao de teste: o que a terra tem, quem mora nela e como ela comeca. O valor de cada produto mora no catalogo e NAO se repete nas provincias: balancear todos os territorios de um produto e mudar um numero so. O nivel (1 a 5) e quanto a terra da daquele produto, e e FIXO: investir paga mais gente pra explorar, nunca sobe o nivel. A REGUA, para nao inflacionar quando as outras 200 forem escritas: 5 = o melhor do mundo grego naquele produto, um punhado no mapa inteiro (a prata do Lourion); 4 = famoso e exportado, um nome que se conhecia fora da regiao (o azeite atico); 3 = bom, alimenta a propria terra e ainda sobra pra vender; 2 = comum, alimenta a propria terra; 1 = magro, a terra da aquilo a contragosto. Se tudo que se escreve cai em 3, 4 e 5, a regua deixou de medir. Provincia que nao esta aqui nao tem economia configurada, nao arrecada e nao e simulada.",
   "produtos": {
     "graos": {
       "nome": "Grãos",
@@ -9,6 +9,11 @@
     },
     "gado": {
       "nome": "Gado",
+      "valor": 16,
+      "alimento": true
+    },
+    "peixe": {
+      "nome": "Peixe",
       "valor": 16,
       "alimento": true
     },
@@ -52,6 +57,60 @@
     },
     "tanagrea": {
       "nome": "Tanagrea"
+    },
+    "megarense": {
+      "nome": "Megarense"
+    },
+    "corintio": {
+      "nome": "Coríntio"
+    },
+    "tebano": {
+      "nome": "Tebano"
+    },
+    "tespiense": {
+      "nome": "Tespiense"
+    },
+    "plateense": {
+      "nome": "Plateense"
+    },
+    "orcomenio": {
+      "nome": "Orcomênio"
+    },
+    "calcidico": {
+      "nome": "Calcídico"
+    },
+    "histieu": {
+      "nome": "Histieu"
+    },
+    "eretrio": {
+      "nome": "Erétrio"
+    },
+    "caristio": {
+      "nome": "Carístio"
+    },
+    "locro": {
+      "nome": "Lócrio"
+    },
+    "sicionio": {
+      "nome": "Siciônio"
+    },
+    "argivo": {
+      "nome": "Argivo"
+    },
+    "micenio": {
+      "nome": "Micênio"
+    },
+    "cinurio": {
+      "nome": "Cinúrio"
+    },
+    "epidaurio": {
+      "nome": "Epidáurio"
+    },
+    "trezenio": {
+      "nome": "Trezênio"
+    },
+    "hermioneu": {
+      "nome": "Hermioneu"
     }
   },
   "provincias": {
@@ -69,11 +128,7 @@
         "ateniense": 1.0
       },
       "felicidade": 62,
-      "estoque": {
-        "graos": 4000,
-        "azeite": 1200
-      },
-      "construcoes": [],
+      "construcoes": {},
       "ancoradouro": true,
       "motivoDaFicha": "Secundario e GRAO nivel 2, e isso e o problema historico de Atenas escrito em dado: a Atica nao se alimenta sozinha. Com 35.000 habitantes ela e a provincia que mais come e das que menos colhe - o deficit e de proposito, e e o que faz o grao de Eleusis e o mar valerem alguma coisa. Ateniense inteira: aqui nao ha tensao de nacionalidade, ela aparece quando Atenas TOMA o vizinho. Ancoradouro pelo Falero e pelo Pireu."
     },
@@ -91,11 +146,7 @@
         "ateniense": 1.0
       },
       "felicidade": 57,
-      "estoque": {
-        "graos": 2000,
-        "gado": 200
-      },
-      "construcoes": [],
+      "construcoes": {},
       "ancoradouro": false,
       "motivoDaFicha": "O brejo da planicie da pasto magro: gado nivel 1. Ateniense inteira - a Tetrapolis entrou em Atenas cedo e sem guerra. Costa aberta, sem abrigo: nao tem ancoradouro, e por isso escoa mal apesar de estar no mar."
     },
@@ -114,13 +165,11 @@
         "ateniense": 0.15
       },
       "felicidade": 60,
-      "estoque": {
-        "graos": 2000,
-        "azeite": 300
+      "construcoes": {
+        "quartel": 1
       },
-      "construcoes": ["quartel"],
       "ancoradouro": true,
-      "motivoDaFicha": "15% ateniense ja em 700 a.C.: Eleusis e Atenas brigaram e se misturaram por geracoes antes de a absorcao acontecer. Enquanto Eleusis se governa isso nao pesa; no dia em que Atenas tomar a cidade, os 85% eleusinos e que viram problema - e essa e a razao de a nacionalidade existir. Quartel: ela ja mantem 500 homens em armas, e tropa de pe sem lugar de treinar seria mentira."
+      "motivoDaFicha": "15% ateniense ja em 700 a.C.: Eleusis e Atenas brigaram e se misturaram por geracoes antes de a absorcao acontecer. Enquanto Eleusis se governa isso nao pesa; no dia em que Atenas tomar a cidade, os 85% eleusinos e que viram problema. Quartel I representa uma tradicao militar ja estabelecida; recrutar nao depende dele."
     },
     "tanagra": {
       "populacao": 17000,
@@ -137,13 +186,12 @@
         "ateniense": 0.15
       },
       "felicidade": 55,
-      "estoque": {
-        "graos": 900,
-        "gado": 900
+      "construcoes": {
+        "quartel": 1,
+        "muralha": 1
       },
-      "construcoes": ["quartel", "muralha"],
       "ancoradouro": false,
-      "motivoDaFicha": "Vinho nivel 1 na encosta do Asopo. Os 15% atenienses sao a populacao da divisa, que sempre trocou de lado - a fronteira Atica-Beocia foi disputada a vida toda. Interior, sem ancoradouro: e o vizinho pobre, e tomar Tanagra tem que continuar rendendo menos que tomar Eleusis. Quartel pela mesma razao de Eleusis. MURALHA e Eleusis sem: os dois vizinhos de Atenas existem para serem o mesmo problema em duas versoes - a cidade aberta cai no primeiro assalto, a fortificada obriga a sentar na frente dela antes. Tanagra e a fortificada porque e a cidade de fronteira olhando a Atica, e porque ela precisava de alguma coisa que compensasse ser a mais pobre das duas."
+      "motivoDaFicha": "Vinho nivel 1 na encosta do Asopo. Os 15% atenienses sao a populacao da divisa, que sempre trocou de lado - a fronteira Atica-Beocia foi disputada a vida toda. Interior, sem ancoradouro: e o vizinho pobre. Quartel I representa treino militar local. Muralha I faz Tanagra ser a cidade de fronteira fortificada: ao contrario de Eleusis, obriga o invasor a preparar o assalto."
     },
     "sounion": {
       "populacao": 10000,
@@ -159,13 +207,391 @@
         "ateniense": 1.0
       },
       "felicidade": 51,
-      "estoque": {
-        "graos": 1100,
-        "metais-preciosos": 150
-      },
-      "construcoes": [],
+      "construcoes": {},
       "ancoradouro": true,
-      "motivoDaFicha": "Marmore nivel 1 da pedreira de Agrileza - da pra levantar um templo, nao pra exportar. A felicidade e a mais baixa da Atica porque o Lourion e trabalho de mina, nao de lavoura. Estoque de grao curto: terra seca, ela compra o que come. Ancoradouro no cabo, que e escala obrigatoria de quem contorna a Atica."
+      "motivoDaFicha": "Marmore nivel 1 da pedreira de Agrileza - da pra levantar um templo, nao pra exportar. A felicidade e a mais baixa da Atica porque o Lourion e trabalho de mina, nao de lavoura. Sem alimento proprio: terra seca, ela depende das demais terras do reino. Ancoradouro no cabo, que e escala obrigatoria de quem contorna a Atica."
+    },
+    "megara": {
+      "populacao": 14000,
+      "produto": "gado",
+      "nivel": 2,
+      "comercioBase": 0.4,
+      "motivo": "Teognis reclama da terra megarense por escrito: pedra e pasto magro, ovelha e cabra em encosta. O que Megara tem e POSICAO - o Istmo passa por ela, com porto nos dois golfos (Niseia no Saronico, Pagas no de Corinto). Comercio-base alto numa producao pequena: e a cidade que ja mandou colonos a Sicilia e ao Bosforo porque a terra nao segurava a gente dela.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "megarense": 1.0
+      },
+      "felicidade": 54,
+      "construcoes": {
+        "muralha": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Grao nivel 1: a planicie megarense e estreita e a cidade sempre comeu apertado - e por isso que ela coloniza. Muralha I: a cidade do Istmo vive espremida entre Corinto e Atenas e se fortificou cedo. Megarense inteira; a tensao com Atenas por Salamina esta escrita NA ILHA, nao aqui."
+    },
+    "salamina": {
+      "populacao": 3000,
+      "produto": "peixe",
+      "nivel": 2,
+      "comercioBase": 0.2,
+      "motivo": "A ilha do estreito vive do mar que a cerca: peixe no canal raso entre ela e a Atica. Sem exercito que chegue la sem navio, ela e hoje um anexo tranquilo de Megara - ate o dia em que houver frota.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "megarense": 0.8,
+        "ateniense": 0.2
+      },
+      "felicidade": 52,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Os 20% atenienses sao a disputa historica escrita em dado: Atenas e Megara brigarao por Salamina por um seculo, e Solon fara dela uma causa. Ilha sem ponte: inalcancavel por terra, longe da capital para a corrupcao, a espera do sistema naval."
+    },
+    "corinto": {
+      "populacao": 25000,
+      "produto": "azeite",
+      "nivel": 3,
+      "comercioBase": 0.6,
+      "motivo": "Em 700 a.C. Corinto E a potencia comercial grega - a ceramica protocorintia domina os mercados do Mediterraneo, e Siracusa e Corcira ja sao colonias dela. O comercio-base mais alto do mapa vem do Istmo com dois portos (Lequeu no golfo de Corinto, Cencreias no Saronico): tudo que cruza da Italia ao Egeu paga passagem aqui. O azeite e bom; a posicao e unica.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "corintio": 1.0
+      },
+      "felicidade": 58,
+      "construcoes": {
+        "mercado": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Mercado I ja de pe: o emporio corintio nao e promessa, e o que a cidade E. Felicidade mediana apesar da riqueza: os Baquiadas governam fechados em clientela propria, e a tirania de Cipselo esta a uma geracao de distancia. Grao nivel 2 na planicie costeira - alimenta, sem sobrar."
+    },
+    "tebas": {
+      "populacao": 22000,
+      "produto": "graos",
+      "nivel": 3,
+      "comercioBase": 0.22,
+      "motivo": "A maior cidade da Beocia, sentada entre as planicies do Asopo e do Teneris - terra funda de cereal, o que a Atica nao tem. Interior: escoa pela estrada e pelo Euripo alheio, e por isso o comercio nao acompanha a producao. E a vizinha grande que toda Atica aprende a vigiar.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "tebano": 1.0
+      },
+      "felicidade": 58,
+      "construcoes": {
+        "muralha": 1,
+        "quartel": 1
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Muralha I e a Cadmeia, a cidadela que da nome aos tebanos nas lendas; Quartel I e a aristocracia hoplita beocia. Tebas comeca forte e fechada: e o contrapeso regional de Atenas, e qualquer campanha beocia passa por decidir o que fazer com ela."
+    },
+    "tespias": {
+      "populacao": 12000,
+      "produto": "graos",
+      "nivel": 2,
+      "comercioBase": 0.15,
+      "motivo": "Beocia do sul, aos pes do Helicao - terra de lavoura comum, sem a planicie funda de Tebas nem o pasto do Copais. Interior sem saida propria: escoa pouco.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "tespiense": 1.0
+      },
+      "felicidade": 54,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Cidade media beocia, sem obra inicial: o que ela tem e gente e lavoura. Vive na sombra de Tebas, e a escolha dela numa guerra beocia - resistir ou aderir - e o tipo de decisao que a regiao existe para criar."
+    },
+    "plateia": {
+      "populacao": 8000,
+      "produto": "graos",
+      "nivel": 2,
+      "comercioBase": 0.15,
+      "motivo": "A pequena cidade entre o Citerao e o Asopo, na beira sul da Beocia. Lavoura comum de planicie alta; sem porto, sem estrada propria.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "plateense": 0.9,
+        "tebano": 0.1
+      },
+      "felicidade": 56,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Os 10% tebanos sao a pressao de Tebas escrita em dado: Plateia e a cidade beocia que historicamente preferiu Atenas a Tebas para continuar existindo. Pequena, aberta e na divisa - o corredor natural entre a Atica e a Beocia passa por cima dela."
+    },
+    "orcomeno": {
+      "populacao": 15000,
+      "produto": "gado",
+      "nivel": 3,
+      "comercioBase": 0.15,
+      "motivo": "A bacia do Copais: o lago raso que seca em pasto e da o melhor rebanho da Grecia central. O Orcomeno minio era proverbio de riqueza ja em Homero. Interior profundo: a riqueza e real, o escoamento nao.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "orcomenio": 1.0
+      },
+      "felicidade": 57,
+      "construcoes": {
+        "muralha": 1
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Muralha I: a fortaleza minia e anterior a tudo que ha na regiao, e a cidade a mantem. E o segundo polo beocio, rival natural de Tebas pelo controle do Copais - a Beocia tem DOIS centros, e e isso que impede a regiao de ser um bloco so."
+    },
+    "queroneia": {
+      "populacao": 7000,
+      "produto": "graos",
+      "nivel": 2,
+      "comercioBase": 0.12,
+      "motivo": "O vale do Cefiso na porta noroeste da Beocia: lavoura de vale e encosta de vinha. E corredor de passagem - quem desce da Focida para a Beocia passa por aqui - e corredor nao enriquece, so ve passar.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "orcomenio": 0.85,
+        "tebano": 0.15
+      },
+      "felicidade": 53,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Terra de Orcomeno em 700 a.C., com a pressao tebana ja escrita nos 15%. Vinho nivel 1 nas encostas do Cefiso. A provincia-corredor: pobre, aberta e no caminho de todo mundo."
+    },
+    "calcis": {
+      "populacao": 16000,
+      "produto": "ferro",
+      "nivel": 3,
+      "comercioBase": 0.45,
+      "motivo": "O bronze deu nome a cidade (chalkos) e a metalurgia calcidica - armas e caldeiroes - e famosa no Egeu inteiro. Dona do Euripo, o estreito onde toda a navegacao interna da Grecia oriental se espreme, e ja mandou colonos a Italia e a Calcidica. A guerra pela planicie Lelantina contra Eretria esta acesa AGORA.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "calcidico": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {
+        "quartel": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Quartel I: os hippeis calcidicos, a aristocracia guerreira que esta lutando a Lelantina. Grao nivel 2 e a metade calcidica da planicie disputada - e o MOTIVO da guerra com Eretria escrito em dado. Felicidade contida: cidade rica em guerra longa."
+    },
+    "histiea": {
+      "populacao": 8000,
+      "produto": "vinho",
+      "nivel": 2,
+      "comercioBase": 0.25,
+      "motivo": "O norte da Eubeia que Homero chama de 'rica em vinhas'. Encosta virada pro canal, vinho bom e porto pequeno: vive do que planta e do que passa rumo ao golfo Pagasetico.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "histieu": 0.85,
+        "calcidico": 0.15
+      },
+      "felicidade": 54,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Terra de Calcis em 700 a.C., e os 15% calcidicos sao a guarnicao e os colonos do dominio. Quem tomar Calcis herda Histiea - e herda tambem um povo que nao e calcidico."
+    },
+    "eretria": {
+      "populacao": 14000,
+      "produto": "vinho",
+      "nivel": 2,
+      "comercioBase": 0.4,
+      "motivo": "A rival de Calcis do outro lado da planicie Lelantina. Marinheira antes de tudo - Pitecusas e Al-Mina conhecem os barcos eretrios ha um seculo. Vinho da planicie disputada e peixe do golfo; a riqueza de verdade chega pelo mar.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "eretrio": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {
+        "quartel": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Quartel I pela mesma razao de Calcis: a Lelantina esta acesa e os dois lados vivem armados. Eretria e Calcis sao o par de rivais pronto do mapa - qualquer campanha eubeia comeca escolhendo um lado."
+    },
+    "caristo": {
+      "populacao": 6000,
+      "produto": "marmore",
+      "nivel": 2,
+      "comercioBase": 0.25,
+      "motivo": "O sul da Eubeia, aos pes do monte Oque: o marmore verde-listrado da regiao e a unica coisa que faz o mundo olhar pra ca. Pouca gente, terra aspera, um bom fundeadouro na rota de quem dobra o cabo.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "caristio": 1.0
+      },
+      "felicidade": 52,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "A prima pobre da Eubeia: fora da Lelantina, fora das rotas de colonizacao, com pedra boa e pouco mais. Existe no mapa pra que a Eubeia nao seja so a guerra dos dois grandes."
+    },
+    "opunte": {
+      "populacao": 9000,
+      "produto": "graos",
+      "nivel": 2,
+      "comercioBase": 0.2,
+      "motivo": "A Locrida Opuntia, na costa do canal Euboico: lavoura de faixa costeira e o porto de Cino escoando pro estreito. Terra antiga e modesta - Opunte reivindica Patroclo e pouco mais.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "locro": 1.0
+      },
+      "felicidade": 54,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "O elo entre a Beocia e o norte: quem controla Opunte encosta no canal e flanqueia o Copais. Povo locro inteiro - a Locrida e velha e coesa, dificil de digerir."
+    },
+    "sicion": {
+      "populacao": 13000,
+      "produto": "azeite",
+      "nivel": 2,
+      "comercioBase": 0.3,
+      "motivo": "A planicie costeira a oeste de Corinto: hortas e olivais que a antiguidade inteira elogiou. Vive bem e na sombra - o porto e bom, mas quem manda no golfo e a vizinha do Istmo.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "sicionio": 1.0
+      },
+      "felicidade": 58,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "A cidade prospera e sem imperio: terra boa, povo uno, nenhuma obra militar. Os Ortagoridas - a tirania mais longa da Grecia - estao a uma geracao; por ora Sicion e o alvo rico e macio da regiao."
+    },
+    "argos": {
+      "populacao": 20000,
+      "produto": "gado",
+      "nivel": 3,
+      "comercioBase": 0.25,
+      "motivo": "'Argos criadora de cavalos', diz Homero - a planicie argiva e o melhor pasto do Peloponeso oriental. E 700 a.C. e o SECULO DE ARGOS: Fidon esta unificando a Argolida na ponta da lanca, e a falange argiva e a mais temida da Grecia. A renda e boa; o exercito e o argumento.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 2
+      },
+      "nacionalidades": {
+        "argivo": 1.0
+      },
+      "felicidade": 63,
+      "construcoes": {
+        "muralha": 1,
+        "quartel": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Muralha I e a Larissa, a cidadela sobre a cidade; Quartel I e a falange de Fidon. Felicidade alta: Argos esta GANHANDO, e povo que ganha perdoa o rei. O ancoradouro e Nauplia, o porto da planicie. E a potencia militar do recorte - quem expande pro sul vai dar de cara com ela."
+    },
+    "micenas": {
+      "populacao": 6000,
+      "produto": "gado",
+      "nivel": 2,
+      "comercioBase": 0.12,
+      "motivo": "A cidadela homerica virou aldeia: pasto de encosta entre as ruinas da era do bronze. O nome pesa mais que a terra.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "micenio": 0.8,
+        "argivo": 0.2
+      },
+      "felicidade": 50,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Terra de Argos, tomada na unificacao de Fidon - os 20% argivos sao os colonos e a guarnicao dele. Os micenios lembram de quando o nome deles mandava no mundo; a felicidade baixa e isso."
+    },
+    "cinuria": {
+      "populacao": 5000,
+      "produto": "peixe",
+      "nivel": 2,
+      "comercioBase": 0.15,
+      "motivo": "A costa magra entre a Argolida e a Laconia: pesca na Tireatida e pouco mais. O valor dela nunca foi o que produz - e ONDE fica: a marca de fronteira entre Argos e Esparta, que vao brigar por ela durante trezentos anos.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "cinurio": 0.85,
+        "argivo": 0.15
+      },
+      "felicidade": 48,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "A felicidade mais baixa do recorte: terra pobre, guarnicao alheia e a certeza de que a proxima guerra passa por cima dela. E fronteira de Esparta - quando o sul for configurado, e aqui que os dois mundos se tocam."
+    },
+    "epidauro": {
+      "populacao": 9000,
+      "produto": "vinho",
+      "nivel": 2,
+      "comercioBase": 0.3,
+      "motivo": "A costa leste da Argolida, virada pro Saronico: vinhas de encosta e um porto na rota de Egina. O santuario de Asclepio ainda e um altar rural - a fama vem depois.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "epidaurio": 1.0
+      },
+      "felicidade": 57,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Cidade media e maritima, fora do punho de Fidon por enquanto. E a porta argolica do Saronico: quem a toma negocia com Egina e ameaca o golfo de Atenas."
+    },
+    "trezena": {
+      "populacao": 7000,
+      "produto": "graos",
+      "nivel": 2,
+      "comercioBase": 0.25,
+      "motivo": "A ponta da Argolida, com a planicie pequena e o porto de Pogon abrigado pela ilha de Calauria. Terra de Teseu na lenda ateniense - e o parentesco mitico com Atenas e diplomacia pronta.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "trezenio": 1.0
+      },
+      "felicidade": 56,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Pequena, costeira e independente. Em Calauria funciona uma anfictionia maritima antiga - o embriao de liga naval que um dia pode interessar a quem montar frota."
+    },
+    "hermione": {
+      "populacao": 5000,
+      "produto": "peixe",
+      "nivel": 2,
+      "comercioBase": 0.3,
+      "motivo": "A cidadezinha da ponta sul vive do mar duas vezes: do pescado e do murice - o caramujo da purpura, que tinge a la dos ricos do Egeu inteiro. Producao minuscula, comercio desproporcional.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "hermioneu": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "O comercio-base alto numa producao pequena e a purpura escrita em dado: Hermione vende caro um produto raro. E o tipo de presa que rende mais viva e taxada do que saqueada."
     }
   }
 }

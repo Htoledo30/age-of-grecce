@@ -15,6 +15,7 @@ import type { PerfilDaProvincia } from '@/campanha/perfil-da-provincia';
 import type { RendaDaProvincia } from '@/campanha/economia';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 import { definirTooltip } from './tooltip';
+import type { ConteudoDeTooltip } from './tooltip';
 
 /**
  * A província como a ficha precisa vê-la.
@@ -37,13 +38,21 @@ export interface VistaDaProvincia {
    */
   milicia: number;
   /**
-   * Quem está sitiando esta província, se alguém estiver.
+   * A conta do alvo do humor, parcela a parcela — a legibilidade da barra de comida
+   * aplicada à felicidade. `null` onde não há simulação.
+   */
+  humor: { alvo: number; parcelas: readonly { rotulo: string; pontos: number }[] } | null;
+  /**
+   * Quem está sitiando esta província, e em que pé a despensa dela está.
    *
    * Fica na ficha porque é a metade da mecânica que acontece COM o jogador: a renda dele
-   * cai e ele precisa saber por quê. Sem isto o número mingua na barra e a causa fica
-   * invisível.
+   * cai, o relógio da fome corre, e ele precisa saber por quê e até quando.
    */
-  cerco: { sitiante: string } | null;
+  cerco: {
+    sitiante: string;
+    mantimentosRestantes: number;
+    fomeAtiva: boolean;
+  } | null;
 }
 
 export class FichaProvincia {
@@ -51,6 +60,7 @@ export class FichaProvincia {
   private nomes: Readonly<Record<string, string>> = {};
   private obra: { nome: string; turnosRestantes: number } | null = null;
   private perfil: PerfilDaProvincia | null = null;
+  private niveisDasConstrucoes: Readonly<Record<string, number>> = {};
   private readonly raiz = document.createElement('div');
   private readonly nome = document.createElement('h2');
   private readonly dono = document.createElement('p');
@@ -88,13 +98,15 @@ export class FichaProvincia {
   /** `null` esconde a ficha — é o que acontece quando o clique cai no mar. */
   mostrar(
     provincia: VistaDaProvincia | null,
-    renda: RendaDaProvincia | null = null,
+    renda: (RendaDaProvincia & { tropaDeOrigem: number }) | null = null,
     obra: { nome: string; turnosRestantes: number } | null = null,
-    populacao: CrescimentoPopulacional | null = null,
+    populacao: (CrescimentoPopulacional & { limitadoPelaAlimentacao: boolean }) | null = null,
     perfil: PerfilDaProvincia | null = null,
+    niveisDasConstrucoes: Readonly<Record<string, number>> = {},
   ): void {
     this.obra = obra;
     this.perfil = perfil;
+    this.niveisDasConstrucoes = niveisDasConstrucoes;
     if (!provincia) {
       this.raiz.hidden = true;
       return;
@@ -114,7 +126,7 @@ export class FichaProvincia {
     this.lista.replaceChildren(
       // O povo da FICHA é quem mora aqui, não quem manda. São coisas diferentes desde
       // que a nacionalidade existe, e é justamente a diferença entre as duas que vai
-      // machucar quando Atenas tomar Elêusis — ver `DECISOES.md` #72. Sem ficha autoral
+      // machucar quando Atenas tomar Elêusis. Sem ficha autoral
       // não há composição escrita, e aí a única resposta honesta é o povo do poder.
       ...campo(
         'povo',
@@ -122,50 +134,40 @@ export class FichaProvincia {
         undefined,
         perfil
           ? {
-              titulo:
-                'De que gente é a população daqui. População de outro povo que a de quem ' +
-                'governa gera descontentamento — e é por isso que conquistar é mais fácil ' +
-                'que manter.',
+              titulo: 'Povo local',
+              corpo: 'Composição da população desta província.',
             }
           : undefined,
       ),
-      ...(perfil
-        ? campo('humor', perfil.felicidade.faixa, 'ficha__humor', {
-            titulo:
-              'Como esta província se sente sob quem a governa. Imposto, comida, ' +
-              'conquista recente e nacionalidade puxam este número — e província ' +
-              'revoltosa deixa de ser um território e vira um problema.',
-          })
+      ...(perfil && provincia.humor
+        ? campo(
+            'humor',
+            `${perfil.felicidade.valor} · ${perfil.felicidade.faixa}`,
+            'ficha__humor',
+            tooltipDoHumor(perfil.felicidade.valor, provincia.humor),
+          )
         : []),
       ...campo('região', provincia.regiao),
       ...(provincia.cerco
-        ? campo('sitiada', `por ${provincia.cerco.sitiante}`, 'ficha__cerco', {
-            titulo:
-              'Há exército inimigo acampado na divisa. Enquanto ele ficar, esta província ' +
-              'não produz nem comercia. O cerco não toma a cidade por si — o imposto ' +
-              'continua e ela ainda pode levantar tropa para expulsá-lo.',
-          })
+        ? campo(
+            'sitiada',
+            `por ${provincia.cerco.sitiante} · ${faseDoCerco(provincia.cerco)}`,
+            'ficha__cerco',
+            tooltipDoCerco(provincia.cerco),
+          )
         : []),
       ...campo('milícia', `${moeda(provincia.milicia)} homens`, 'ficha__milicia', {
-        titulo:
-          'Quem defende esta província sem ter sido recrutado. Sai da população, então ' +
-          'recrutar aqui esvazia a muralha — e milícia morta na defesa não volta.',
+        titulo: 'Defesa automática',
+        corpo: `${moeda(provincia.milicia)} habitantes defendem a província quando ela é atacada.`,
       }),
       ...(renda
         ? campo('população', `${moeda(renda.populacao)} habitantes`, 'ficha__populacao', {
-            titulo:
-              `É a base do imposto: ${moeda(renda.populacao)} habitantes rendem ` +
-              `${moeda(renda.impostos)} por turno.`,
-          })
-        : []),
-      ...(populacao
-        ? campo('crescimento', `+${moeda(populacao.crescimento)} por turno`, 'ficha__crescimento', {
-            titulo:
-              `${moeda(populacao.atual)} habitantes hoje, ${moeda(populacao.proxima)} no ` +
-              'turno que vem. Sem alimento no jogo ainda, este crescimento não tem freio' +
-              (populacao.fatorConstrucoes > 1
-                ? ` · construções ×${populacao.fatorConstrucoes.toLocaleString('pt-BR')}.`
-                : '.'),
+            ...(populacao
+              ? tooltipDaPopulacao(populacao)
+              : {
+                  titulo: 'População',
+                  corpo: `${moeda(renda.populacao)} habitantes.`,
+                }),
           })
         : []),
     );
@@ -173,7 +175,7 @@ export class FichaProvincia {
     this.raiz.hidden = false;
   }
 
-  private mostrarEconomia(renda: RendaDaProvincia | null): void {
+  private mostrarEconomia(renda: (RendaDaProvincia & { tropaDeOrigem: number }) | null): void {
     if (!renda) {
       // Dizer com todas as letras é melhor que inventar um número. Só a Ática tem
       // economia autoral por enquanto, e o mapa não deve fingir o contrário.
@@ -199,8 +201,7 @@ export class FichaProvincia {
       titulo: 'Produção local',
       corpo:
         `${renda.produto.valor} moedas por nível × nível ${renda.nivel} = ` +
-        `${Math.round(renda.producaoSemIncentivo)}` +
-        (renda.bonus > 0 ? `, com +${Math.round(renda.bonus * 100)}% de incentivo` : ''),
+        `${renda.produto.valor * renda.nivel}`,
       tom: 'custo',
     });
 
@@ -210,78 +211,36 @@ export class FichaProvincia {
     // pior que o excesso, então o total fica.
     const renderimento = document.createElement('p');
     renderimento.className = 'ficha__renda';
-    renderimento.textContent = `rende ${moeda(renda.total)} por turno`;
+    const saldo = renda.total - renda.tropaDeOrigem;
+    renderimento.dataset['tom'] = saldo < 0 ? 'negativo' : 'positivo';
+    renderimento.textContent = `saldo ${comSinal(saldo)} por turno`;
     definirTooltip(renderimento, {
-      titulo: 'Renda provincial',
+      titulo: saldo < 0 ? 'Província no vermelho' : 'Saldo provincial',
       corpo:
-        `${moeda(renda.impostos)} de impostos\n` +
-        `${moeda(renda.producao)} de produção\n` +
-        `${moeda(renda.comercio)} de comércio` +
-        (renda.bonus > 0 ? `\nIncentivo de +${Math.round(renda.bonus * 100)}%` : ''),
-      tom: 'custo',
+        `+${moeda(renda.impostos)} impostos` +
+        (renda.corrupcao > 0 ? ` (corrupção ${Math.round(renda.corrupcao * 100)}%)` : '') +
+        `\n+${moeda(renda.producao)} produção` +
+        `\n+${moeda(renda.comercio)} comércio` +
+        (renda.manutencao > 0 ? `\n−${moeda(renda.manutencao)} construções` : '') +
+        (renda.tropaDeOrigem > 0
+          ? `\n−${moeda(renda.tropaDeOrigem)} tropas`
+          : '') +
+        `\n= ${comSinal(saldo)} por turno`,
+      tom: saldo < 0 ? 'perigo' : 'informacao',
     });
 
     const filhos: HTMLElement[] = [titulo, renderimento];
     if (this.perfil) {
       // O secundário é uma LINHA, não uma segunda parcela: ele ainda não entra na renda,
-      // porque somar dinheiro à economia que o patch 0.0.3 vai jogar fora seria balancear
-      // duas vezes. Ele está na tela porque é identidade da terra — Atenas dar grão
+      // porque somar dinheiro antes do comércio existir seria balancear duas
+      // vezes. Ele está na tela porque é identidade da terra — Atenas dar grão
       // nível 2 é o que explica a fome dela.
       const segundo = document.createElement('p');
       segundo.className = 'ficha__secundario';
       segundo.textContent = `também dá ${this.perfil.secundario.nome} ${romano(this.perfil.secundario.nivel)}`;
-      definirTooltip(segundo, {
-        titulo: 'Recurso secundário',
-        corpo:
-          'O que a terra ainda dá, sempre mais fraco que o principal. Ele não entra na ' +
-          'renda em moeda, mas PRODUZ: as unidades dele entram no estoque desta província ' +
-          'todo turno, do mesmo jeito que as do principal.',
-      });
       filhos.push(segundo);
 
-      // ⚠️ **A colheita é a economia FÍSICA, e ela convive com a renda em moeda logo
-      // acima.** Duas linhas dizendo "produção" na mesma ficha seria confuso, então esta
-      // fala em COLHER e usa unidades; a de cima fala em RENDER e usa moeda. A troca de
-      // uma pela outra é dos patches de dinheiro e mercado.
-      const colheita = document.createElement('p');
-      colheita.className = 'ficha__colheita';
-      const colhido = this.perfil.producao;
-      colheita.textContent = `colhe ${colhido
-        .map((r) => `${moeda(r.unidades)} de ${r.nome}`)
-        .join(' e ')} por turno`;
-      const guardadoDe = (id: string): number =>
-        this.perfil?.estoque.find((i) => i.id === id)?.quantidade ?? 0;
-      definirTooltip(colheita, {
-        titulo: 'Colheita do ano',
-        corpo:
-          colhido
-            .map(
-              (r) =>
-                `${r.nome} ${romano(r.nivel)}: ${moeda(r.unidades)} por turno · ` +
-                `${moeda(guardadoDe(r.id))} guardados`,
-            )
-            .join('\n') +
-          '\n\nO que sai da terra depende do potencial dela e de quanta gente mora aqui: ' +
-          'recrutar ou perder população faz a colheita encolher. Nada é consumido nem ' +
-          'vendido ainda — por enquanto o estoque só enche.',
-      });
-      filhos.push(colheita);
-
-      const despensa = document.createElement('p');
-      despensa.className = 'ficha__despensa';
-      const p = this.perfil;
-      despensa.textContent =
-        `${moeda(p.alimento.guardado)} de alimento · ${p.alimento.turnos} ` +
-        `${p.alimento.turnos === 1 ? 'turno' : 'turnos'}`;
-      definirTooltip(despensa, {
-        titulo: 'Despensa',
-        corpo:
-          p.estoque.map((i) => `${moeda(i.quantidade)} de ${i.nome}`).join('\n') +
-          `\n\nEsta província come ${moeda(p.alimento.consumoPorTurno)} por turno. ` +
-          'Ninguém passa fome ainda — o consumo entra com a alimentação.',
-        tom: 'custo',
-      });
-      filhos.push(despensa);
+      // A conta da comida mora no Governo. Aqui fica só a identidade da terra: produtos e força.
     }
     if (this.obra) {
       const emObra = document.createElement('p');
@@ -295,7 +254,9 @@ export class FichaProvincia {
       // A ficha é leitura: diz O QUE existe. Erguer é no bloco de ações, acima dela.
       const erguidas = document.createElement('p');
       erguidas.className = 'ficha__construcoes';
-      erguidas.textContent = renda.construcoes.map((c) => this.nomeDaConstrucao(c)).join(' · ');
+      erguidas.textContent = renda.construcoes
+        .map((c) => `${this.nomeDaConstrucao(c)} ${romano(this.niveisDasConstrucoes[c] ?? 1)}`)
+        .join(' · ');
       filhos.push(erguidas);
     }
     this.economia.replaceChildren(...filhos);
@@ -308,6 +269,75 @@ export class FichaProvincia {
  * Povo único sai sem porcentagem — "Ateniense 100%" é ruído, e a maioria das províncias
  * é assim. A porcentagem só aparece quando ela significa alguma coisa.
  */
+/**
+ * O crescimento como frase, e não como sinal grudado num número.
+ *
+ * ⚠️ **Zero é ESTÁVEL, não "+0".** A alimentação criou uma faixa em que o povo nem cresce
+ * nem mingua — é onde o reino descansa — e escrever "+0 por turno" ali parecia defeito.
+ * Negativo também não pode virar "+-24": míngua é outra notícia, e a ficha diz isso.
+ */
+function tooltipDaPopulacao(
+  populacao: CrescimentoPopulacional & { limitadoPelaAlimentacao: boolean },
+): ConteudoDeTooltip {
+  if (populacao.limitadoPelaAlimentacao) {
+    return {
+      titulo: 'População mantida',
+      corpo: 'A alimentação cobre a população atual, sem permitir crescimento.',
+    };
+  }
+  if (populacao.crescimento < 0) {
+    return {
+      titulo: 'População caindo',
+      corpo: `−${moeda(-populacao.crescimento)} no próximo turno.`,
+      tom: 'perigo',
+    };
+  }
+  if (populacao.crescimento > 0) {
+    return {
+      titulo: 'População subindo',
+      corpo: `+${moeda(populacao.crescimento)} no próximo turno.`,
+    };
+  }
+  return {
+    titulo: 'Sem crescimento líquido',
+    corpo: 'Nascimentos e mortes se equilibram neste turno.',
+  };
+}
+
+function tooltipDoHumor(
+  atual: number,
+  humor: VistaDaProvincia['humor'] & {},
+): ConteudoDeTooltip {
+  const alvo = humor.alvo;
+  const movimento = atual < alvo ? 'subindo' : atual > alvo ? 'caindo' : 'mantido';
+  return {
+    titulo: `Humor ${movimento}: ${atual} → ${alvo}`,
+    corpo:
+      humor.parcelas
+        .map((p) => `${p.rotulo} ${p.pontos >= 0 ? `+${p.pontos}` : `−${-p.pontos}`}`)
+        .join(' · ') + ` = ${alvo}`,
+    tom: atual > alvo ? 'perigo' : 'informacao',
+  };
+}
+
+function tooltipDoCerco(
+  cerco: { mantimentosRestantes: number; fomeAtiva: boolean },
+): ConteudoDeTooltip {
+  if (cerco.fomeAtiva) {
+    return {
+      titulo: 'Mantimentos esgotados',
+      corpo: '−1% de população e −5% da guarnição por turno.',
+      tom: 'perigo',
+    };
+  }
+  return {
+    titulo: `Mantimentos: ${cerco.mantimentosRestantes} ${
+      cerco.mantimentosRestantes === 1 ? 'turno' : 'turnos'
+    }`,
+    corpo: 'Sem crescimento enquanto o cerco durar.',
+  };
+}
+
 function povos(perfil: PerfilDaProvincia): string {
   const fatias = perfil.nacionalidades;
   if (fatias.length === 1) return fatias[0]?.nome ?? '';
@@ -323,11 +353,23 @@ function moeda(valor: number): string {
   return valor.toLocaleString('pt-BR');
 }
 
+function comSinal(valor: number): string {
+  return valor >= 0 ? `+${moeda(valor)}` : `−${moeda(-valor)}`;
+}
+
+/** Em que pé está a despensa da cidade cercada, como o jogador precisa ler. */
+function faseDoCerco(cerco: { mantimentosRestantes: number; fomeAtiva: boolean }): string {
+  if (cerco.fomeAtiva) return 'a cidade passa fome';
+  return `mantimentos para ${cerco.mantimentosRestantes} ${
+    cerco.mantimentosRestantes === 1 ? 'turno' : 'turnos'
+  }`;
+}
+
 function campo(
   rotulo: string,
   valor: string,
   classe?: string,
-  extra?: { titulo: string },
+  extra?: ConteudoDeTooltip,
 ): [HTMLElement, HTMLElement] {
   const dt = document.createElement('dt');
   dt.textContent = rotulo;
@@ -338,9 +380,8 @@ function campo(
     dd.className = classe;
   }
   if (extra) {
-    const conteudo = { titulo: rotulo, corpo: extra.titulo };
-    definirTooltip(dt, conteudo);
-    definirTooltip(dd, conteudo);
+    definirTooltip(dt, extra);
+    definirTooltip(dd, extra);
   }
   return [dt, dd];
 }

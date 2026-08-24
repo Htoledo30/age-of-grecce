@@ -15,8 +15,6 @@
  * diferente — "hoste contra hoste", "hoste contra quem chegou", "quem chegou contra quem
  * chegou" — e as três teriam que concordar. Uma estrutura só, e o choque não pergunta de
  * onde a força veio.
- *
- * Ver `documentacao/design/resolucao-da-rodada.md` para a tabela completa.
  */
 
 import { resolverChoque } from '@/combate/batalha';
@@ -239,7 +237,7 @@ function provinciasEmSurtida(estado: EstadoDaResolucao): ReadonlySet<string> {
  * 1. **surtindo de dentro** — a hoste que está na cidade declara a surtida e sai;
  * 2. **chegando de fora** — o exército de socorro que entra na província sitiada já vem
  *    lutar. Não há o que declarar: mandar tropa para uma cidade cercada é atacar quem a
- *    cerca (`DECISOES.md` #33A). Sem isto o socorro entrava e acampava ao lado do inimigo
+ *    cerca. Sem isto o socorro entrava e acampava ao lado do inimigo
  *    sem tocá-lo.
  *
  * Obriga TODO MUNDO que estiver ali, e não só os dois interessados: quem está acampado

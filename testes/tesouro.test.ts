@@ -30,9 +30,8 @@ function emCampanha(): Campanha {
  * O tesouro por poder.
  *
  * ⚠️ Era um número só, o do jogador, e isso teria dado à IA um exército de graça: sem
- * cofre próprio ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver
- * `DECISOES.md` #63 e #97 — a IA joga pelas mesmas regras, e a primeira delas é que
- * dinheiro acaba.
+ * cofre próprio ela recrutaria e manteria tropa sem nada sair de lugar nenhum. A IA joga
+ * pelas mesmas regras, e a primeira delas é que dinheiro acaba.
  */
 
 describe('todo poder tem cofre, não só o jogador', () => {
@@ -143,17 +142,16 @@ describe('gastar cobra o cofre do DONO da província', () => {
     expect(c.tesouroDe('eleusis')).toBe(deEleusis); // o vizinho não paga a leva alheia
   });
 
-  it('construir e investir também saem do cofre do dono', () => {
+  it('construir também sai do cofre do dono, nunca do vizinho', () => {
     const c = emCampanha();
     c.darOuro(60_000);
     const antes = c.tesouro;
     const deEleusis = c.tesouroDe('eleusis');
 
     c.construir('atenas', 'agora');
-    c.investir('atenas', 250);
 
-    const custo = construcoes.construcoes['agora']?.custo ?? 0;
-    expect(c.tesouro).toBe(antes - custo - 250);
+    const custo = construcoes.construcoes['agora']?.custos[0] ?? 0;
+    expect(c.tesouro).toBe(antes - custo);
     expect(c.tesouroDe('eleusis')).toBe(deEleusis);
   });
 
@@ -175,18 +173,17 @@ function manutencao(c: Campanha, idPoder: string): number {
 describe('recrutar não depende de a província ter economia CONFIGURADA', () => {
   it('a recusa passa a falar de requisito real, não de dado que falta', () => {
     const c = emCampanha();
-    // Tebas não tem ficha econômica. Tomada por Atenas, ela vira território do jogador.
-    c.trocarDono('tebas', 'atenas');
+    // Esparta não tem ficha econômica. Tomada por Atenas, ela vira território do jogador.
+    c.trocarDono('esparta', 'atenas');
 
-    const r = c.podeRecrutar('tebas', 100);
+    const r = c.podeRecrutar('esparta', 100);
 
     expect(r.pode).toBe(false);
     // ⚠️ Antes a recusa era "esta província não tem economia configurada" — uma trava
     // conceitual errada: recrutar depende de GENTE, não de a ficha existir.
-    // Ver `DECISOES.md` #89.
     expect(r.pode === false && r.motivo).not.toMatch(/economia/);
-    // O que barra agora é um requisito de verdade: falta Quartel (e, atrás dele, gente).
-    expect(r.pode === false && r.motivo).toMatch(/Quartel/);
+    // O que barra agora é o requisito real: esta província ainda não tem população simulada.
+    expect(r.pode === false && r.motivo).toMatch(/habitantes/);
   });
 
   it('província alheia continua barrada, e por ser alheia', () => {
@@ -196,12 +193,12 @@ describe('recrutar não depende de a província ter economia CONFIGURADA', () =>
     expect(r.pode === false && r.motivo).toMatch(/não é sua/);
   });
 
-  it('investir e construir CONTINUAM exigindo economia: ali a trava é real', () => {
+  it('decretar imposto e construir CONTINUAM exigindo economia: ali a trava é real', () => {
     const c = emCampanha();
-    c.trocarDono('tebas', 'atenas');
+    c.trocarDono('esparta', 'atenas');
     c.darOuro(60_000);
-    // Sem ficha econômica não há renda para incrementar nem parcela para multiplicar.
-    expect(c.podeInvestir('tebas', 250).pode).toBe(false);
-    expect(c.podeAgirEm('tebas').pode).toBe(false);
+    // Sem ficha econômica não há arrecadação para regular nem parcela para multiplicar.
+    expect(c.podeDefinirImposto('esparta').pode).toBe(false);
+    expect(c.podeAgirEm('esparta').pode).toBe(false);
   });
 });

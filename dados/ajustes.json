@@ -6,24 +6,59 @@
     "tesouroInicial": 3000,
     "economia": {
       "impostoPorHabitante": 0.005,
-      "producao": {
-        "fracaoProdutiva": 0.3,
-        "porProdutorPorNivel": 0.03
-      },
-      "investimento": {
-        "maximo": 500,
-        "teto": 0.25,
-        "expoente": 1,
-        "arrecadacoes": 20
+      "imposto": {
+        "niveis": {
+          "baixo": { "fator": 0.8, "humor": 6 },
+          "normal": { "fator": 1, "humor": 0 },
+          "alto": { "fator": 1.35, "humor": -8 }
+        }
       }
     },
     "populacao": {
       "taxaNatural": 0.005
     },
+    "construcoes": {
+      "slotsPorProvincia": 4,
+      "nivelMaximo": 3
+    },
+    "corrupcao": {
+      "tamanho": {
+        "limiar": 10000,
+        "teto": 0.5,
+        "meiaPopulacao": 120000
+      },
+      "distancia": {
+        "teto": 0.6,
+        "meioCaminho": 6,
+        "semCaminho": 26
+      }
+    },
+    "capital": {
+      "custoDeMudanca": 2000
+    },
     "alimento": {
-      "consumoPorHabitante": 0.02
+      "subsistenciaPorReino": 1,
+      "fracaoPopulacionalPorNivel": 0.25,
+      "soldadosPorPonto": 1000,
+      "mortePorFome": 0.01,
+      "mortePorFomeNaTropa": 0.05,
+      "cerco": {
+        "mantimentos": 2
+      }
     },
     "felicidade": {
+      "alvoBase": 50,
+      "passoPorTurno": 4,
+      "choqueDaConquista": 25,
+      "alvo": {
+        "fome": -20,
+        "sitiada": -15,
+        "dominioEstrangeiro": -12
+      },
+      "revolta": {
+        "turnos": 3,
+        "fracaoRebelde": 0.02
+      },
       "faixas": [
         {
           "ate": 19,

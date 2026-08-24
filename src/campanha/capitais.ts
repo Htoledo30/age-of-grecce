@@ -1,18 +1,40 @@
 /**
  * A capital de cada poder: o centro administrativo da campanha.
  *
- * ⚠️ **Isto é só o ESTADO.** A capital ainda não faz nada — não dá bônus, não muda
- * ineficiência, não gera mensagem ao cair. O fluxo completo (perder, escolher outra,
- * ser obrigado a decidir antes de continuar) é o patch 0.0.9 do `ROADMAP.md`. O que
- * existe aqui é o campo, o valor inicial e as duas perguntas que o patch 0.0.9 vai fazer.
+ * O fluxo de perda existe: a capital conquistada obriga o JOGADOR a escolher outra antes
+ * de passar o turno, e os demais poderes — que ainda não têm IA — reassentam a deles pela
+ * mesma regra derivada da capital inicial, na virada. Poder sem chão fica sem capital.
  *
- * Existir antes de servir é deliberado: `DECISOES.md` #77 diz que todo poder tem
- * uma, e vários sistemas futuros — ineficiência administrativa, prioridade alimentar em
- * escassez, revolta, comércio interno — vão perguntar qual é. Pôr o campo agora evita que
- * cada um deles invente a própria resposta.
+ * Ela ainda não muda número nenhum; a corrupção por distância (etapa seguinte) é o
+ * primeiro sistema que vai ler este campo de verdade.
  */
 
 import type { Atlas } from '@/mundo/atlas';
+
+/**
+ * A melhor capital entre estas províncias, pela regra derivada de sempre:
+ * homônima > maior por área > menor id. `undefined` sem província nenhuma.
+ *
+ * É UMA função para o começo da campanha e para o reassentamento na virada — duas cópias
+ * da mesma regra acabariam discordando no dia em que uma mudasse.
+ */
+export function melhorCapitalEntre(
+  atlas: Atlas,
+  idPoder: string,
+  provincias: readonly string[],
+): string | undefined {
+  const suas = [...provincias].sort();
+  if (suas.length === 0) return undefined;
+
+  const homonima = suas.find((id) => id === idPoder);
+  if (homonima !== undefined) return homonima;
+
+  // `suas` já vem ordenado por id, e `reduce` só troca quando a área é ESTRITAMENTE
+  // maior: o desempate cai no menor id sem precisar de uma segunda comparação.
+  return suas.reduce((melhor, id) =>
+    atlas.provincia(id).areaKm2 > atlas.provincia(melhor).areaKm2 ? id : melhor,
+  );
+}
 
 /**
  * De onde sai a capital inicial de cada poder.
@@ -40,21 +62,8 @@ export function capitaisIniciais(
   const capitais: Record<string, string> = {};
 
   for (const poder of [...atlas.poderes].sort((a, b) => (a.id < b.id ? -1 : 1))) {
-    const suas = [...provinciasDe(poder.id)].sort();
-    if (suas.length === 0) continue;
-
-    const homonima = suas.find((id) => id === poder.id);
-    if (homonima !== undefined) {
-      capitais[poder.id] = homonima;
-      continue;
-    }
-
-    // `suas` já vem ordenado por id, e `reduce` só troca quando a área é ESTRITAMENTE
-    // maior: o desempate cai no menor id sem precisar de uma segunda comparação.
-    const maior = suas.reduce((melhor, id) =>
-      atlas.provincia(id).areaKm2 > atlas.provincia(melhor).areaKm2 ? id : melhor,
-    );
-    capitais[poder.id] = maior;
+    const capital = melhorCapitalEntre(atlas, poder.id, provinciasDe(poder.id));
+    if (capital !== undefined) capitais[poder.id] = capital;
   }
 
   return capitais;

@@ -22,14 +22,16 @@ export default defineConfig({
    */
   workers: 2,
   use: {
-    baseURL: 'http://localhost:5173',
+    // Porta exclusiva dos testes: não reutiliza o Vite aberto pelo Electron ou pelo
+    // desenvolvedor, que pode ser fechado no meio da suíte e derrubar todos os casos.
+    baseURL: 'http://127.0.0.1:4173',
     viewport: { width: 1920, height: 1080 },
     deviceScaleFactor: 1,
   },
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: true,
+    command: 'npm run dev -- --host 127.0.0.1 --port 4173 --strictPort',
+    url: 'http://127.0.0.1:4173',
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

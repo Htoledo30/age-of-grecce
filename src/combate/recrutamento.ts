@@ -30,8 +30,6 @@ export interface SituacaoDaLeva {
   /** Habitantes que ainda estão na província. */
   populacao: number;
   tesouro: number;
-  /** A província tem Quartel erguido? */
-  temQuartel: boolean;
 }
 
 /** Ouro que uma leva deste tamanho custa. Inteiro: dinheiro não tem centavo. */
@@ -96,9 +94,6 @@ export function avaliarLeva(
   situacao: SituacaoDaLeva,
   ajustes: AjustesCombate,
 ): RecusaDeLeva {
-  if (!situacao.temQuartel) {
-    return { pode: false, motivo: 'é preciso um Quartel aqui para reunir tropa' };
-  }
   if (!Number.isInteger(homens) || homens <= 0) {
     return { pode: false, motivo: 'o número de homens precisa ser inteiro' };
   }

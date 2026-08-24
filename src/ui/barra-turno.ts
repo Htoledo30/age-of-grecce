@@ -10,9 +10,11 @@
  */
 
 import { formatarAno } from '@/campanha/estado-campanha';
+import type { CategoriaAlimentar } from '@/producao/alimentacao';
 import type { NomeDoIconeGrego } from './icones-gregos';
 import { iconeGrego, rotularComIcone } from './icones-gregos';
-import { definirTooltip } from './tooltip';
+import { nomeDaCategoria } from './balanco-alimentar';
+import { definirTooltip, removerTooltip } from './tooltip';
 
 export interface VistaDoTurno {
   poder: { nome: string; cor: string };
@@ -28,7 +30,11 @@ export interface VistaDoTurno {
    * tem como saber que foi o exército que comeu.
    */
   manutencao: number;
+  saldoDeComida: number;
+  categoriaDeComida: CategoriaAlimentar;
   provincias: number;
+  /** A capital caiu e o jogador ainda não escolheu outra: a virada fica travada. */
+  capitalPerdida: boolean;
 }
 
 export class BarraTurno {
@@ -74,8 +80,8 @@ export class BarraTurno {
     this.botaoGoverno.type = 'button';
     rotularComIcone(this.botaoGoverno, 'templo', 'Governo');
     definirTooltip(this.botaoGoverno, {
-      titulo: 'Conselho de governo',
-      corpo: 'Abra o balanço do reino e examine cada província.',
+      titulo: 'Governo',
+      corpo: 'Balanços do reino e das províncias.',
     });
     this.botaoGoverno.addEventListener('click', () => {
       this.aoAbrirGoverno();
@@ -111,6 +117,19 @@ export class BarraTurno {
       trecho('barra-turno__dado', formatarAno(vista.ano)),
       trecho('barra-turno__dado', `rodada ${vista.turno}`),
     );
+    // A capital caída trava o botão, e o botão DIZ por quê: sumir com ele deixaria o
+    // jogador preso sem saber o que o jogo está esperando.
+    this.botao.disabled = vista.capitalPerdida;
+    this.raiz.dataset['capitalPerdida'] = vista.capitalPerdida ? 'sim' : 'nao';
+    if (vista.capitalPerdida) {
+      definirTooltip(this.botao, {
+        titulo: 'A capital caiu',
+        corpo: 'Selecione uma província sua e assente a nova capital.',
+        tom: 'bloqueio',
+      });
+    } else {
+      removerTooltip(this.botao);
+    }
     this.raiz.hidden = false;
   }
 }
@@ -131,11 +150,50 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
 
   valores.append(saldo, variacao);
   linha.append(iconeGrego('moeda'), valores);
-  linha.setAttribute(
+  const variacaoLiquida = vista.renda - vista.manutencao;
+  definirTooltip(linha, {
+    titulo: 'Tesouro do reino',
+    corpo:
+      `+${vista.renda.toLocaleString('pt-BR')} províncias` +
+      (vista.manutencao > 0
+        ? `\n−${vista.manutencao.toLocaleString('pt-BR')} exército`
+        : '') +
+      `\n= ${comSinal(variacaoLiquida)} por turno`,
+    tom: variacaoLiquida < 0 ? 'perigo' : 'informacao',
+  });
+
+  const comida = document.createElement('span');
+  comida.className = 'barra-turno__folego rotulo-com-icone';
+  comida.dataset['tom'] =
+    vista.saldoDeComida < 0 ? 'fome' : vista.saldoDeComida === 0 ? 'aperto' : 'folga';
+  const saldoDeComida = document.createElement('strong');
+  saldoDeComida.className = 'barra-turno__folego-valor';
+  saldoDeComida.textContent =
+    vista.saldoDeComida >= 0 ? `+${vista.saldoDeComida}` : `−${-vista.saldoDeComida}`;
+  const categoria = document.createElement('span');
+  categoria.className = 'barra-turno__folego-unidade';
+  categoria.textContent = nomeDaCategoria(vista.categoriaDeComida);
+  comida.append(iconeGrego('celeiro'), saldoDeComida, categoria);
+  definirTooltip(comida, {
+    titulo: `${comSinal(vista.saldoDeComida)} · ${nomeDaCategoria(vista.categoriaDeComida)}`,
+    corpo: 'Conta completa em Governo › Alimentação.',
+    tom: vista.saldoDeComida < 0 ? 'perigo' : 'informacao',
+  });
+
+  const bloco = document.createElement('span');
+  bloco.className = 'barra-turno__contas';
+  bloco.append(linha, comida);
+  bloco.setAttribute(
     'aria-label',
-    `Tesouro ${vista.tesouro}; renda ${vista.renda}; manutenção ${vista.manutencao}`,
+      `Tesouro ${vista.tesouro}; renda ${vista.renda}; manutenção ${vista.manutencao}; ` +
+      `comida ${vista.saldoDeComida}; ${nomeDaCategoria(vista.categoriaDeComida)}`,
   );
-  return linha;
+  return bloco;
+}
+
+function comSinal(valor: number): string {
+  const numero = Math.abs(valor).toLocaleString('pt-BR');
+  return valor >= 0 ? `+${numero}` : `−${numero}`;
 }
 
 function trecho(classe: string, texto: string, icone?: NomeDoIconeGrego): HTMLElement {

@@ -74,9 +74,9 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
   await expect(page.locator('.ficha__nome')).toHaveText('Mégara');
   await expect(page.locator('.ficha__dono')).toHaveText('Atenas');
 
-  // Sendo dela, Mégara passa a aceitar ação — e o motivo da recusa deixa de ser "não é
-  // sua" pra virar "não tem economia configurada", que é a verdade seguinte.
-  await expect(page.locator('.acoes')).toContainText('economia');
+  // Sendo dela, Mégara passa a aceitar ação — e como a Grécia central inteira tem
+  // economia configurada, o painel abre com os slots e a lista de construções.
+  await expect(page.locator('.acoes')).toContainText('slots');
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });
@@ -104,11 +104,12 @@ test('tomar tudo de um poder o elimina da contagem', async ({ page }) => {
 
   expect(await vivos()).toBe(148);
 
+  // Caristo: uma província só e nenhuma guarnição em pé — a eliminação é limpa. Mégara
+  // deixou de servir aqui: ela tem tropa, e perder o chão a deixaria no exílio, viva.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: { conquistar: (a: string, b: string) => void } })
       .inspecao;
-    i.conquistar('megara', 'atenas');
-    i.conquistar('salamina', 'atenas'); // a segunda e última de Mégara
+    i.conquistar('caristo', 'atenas');
   });
 
   expect(await vivos()).toBe(147);

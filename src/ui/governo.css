@@ -148,6 +148,11 @@
 .balanco__tabela tbody tr[data-sem='sim'] {
   color: var(--ui-texto-tenue);
 }
+/* Quem depende do alimento do reino aparece em sangue na coluna do saldo; quem sustenta fica
+   discreto. A marca vai na LINHA para o olho achar as deficitárias de longe. */
+.balanco__tabela tbody tr[data-tom='deficit'] td:last-child {
+  color: var(--ui-sangue-claro);
+}
 .balanco__numero {
   font-family: var(--fonte-numero);
   font-variant-numeric: tabular-nums;

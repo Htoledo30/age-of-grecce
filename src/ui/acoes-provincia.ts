@@ -15,7 +15,7 @@
  * contexto para mostrar.
  */
 
-import { definirTooltip, removerTooltip } from './tooltip';
+import { definirTooltip } from './tooltip';
 import { iconeDaConstrucao, rotularComIcone } from './icones-gregos';
 
 /** Uma construção oferecida nesta província, já avaliada. */
@@ -25,8 +25,9 @@ export interface OpcaoDeConstrucao {
   custo: number;
   /** Turnos de obra até render. */
   turnos: number;
-  /** Já existe aqui. */
-  erguida: boolean;
+  nivelAtual: number;
+  nivelAlvo: number;
+  nivelMaximo: number;
   /** Turnos que ainda faltam, quando esta é a obra em andamento. */
   emObra: number | null;
   /** `null` quando dá pra construir; senão, o texto do impedimento. */
@@ -35,12 +36,16 @@ export interface OpcaoDeConstrucao {
   motivo: string;
   ganhoPorTurno: number;
   turnosParaPagar: number;
+  /** Ouro por turno para manter o nível alvo de pé, para sempre. */
+  manutencao: number;
+  /** O efeito desta construção é renda em moeda? Decide como falar de ganho negativo. */
+  rendeMoeda: boolean;
   /**
    * O benefício, escrito, quando não paga em ouro.
    *
    * `null` nas que rendem moeda. Capacidade e população não têm "paga-se em N turnos".
    */
-  promessa: string | null;
+  promessa: string;
 }
 
 /** O que o bloco precisa saber pra oferecer — ou recusar com motivo — cada ação. */
@@ -49,22 +54,25 @@ export type VistaDeAcoes =
       pode: true;
       provincia: { id: string; nome: string };
       construcoes: readonly OpcaoDeConstrucao[];
-      /** Bônus em curso, 0 quando não há incentivo ativo. */
-      bonusAtual: number;
-      arrecadacoesRestantes: number;
-      /** Quantas arrecadações um incentivo novo dura. */
-      duracao: number;
-      /** Teto real agora: limite do decreto e tesouro disponível. */
-      maximo: number;
-      /** Resposta da campanha pro valor escolhido agora. */
-      avaliar: (valor: number) => { pode: true; bonus: number } | { pode: false; motivo: string };
-      /** A conta do retorno: quanto rende por turno e se chega a pagar o que custou. */
-      retorno: (valor: number) => {
-        ganhoPorTurno: number;
-        ganhoTotal: number;
-        turnosParaPagar: number;
-        vale: boolean;
-      } | null;
+      slots: { usados: number; total: number };
+      /** A capital do reino, vista desta província: já é? pode virar? a que custo? */
+      capital: {
+        atual: boolean;
+        custo: number;
+        /** A capital caiu e o reino está sem sede: assentar aqui é a decisão urgente. */
+        urgente: boolean;
+        resposta: { pode: true } | { pode: false; motivo: string };
+      };
+      /**
+       * O decreto de imposto desta província: o nível atual e o que cada um faz.
+       *
+       * Substituiu o incentivo de investimento. Efeito imediato: a renda muda no clique
+       * e o humor passa a caminhar pro alvo novo — receita trocada por pressão social.
+       */
+      imposto: {
+        nivel: 'baixo' | 'normal' | 'alto';
+        niveis: Record<'baixo' | 'normal' | 'alto', { fator: number; humor: number }>;
+      };
     }
   | { pode: false; motivo: string };
 
@@ -72,22 +80,20 @@ export class AcoesProvincia {
   private readonly raiz = document.createElement('div');
   private readonly titulo = document.createElement('h2');
   private readonly alvo = document.createElement('p');
+  private readonly botaoCapital = document.createElement('button');
   private readonly tituloConstrucoes = document.createElement('h3');
   private readonly listaConstrucoes = document.createElement('div');
   private readonly tituloDecretos = document.createElement('h3');
-  private readonly quantidade = document.createElement('p');
-  private readonly campoValor = document.createElement('input');
-  private readonly atalhos = document.createElement('div');
-  private readonly botoesDeAtalho: HTMLButtonElement[] = [];
-  private readonly previsao = document.createElement('p');
-  private readonly botaoInvestir = document.createElement('button');
+  private readonly blocoImposto = document.createElement('div');
+  private readonly botoesDeImposto = new Map<'baixo' | 'normal' | 'alto', HTMLButtonElement>();
   private vista: VistaDeAcoes | null = null;
-  private provinciaDoValor: string | null = null;
 
-  /** Chamado quando o jogador confirma um investimento. */
-  aoInvestir: (idProvincia: string, valor: number) => void = () => {};
+  /** Chamado quando o jogador decreta um nível de imposto. */
+  aoDefinirImposto: (idProvincia: string, nivel: 'baixo' | 'normal' | 'alto') => void = () => {};
   /** Chamado quando o jogador ergue uma construção. */
   aoConstruir: (idProvincia: string, idConstrucao: string) => void = () => {};
+  /** Chamado quando o jogador assenta a capital nesta província. */
+  aoTornarCapital: (idProvincia: string) => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'acoes';
@@ -98,6 +104,16 @@ export class AcoesProvincia {
 
     this.alvo.className = 'acoes__alvo';
 
+    // A capital é UMA decisão, não uma lista: um botão que diz o que faria e por quanto.
+    this.botaoCapital.className = 'botao acoes__capital';
+    this.botaoCapital.type = 'button';
+    this.botaoCapital.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista?.pode || !vista.capital.resposta.pode) return;
+      this.aoTornarCapital(vista.provincia.id);
+      this.botaoCapital.blur();
+    });
+
     this.tituloConstrucoes.className = 'acoes__grupo';
     this.tituloConstrucoes.textContent = 'Construções';
     this.listaConstrucoes.className = 'acoes__lista';
@@ -105,73 +121,32 @@ export class AcoesProvincia {
     this.tituloDecretos.className = 'acoes__grupo';
     this.tituloDecretos.textContent = 'Decretos';
 
-    this.quantidade.className = 'acoes__quantidade';
-    this.quantidade.setAttribute('aria-live', 'polite');
-
-    this.campoValor.className = 'acoes__valor';
-    this.campoValor.type = 'range';
-    this.campoValor.min = '0';
-    this.campoValor.step = '1';
-    this.campoValor.value = '0';
-    this.campoValor.setAttribute('aria-label', 'Moedas para investir na produção');
-    definirTooltip(this.campoValor, {
-      titulo: 'Incentivo à produção',
-      corpo:
-        'Escolha quanto destinar a esta província. A barra respeita o tesouro e o limite ' +
-        'deste decreto.',
-      tom: 'custo',
-    });
-    this.campoValor.addEventListener('input', () => this.avaliar());
-
-    this.atalhos.className = 'acoes__atalhos';
-    for (const [rotulo, fracao] of [
-      ['25%', 0.25],
-      ['50%', 0.5],
-      ['75%', 0.75],
-      ['Máximo', 1],
-    ] as const) {
+    // O imposto em três níveis: um botão por nível, o vigente marcado. A lição de Rome:
+    // Total War — receita trocada por ordem pública — com o efeito escrito no tooltip.
+    this.blocoImposto.className = 'acoes__imposto';
+    for (const nivel of ['baixo', 'normal', 'alto'] as const) {
       const botao = document.createElement('button');
       botao.type = 'button';
-      botao.className = 'acoes__atalho';
-      botao.textContent = rotulo;
+      botao.className = 'acoes__nivel-imposto';
+      botao.textContent = { baixo: 'Baixo', normal: 'Normal', alto: 'Alto' }[nivel];
       botao.addEventListener('click', () => {
         const vista = this.vista;
-        if (!vista?.pode || vista.maximo === 0) return;
-        this.campoValor.value = String(Math.max(1, Math.floor(vista.maximo * fracao)));
-        this.avaliar();
+        if (!vista?.pode || vista.imposto.nivel === nivel) return;
+        this.aoDefinirImposto(vista.provincia.id, nivel);
         botao.blur();
       });
-      this.botoesDeAtalho.push(botao);
-      this.atalhos.appendChild(botao);
+      this.botoesDeImposto.set(nivel, botao);
+      this.blocoImposto.appendChild(botao);
     }
-
-    this.previsao.className = 'acoes__previsao';
-
-    this.botaoInvestir.className = 'botao botao--principal acoes__botao';
-    this.botaoInvestir.type = 'button';
-    this.botaoInvestir.textContent = 'Investir na produção';
-    this.botaoInvestir.addEventListener('click', () => {
-      const vista = this.vista;
-      if (!vista?.pode) return;
-      const valor = Number(this.campoValor.value);
-      if (vista.avaliar(valor).pode) {
-        this.campoValor.value = '0';
-        this.aoInvestir(vista.provincia.id, valor);
-      }
-      this.botaoInvestir.blur();
-    });
 
     this.raiz.append(
       this.titulo,
       this.alvo,
+      this.botaoCapital,
       this.tituloConstrucoes,
       this.listaConstrucoes,
       this.tituloDecretos,
-      this.quantidade,
-      this.campoValor,
-      this.atalhos,
-      this.previsao,
-      this.botaoInvestir,
+      this.blocoImposto,
     );
     pai.appendChild(this.raiz);
   }
@@ -184,42 +159,90 @@ export class AcoesProvincia {
 
     const disponivel = vista.pode;
     for (const el of [
+      this.botaoCapital,
       this.tituloConstrucoes,
       this.listaConstrucoes,
       this.tituloDecretos,
-      this.quantidade,
-      this.campoValor,
-      this.atalhos,
-      this.botaoInvestir,
+      this.blocoImposto,
     ]) {
       el.hidden = !disponivel;
     }
 
     if (!disponivel) {
       this.alvo.textContent = vista.motivo;
-      this.previsao.textContent = '';
       return;
     }
 
+    const marcaDeCapital = vista.capital.atual ? ' · capital do reino' : '';
     this.alvo.textContent =
-      vista.arrecadacoesRestantes > 0
-        ? `Incentivo de +${Math.round(vista.bonusAtual * 100)}% por mais ` +
-          `${vista.arrecadacoesRestantes} ${vista.arrecadacoesRestantes === 1 ? 'turno' : 'turnos'}`
-        : 'Construção é permanente; decreto dura alguns turnos.';
+      `${vista.slots.usados}/${vista.slots.total} slots ocupados · níveis I–III.` +
+      marcaDeCapital;
+
+    this.desenharCapital(vista.capital);
 
     this.listaConstrucoes.replaceChildren(
       ...vista.construcoes.map((o) => this.linhaDeConstrucao(vista.provincia.id, o)),
     );
-    this.campoValor.max = String(vista.maximo);
-    if (this.provinciaDoValor !== vista.provincia.id) {
-      this.provinciaDoValor = vista.provincia.id;
-      this.campoValor.value = String(Math.min(250, vista.maximo));
-    } else {
-      this.campoValor.value = String(Math.min(Number(this.campoValor.value), vista.maximo));
+    this.desenharImposto(vista.imposto);
+  }
+
+  /** Os três níveis de imposto, com o vigente marcado e o efeito escrito no tooltip. */
+  private desenharImposto(imposto: {
+    nivel: 'baixo' | 'normal' | 'alto';
+    niveis: Record<'baixo' | 'normal' | 'alto', { fator: number; humor: number }>;
+  }): void {
+    for (const [nivel, botao] of this.botoesDeImposto) {
+      const efeito = imposto.niveis[nivel];
+      const vigente = imposto.nivel === nivel;
+      botao.dataset['vigente'] = vigente ? 'sim' : 'nao';
+      botao.disabled = vigente;
+      const arrecadacao =
+        efeito.fator === 1
+          ? 'arrecadação normal'
+          : `${Math.round(efeito.fator * 100)}% da arrecadação`;
+      const humor =
+        efeito.humor === 0
+          ? 'sem peso no humor'
+          : efeito.humor > 0
+            ? `humor +${efeito.humor}`
+            : `humor −${-efeito.humor}`;
+      definirTooltip(botao, {
+        titulo: `Imposto ${botao.textContent ?? ''}`,
+        corpo: `${arrecadacao}\n${humor}`,
+        tom: vigente ? 'informacao' : 'custo',
+      });
     }
-    this.campoValor.disabled = vista.maximo === 0;
-    for (const botao of this.botoesDeAtalho) botao.disabled = vista.maximo === 0;
-    this.avaliar();
+  }
+
+  /** O botão da capital: escondido na própria sede, urgente quando o reino está sem uma. */
+  private desenharCapital(capital: {
+    atual: boolean;
+    custo: number;
+    urgente: boolean;
+    resposta: { pode: true } | { pode: false; motivo: string };
+  }): void {
+    if (capital.atual) {
+      this.botaoCapital.hidden = true;
+      return;
+    }
+    this.botaoCapital.hidden = false;
+    this.botaoCapital.disabled = !capital.resposta.pode;
+    this.botaoCapital.dataset['urgente'] = capital.urgente ? 'sim' : 'nao';
+    const rotulo = capital.urgente
+      ? 'Assentar capital aqui'
+      : capital.custo > 0
+        ? `Tornar capital · ${capital.custo.toLocaleString('pt-BR')} moedas`
+        : 'Tornar capital';
+    rotularComIcone(this.botaoCapital, 'templo', rotulo);
+    definirTooltip(this.botaoCapital, {
+      titulo: 'Capital do reino',
+      corpo: capital.resposta.pode
+        ? capital.urgente
+          ? 'Grátis. Destrava a próxima virada.'
+          : `${capital.custo.toLocaleString('pt-BR')} moedas para mudar a sede.`
+        : capital.resposta.motivo,
+      tom: capital.resposta.pode ? 'custo' : 'bloqueio',
+    });
   }
 
   /**
@@ -233,29 +256,35 @@ export class AcoesProvincia {
     const botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'acoes__construcao';
-    botao.disabled = opcao.erguida || opcao.emObra !== null || opcao.recusa !== null;
-    botao.dataset['estado'] = opcao.erguida ? 'erguida' : opcao.emObra !== null ? 'obra' : 'livre';
+    const noMaximo = opcao.nivelAtual >= opcao.nivelMaximo;
+    botao.disabled = noMaximo || opcao.emObra !== null || opcao.recusa !== null;
+    botao.dataset['estado'] = noMaximo ? 'erguida' : opcao.emObra !== null ? 'obra' : 'livre';
 
     // Uma linha só: nome e o que ela custa AGORA. O que ela faz, quanto rende e em
     // quantos turnos se paga vão pro tooltip — a lista tem que dar pra varrer com o olho,
     // e quem quer conferir a conta passa o mouse.
     let rotulo: string;
-    if (opcao.erguida) rotulo = `${opcao.nome} · construída`;
+    if (noMaximo) rotulo = `${opcao.nome} III · nível máximo`;
     else if (opcao.emObra !== null) {
-      rotulo = `${opcao.nome} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
+      rotulo = `${opcao.nome} ${romano(opcao.nivelAlvo)} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
     } else if (opcao.recusa) {
       // O impedimento fica NO LUGAR do custo, não escondido: opção desabilitada sem
       // explicação é exatamente o que não pode acontecer aqui.
-      rotulo = `${opcao.nome} · ${opcao.recusa}`;
+      const progresso =
+        opcao.nivelAtual > 0
+          ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}`
+          : romano(opcao.nivelAlvo);
+      rotulo = `${opcao.nome} ${progresso} · ${opcao.recusa}`;
     } else {
-      rotulo = `${opcao.nome} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
+      const progresso = opcao.nivelAtual > 0 ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}` : 'I';
+      rotulo = `${opcao.nome} ${progresso} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
     }
     rotularComIcone(botao, iconeDaConstrucao(opcao.id), rotulo);
 
     definirTooltip(botao, {
       titulo: opcao.nome,
       corpo: this.explicacao(opcao),
-      tom: opcao.recusa ? 'bloqueio' : opcao.erguida ? 'informacao' : 'custo',
+      tom: opcao.recusa ? 'bloqueio' : noMaximo ? 'informacao' : 'custo',
     });
     botao.addEventListener('click', () => {
       if (botao.disabled) return;
@@ -265,89 +294,35 @@ export class AcoesProvincia {
     return botao;
   }
 
-  /** O tooltip da construção: pra que serve, prazo, quanto rende e quando se paga. */
+  /** O tooltip da construção: pra que serve, prazo, manutenção, quanto rende e quando se paga. */
   private explicacao(opcao: OpcaoDeConstrucao): string {
-    const linhas = [opcao.motivo];
-    const custoEPrazo = `${opcao.custo.toLocaleString('pt-BR')} moedas · ${opcao.turnos} turnos de obra.`;
+    const efeito = opcao.promessa || opcao.motivo;
+    const linhas = efeito ? [efeito] : [];
 
-    // Construção de capacidade não tem retorno em moeda, e forçá-la na mesma frase
-    // produziria "não muda nada aqui" — que é verdade aritmética e mentira sobre o que
-    // ela é. O Quartel não rende: ele destrava.
-    if (opcao.promessa !== null) {
-      if (opcao.erguida) linhas.push(opcao.promessa);
-      else if (opcao.emObra !== null) linhas.push(`Pronta em ${opcao.emObra}. ${opcao.promessa}`);
-      else linhas.push(custoEPrazo, opcao.promessa);
+    if (opcao.nivelAtual >= opcao.nivelMaximo) return linhas.join('\n');
+    if (opcao.emObra !== null) {
+      linhas.push(`Pronta em ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}.`);
       return linhas.join('\n');
     }
 
-    if (opcao.erguida) {
-      linhas.push(`Rendendo +${opcao.ganhoPorTurno} moedas por turno.`);
-    } else if (opcao.emObra !== null) {
-      linhas.push(`Pronta em ${opcao.emObra}; depois rende +${opcao.ganhoPorTurno} por turno.`);
-    } else {
-      const paga = Number.isFinite(opcao.turnosParaPagar)
-        ? `paga-se em ${Math.ceil(opcao.turnosParaPagar)} turnos`
-        : 'não muda nada aqui';
-      linhas.push(custoEPrazo, `Depois de pronta: +${opcao.ganhoPorTurno} por turno, ${paga}.`);
+    linhas.push(`${opcao.custo.toLocaleString('pt-BR')} moedas agora`);
+    if (opcao.manutencao > 0) {
+      linhas.push(`−${opcao.manutencao.toLocaleString('pt-BR')} por turno`);
+    }
+    linhas.push(`${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'} para concluir`);
+    if (opcao.ganhoPorTurno > 0) {
+      linhas.push(`+${opcao.ganhoPorTurno} por turno`);
+      if (Number.isFinite(opcao.turnosParaPagar)) {
+        linhas.push(`paga-se em ${Math.ceil(opcao.turnosParaPagar)} turnos`);
+      }
+    } else if (opcao.rendeMoeda && opcao.ganhoPorTurno < 0) {
+      linhas.push(`saldo local −${-opcao.ganhoPorTurno} por turno`);
     }
     return linhas.join('\n');
   }
 
-  /**
-   * Diz o que aquele valor compraria — ou por que não compra nada.
-   *
-   * Escrever o motivo em vez de só desabilitar o botão é o que ensina a regra sem
-   * tutorial: o jogador descobre o teto e o retorno enquanto arrasta.
-   */
-  private avaliar(): void {
-    const vista = this.vista;
-    if (!vista?.pode) return;
-    const valor = Number(this.campoValor.value);
-    this.quantidade.textContent =
-      `${valor.toLocaleString('pt-BR')} moedas` +
-      (vista.maximo > 0 ? ` · máximo agora: ${vista.maximo.toLocaleString('pt-BR')}` : '');
+}
 
-    if (vista.maximo === 0 || valor === 0) {
-      this.previsao.textContent =
-        vista.maximo === 0 ? 'O tesouro não permite investir agora.' : 'Escolha um valor.';
-      this.previsao.dataset['vale'] = 'nao';
-      this.botaoInvestir.textContent = 'Investir na produção';
-      this.botaoInvestir.disabled = true;
-      removerTooltip(this.previsao);
-      return;
-    }
-    const r = vista.avaliar(valor);
-    this.botaoInvestir.disabled = !r.pode;
-
-    if (!r.pode) {
-      this.previsao.textContent = r.motivo;
-      this.previsao.dataset['vale'] = 'nao';
-      removerTooltip(this.previsao);
-      return;
-    }
-
-    // A conta que decide: quanto entra por turno, quanto entra ao todo, e se isso chega
-    // a cobrir o que saiu. Mostrar só a porcentagem esconde justamente o que importa.
-    const conta = vista.retorno(valor);
-    const porcento = (r.bonus * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-    if (!conta) {
-      this.previsao.textContent = `+${porcento}% de produção`;
-      return;
-    }
-    const paga = Number.isFinite(conta.turnosParaPagar)
-      ? `paga-se em ${Math.ceil(conta.turnosParaPagar)} turnos`
-      : 'nunca se paga';
-    // O veredito fica na tela; a conta que o sustenta fica no tooltip. Esconder o
-    // "nunca se paga" seria esconder justamente o que impede a armadilha.
-    this.previsao.textContent = `+${porcento}% · ${paga}`;
-    definirTooltip(this.previsao, {
-      titulo: 'Retorno estimado',
-      corpo:
-        `Mais ${conta.ganhoPorTurno} moedas por turno durante ${vista.duracao} turnos.\n` +
-        `${conta.ganhoTotal} moedas ao todo.`,
-      tom: conta.vale ? 'custo' : 'perigo',
-    });
-    this.previsao.dataset['vale'] = conta.vale ? 'sim' : 'nao';
-    this.botaoInvestir.textContent = `Investir ${valor.toLocaleString('pt-BR')}`;
-  }
+function romano(nivel: number): string {
+  return ['0', 'I', 'II', 'III'][nivel] ?? String(nivel);
 }

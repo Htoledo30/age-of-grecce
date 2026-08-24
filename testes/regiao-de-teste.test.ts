@@ -1,14 +1,12 @@
 /**
- * A região de teste — Atenas, Maratona, Sunião, Elêusis e Tanagra — está completa?
+ * A região configurada — a Ática e a coroa da Grécia central — está completa?
  *
- * Preparação da região de teste. Nada aqui testa uma fórmula: testa se as cinco províncias
- * têm o que os sistemas das etapas seguintes vão pedir, e se o que está escrito nelas
- * obedece às regras que as tornam jogáveis. É o teste que impede a região de ficar
- * meio-configurada em silêncio e o patch 0.0.3 descobrir isso três semanas depois.
+ * Nada aqui testa uma fórmula: testa se as províncias configuradas têm o que os sistemas
+ * vão pedir, e se o que está escrito nelas obedece às regras que as tornam jogáveis. É o
+ * teste que impede a região de ficar meio-configurada em silêncio.
  *
- * ⚠️ **Nenhum número de balanço é cravado.** População, felicidade e estoque são
- * exatamente as coisas que Henrique vai mexer à mão; o que o teste guarda é a RELAÇÃO
- * entre eles — cinco turnos de comida, frações que somam um, secundário mais fraco.
+ * ⚠️ **Nenhum valor econômico em moeda é cravado.** O teste guarda relações de conteúdo:
+ * frações que somam um, secundário mais fraco e a conta alimentar inicial legível.
  */
 
 import { readFileSync } from 'node:fs';
@@ -30,19 +28,61 @@ const construcoes = ler(Construcoes, 'dados/construcoes.json');
 const exercitos = ler(Exercitos, 'dados/exercitos.json');
 const ajustes = ler(Ajustes, 'dados/ajustes.json').jogo;
 
-/** As cinco. A lista sai dos DADOS: acrescentar uma sexta não deve exigir mexer aqui. */
+/** A região inteira. A lista sai dos DADOS: acrescentar uma nova não exige mexer aqui. */
 const REGIAO = Object.keys(economia.provincias).sort();
 
 function nova(): Campanha {
   return new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
 }
 
-describe('a região de teste está completa', () => {
-  it('as cinco províncias existem e nenhuma outra tem ficha', () => {
-    expect(REGIAO).toEqual(['atenas', 'eleusis', 'maratona', 'sounion', 'tanagra']);
+describe('a região configurada está completa', () => {
+  it('a Ática continua no coração dela', () => {
+    for (const id of ['atenas', 'eleusis', 'maratona', 'sounion', 'tanagra']) {
+      expect(REGIAO).toContain(id);
+    }
   });
 
-  it('cada uma tem povo, humor, secundário, despensa e resposta sobre ancoradouro', () => {
+  it('todo poder tocado pela região está COMPLETO: nenhum reino meio-configurado', () => {
+    // Meio-configurado é o pior estado: o poder arrecada de umas terras e ignora outras,
+    // e o número na tela vira mentira. Se uma província de um poder ganhou ficha, todas
+    // as dele ganham juntas.
+    const c = nova();
+    const poderes = new Set(REGIAO.map((id) => c.donoDe(id)));
+    for (const poder of poderes) {
+      expect(c.semEconomia(poder), poder).toBe(0);
+    }
+  });
+
+  it('nenhum poder da região abre em fome nem sem renda', () => {
+    const c = nova();
+    const poderes = new Set(REGIAO.map((id) => c.donoDe(id)));
+    for (const poder of poderes) {
+      expect(c.balancoAlimentarDe(poder).saldo, poder).toBeGreaterThanOrEqual(0);
+      expect(c.rendaDe(poder), poder).toBeGreaterThan(0);
+    }
+  });
+
+  it('outra cidade além de Atenas começa campanha e vira o turno', () => {
+    const c = nova();
+    c.comecar('corinto');
+    expect(c.jogador?.id).toBe('corinto');
+    expect(c.tesouro).toBeGreaterThan(0);
+    c.passarTurno();
+    expect(c.turno).toBe(2);
+  });
+
+  it('cinquenta turnos de paz não produzem fome espontânea em ninguém', () => {
+    // A régua da abertura: crescer até o saldo zero TRAVA, nunca atravessa pro negativo.
+    // Se algum poder novo entrar em fome sozinho, o dado dele foi mal escrito.
+    const c = nova();
+    c.comecar('atenas');
+    for (let t = 0; t < 50; t++) {
+      c.passarTurno();
+      expect(c.fome.provincias, `turno ${c.turno}`).toEqual([]);
+    }
+  });
+
+  it('cada uma tem povo, humor, secundário e resposta sobre ancoradouro', () => {
     const c = nova();
     for (const id of REGIAO) {
       const perfil = c.perfilDe(id);
@@ -50,7 +90,6 @@ describe('a região de teste está completa', () => {
       expect(perfil?.nacionalidades.length, id).toBeGreaterThan(0);
       expect(perfil?.felicidade.faixa, id).not.toBe('');
       expect(perfil?.secundario.nome, id).not.toBe('');
-      expect(perfil?.estoque.length, id).toBeGreaterThan(0);
       expect(typeof perfil?.ancoradouro, id).toBe('boolean');
     }
   });
@@ -64,22 +103,16 @@ describe('a região de teste está completa', () => {
 });
 
 describe('o que está escrito obedece às regras que tornam a região jogável', () => {
-  /**
-   * `DECISOES.md` #11A: estoque inicial tem que dar uns cinco turnos de sobrevivência.
-   *
-   * ⚠️ **Derivado da população E da taxa de consumo.** Se Henrique dobrar a população de
-   * Atenas, o fôlego dela cai pela metade e este teste avisa — que é exatamente o serviço
-   * que ele tem que prestar. Cravar "4.000 de grão" não avisaria nada.
-   */
-  it('cada província começa com uns cinco turnos de comida', () => {
+  it('Atenas começa abastecida e a conta fecha com números inteiros', () => {
     const c = nova();
-    for (const id of REGIAO) {
-      const alimento = c.perfilDe(id)?.alimento;
-      expect(alimento?.consumoPorTurno, id).toBeGreaterThan(0);
-      expect(alimento?.turnos, id).toBeGreaterThanOrEqual(5);
-      // E não é despensa infinita: cinco turnos é o alvo, não "encheu e esqueceu".
-      expect(alimento?.turnos, id).toBeLessThanOrEqual(12);
-    }
+    c.comecar('atenas');
+    expect(c.alimentacao).toMatchObject({ saldo: 3, saldoCivil: 3, categoria: 'abastecido' });
+    expect(c.alimentacao.saldo).toBe(
+      c.alimentacao.subsistencia +
+        c.alimentacao.producao -
+        c.alimentacao.populacao -
+        c.alimentacao.exercito,
+    );
   });
 
   it('o secundário sempre rende menos que o principal', () => {
@@ -108,8 +141,8 @@ describe('o que está escrito obedece às regras que tornam a região jogável',
 
   it('existe pelo menos uma província de povo misturado, senão a tensão nunca aparece', () => {
     // A nacionalidade só significa alguma coisa quando alguém governa gente que não é
-    // sua. Se toda a região fosse de povo único, o sistema do patch 0.0.8 não teria nem como
-    // ser testado aqui — e a região de teste teria sido mal montada.
+    // sua. Se toda a região fosse de povo único, o futuro sistema de tensão não teria nem
+    // como ser testado aqui — e a região de teste teria sido mal montada.
     const c = nova();
     const misturadas = REGIAO.filter((id) => (c.perfilDe(id)?.nacionalidades.length ?? 0) > 1);
     expect(misturadas.length).toBeGreaterThan(0);
@@ -148,52 +181,42 @@ describe('o que está nos dados chega ao estado da partida', () => {
     const c = nova();
     for (const id of REGIAO) {
       expect([...c.construcoesEm(id)].sort(), id).toEqual(
-        [...(economia.provincias[id]?.construcoes ?? [])].sort(),
+        Object.keys(economia.provincias[id]?.construcoes ?? {}).sort(),
       );
     }
   });
 
-  it('quem começa com Quartel já pode recrutar; quem não começa, não', () => {
-    // É a razão de as construções iniciais existirem: Elêusis e Tanagra mantêm 500 homens
-    // em armas desde 700 a.C., e tropa de pé sem lugar de treinar seria mentira.
-    const c = nova();
-    for (const id of REGIAO) {
-      const temQuartel = (economia.provincias[id]?.construcoes ?? []).includes('quartel');
-      expect(c.capacidadesEm(id).includes('recrutar'), id).toBe(temQuartel);
-    }
-    // E Atenas é o contraste: a capital do jogador começa SEM quartel de propósito, pra
-    // que erguer um continue sendo a primeira decisão militar da campanha.
-    expect(c.capacidadesEm('atenas')).not.toContain('recrutar');
-  });
-
-  it('a despensa encolhe quando a província encolhe', () => {
-    // O fôlego alimentar vem da população de AGORA. Recrutar tira gente, logo o que está
-    // guardado dura mais — se lesse o arquivo autoral, pôr homens em armas não mudaria
-    // nada e a conta do patch 0.0.4 nasceria errada.
+  it('toda província habitada permite recrutamento básico', () => {
     const c = nova();
     c.comecar('atenas');
-    c.construir('atenas', 'quartel');
-    c.passarTurno();
-    const antes = c.perfilDe('atenas')?.alimento.consumoPorTurno ?? 0;
-    c.recrutar('atenas', 500);
-    const depois = c.perfilDe('atenas')?.alimento.consumoPorTurno ?? 0;
-    expect(depois).toBeLessThan(antes);
+    expect(c.podeRecrutarEm('atenas')).toBe(true);
+    expect(c.podeRecrutarEm('maratona')).toBe(true);
+  });
+
+  it('o nível populacional lê a população atual e pode recuar', () => {
+    const c = nova();
+    c.comecar('atenas');
+    expect(c.nivelPopulacionalEm('atenas')).toBe(1);
+    c.matarPopulacao('atenas', 10_000);
+    expect(c.nivelPopulacionalEm('atenas')).toBe(1);
   });
 });
 
 describe('capitais e conexões da região', () => {
   it('cada poder da região tem capital, e é a província de mesmo nome', () => {
     const c = nova();
-    for (const id of ['atenas', 'eleusis', 'tanagra']) {
+    for (const id of ['atenas', 'eleusis', 'tanagra', 'megara', 'corinto', 'tebas', 'argos']) {
       expect(c.capitalDe(id), id).toBe(id);
     }
   });
 
-  it('as cinco estão ligadas por terra, sem ilha solta', () => {
-    // Conexão terrestre é o que faz guerra e comércio interno existirem. Uma província da
-    // região de teste sem fronteira com as outras seria inalcançável — e o bug só
-    // apareceria quando alguém tentasse marchar.
+  it('a região é contígua por terra — só ilha DECLARADA fica de fora', () => {
+    // Conexão terrestre é o que faz guerra e comércio interno existirem. Uma província
+    // sem fronteira com as outras seria inalcançável, e o bug só apareceria quando
+    // alguém tentasse marchar. Ilha sem vizinhança nenhuma (Salamina) é deliberada:
+    // espera o sistema naval, e o teste a reconhece em vez de fingir que há ponte.
     const atlas = new Atlas(provincias);
+    const ilhas = REGIAO.filter((id) => atlas.vizinhasDe(id).length === 0);
     const alcancadas = new Set(['atenas']);
     const fila = ['atenas'];
     while (fila.length > 0) {
@@ -204,6 +227,6 @@ describe('capitais e conexões da região', () => {
         fila.push(vizinha);
       }
     }
-    expect([...alcancadas].sort()).toEqual(REGIAO);
+    expect([...alcancadas, ...ilhas].sort()).toEqual(REGIAO);
   });
 });

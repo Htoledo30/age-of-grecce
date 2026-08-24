@@ -2,14 +2,14 @@
  * Crescimento populacional puro: não conhece campanha, tesouro, mapa ou interface.
  *
  * ⚠️ **NÃO existe capacidade máxima artificial.** Havia: o teto era `população inicial × 2`,
- * e a curva era logística contra ele. Saiu por decisão (`DECISOES.md` #48A) — um número
+ * e a curva era logística contra ele. Saiu porque um número
  * arbitrário amarrado ao dado autoral de 700 a.C. não é um limite do mundo, é um limite
  * da planilha, e ele congelava a província justamente quando ela ia bem.
  *
- * ⚠️ **Consequência que é preciso saber: hoje o crescimento é EXPONENCIAL e não tem
- * freio.** O freio verdadeiro é o alimento, que ainda não existe — é o patch 0.0.4 do
- * `ROADMAP.md`. Até lá, uma partida muito longa infla a população. É estado
- * intermediário conhecido, não descuido.
+ * ⚠️ **O freio é o ALIMENTO, e ele chega de fora**, como `fatorAlimento`. Reino farto
+ * cresce mais rápido; reino faminto não cresce; reino em fome de verdade perde gente — mas
+ * a perda acontece em `alimentacao.ts`, não aqui, porque quem morreu já morreu antes de a
+ * população crescer. Este arquivo só sabe multiplicar.
  *
  * Zero não se repovoa sozinho: migração, conquista ou outro sistema futuro terão que
  * trazer gente.
@@ -25,26 +25,15 @@ export interface CrescimentoPopulacional {
   crescimento: number;
   proxima: number;
   fatorConstrucoes: number;
-}
-
-/** Multiplicador combinado das obras que fortalecem o crescimento natural. */
-function fatorDeCrescimento(construcoes: readonly string[], catalogo: Catalogo): number {
-  let fator = 1;
-  for (const id of construcoes) {
-    const construcao = catalogo[id];
-    if (!construcao) throw new Error(`construção inexistente na província: ${id}`);
-    if (construcao.efeito.tipo === 'populacao') {
-      fator *= construcao.efeito.fatorCrescimento;
-    }
-  }
-  return fator;
+  /** O que a mesa posta fez: >1 com folga de comida, <1 com fome, 0 com fome de verdade. */
+  fatorAlimento: number;
 }
 
 /**
  * Curva logística discreta.
  *
- * A taxa é aplicada direta sobre quem está vivo, sem freio nenhum. O freio será o
- * alimento (patch 0.0.4).
+ * A taxa é aplicada diretamente sobre quem está vivo. A disponibilidade de alimento
+ * funciona como freio demográfico.
  *
  * ⚠️ **Zero não se repovoa sozinho**, e isso é o que dá sentido ao piso de
  * `populacaoMinima` do recrutamento: `Math.floor` faz o crescimento arredondar pra zero
@@ -52,20 +41,24 @@ function fatorDeCrescimento(construcoes: readonly string[], catalogo: Catalogo):
  */
 export function calcularCrescimentoPopulacional(
   atual: number,
-  construcoes: readonly string[],
-  catalogo: Catalogo,
+  _construcoes: Readonly<Record<string, number>>,
+  _catalogo: Catalogo,
   ajustes: AjustesPopulacao,
+  fatorAlimento = 1,
 ): CrescimentoPopulacional {
   const populacaoAtual = Math.max(0, Math.floor(atual));
-  const fatorConstrucoes = fatorDeCrescimento(construcoes, catalogo);
+  const fatorConstrucoes = 1;
 
   const crescimento =
-    populacaoAtual === 0 ? 0 : Math.floor(populacaoAtual * ajustes.taxaNatural * fatorConstrucoes);
+    populacaoAtual === 0
+      ? 0
+      : Math.floor(populacaoAtual * ajustes.taxaNatural * fatorConstrucoes * fatorAlimento);
 
   return {
     atual: populacaoAtual,
     crescimento,
     proxima: populacaoAtual + crescimento,
     fatorConstrucoes,
+    fatorAlimento,
   };
 }

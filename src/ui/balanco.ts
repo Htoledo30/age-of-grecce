@@ -17,6 +17,8 @@ import { definirTooltip } from './tooltip';
 /** Uma linha da tabela: uma província do jogador. */
 export interface LinhaDoBalanco {
   nome: string;
+  /** É a sede do governo. Vira marca no nome, não coluna: só uma linha a tem. */
+  capital: boolean;
   /** `null` quando a província ainda não tem economia configurada. */
   economia: {
     produto: string;
@@ -24,9 +26,15 @@ export interface LinhaDoBalanco {
     impostos: number;
     producao: number;
     comercio: number;
+    /** Folha das construções erguidas. É o que faz o total ser líquido. */
+    manutencao: number;
     total: number;
-    /** Incentivo em curso, em fração. 0 quando não há. */
-    bonus: number;
+    /** O que a tropa NASCIDA nesta terra custa por turno, onde quer que esteja. */
+    tropa: number;
+    /** O veredito da terra: renda líquida menos a tropa dela. Negativo puxa o reino. */
+    saldo: number;
+    /** O nível de imposto decretado. Vira marca no nome quando não é o normal. */
+    imposto: 'baixo' | 'normal' | 'alto';
   } | null;
   construcoes: readonly string[];
   obra: { nome: string; turnosRestantes: number } | null;
@@ -40,7 +48,17 @@ export interface VistaDoBalanco {
   linhas: readonly LinhaDoBalanco[];
 }
 
-const COLUNAS = ['província', 'produção', 'impostos', 'produz', 'comércio', 'por turno'] as const;
+const COLUNAS = [
+  'província',
+  'produção',
+  'impostos',
+  'produz',
+  'comércio',
+  'manutenção',
+  'renda',
+  'tropa',
+  'saldo',
+] as const;
 
 export class Balanco implements AbaDoGoverno {
   readonly id = 'balanco';
@@ -58,13 +76,24 @@ export class Balanco implements AbaDoGoverno {
   }
 
   desenhar(vista: VistaDoBalanco): void {
-    const somas = { impostos: 0, producao: 0, comercio: 0, total: 0 };
+    const somas = {
+      impostos: 0,
+      producao: 0,
+      comercio: 0,
+      manutencao: 0,
+      total: 0,
+      tropa: 0,
+      saldo: 0,
+    };
     for (const l of vista.linhas) {
       if (!l.economia) continue;
       somas.impostos += l.economia.impostos;
       somas.producao += l.economia.producao;
       somas.comercio += l.economia.comercio;
+      somas.manutencao += l.economia.manutencao;
       somas.total += l.economia.total;
+      somas.tropa += l.economia.tropa;
+      somas.saldo += l.economia.saldo;
     }
 
     const semEconomia = vista.linhas.filter((l) => l.economia === null).length;
@@ -73,7 +102,11 @@ export class Balanco implements AbaDoGoverno {
       trecho('balanco__dado', formatarAno(vista.ano)),
       trecho('balanco__dado', `turno ${vista.turno}`),
       trecho('balanco__ouro', `${moeda(vista.tesouro)} moedas`),
-      trecho('balanco__ouro', `+${moeda(somas.total)} por turno`),
+      // A renda pode ser negativa desde a manutenção de construção — o sinal é honesto.
+      trecho(
+        somas.total < 0 ? 'balanco__aviso' : 'balanco__ouro',
+        `${somas.total < 0 ? '−' : '+'}${moeda(Math.abs(somas.total))} por turno`,
+      ),
       trecho('balanco__dado', `${vista.linhas.length} províncias`),
     ];
     // Dizer quantas ainda não arrecadam é honestidade: sem isso o total parece o teto do
@@ -107,7 +140,10 @@ export class Balanco implements AbaDoGoverno {
         moeda(somas.impostos),
         moeda(somas.producao),
         moeda(somas.comercio),
+        somas.manutencao > 0 ? `−${moeda(somas.manutencao)}` : '0',
         moeda(somas.total),
+        somas.tropa > 0 ? `−${moeda(somas.tropa)}` : '0',
+        comSinal(somas.saldo),
       ]),
     );
 
@@ -116,8 +152,9 @@ export class Balanco implements AbaDoGoverno {
   }
 
   private linha(linha: LinhaDoBalanco): HTMLTableRowElement {
+    const nomeComSede = linha.capital ? `${linha.nome} · capital` : linha.nome;
     if (!linha.economia) {
-      const tr = celulas([linha.nome, 'não configurada', '—', '—', '—', '—']);
+      const tr = celulas([nomeComSede, 'não configurada', '—', '—', '—', '—', '—', '—', '—']);
       tr.dataset['sem'] = 'sim';
       return tr;
     }
@@ -126,7 +163,8 @@ export class Balanco implements AbaDoGoverno {
     // Incentivo e obra entram como marca no nome, não como colunas: seriam duas colunas
     // vazias na maior parte do tempo, e coluna vazia é o jeito mais caro de não informar.
     const marcas: string[] = [];
-    if (e.bonus > 0) marcas.push(`incentivo +${Math.round(e.bonus * 100)}%`);
+    if (linha.capital) marcas.push('capital');
+    if (e.imposto !== 'normal') marcas.push(`imposto ${e.imposto}`);
     if (linha.obra) {
       marcas.push(
         `${linha.obra.nome} em ${linha.obra.turnosRestantes}` +
@@ -141,8 +179,14 @@ export class Balanco implements AbaDoGoverno {
       moeda(e.impostos),
       moeda(e.producao),
       moeda(e.comercio),
+      e.manutencao > 0 ? `−${moeda(e.manutencao)}` : '0',
       moeda(e.total),
+      e.tropa > 0 ? `−${moeda(e.tropa)}` : '0',
+      comSinal(e.saldo),
     ]);
+    // Província no vermelho não é defeito: é o aviso de que ela pesa no reino — e o
+    // veredito inclui a tropa que ela pôs em armas, não só a renda da terra.
+    if (e.saldo < 0) tr.dataset['tom'] = 'deficit';
     if (linha.construcoes.length > 0) {
       definirTooltip(tr, {
         titulo: 'Construções erguidas',
@@ -175,6 +219,10 @@ function trecho(classe: string, texto: string): HTMLElement {
 
 function moeda(valor: number): string {
   return valor.toLocaleString('pt-BR');
+}
+
+function comSinal(valor: number): string {
+  return valor >= 0 ? `+${moeda(valor)}` : `−${moeda(-valor)}`;
 }
 
 function romano(nivel: number): string {

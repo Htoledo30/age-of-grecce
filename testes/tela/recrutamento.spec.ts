@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * O ciclo militar inteiro numa passada: o Quartel destrava o recrutamento, a leva sai da
+ * O ciclo militar inteiro numa passada: o recrutamento básico tira a leva da
  * população, e a barra de turno passa a mostrar a manutenção.
  *
  * Vale um teste de tela porque as três verdades moram em painéis diferentes e precisam
@@ -29,7 +29,7 @@ interface Ganchos {
   populacaoDe: (idProvincia: string) => number;
 }
 
-test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', async ({ page }) => {
+test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   const erros: string[] = [];
   page.on('console', (m) => {
     if (m.type() === 'error') erros.push(m.text());
@@ -45,34 +45,35 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  // Nada de sumir em silêncio: o bloco fica na tela dizendo o que falta. É assim que o
-  // jogador descobre que existe Quartel, sem tutorial — mas só depois de pedir os detalhes.
+  // Recrutamento é básico: abrir o bloco já mostra população e disponibilidade.
   await expect(page.locator('.recrutamento')).toBeVisible();
   const abrir = page.getByRole('button', { name: 'Recrutar' });
   await expect(abrir).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('.recrutamento__corpo')).toBeHidden();
   await abrir.click();
   await expect(abrir).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('Quartel');
-  await expect(page.locator('.recrutamento__valor')).toBeHidden();
+  await expect(page.locator('.recrutamento__alvo')).toContainText('disponíveis para recrutar');
+  await expect(page.locator('.recrutamento__valor')).toBeVisible();
 
   // A população aparece na ficha, e é ela que decide se a Ágora vale a pena.
   const inicial = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { populacao: i.populacaoDe('atenas'), crescimento: i.crescimentoDe('atenas') };
   });
-  await expect(page.locator('dd.ficha__populacao')).toContainText(comoNaTela(inicial.populacao));
-  await expect(page.locator('dd.ficha__crescimento')).toHaveText(
-    `+${comoNaTela(inicial.crescimento)} por turno`,
-  );
-
-  await page.evaluate(() => {
-    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    i.darOuro(20_000);
-    i.construir('atenas', 'quartel');
-    for (let n = 0; n < 4; n++) i.passarTurno(); // 4 turnos de obra
-  });
-  await page.mouse.click(960, 540);
+  const populacaoNaFicha = page.locator('dd.ficha__populacao');
+  await expect(populacaoNaFicha).toContainText(comoNaTela(inicial.populacao));
+  if (inicial.crescimento === 0) {
+    await expect(populacaoNaFicha).toHaveAttribute(
+      'data-tooltip-titulo',
+      /Sem crescimento líquido|População mantida/,
+    );
+  } else {
+    await expect(populacaoNaFicha).toHaveAttribute('data-tooltip-titulo', 'População subindo');
+    await expect(populacaoNaFicha).toHaveAttribute(
+      'data-tooltip-corpo',
+      `+${comoNaTela(inicial.crescimento)} no próximo turno.`,
+    );
+  }
 
   const comQuartel = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
@@ -166,8 +167,8 @@ test('sem Quartel o painel diz o motivo, e com ele a leva sai da população', a
   expect(erros, erros.join('\n')).toHaveLength(0);
 });
 
-/** O Quartel é a primeira construção que não paga em ouro, e a tela precisa dizer isso. */
-test('o Quartel promete capacidade, não retorno', async ({ page }) => {
+/** O Quartel promete qualidade futura sem fingir que ainda entrega bônus de combate. */
+test('o Quartel explica seu papel futuro, não um requisito removido', async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector('body[data-pronto="sim"]');
   await page.getByRole('button', { name: 'Iniciar jogo' }).click();
@@ -179,7 +180,8 @@ test('o Quartel promete capacidade, não retorno', async ({ page }) => {
 
   const quartel = page.locator('.acoes__construcao', { hasText: 'Quartel' });
   const dica = await quartel.getAttribute('data-tooltip-corpo');
-  expect(dica).toContain('Permite reunir e recrutar');
+  expect(dica).toContain('Recrutamento já é básico');
+  expect(dica).toContain('mais qualidade');
   // "nunca se paga" seria verdade aritmética e mentira sobre o que ele é
   expect(dica).not.toContain('paga-se em');
   expect(dica).not.toContain('por turno,');

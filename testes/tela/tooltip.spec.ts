@@ -35,5 +35,37 @@ test('a tooltip militar substitui title, respeita o palco e fecha ao sair', asyn
 
   await page.mouse.move(960, 540);
   await expect(tooltip).toBeHidden();
+
+  // Informação provincial: resultado na ficha, conta curta no tooltip.
+  const renda = page.locator('.ficha__renda');
+  await expect(renda).toHaveText(/saldo [−+]\d+ por turno/);
+  await expect(renda).toHaveAttribute('data-tooltip-corpo', /\+\d+ impostos/);
+  await expect(renda).toHaveAttribute('data-tooltip-corpo', /= [−+]\d+ por turno/);
+
+  const populacao = page.locator('.ficha__populacao').last();
+  await expect(populacao).toHaveAttribute(
+    'data-tooltip-titulo',
+    /População subindo|População caindo|População mantida|Sem crescimento líquido/,
+  );
+  await expect(populacao).not.toHaveAttribute('data-tooltip-corpo', /.{180,}/);
+
+  const humor = page.locator('.ficha__humor').last();
+  await expect(humor).toHaveText(/\d+ · /);
+  await expect(humor).toHaveAttribute('data-tooltip-corpo', /= \d+$/);
+
+  // O custo da tropa nascida aqui entra no número visível, não fica escondido no Governo.
+  await page.evaluate(() => {
+    const inspecao = (
+      window as unknown as {
+        inspecao: {
+          plantarHoste: (provincia: string, poder: string, homens: number) => string;
+        };
+      }
+    ).inspecao;
+    inspecao.plantarHoste('atenas', 'atenas', 4_001);
+  });
+  await expect(renda).toHaveAttribute('data-tom', 'negativo');
+  await expect(renda).toHaveText(/saldo −\d+ por turno/);
+  await expect(renda).toHaveAttribute('data-tooltip-corpo', /−[\d.]+ tropas/);
   expect(erros, erros.join('\n')).toHaveLength(0);
 });

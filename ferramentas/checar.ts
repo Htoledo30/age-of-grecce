@@ -216,10 +216,14 @@ function checarEconomia(): void {
       reclamar(`economia.json: "${id}" aponta pro produto inexistente "${ficha.produto}"`);
       continue;
     }
+    // Corrupção zero DE PROPÓSITO: ela depende da capital da partida, e esta tabela é o
+    // retrato autoral da terra — o que ela renderia com administração perfeita.
     const renda = rendaDaProvincia(ficha, economia.produtos, {}, ajustes.data.jogo.economia, {
-      construcoes: [],
+      construcoes: {},
       populacao: ficha.populacao,
-      investimento: undefined,
+      corrupcao: 0,
+      fatorDeImposto: 1,
+      revoltosa: false,
       sitiada: false,
     });
     porPoder.set(provincia.dono, (porPoder.get(provincia.dono) ?? 0) + renda.total);
@@ -247,10 +251,8 @@ function checarEconomia(): void {
 /**
  * Imprime a tabela de balanço das construções.
  *
- * O alvo é obra se pagando em algumas dezenas de turnos, não em centenas: retorno de 150
- * a 200 turnos é justamente o defeito do Age of History II que
- * `documentacao/design/referencias-economicas.md` registra. Com a tabela impressa, o
- * desequilíbrio aparece aqui em vez de virar folclore.
+ * O alvo é a obra se pagando em algumas dezenas de turnos, não em centenas. Com a tabela
+ * impressa, o desequilíbrio aparece aqui em vez de virar folclore.
  */
 function checarConstrucoes(): void {
   const caminho = resolve('dados/construcoes.json');
@@ -275,28 +277,43 @@ function checarConstrucoes(): void {
   );
   if (!economia.success || !ajustes.success) return; // já reclamado
 
-  // Só as que rendem moeda entram na tabela de retorno. O Quartel não tem "paga-se em N
-  // turnos" — ele paga em capacidade, e enfiá-lo aqui imprimiria "nunca", que é verdade
-  // aritmética e mentira sobre o que ele é. Ele sai listado à parte.
+  // Só as que rendem moeda entram na tabela de retorno. As demais pagam em alimento,
+  // defesa ou papel futuro e saem listadas à parte.
   const deRenda = Object.entries(catalogo).filter(([, c]) => c.efeito.tipo === 'renda');
   console.log('construções que rendem moeda — ganho por turno e turnos até se pagar:');
-  const cabecalho = deRenda.map(([, c]) => `${c.nome} (${c.custo})`.padStart(20)).join('');
+  const cabecalho = deRenda.map(([, c]) => `${c.nome} I (${c.custos[0]})`.padStart(20)).join('');
   console.log(`  ${''.padEnd(12)}${cabecalho}`);
 
   for (const [id, ficha] of Object.entries(economia.data.provincias)) {
-    const celulas = deRenda.map(([idConstrucao]) => {
+    const celulas = deRenda.map(([idConstrucao, construcao]) => {
+      const requisito = construcao.requisito;
+      const produtos = new Set([ficha.produto, ficha.secundario.produto]);
+      const disponivel =
+        (!requisito?.ancoradouro || ficha.ancoradouro) &&
+        (!requisito?.produtos || requisito.produtos.some((produto) => produtos.has(produto)));
+      if (!disponivel) return '—'.padStart(20);
       const c = retornoDaConstrucao(
         ficha,
         economia.data.produtos,
         catalogo,
         ajustes.data.jogo.economia,
-        { construcoes: [], populacao: ficha.populacao, sitiada: false },
+        {
+          construcoes: {},
+          populacao: ficha.populacao,
+          corrupcao: 0,
+          fatorDeImposto: 1,
+          revoltosa: false,
+          sitiada: false,
+        },
         idConstrucao,
       );
       const turnos = Number.isFinite(c.turnosParaPagar)
         ? `${Math.ceil(c.turnosParaPagar)}t`
         : 'nunca';
-      return `+${c.ganhoPorTurno}/turno em ${turnos}`.padStart(20);
+      // Desde a manutenção, o ganho é líquido e pode ser negativo: a tabela mostra a
+      // armadilha em vez de escondê-la atrás de um "+-".
+      const ganho = c.ganhoPorTurno >= 0 ? `+${c.ganhoPorTurno}` : `−${-c.ganhoPorTurno}`;
+      return `${ganho}/turno em ${turnos}`.padStart(20);
     });
     console.log(`  ${id.padEnd(12)}${celulas.join('')}`);
   }
@@ -304,8 +321,9 @@ function checarConstrucoes(): void {
   // Cada família paga numa moeda diferente, e é por isso que cada uma se lista sozinha:
   // enfileirar todas numa tabela de "turnos até se pagar" imprimiria "nunca" para as três
   // que não rendem moeda — verdade aritmética e mentira sobre o que elas são.
-  familia('construções que pagam em capacidade:', 'capacidade');
-  familia('construções que fortalecem a população:', 'populacao');
+  familia('construções que fortalecem a alimentação:', 'alimento');
+  familia('construções que acalmam o povo:', 'felicidade');
+  familia('construções com efeito futuro:', 'futuro');
   familia('construções que fortalecem a defesa local:', 'milicia');
 
   // `renda` fica de fora porque só ela não tem promessa escrita: o que ela promete é a
@@ -318,7 +336,7 @@ function checarConstrucoes(): void {
     for (const c of desta) {
       if (c.efeito.tipo === 'renda') continue;
       console.log(
-        `  ${c.nome.padEnd(12)}${String(c.custo).padStart(8)} · ${c.turnos}t · ${c.efeito.promessa}`,
+        `  ${c.nome.padEnd(18)}${String(c.custos[0]).padStart(8)} · ${c.turnos[0]}t · ${c.promessa}`,
       );
     }
   }
@@ -329,8 +347,8 @@ function checarConstrucoes(): void {
   const combate = ajustes.data.jogo.combate;
   console.log('milícia por província configurada — sem obra e com Muralha:');
   for (const [id, ficha] of Object.entries(economia.data.provincias)) {
-    const nua = miliciaDe(ficha.populacao, [], catalogo, combate);
-    const murada = miliciaDe(ficha.populacao, ['muralha'], catalogo, combate);
+    const nua = miliciaDe(ficha.populacao, {}, catalogo, combate);
+    const murada = miliciaDe(ficha.populacao, { muralha: 1 }, catalogo, combate);
     console.log(
       `  ${id.padEnd(12)}${String(ficha.populacao).padStart(8)} hab · ${String(nua).padStart(5)} · ${String(murada).padStart(5)} com Muralha`,
     );

@@ -179,3 +179,33 @@
     width: 330px;
   }
 }
+
+/* O botão da capital: uma decisão só, acima da lista de construções. Urgente quando o
+   reino está sem sede e a virada está travada esperando a escolha. */
+.acoes__capital {
+  width: 100%;
+  margin: 6px 0 2px;
+}
+.acoes__capital[data-urgente='sim'] {
+  border-color: var(--ui-perigo, #a33);
+  box-shadow: 0 0 0 1px var(--ui-perigo, #a33) inset;
+}
+
+/* O decreto de imposto: três níveis lado a lado, o vigente marcado. */
+.acoes__imposto {
+  display: flex;
+  gap: 6px;
+}
+.acoes__nivel-imposto {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid var(--ui-borda);
+  background: transparent;
+  color: var(--ui-texto);
+  cursor: pointer;
+}
+.acoes__nivel-imposto[data-vigente='sim'] {
+  background: var(--ui-bronze-claro, #b08d57);
+  color: var(--ui-fundo, #10181a);
+  cursor: default;
+}

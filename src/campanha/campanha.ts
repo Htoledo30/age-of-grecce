@@ -3,7 +3,7 @@
  *
  * **Não importa Pixi e não toca no DOM, de propósito.** É isso que deixa o conjunto de
  * regras inteiro rodar no vitest (que roda em Node, sem navegador) contra os dados de
- * verdade — turno, renda e investimento ficam sob teste sem subir uma tela.
+ * verdade — turno, renda e imposto ficam sob teste sem subir uma tela.
  *
  * Quem manda um comando chama o método direto (`campanha.passarTurno()`); quem precisa
  * saber que algo mudou passa uma função em `aoMudar`. Enquanto houver um interessado só,
@@ -14,24 +14,24 @@ import type { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '@/da
 import type { Atlas } from '@/mundo/atlas';
 import { avancarAno } from './estado-campanha';
 import type { EstadoCampanha, Obra } from './estado-campanha';
-import {
-  bonusDoInvestimento,
-  rendaDaProvincia,
-  retornoDaConstrucao,
-  retornoDoInvestimento,
-} from './economia';
+import { serializarCampanha } from './salvamento';
+import { rendaDaProvincia, retornoDaConstrucao } from './economia';
 import type {
   BaseDaProvincia,
+  NivelDeImposto,
   RendaDaProvincia,
   RetornoDaConstrucao,
-  RetornoDoInvestimento,
 } from './economia';
 import type { Exercito } from '@/combate/exercito';
 import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import { Mobilizacao } from '@/combate/mobilizacao';
 import { levantarGuarnicoes } from '@/combate/guarnicao-inicial';
-import { capitaisIniciais } from './capitais';
+import { capitaisIniciais, melhorCapitalEntre } from './capitais';
+import { corrupcaoDe, saltosDesde } from './corrupcao';
+import type { Corrupcao } from './corrupcao';
+import { alvoDeFelicidade, aproximarFelicidade, parcelasDoAlvo, revoltosa } from './felicidade';
+import type { ParcelaDoAlvo, SituacaoDaProvincia } from './felicidade';
 import { perfilDaProvincia } from './perfil-da-provincia';
 import type { PerfilDaProvincia } from './perfil-da-provincia';
 import { rodadasAteOAssalto } from '@/combate/cerco';
@@ -44,8 +44,13 @@ import { avaliarOrdem } from '@/movimento/ordens';
 import type { OrdemDeMarcha, RecusaDeOrdem } from '@/movimento/ordens';
 import { resolverRodada } from '@/movimento/resolucao';
 import type { RelatorioDaRodada } from '@/movimento/resolucao';
-import { creditarNoEstoque, producaoFisicaDe } from '@/producao/producao-fisica';
-import type { RecursoProduzido } from '@/producao/producao-fisica';
+import {
+  balancoAlimentar,
+  estadoAlimentarLocal,
+  mortosPelaFome,
+  nivelPopulacional,
+} from '@/producao/alimentacao';
+import type { BalancoAlimentarDoPoder, EstadoAlimentarLocal } from '@/producao/alimentacao';
 import { calcularCrescimentoPopulacional } from '@/populacao/crescimento';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 
@@ -62,6 +67,12 @@ export type Recusa = { pode: true; bonus: number } | { pode: false; motivo: stri
  * devolve o MOTIVO em vez de só esconder o controle: é a interface que escreve a frase.
  */
 export type Permissao = { pode: true } | { pode: false; motivo: string };
+
+/** Quem passou fome na última virada, para a crônica contar. */
+export interface RelatorioDaFome {
+  provincias: readonly { provincia: string; mortos: number }[];
+  tropas: readonly { poder: string; homens: number }[];
+}
 
 export class Campanha {
   private readonly estado: EstadoCampanha;
@@ -90,6 +101,28 @@ export class Campanha {
     cercosLevantados: [],
   };
 
+  /**
+   * O que a fome fez na última virada. Efêmero como o relatório da rodada: é notícia, não
+   * partida, e por isso não vai para o disco.
+   */
+  private ultimaFome: RelatorioDaFome = { provincias: [], tropas: [] };
+
+  /** As capitais que caíram na última virada. Efêmero como a fome: notícia, não partida. */
+  private ultimasQuedasDeCapital: readonly { poder: string; provincia: string }[] = [];
+
+  /** Os levantes da última virada, para a crônica contar. Efêmero como a fome. */
+  private ultimasRevoltas: readonly { provincia: string; poder: string; homens: number }[] = [];
+
+  /**
+   * Distâncias em saltos a partir de cada capital já consultada.
+   *
+   * Cache que nunca expira DE PROPÓSITO: o grafo de vizinhança é geografia assada e não
+   * muda durante a partida. Trocar a capital só troca a CHAVE consultada; a política —
+   * quem é dono do meio do caminho — não entra na conta, e é por isso que o cache é
+   * seguro. Uma busca em largura de 205 províncias por capital, uma vez cada.
+   */
+  private readonly saltosPorCapital = new Map<string, ReadonlyMap<string, number>>();
+
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
 
@@ -107,9 +140,16 @@ export class Campanha {
       // As construções iniciais são ids do OUTRO arquivo, então o Zod não consegue
       // conferir sozinho. Um id errado aqui viraria uma construção fantasma: contada na
       // lista da ficha, sem efeito nenhum na renda.
-      for (const construcao of ficha.construcoes) {
+      for (const construcao of Object.keys(ficha.construcoes)) {
         if (!catalogoDeConstrucoes.construcoes[construcao]) {
           throw new Error(`economia.json dá a ${id} uma construção inexistente: ${construcao}`);
+        }
+      }
+    }
+    for (const [id, construcao] of Object.entries(catalogoDeConstrucoes.construcoes)) {
+      for (const produto of construcao.requisito?.produtos ?? []) {
+        if (!economia.produtos[produto]) {
+          throw new Error(`construção ${id} exige produto inexistente: ${produto}`);
         }
       }
     }
@@ -123,19 +163,16 @@ export class Campanha {
     // é da partida — recrutar a encolhe. Província sem economia configurada não entra e
     // continua sem população, como não tem renda.
     const populacaoAutoral: Record<string, number> = {};
-    // Povo, humor, despensa e o que já está de pé em 700 a.C. — copiados do arquivo pro
-    // estado pela mesma razão que a população é: a partir daqui são da PARTIDA. Conquista
-    // captura estoque, guerra derruba humor, e nada disso pode voltar a ler o autoral.
+    // Povo, humor e o que já está de pé em 700 a.C. — copiados do arquivo pro estado pela
+    // mesma razão que a população é: a partir daqui são da PARTIDA.
     const nacionalidades: Record<string, Record<string, number>> = {};
     const felicidade: Record<string, number> = {};
-    const estoques: Record<string, Record<string, number>> = {};
-    const construcoes: Record<string, string[]> = {};
+    const construcoes: Record<string, Record<string, number>> = {};
     for (const [id, ficha] of Object.entries(economia.provincias)) {
       populacaoAutoral[id] = ficha.populacao;
       nacionalidades[id] = { ...ficha.nacionalidades };
       felicidade[id] = ficha.felicidade;
-      estoques[id] = { ...ficha.estoque };
-      if (ficha.construcoes.length > 0) construcoes[id] = [...ficha.construcoes];
+      if (Object.keys(ficha.construcoes).length > 0) construcoes[id] = { ...ficha.construcoes };
     }
 
     // A tropa de 700 a.C. entra ANTES do estado existir, e os homens dela saem da
@@ -152,9 +189,9 @@ export class Campanha {
       jogador: null,
       ano: ajustes.anoInicial,
       turno: 0,
-      // ⚠️ TODOS os poderes começam com caixa, não só o jogador. Ver `DECISOES.md` #63:
-      // sem cofre próprio a IA recrutaria de graça, e "as mesmas regras do jogador" é a
-      // decisão #97. Preencher aqui, e não na hora em que alguém precisar, evita o
+      // ⚠️ TODOS os poderes começam com caixa, não só o jogador. Sem cofre próprio a IA
+      // recrutaria de graça, contrariando a regra de que todos jogam com as mesmas
+      // condições. Preencher aqui, e não na hora em que alguém precisar, evita o
       // `undefined` viajando por uma subtração.
       tesouros: Object.fromEntries(
         atlas.poderes.map((poder) => [poder.id, ajustes.tesouroInicial]),
@@ -163,7 +200,6 @@ export class Campanha {
       populacao: tabuleiro.populacao,
       nacionalidades,
       felicidade,
-      estoques,
       hostes: tabuleiro.hostes,
       proximaHoste: tabuleiro.proximaHoste,
       formacoes: {},
@@ -171,9 +207,10 @@ export class Campanha {
       surtidas: [],
       cercos: {},
       capitais: {},
-      investimentos: {},
+      nivelDeImposto: {},
       construcoes,
       obras: {},
+      revoltas: {},
     };
 
     this.territorios = new Territorios(atlas, this.estado.dono);
@@ -275,11 +312,10 @@ export class Campanha {
   trocarDono(idProvincia: string, idPoder: string): void {
     if (!this.territorios.trocarDono(idProvincia, idPoder)) return;
 
-    // O incentivo em curso morre junto com a posse: quem pagou pra explorar mais uma
-    // terra não continua colhendo dela depois de perdê-la. A construção FICA — ela é da
-    // província, não de quem mandava nela, e é isso que faz tomar uma cidade rica valer
-    // mais que tomar uma pobre.
-    delete this.estado.investimentos[idProvincia];
+    // O decreto de imposto morre com a posse: a administração nova começa no normal. A
+    // construção FICA — ela é da província, não de quem mandava nela, e é isso que faz
+    // tomar uma cidade rica valer mais que tomar uma pobre.
+    delete this.estado.nivelDeImposto[idProvincia];
     // A obra em andamento também morre: o dinheiro já saiu, e quem perdeu a província não
     // vai entregar a obra ao inimigo pronta.
     delete this.estado.obras[idProvincia];
@@ -302,42 +338,40 @@ export class Campanha {
       this.economia.produtos,
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.economia,
-      {
-        ...this.baseDe(idProvincia),
-        investimento: this.estado.investimentos[idProvincia],
-      },
+      this.baseDe(idProvincia),
     );
+  }
+
+  /** O nível de imposto desta província. Ausente do registro é o normal. */
+  nivelDeImpostoEm(idProvincia: string): NivelDeImposto {
+    return this.estado.nivelDeImposto[idProvincia] ?? 'normal';
+  }
+
+  /** Pode decretar este nível de imposto aqui? A recusa vem com o motivo, como sempre. */
+  podeDefinirImposto(idProvincia: string): Recusa {
+    return this.podeAgirEm(idProvincia);
+  }
+
+  /**
+   * Decreta o nível de imposto da província. **Efeito imediato e sem custo de entrada**:
+   * a renda muda no clique e o humor passa a caminhar para o alvo novo — receita trocada
+   * por pressão social, a alavanca do GDD.
+   */
+  definirImposto(idProvincia: string, nivel: NivelDeImposto): void {
+    const r = this.podeDefinirImposto(idProvincia);
+    if (!r.pode) throw new Error(r.motivo);
+    if (nivel === 'normal') delete this.estado.nivelDeImposto[idProvincia];
+    else this.estado.nivelDeImposto[idProvincia] = nivel;
+    this.aoMudar();
   }
 
   /** O que a província é agora, tirando o incentivo: o que as contas comparam. */
   /**
    * A capital deste poder, ou `undefined` para quem não tem província nenhuma.
    *
-   * ⚠️ Ela ainda não faz NADA no jogo — ver `capitais.ts`. Existe para os sistemas da
-   * O patch 0.0.9 em diante ter uma resposta só.
+   * ⚠️ Ela ainda não faz NADA no jogo — ver `capitais.ts`. Existe para que os sistemas
+   * futuros tenham uma resposta só.
    */
-  /**
-   * O que esta província tira da terra por turno, principal e secundário.
-   *
-   * Vazio na província sem ficha autoral — as 200 sem economia configurada não produzem
-   * nada, exatamente como não arrecadam. Inventar produção para elas seria encher o mapa
-   * de recurso que ninguém escreveu.
-   *
-   * ⚠️ **Calculado na hora, a partir da população ATUAL.** Não existe número de produção
-   * guardado no estado: recrutar mil homens hoje faz a colheita do ano que vem ser menor
-   * sem que nenhuma regra precise avisar ninguém.
-   */
-  producaoFisicaEm(idProvincia: string): readonly RecursoProduzido[] {
-    const ficha = this.economia.provincias[idProvincia];
-    if (!ficha) return [];
-    return producaoFisicaDe(ficha, this.populacaoDe(idProvincia), this.ajustes.economia.producao);
-  }
-
-  /** O que esta província tem guardado, por produto. Vazio onde nunca houve nada. */
-  estoqueEm(idProvincia: string): Readonly<Record<string, number>> {
-    return this.estado.estoques[idProvincia] ?? {};
-  }
-
   capitalDe(idPoder: string): string | undefined {
     return this.estado.capitais[idPoder];
   }
@@ -345,13 +379,69 @@ export class Campanha {
   /**
    * A capital deste poder caiu em mãos alheias?
    *
-   * Pergunta pronta para o patch 0.0.9, que é quem vai obrigar o jogador a escolher outra.
-   * Hoje ninguém age sobre a resposta — e é de propósito: reatribuir sozinho tiraria do
-   * jogador justamente a decisão que o patch 0.0.9 existe para criar.
+   * Para o JOGADOR, a resposta positiva trava a virada: escolher outra é decisão dele e
+   * tem que acontecer antes de o mundo andar. Os demais poderes reassentam sozinhos na
+   * virada, pela regra derivada — até a IA existir, é ela quem decide por eles.
    */
   capitalPerdida(idPoder: string): boolean {
     const capital = this.capitalDe(idPoder);
     return capital !== undefined && this.donoDe(capital) !== idPoder;
+  }
+
+  /** As capitais que caíram na última virada, para a crônica contar. */
+  get quedasDeCapital(): readonly { poder: string; provincia: string }[] {
+    return this.ultimasQuedasDeCapital;
+  }
+
+  /**
+   * O que custaria assentar a capital do jogador em outra província AGORA.
+   *
+   * Zero quando a atual caiu ou quando não há capital: a escolha forçada não é castigo.
+   * O custo só existe na mudança VOLUNTÁRIA — sem ele, a capital viraria um interruptor
+   * grátis no dia em que a corrupção por distância passar a lê-la.
+   */
+  custoDeMudancaDeCapital(): number {
+    const jogador = this.estado.jogador;
+    if (jogador === null) return this.ajustes.capital.custoDeMudanca;
+    const atual = this.capitalDe(jogador);
+    if (atual === undefined || this.capitalPerdida(jogador)) return 0;
+    return this.ajustes.capital.custoDeMudanca;
+  }
+
+  /** Pode assentar a capital do jogador AQUI? Devolve o motivo quando não pode. */
+  podeMudarCapital(idProvincia: string): Recusa {
+    if (!this.iniciada) return { pode: false, motivo: 'a campanha ainda não começou' };
+    const jogador = this.estado.jogador;
+    if (jogador === null || this.donoDe(idProvincia) !== jogador) {
+      return { pode: false, motivo: 'esta província não é sua' };
+    }
+    if (this.capitalDe(jogador) === idProvincia) {
+      return { pode: false, motivo: 'já é a capital' };
+    }
+    // Assentar o governo dentro de uma cidade cercada seria mudar-se para a armadilha.
+    if (this.cercoEm(idProvincia)) {
+      return { pode: false, motivo: 'esta cidade está sitiada' };
+    }
+    const custo = this.custoDeMudancaDeCapital();
+    const caixa = this.tesouroDe(jogador);
+    if (custo > caixa) {
+      return {
+        pode: false,
+        motivo: `faltam ${(custo - caixa).toLocaleString('pt-BR')} moedas`,
+      };
+    }
+    return { pode: true, bonus: 0 };
+  }
+
+  /** Assenta a capital do jogador nesta província, cobrando o custo da mudança voluntária. */
+  mudarCapital(idProvincia: string): void {
+    const r = this.podeMudarCapital(idProvincia);
+    if (!r.pode) throw new Error(r.motivo);
+    const jogador = this.estado.jogador;
+    if (jogador === null) throw new Error('a campanha ainda não começou');
+    this.gastar(jogador, this.custoDeMudancaDeCapital());
+    this.estado.capitais[jogador] = idProvincia;
+    this.aoMudar();
   }
 
   /** O cerco em curso nesta província, se houver. */
@@ -373,8 +463,7 @@ export class Campanha {
    * Esta província tem obra que obriga a sitiar antes de assaltar?
    *
    * ⚠️ Lê o campo do CATÁLOGO, e não o id `muralha`. Amarrar a regra de combate a um id de
-   * conteúdo faria o `0.0.10`, que vai refazer as construções em slots e níveis, apagar
-   * uma regra de guerra sem ninguém perceber.
+   * conteúdo faria uma troca de catálogo apagar a regra de guerra sem ninguém perceber.
    */
   impedeAssaltoImediatoEm(idProvincia: string): boolean {
     return this.construcoesEm(idProvincia).some(
@@ -417,7 +506,7 @@ export class Campanha {
   }
 
   /**
-   * Povo, humor, despensa e ancoradouro — o retrato que não é dinheiro.
+   * Povo, humor e ancoradouro — o retrato que não é dinheiro.
    *
    * `null` na província sem ficha autoral, exatamente como `economiaDe`: 200 das 205 não
    * são simuladas, e a interface diz isso com todas as letras em vez de inventar.
@@ -427,23 +516,101 @@ export class Campanha {
       idProvincia,
       this.economia,
       {
-        populacao: this.populacaoDe(idProvincia),
         felicidade: this.estado.felicidade[idProvincia] ?? 0,
         nacionalidades: this.estado.nacionalidades[idProvincia] ?? {},
-        estoque: this.estado.estoques[idProvincia] ?? {},
       },
       this.ajustes.felicidade.faixas,
-      this.ajustes.alimento.consumoPorHabitante,
-      this.ajustes.economia.producao,
     );
   }
 
   private baseDe(idProvincia: string): BaseDaProvincia {
     return {
-      construcoes: this.construcoesEm(idProvincia),
+      construcoes: this.estado.construcoes[idProvincia] ?? {},
       populacao: this.populacaoDe(idProvincia),
+      corrupcao: this.corrupcaoEm(idProvincia).total,
+      fatorDeImposto: this.ajustes.economia.imposto.niveis[this.nivelDeImpostoEm(idProvincia)]
+        .fator,
+      revoltosa: this.emRevoltaEm(idProvincia),
       sitiada: this.estado.cercos[idProvincia] !== undefined,
     };
+  }
+
+  /** O humor desta província está na faixa revoltosa? É a que não paga imposto. */
+  emRevoltaEm(idProvincia: string): boolean {
+    const humor = this.estado.felicidade[idProvincia];
+    return humor !== undefined && revoltosa(humor, this.ajustes.felicidade);
+  }
+
+  /** O povo desta província vive sob bandeira que não é a de 700 a.C.? */
+  dominioEstrangeiroEm(idProvincia: string): boolean {
+    return this.donoDe(idProvincia) !== this.atlas.donoInicial(idProvincia);
+  }
+
+  /** ESTA província está passando fome agora? A pergunta é local, como a consequência. */
+  private passaFomeEm(idProvincia: string): boolean {
+    if (this.estado.cercos[idProvincia] !== undefined) {
+      return this.fomeDoCercoEm(idProvincia)?.fomeAtiva === true;
+    }
+    return (
+      this.saldoAlimentarLocalEm(idProvincia) < 0 &&
+      this.balancoAlimentarDe(this.donoDe(idProvincia)).saldoCivil < 0
+    );
+  }
+
+  /** A situação que decide o alvo do humor desta província. Uma montagem só, dois usos. */
+  private situacaoDeFelicidadeEm(idProvincia: string): SituacaoDaProvincia {
+    return {
+      passaFome: this.passaFomeEm(idProvincia),
+      sitiada: this.estado.cercos[idProvincia] !== undefined,
+      dominioEstrangeiro: this.dominioEstrangeiroEm(idProvincia),
+      construcoes: this.estado.construcoes[idProvincia] ?? {},
+      humorDoImposto: this.ajustes.economia.imposto.niveis[this.nivelDeImpostoEm(idProvincia)]
+        .humor,
+    };
+  }
+
+  /** Para onde o humor desta província caminha. É o que a ficha pode explicar. */
+  alvoDeFelicidadeEm(idProvincia: string): number {
+    return alvoDeFelicidade(
+      this.situacaoDeFelicidadeEm(idProvincia),
+      this.catalogoDeConstrucoes.construcoes,
+      this.ajustes.felicidade,
+    );
+  }
+
+  /** A conta do alvo, parcela a parcela — a mesma legibilidade da barra de comida. */
+  parcelasDeFelicidadeEm(idProvincia: string): readonly ParcelaDoAlvo[] {
+    return parcelasDoAlvo(
+      this.situacaoDeFelicidadeEm(idProvincia),
+      this.catalogoDeConstrucoes.construcoes,
+      this.ajustes.felicidade,
+    );
+  }
+
+  /**
+   * A corrupção desta província, decomposta: tamanho, distância da capital e o total.
+   *
+   * A distância é medida da capital do DONO ATUAL, pelo grafo de vizinhança — conquista
+   * muda a conta na hora, e mudar a capital muda a renda do reino inteiro. Sem capital
+   * (transição rara) ou sem caminho por terra, vale a distância `semCaminho` do ajuste:
+   * governo ausente cobra como o canto mais distante do mapa.
+   */
+  corrupcaoEm(idProvincia: string): Corrupcao {
+    const capital = this.estado.capitais[this.donoDe(idProvincia)];
+    const saltos =
+      capital === undefined
+        ? this.ajustes.corrupcao.distancia.semCaminho
+        : (this.saltosDesdeACapital(capital).get(idProvincia) ??
+          this.ajustes.corrupcao.distancia.semCaminho);
+    return corrupcaoDe(this.populacaoDe(idProvincia), saltos, this.ajustes.corrupcao);
+  }
+
+  private saltosDesdeACapital(capital: string): ReadonlyMap<string, number> {
+    const guardado = this.saltosPorCapital.get(capital);
+    if (guardado) return guardado;
+    const calculado = saltosDesde(capital, (id) => this.atlas.provincia(id).vizinhas);
+    this.saltosPorCapital.set(capital, calculado);
+    return calculado;
   }
 
   /**
@@ -456,36 +623,67 @@ export class Campanha {
     return this.estado.populacao[idProvincia] ?? 0;
   }
 
-  /** Crescimento que esta província receberá no próximo fim de turno. */
-  crescimentoDe(idProvincia: string): CrescimentoPopulacional | null {
-    const ficha = this.economia.provincias[idProvincia];
-    if (!ficha) return null;
-    return calcularCrescimentoPopulacional(
-      this.populacaoDe(idProvincia),
-      this.construcoesEm(idProvincia),
-      this.catalogoDeConstrucoes.construcoes,
-      this.ajustes.populacao,
-    );
+  /**
+   * O crescimento do poder está TRAVADO pela alimentação neste turno?
+   *
+   * A trava preventiva: simula o crescimento de todas as províncias livres do poder e,
+   * se o saldo final PROJETADO ficaria negativo, ninguém cresce — tudo-ou-nada por
+   * poder, determinístico. É o que impede o paradoxo da Fazenda: crescer nunca pode ser
+   * o ato que joga o reino na fome. Crescer "em ordem de id até caber" faria a ordem
+   * alfabética virar regra econômica de novo, e por isso não é feito.
+   */
+  private crescimentoTravadoPara(idPoder: string): boolean {
+    const balanco = this.balancoAlimentarDe(idPoder);
+    if (balanco.saldo <= 0) return false; // sem crescimento não há o que travar
+    let populacaoProjetada = 0;
+    for (const id of this.territorios.provinciasDe(idPoder)) {
+      const ficha = this.economia.provincias[id];
+      if (!ficha || this.estado.cercos[id] !== undefined) continue;
+      const proxima = calcularCrescimentoPopulacional(
+        this.populacaoDe(id),
+        this.estado.construcoes[id] ?? {},
+        this.catalogoDeConstrucoes.construcoes,
+        this.ajustes.populacao,
+        1,
+      ).proxima;
+      populacaoProjetada += nivelPopulacional(
+        proxima,
+        ficha.populacao,
+        this.ajustes.alimento.fracaoPopulacionalPorNivel,
+      );
+    }
+    const saldoProjetado =
+      balanco.subsistencia + balanco.producao - populacaoProjetada - balanco.exercito;
+    return saldoProjetado < 0;
   }
 
-  /** Compara o crescimento atual com o que uma construção populacional entregaria. */
-  impactoPopulacionalDaConstrucaoEm(
-    idProvincia: string,
-    idConstrucao: string,
-  ): { antes: number; depois: number } | null {
-    const ficha = this.economia.provincias[idProvincia];
-    const construcao = this.catalogoDeConstrucoes.construcoes[idConstrucao];
-    if (!ficha || construcao?.efeito.tipo !== 'populacao') return null;
+  /** 1 quando esta província cresce neste turno; 0 sitiada, sem sobra ou travada. */
+  private fatorDeCrescimentoDe(idProvincia: string): number {
+    if (this.estado.cercos[idProvincia] !== undefined) return 0;
+    const poder = this.donoDe(idProvincia);
+    if (this.balancoAlimentarDe(poder).saldo <= 0) return 0;
+    return this.crescimentoTravadoPara(poder) ? 0 : 1;
+  }
 
-    const atuais = this.construcoesEm(idProvincia);
-    const antes = this.crescimentoDe(idProvincia);
-    const depois = calcularCrescimentoPopulacional(
+  crescimentoDe(
+    idProvincia: string,
+  ): (CrescimentoPopulacional & { limitadoPelaAlimentacao: boolean }) | null {
+    const ficha = this.economia.provincias[idProvincia];
+    if (!ficha) return null;
+    const fator = this.fatorDeCrescimentoDe(idProvincia);
+    const crescimento = calcularCrescimentoPopulacional(
       this.populacaoDe(idProvincia),
-      atuais.includes(idConstrucao) ? atuais : [...atuais, idConstrucao],
+      this.estado.construcoes[idProvincia] ?? {},
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.populacao,
+      fator,
     );
-    return antes ? { antes: antes.crescimento, depois: depois.crescimento } : null;
+    // "Limitado" é a trava agindo: haveria sobra pra crescer, mas crescer viraria fome.
+    const limitado =
+      fator === 0 &&
+      this.estado.cercos[idProvincia] === undefined &&
+      this.balancoAlimentarDe(this.donoDe(idProvincia)).saldo > 0;
+    return { ...crescimento, limitadoPelaAlimentacao: limitado };
   }
 
   /** Soma só o que está configurado. O resto do mapa não arrecada nada. */
@@ -500,32 +698,13 @@ export class Campanha {
     return this.provinciasDe(idPoder).filter((id) => this.economiaDe(id) === null).length;
   }
 
-  investimentoEm(idProvincia: string) {
-    return this.estado.investimentos[idProvincia];
-  }
-
-  /**
-   * Este investimento se paga, e em quantos turnos?
-   *
-   * `null` quando a província não tem economia. É a conta que a interface mostra ANTES
-   * de o jogador gastar — a decisão só é decisão se ele puder ver o retorno.
-   */
-  retornoDe(idProvincia: string, valor: number): RetornoDoInvestimento | null {
-    const ficha = this.economia.provincias[idProvincia];
-    if (!ficha) return null;
-    return retornoDoInvestimento(
-      ficha,
-      this.economia.produtos,
-      this.catalogoDeConstrucoes.construcoes,
-      this.ajustes.economia,
-      this.baseDe(idProvincia),
-      valor,
-    );
-  }
-
   /** O que já foi erguido nesta província. Vazio quando não há nada. */
   construcoesEm(idProvincia: string): readonly string[] {
-    return this.estado.construcoes[idProvincia] ?? [];
+    return Object.keys(this.estado.construcoes[idProvincia] ?? {}).sort();
+  }
+
+  nivelDaConstrucaoEm(idProvincia: string, idConstrucao: string): number {
+    return this.estado.construcoes[idProvincia]?.[idConstrucao] ?? 0;
   }
 
   /** A obra em andamento nesta província, se houver. */
@@ -534,26 +713,11 @@ export class Campanha {
   }
 
   /**
-   * O que as construções erguidas ali destravaram.
-   *
-   * Separado da renda de propósito: uma construção paga em ouro **ou** em capacidade, e
-   * misturar as duas numa conta só é exatamente o que faria a escolha virar aritmética.
-   */
-  capacidadesEm(idProvincia: string): readonly string[] {
-    const capacidades: string[] = [];
-    for (const id of this.construcoesEm(idProvincia)) {
-      const efeito = this.catalogoDeConstrucoes.construcoes[id]?.efeito;
-      if (efeito?.tipo === 'capacidade') capacidades.push(efeito.capacidade);
-    }
-    return capacidades;
-  }
-
-  /**
    * O portão do RECRUTAMENTO: a campanha começou e a província é minha.
    *
    * ⚠️ **Não pergunta se ela tem economia configurada.** Já perguntava, e isso era uma
    * trava conceitual errada: recrutar depende de GENTE, não de a província ter ficha
-   * econômica escrita. Ver `DECISOES.md` #89. Província sem ficha continua não cedendo
+   * econômica escrita. Província sem ficha continua não cedendo
    * ninguém — mas porque a população dela é zero, que é um requisito real, e a recusa
    * passa a dizer isso em vez de falar de dado que falta.
    *
@@ -569,18 +733,16 @@ export class Campanha {
     return { pode: true, bonus: 0 };
   }
 
-  /** Dá pra pôr gente em armas aqui? Exige o Quartel erguido e a província ser sua. */
+  /** Recrutamento é ação básica; Quartel melhorará a qualidade da leva no futuro. */
   podeRecrutarEm(idProvincia: string): boolean {
-    return (
-      this.podeMobilizarEm(idProvincia).pode && this.capacidadesEm(idProvincia).includes('recrutar')
-    );
+    return this.podeMobilizarEm(idProvincia).pode && this.populacaoDe(idProvincia) > 0;
   }
 
   /**
    * A hoste com este id, onde quer que esteja. **É o endereço da interface.**
    *
    * ⚠️ Substituiu `exercitoEm(provincia)`, que devolvia "a primeira por id". Aquilo virou
-   * mentira quando sitiar deixou de engajar o exército de dentro (`DECISOES.md` #32A):
+   * mentira quando sitiar deixou de engajar o exército de dentro:
    * com sitiante e guarnição na mesma província, "a primeira" é quem foi recrutado antes,
    * e o mapa inteiro passou a falar do exército errado.
    */
@@ -633,6 +795,25 @@ export class Campanha {
     return this.mobilizacao.homensEmArmasDe(idProvincia);
   }
 
+  /** O que a tropa nascida nesta província custa por turno. A folha, lida terra a terra. */
+  custoDaTropaDe(idProvincia: string): number {
+    return this.mobilizacao.custoDaTropaDe(idProvincia);
+  }
+
+  /**
+   * O saldo COMPLETO da província: renda líquida menos a tropa que ela pôs em armas.
+   *
+   * É o número que responde "esta terra me sustenta ou me puxa pra baixo?" — e é `null`
+   * onde não há economia, pela honestidade de sempre. A soma por província pode divergir
+   * do total do poder em uma moeda, por arredondamento de cada folha; a barra continua
+   * usando a conta do poder, que é a que o tesouro sente.
+   */
+  saldoDaProvincia(idProvincia: string): number | null {
+    const renda = this.economiaDe(idProvincia);
+    if (!renda) return null;
+    return renda.total - this.custoDaTropaDe(idProvincia);
+  }
+
   /** Quantos habitantes esta província ainda cede a uma leva. */
   disponivelParaLevaEm(idProvincia: string): number {
     return this.mobilizacao.disponivelParaLevaEm(idProvincia);
@@ -659,7 +840,6 @@ export class Campanha {
       idProvincia,
       this.donoDe(idProvincia),
       homens,
-      this.capacidadesEm(idProvincia).includes('recrutar'),
     );
   }
 
@@ -859,36 +1039,378 @@ export class Campanha {
   miliciaEm(idProvincia: string): number {
     return miliciaDe(
       this.populacaoDe(idProvincia),
-      this.construcoesEm(idProvincia),
+      this.estado.construcoes[idProvincia] ?? {},
       this.catalogoDeConstrucoes.construcoes,
       this.ajustes.combate,
     );
   }
 
+  /** É comida? Pergunta ao catálogo de produtos, que é quem sabe. */
+  private ehAlimento(produto: string): boolean {
+    return this.economia.produtos[produto]?.alimento === true;
+  }
+
+  /** Produtos alimentares da terra. Cerco zera a contribuição, mas não apaga sua identidade. */
+  produtosAlimentaresEm(idProvincia: string): readonly { id: string; nome: string; nivel: number }[] {
+    const ficha = this.economia.provincias[idProvincia];
+    if (!ficha) return [];
+    return [
+      { id: ficha.produto, nivel: ficha.nivel },
+      { id: ficha.secundario.produto, nivel: ficha.secundario.nivel },
+    ]
+      .filter((produto) => this.ehAlimento(produto.id))
+      .map((produto) => ({
+        ...produto,
+        nome: this.economia.produtos[produto.id]?.nome ?? produto.id,
+      }));
+  }
+
+  contribuicaoAlimentarEm(idProvincia: string): number {
+    return this.cercoEm(idProvincia) ? 0 : this.contribuicaoAlimentarLivreEm(idProvincia);
+  }
+
   /**
-   * A colheita do ano: cada província com ficha tira da terra e guarda no próprio celeiro.
+   * Quantos turnos de cerco esta cidade aguenta com a despensa cheia.
    *
-   * ⚠️ **Ninguém consome, ninguém vende e nada estraga ainda** — é só entrada. O consumo é
-   * o patch 0.0.4, a deterioração vem com ele, o mercado interno é o 0.0.5 e virar dinheiro
-   * é o 0.0.6. Enquanto isso, o estoque só cresce, e crescer é o comportamento certo: sem
-   * a camada física existindo primeiro, não há o que consumir nem o que circular.
-   *
-   * Percorre em ordem de id para a mesma partida render sempre a mesma coisa.
+   * Base do ajuste MAIS a comida da própria terra: a cidade cerealista resiste mais que a
+   * de mineiros, e a Fazenda passa a comprar resistência de cerco além de saldo — é a
+   * despensa de Bannerlord escrita com o que o jogo já tinha.
    */
-  private colher(): void {
-    for (const idProvincia of Object.keys(this.economia.provincias).sort()) {
-      const colheita = this.producaoFisicaEm(idProvincia);
-      if (colheita.length === 0) continue;
-      // O celeiro pode não existir ainda: província sem estoque inicial escrito começa
-      // sem a chave, e a primeira colheita é que a cria.
-      const estoque = (this.estado.estoques[idProvincia] ??= {});
-      creditarNoEstoque(estoque, colheita);
+  mantimentosDeCercoEm(idProvincia: string): number {
+    return this.ajustes.alimento.cerco.mantimentos + this.contribuicaoAlimentarLivreEm(idProvincia);
+  }
+
+  /**
+   * O relógio da fome do cerco em curso. `null` sem cerco.
+   *
+   * UM contador só: enquanto a despensa aguenta, ninguém morre; quando vence, povo e
+   * guarnição caem juntos, todo turno, até o cerco acabar ou a cidade cair.
+   */
+  fomeDoCercoEm(
+    idProvincia: string,
+  ): { mantimentosRestantes: number; fomeAtiva: boolean } | null {
+    const cerco = this.estado.cercos[idProvincia];
+    if (!cerco) return null;
+    const despensa = this.mantimentosDeCercoEm(idProvincia);
+    return {
+      mantimentosRestantes: Math.max(0, despensa - cerco.rodadas),
+      fomeAtiva: cerco.rodadas >= despensa,
+    };
+  }
+
+  /**
+   * O saldo local da província: o que a terra dá menos o que a gente dela come.
+   *
+   * É o número que dá papel a cada território — Sustentadora, Equilibrada ou Dependente —
+   * e é ele que decide QUEM morre quando o saldo civil do reino não fecha.
+   */
+  saldoAlimentarLocalEm(idProvincia: string): number {
+    return this.contribuicaoAlimentarLivreEm(idProvincia) - this.nivelPopulacionalEm(idProvincia);
+  }
+
+  /** O papel alimentar desta província dentro do reino. */
+  estadoAlimentarLocalEm(idProvincia: string): EstadoAlimentarLocal {
+    return estadoAlimentarLocal(this.saldoAlimentarLocalEm(idProvincia));
+  }
+
+  /**
+   * O que a terra daria LIVRE: produtos e construções, ignorando o cerco.
+   *
+   * É a conta que separa os dois regimes da fome: se o saldo fecharia com as terras
+   * sitiadas livres, o déficit é obra do inimigo sentado nelas — não do reino.
+   */
+  private contribuicaoAlimentarLivreEm(idProvincia: string): number {
+    const natural = this.produtosAlimentaresEm(idProvincia).reduce(
+      (soma, produto) => soma + produto.nivel,
+      0,
+    );
+    let construcoes = 0;
+    for (const id of this.construcoesEm(idProvincia)) {
+      const nivel = this.nivelDaConstrucaoEm(idProvincia, id);
+      const efeito = this.catalogoDeConstrucoes.construcoes[id]?.efeito;
+      if (efeito?.tipo === 'alimento') construcoes += efeito.pontos[nivel - 1] ?? 0;
     }
+    return natural + construcoes;
+  }
+
+  nivelPopulacionalEm(idProvincia: string): number {
+    const ficha = this.economia.provincias[idProvincia];
+    if (!ficha) return 0;
+    return nivelPopulacional(
+      this.populacaoDe(idProvincia),
+      ficha.populacao,
+      this.ajustes.alimento.fracaoPopulacionalPorNivel,
+    );
+  }
+
+  /** Conta única que alimenta regra, barra e Governo. */
+  balancoAlimentarDe(idPoder: string): BalancoAlimentarDoPoder {
+    const provincias = this.territorios
+      .provinciasDe(idPoder)
+      .filter((id) => this.economia.provincias[id] !== undefined)
+      .map((id) => ({
+        populacaoAtual: this.populacaoDe(id),
+        populacaoInicial: this.economia.provincias[id]?.populacao ?? 0,
+        producaoAlimentar: this.contribuicaoAlimentarLivreEm(id),
+        sitiada: this.estado.cercos[id] !== undefined,
+      }));
+    // As tropas presas em cidades sitiadas do próprio poder comem da despensa da cidade,
+    // não da mesa do reino: ficam fora do custo.
+    const soldados = this.mobilizacao.homensDe(idPoder) - this.homensSitiadosDe(idPoder);
+    return balancoAlimentar(provincias, soldados, this.ajustes.alimento);
+  }
+
+  /** Homens do poder presos dentro das PRÓPRIAS cidades sitiadas: hostes e levas. */
+  private homensSitiadosDe(idPoder: string): number {
+    let homens = 0;
+    for (const id of this.territorios.provinciasDe(idPoder)) {
+      if (this.estado.cercos[id] === undefined) continue;
+      for (const hoste of this.mobilizacao.hostesEm(id)) {
+        if (hoste.poder === idPoder) homens += this.forcaDaHoste(hoste.id);
+      }
+      const formacao = this.mobilizacao.formacaoEm(id);
+      if (formacao?.poder === idPoder) homens += formacao.homens;
+    }
+    return homens;
+  }
+
+  /** As províncias sitiadas do poder — as que estão fora da circulação do reino. */
+  private sitiadasDe(idPoder: string): readonly string[] {
+    return this.territorios
+      .provinciasDe(idPoder)
+      .filter((id) => this.economia.provincias[id] !== undefined)
+      .filter((id) => this.estado.cercos[id] !== undefined);
+  }
+
+  /** Balanço do jogador. Conveniência da interface, como `tesouro`. */
+  get alimentacao(): BalancoAlimentarDoPoder {
+    return this.estado.jogador === null
+      ? balancoAlimentar([], 0, this.ajustes.alimento)
+      : this.balancoAlimentarDe(this.estado.jogador);
+  }
+
+  /** Quem passou fome na última virada. Vazio quando ninguém passou. */
+  get fome(): RelatorioDaFome {
+    return this.ultimaFome;
+  }
+
+  /**
+   * A fome, nas duas contas do desenho: **o povo come primeiro, e a fome é local.**
+   *
+   * 1. **Cidade sitiada vive da própria despensa**, fora da circulação do reino. Vencidos
+   *    os mantimentos, povo (−1%) e guarnição (−5%) caem juntos, todo turno.
+   * 2. **Saldo civil negativo é Fome**: as províncias DEPENDENTES (as que não se
+   *    sustentam sozinhas) perdem 1% — sustentadoras e equilibradas nunca morrem por
+   *    causa das outras — e o exército perde 5%.
+   * 3. **Saldo civil fechado com saldo final negativo** não mata civil nenhum: é o
+   *    EXÉRCITO sem mantimentos, e só ele perde 5%.
+   *
+   * As tropas dentro de cidades sitiadas do próprio poder ficam fora da cobrança do
+   * exército — já pagam o relógio da cidade, e ninguém paga a mesma fome duas vezes.
+   */
+  private alimentar(): void {
+    const provincias: { provincia: string; mortos: number }[] = [];
+    const tropas: { poder: string; homens: number }[] = [];
+
+    for (const poder of [...this.atlas.poderes].map((p) => p.id).sort()) {
+      const minhas = this.territorios
+        .provinciasDe(poder)
+        .filter((id) => this.economia.provincias[id] !== undefined);
+      const homens = this.mobilizacao.homensDe(poder);
+      if (minhas.length === 0 && homens === 0) continue;
+
+      const sitiadas = this.sitiadasDe(poder);
+
+      // A fome do cerco, cidade a cidade — no ritmo da despensa de cada uma.
+      let mortosDeTropa = 0;
+      for (const id of sitiadas) {
+        const relogio = this.fomeDoCercoEm(id);
+        if (!relogio || !relogio.fomeAtiva) continue; // a despensa ainda aguenta
+        const mortos = mortosPelaFome(this.populacaoDe(id), this.ajustes.alimento.mortePorFome);
+        if (mortos > 0) {
+          this.estado.populacao[id] = Math.max(0, this.populacaoDe(id) - mortos);
+          provincias.push({ provincia: id, mortos });
+        }
+        mortosDeTropa += this.matarTropaSitiada(poder, [id]);
+      }
+
+      // A mesa do reino, sem as sitiadas — elas não contribuem, não pesam e não comem.
+      const balanco = this.balancoAlimentarDe(poder);
+      const pouparSitiadas = new Set(sitiadas);
+
+      if (balanco.saldoCivil < 0) {
+        // Fome de verdade: morrem os civis das províncias que dependem do reino.
+        for (const id of minhas) {
+          if (this.estado.cercos[id] !== undefined) continue; // a dela é o relógio
+          if (this.saldoAlimentarLocalEm(id) >= 0) continue; // quem se sustenta não morre
+          const mortos = mortosPelaFome(this.populacaoDe(id), this.ajustes.alimento.mortePorFome);
+          if (mortos <= 0) continue;
+          this.estado.populacao[id] = Math.max(0, this.populacaoDe(id) - mortos);
+          provincias.push({ provincia: id, mortos });
+        }
+      }
+
+      if (balanco.saldo < 0) {
+        // O exército passa aperto sempre que o saldo final não fecha — seja porque nem o
+        // povo comeu (fome), seja porque só ele ficou sem (sem mantimentos). Morte não é
+        // dispensa: ninguém volta para a população de origem.
+        const alvo = mortosPelaFome(
+          homens - this.homensSitiadosDe(poder),
+          this.ajustes.alimento.mortePorFomeNaTropa,
+        );
+        mortosDeTropa += this.mobilizacao.matarPorFome(poder, alvo, pouparSitiadas);
+      }
+
+      if (mortosDeTropa > 0) tropas.push({ poder, homens: mortosDeTropa });
+    }
+    this.ultimaFome = { provincias, tropas };
+  }
+
+  /**
+   * O destino das capitais depois da rodada: notícia da queda e reassentamento.
+   *
+   * A queda é detectada pelas CONQUISTAS da rodada — é o único caminho pelo qual uma
+   * capital muda de mãos durante a virada. Depois dela: poder sem chão fica sem capital
+   * (não há o que apontar); poder com chão e capital perdida reassenta pela regra
+   * derivada, EXCETO o jogador, cuja escolha é travada na próxima virada. Um jogador que
+   * ficou sem capital (exílio e volta) também recebe uma pela regra — a obrigação de
+   * escolher vale para a perda, não para o recomeço.
+   */
+  private assentarCapitais(): void {
+    const quedas: { poder: string; provincia: string }[] = [];
+    for (const conquista of this.ultimaRodada.conquistas) {
+      if (this.estado.capitais[conquista.de] === conquista.provincia) {
+        quedas.push({ poder: conquista.de, provincia: conquista.provincia });
+      }
+    }
+    this.ultimasQuedasDeCapital = quedas;
+
+    for (const poder of [...this.atlas.poderes].map((p) => p.id).sort()) {
+      if (!this.territorios.temTerritorio(poder)) {
+        delete this.estado.capitais[poder];
+        continue;
+      }
+      const capital = this.estado.capitais[poder];
+      const pendente = capital === undefined || this.donoDe(capital) !== poder;
+      if (!pendente) continue;
+      if (poder === this.estado.jogador && capital !== undefined) continue;
+      const nova = melhorCapitalEntre(this.atlas, poder, this.territorios.provinciasDe(poder));
+      if (nova !== undefined) this.estado.capitais[poder] = nova;
+    }
+  }
+
+  /** Os levantes da última virada. Vazio quando o povo se aguentou. */
+  get revoltas(): readonly { provincia: string; poder: string; homens: number }[] {
+    return this.ultimasRevoltas;
+  }
+
+  /**
+   * A campanha acabou — e como?
+   *
+   * A régua MÍNIMA da campanha atual: derrota é deixar de existir (sem chão e sem
+   * tropa); vitória é mandar em toda a Grécia central configurada. Quando o mapa autoral
+   * crescer, a régua cresce junto — por isso ela é derivada dos dados, não cravada.
+   */
+  /** As províncias que a campanha SIMULA — a régua da vitória sai daqui. */
+  get provinciasSimuladas(): readonly string[] {
+    return Object.keys(this.economia.provincias).sort();
+  }
+
+  resultado(): 'vitoria' | 'derrota' | null {
+    const jogador = this.estado.jogador;
+    if (jogador === null) return null;
+    if (!this.vivo(jogador)) return 'derrota';
+    // ⚠️ Ilha sem vizinhança terrestre (Salamina) fica FORA da régua: sem sistema naval
+    // nenhum exército chega lá, e exigi-la tornaria a vitória impossível por definição.
+    return this.provinciasSimuladas
+      .filter((id) => this.atlas.provincia(id).vizinhas.length > 0)
+      .every((id) => this.donoDe(id) === jogador)
+      ? 'vitoria'
+      : null;
+  }
+
+  /**
+   * O humor de cada província anda um passo rumo ao alvo, e o pavio das revoltas corre.
+   *
+   * O levante só nasce onde há CONTRA QUEM se levantar: província sob bandeira que não é
+   * a de 700 a.C. Os rebeldes saem da população e nascem como hoste do dono antigo — que
+   * volta ao jogo se tinha sido eliminado. Província revoltosa de dono legítimo faz greve
+   * fiscal (imposto zero) e nada mais, por enquanto.
+   */
+  private atualizarFelicidade(): void {
+    const levantes: { provincia: string; poder: string; homens: number }[] = [];
+    for (const id of Object.keys(this.economia.provincias)) {
+      const atual = this.estado.felicidade[id];
+      if (atual === undefined) continue;
+      const alvo = this.alvoDeFelicidadeEm(id);
+      const novo = aproximarFelicidade(atual, alvo, this.ajustes.felicidade.passoPorTurno);
+      this.estado.felicidade[id] = novo;
+
+      if (!revoltosa(novo, this.ajustes.felicidade)) {
+        delete this.estado.revoltas[id];
+        continue;
+      }
+      if (!this.dominioEstrangeiroEm(id)) continue;
+
+      const pavio = (this.estado.revoltas[id] ?? 0) + 1;
+      if (pavio < this.ajustes.felicidade.revolta.turnos) {
+        this.estado.revoltas[id] = pavio;
+        continue;
+      }
+      // Não empilha levante sobre levante: enquanto os rebeldes anteriores estiverem de
+      // pé na província, o pavio fica aceso mas nada nasce.
+      const donoAntigo = this.atlas.donoInicial(id);
+      if (this.mobilizacao.hostesEm(id).some((h) => h.poder === donoAntigo)) {
+        this.estado.revoltas[id] = pavio;
+        continue;
+      }
+      const homens = Math.round(
+        this.populacaoDe(id) * this.ajustes.felicidade.revolta.fracaoRebelde,
+      );
+      const idHoste = this.mobilizacao.levantarRebeldes(id, donoAntigo, homens);
+      delete this.estado.revoltas[id];
+      if (idHoste !== null) {
+        levantes.push({ provincia: id, poder: donoAntigo, homens: this.forcaDaHoste(idHoste) });
+      }
+    }
+    this.ultimasRevoltas = levantes;
+  }
+
+  /** A fome do cerco mata quem está atrás da muralha: hostes do dono e a leva em formação. */
+  private matarTropaSitiada(poder: string, sitiadas: readonly string[]): number {
+    const taxa = this.ajustes.alimento.mortePorFomeNaTropa;
+    let mortos = 0;
+    for (const id of sitiadas) {
+      for (const hoste of this.mobilizacao.hostesEm(id)) {
+        if (hoste.poder !== poder) continue;
+        mortos += this.mobilizacao.matarDaHoste(
+          hoste.id,
+          mortosPelaFome(this.forcaDaHoste(hoste.id), taxa),
+        );
+      }
+      const formacao = this.mobilizacao.formacaoEm(id);
+      if (formacao?.poder === poder) {
+        mortos += this.mobilizacao.matarDaFormacao(id, mortosPelaFome(formacao.homens, taxa));
+      }
+    }
+    return mortos;
   }
 
   /** O relatório da última virada. Vazio antes do primeiro turno. */
   get rodada(): RelatorioDaRodada {
     return this.ultimaRodada;
+  }
+
+  /**
+   * Tira gente de uma província. **Existe pra DESENVOLVIMENTO**, como o `darOuro`: é o
+   * jeito de pôr uma terra em crise sem esperar dez turnos de fome.
+   *
+   * Não é regra do jogo e nenhuma mecânica chama isto — quem mata de verdade é a fome, a
+   * batalha e o assalto.
+   */
+  matarPopulacao(idProvincia: string, quantos: number): void {
+    this.estado.populacao[idProvincia] = Math.max(0, this.populacaoDe(idProvincia) - quantos);
+    this.aoMudar();
   }
 
   /**
@@ -957,16 +1479,21 @@ export class Campanha {
   private arrecadar(): void {
     for (const idPoder of [...this.poderesVivos()].sort()) {
       const renda = this.rendaDe(idPoder);
-      if (renda !== 0) this.estado.tesouros[idPoder] = this.tesouroDe(idPoder) + renda;
+      // ⚠️ A renda pode ser NEGATIVA desde a manutenção de construção, e o cofre não
+      // desce de zero: dívida sem credor viraria espiral sem decisão. O que acontece com
+      // construção sem manutenção paga (fechar? ruir?) é a questão aberta "danos a
+      // construções" do GDD — até lá, o calote é silencioso e o aviso é a renda vermelha.
+      if (renda !== 0) {
+        this.estado.tesouros[idPoder] = Math.max(0, this.tesouroDe(idPoder) + renda);
+      }
     }
   }
 
   /**
    * Cobra a folha militar de TODOS os poderes, pela mesma regra.
    *
-   * ⚠️ Antes só o jogador pagava, e isso teria dado à IA um exército sem custo — que é
-   * exatamente a vantagem secreta que `DECISOES.md` #97 proíbe. Quem não tem caixa vê a
-   * tropa desertar, seja quem for.
+   * ⚠️ Antes só o jogador pagava, e isso teria dado à IA um exército sem custo. Quem não
+   * tem caixa vê a tropa desertar, seja quem for.
    */
   private pagarTropa(): void {
     for (const idPoder of [...this.poderesVivos()].sort()) {
@@ -981,15 +1508,57 @@ export class Campanha {
 
   /** Cresce todas as províncias configuradas, inclusive as que não pertencem ao jogador. */
   private crescerPopulacao(): void {
+    // ⚠️ **O fator de cada reino é decidido UMA vez, antes de qualquer província crescer.**
+    // Calculado dentro do laço, ele mudava a cada passo, e a ordem alfabética virava
+    // regra econômica. A trava preventiva entra na mesma decisão: se crescer jogaria o
+    // saldo final no negativo, o poder inteiro fica parado neste turno.
+    const fatorPorPoder = new Map<string, number>();
     for (const id of Object.keys(this.economia.provincias)) {
-      const crescimento = this.crescimentoDe(id);
-      if (crescimento) this.estado.populacao[id] = crescimento.proxima;
+      const poder = this.donoDe(id);
+      if (fatorPorPoder.has(poder)) continue;
+      const saldo = this.balancoAlimentarDe(poder).saldo;
+      fatorPorPoder.set(poder, saldo > 0 && !this.crescimentoTravadoPara(poder) ? 1 : 0);
+    }
+
+    for (const id of Object.keys(this.economia.provincias)) {
+      // Cidade sitiada não cresce: a fome do cerco já está cobrando dela, e nascer mais
+      // gente atrás de uma muralha bloqueada seria o cerco alimentando o sitiado.
+      if (this.estado.cercos[id] !== undefined) continue;
+      const crescimento = calcularCrescimentoPopulacional(
+        this.populacaoDe(id),
+        this.estado.construcoes[id] ?? {},
+        this.catalogoDeConstrucoes.construcoes,
+        this.ajustes.populacao,
+        fatorPorPoder.get(this.donoDe(id)) ?? 1,
+      );
+      this.estado.populacao[id] = crescimento.proxima;
     }
   }
 
   /** O catálogo inteiro, pra interface montar a lista de opções. */
   get construcoesDisponiveis(): Construcoes['construcoes'] {
     return this.catalogoDeConstrucoes.construcoes;
+  }
+
+  /** Catálogo curto: universais mais as explorações que combinam com esta terra. */
+  construcoesDisponiveisEm(idProvincia: string): Construcoes['construcoes'] {
+    return Object.fromEntries(
+      Object.entries(this.catalogoDeConstrucoes.construcoes).filter(([id]) =>
+        this.cumpreRequisitoDaConstrucao(idProvincia, id),
+      ),
+    );
+  }
+
+  private cumpreRequisitoDaConstrucao(idProvincia: string, idConstrucao: string): boolean {
+    const ficha = this.economia.provincias[idProvincia];
+    const requisito = this.catalogoDeConstrucoes.construcoes[idConstrucao]?.requisito;
+    if (!ficha || !requisito) return ficha !== undefined;
+    if (requisito.ancoradouro && !ficha.ancoradouro) return false;
+    if (requisito.produtos) {
+      const produtos = new Set([ficha.produto, ficha.secundario.produto]);
+      if (!requisito.produtos.some((produto) => produtos.has(produto))) return false;
+    }
+    return true;
   }
 
   /**
@@ -1014,16 +1583,29 @@ export class Campanha {
   /**
    * Pode erguer isto aqui?
    *
-   * Devolve o MOTIVO da recusa, como `podeInvestir` — a interface mostra o texto em vez
-   * de esconder a opção, que é a regra da casa.
+   * Devolve o MOTIVO da recusa, como toda permissão do jogo — a interface mostra o texto
+   * em vez de esconder a opção, que é a regra da casa.
    */
   podeConstruir(idProvincia: string, idConstrucao: string): Recusa {
     const construcao = this.catalogoDeConstrucoes.construcoes[idConstrucao];
     if (!construcao) return { pode: false, motivo: `construção inexistente: ${idConstrucao}` };
     const naProvincia = this.podeAgirEm(idProvincia);
     if (!naProvincia.pode) return naProvincia;
-    if (this.construcoesEm(idProvincia).includes(idConstrucao)) {
-      return { pode: false, motivo: 'já construída aqui' };
+    if (!this.cumpreRequisitoDaConstrucao(idProvincia, idConstrucao)) {
+      return { pode: false, motivo: 'esta terra não cumpre os requisitos' };
+    }
+    const nivelAtual = this.nivelDaConstrucaoEm(idProvincia, idConstrucao);
+    if (nivelAtual >= this.ajustes.construcoes.nivelMaximo) {
+      return { pode: false, motivo: 'nível máximo' };
+    }
+    if (
+      nivelAtual === 0 &&
+      this.construcoesEm(idProvincia).length >= this.ajustes.construcoes.slotsPorProvincia
+    ) {
+      return {
+        pode: false,
+        motivo: `todos os ${this.ajustes.construcoes.slotsPorProvincia} slots estão ocupados`,
+      };
     }
     const obra = this.obraEm(idProvincia);
     if (obra) {
@@ -1033,10 +1615,11 @@ export class Campanha {
     // Quem paga a obra é o DONO da província, não o jogador. Hoje dá no mesmo porque só o
     // jogador constrói; quando a IA construir, o cofre certo já é o que está aqui.
     const caixa = this.tesouroDe(this.donoDe(idProvincia));
-    if (construcao.custo > caixa) {
+    const custo = construcao.custos[nivelAtual] ?? construcao.custos[2];
+    if (custo > caixa) {
       return {
         pode: false,
-        motivo: `faltam ${(construcao.custo - caixa).toLocaleString('pt-BR')} moedas`,
+        motivo: `faltam ${(custo - caixa).toLocaleString('pt-BR')} moedas`,
       };
     }
     return { pode: true, bonus: 0 };
@@ -1051,14 +1634,172 @@ export class Campanha {
     if (!r.pode) throw new Error(r.motivo);
     const construcao = this.catalogoDeConstrucoes.construcoes[idConstrucao];
     if (!construcao) throw new Error(`construção inexistente: ${idConstrucao}`);
+    const nivelAlvo = this.nivelDaConstrucaoEm(idProvincia, idConstrucao) + 1;
+    const custo = construcao.custos[nivelAlvo - 1] ?? construcao.custos[2];
+    const turnos = construcao.turnos[nivelAlvo - 1] ?? construcao.turnos[2];
     // Paga à vista, entrega depois. Não existe cancelar: devolver o dinheiro faria da
     // obra um cofre com juros, onde estacionar tesouro sem risco nenhum.
-    this.gastar(this.donoDe(idProvincia), construcao.custo);
+    this.gastar(this.donoDe(idProvincia), custo);
     this.estado.obras[idProvincia] = {
       construcao: idConstrucao,
-      turnosRestantes: construcao.turnos,
+      nivelAlvo,
+      turnosRestantes: turnos,
     };
     this.aoMudar();
+  }
+
+  /** O estado inteiro como texto, pronto pro disco. Efêmeros ficam de fora. */
+  serializar(): string {
+    return serializarCampanha(this.estado);
+  }
+
+  /**
+   * Substitui o estado pelo de um salvamento, depois de conferi-lo contra o mundo.
+   *
+   * ⚠️ **Substitui o CONTEÚDO das tabelas, nunca os objetos que outros seguram.**
+   * `Territorios` guarda a referência viva de `estado.dono`, e `Mobilizacao` guarda o
+   * próprio objeto de estado — trocar o objeto deixaria os dois lendo um mundo que não
+   * existe mais. É por isso que `dono` é esvaziado e repovoado em vez de reatribuído, e o
+   * índice reverso é remontado com `reindexar()`, que existe exatamente para isto.
+   *
+   * Falha ALTO em salvamento que não bate com o mundo atual — tabela de donos incompleta,
+   * construção que saiu do catálogo, província que um reassado apagou. Misturar dois
+   * recortes em silêncio seria pior que recusar o salvamento.
+   */
+  restaurar(salvo: EstadoCampanha): void {
+    this.validarSalvamento(salvo);
+
+    this.estado.jogador = salvo.jogador;
+    this.estado.ano = salvo.ano;
+    this.estado.turno = salvo.turno;
+    this.estado.tesouros = { ...salvo.tesouros };
+    for (const id of Object.keys(this.estado.dono)) delete this.estado.dono[id];
+    Object.assign(this.estado.dono, salvo.dono);
+    this.territorios.reindexar();
+    this.estado.populacao = { ...salvo.populacao };
+    this.estado.nacionalidades = Object.fromEntries(
+      Object.entries(salvo.nacionalidades).map(([id, povos]) => [id, { ...povos }]),
+    );
+    this.estado.felicidade = { ...salvo.felicidade };
+    this.estado.hostes = Object.fromEntries(
+      Object.entries(salvo.hostes).map(([id, h]) => [id, { ...h, origem: { ...h.origem } }]),
+    );
+    this.estado.proximaHoste = salvo.proximaHoste;
+    this.estado.formacoes = Object.fromEntries(
+      Object.entries(salvo.formacoes).map(([id, f]) => [id, { ...f }]),
+    );
+    this.estado.ordens = Object.fromEntries(
+      Object.entries(salvo.ordens).map(([id, o]) => [id, { ...o, rota: [...o.rota] }]),
+    );
+    this.estado.surtidas = [...salvo.surtidas];
+    this.estado.cercos = Object.fromEntries(
+      Object.entries(salvo.cercos).map(([id, c]) => [id, { ...c }]),
+    );
+    this.estado.capitais = { ...salvo.capitais };
+    this.estado.nivelDeImposto = { ...salvo.nivelDeImposto };
+    this.estado.construcoes = Object.fromEntries(
+      Object.entries(salvo.construcoes).map(([id, c]) => [id, { ...c }]),
+    );
+    this.estado.obras = Object.fromEntries(
+      Object.entries(salvo.obras).map(([id, o]) => [id, { ...o }]),
+    );
+    this.estado.revoltas = { ...salvo.revoltas };
+
+    // Efêmeros não viajam: a notícia da rodada salva pertence à sessão que a viveu.
+    this.ultimaRodada = {
+      marchas: [],
+      batalhas: [],
+      conquistas: [],
+      milicianosMortos: [],
+      cercos: [],
+      cercosLevantados: [],
+    };
+    this.ultimaFome = { provincias: [], tropas: [] };
+    this.ultimasQuedasDeCapital = [];
+    this.ultimasRevoltas = [];
+    this.aoMudar();
+  }
+
+  /** O conteúdo contra o mundo: o que o Zod da forma não tem como saber. */
+  private validarSalvamento(salvo: EstadoCampanha): void {
+    const falhar = (motivo: string): never => {
+      throw new Error(`salvamento inválido: ${motivo}`);
+    };
+
+    // A tabela de donos tem que ser CHEIA e exata — é a regra escrita no estado.
+    for (const p of this.atlas.provincias) {
+      const dono = salvo.dono[p.id];
+      if (dono === undefined) falhar(`província sem dono: ${p.id}`);
+      else if (!this.atlas.existePoder(dono)) falhar(`dono inexistente: ${dono} em ${p.id}`);
+    }
+    if (Object.keys(salvo.dono).length !== this.atlas.provincias.length) {
+      falhar('a tabela de donos tem províncias que o atlas não conhece');
+    }
+
+    if (salvo.jogador !== null && !this.atlas.existePoder(salvo.jogador)) {
+      falhar(`jogador inexistente: ${salvo.jogador}`);
+    }
+    for (const poder of Object.keys(salvo.tesouros)) {
+      if (!this.atlas.existePoder(poder)) falhar(`tesouro de poder inexistente: ${poder}`);
+    }
+    for (const id of Object.keys(salvo.populacao)) {
+      if (!this.economia.provincias[id]) falhar(`população em província não simulada: ${id}`);
+    }
+    for (const [id, hoste] of Object.entries(salvo.hostes)) {
+      if (!this.atlas.existe(hoste.posicao)) falhar(`hoste ${id} em província inexistente`);
+      if (!this.atlas.existePoder(hoste.poder)) falhar(`hoste ${id} de poder inexistente`);
+      const numero = Number(id.replace(/^h/, ''));
+      if (!Number.isInteger(numero) || numero >= salvo.proximaHoste) {
+        falhar(`hoste ${id} à frente do contador ${salvo.proximaHoste}`);
+      }
+      for (const origem of Object.keys(hoste.origem)) {
+        if (!this.atlas.existe(origem)) falhar(`hoste ${id} com origem inexistente: ${origem}`);
+      }
+    }
+    for (const [id, formacao] of Object.entries(salvo.formacoes)) {
+      if (!this.atlas.existe(id)) falhar(`formação em província inexistente: ${id}`);
+      if (!this.atlas.existePoder(formacao.poder)) falhar(`formação de poder inexistente`);
+    }
+    for (const [idHoste, ordem] of Object.entries(salvo.ordens)) {
+      if (!salvo.hostes[idHoste]) falhar(`ordem para hoste inexistente: ${idHoste}`);
+      for (const passo of ordem.rota) {
+        if (!this.atlas.existe(passo)) falhar(`ordem por província inexistente: ${passo}`);
+      }
+    }
+    for (const idHoste of salvo.surtidas) {
+      if (!salvo.hostes[idHoste]) falhar(`surtida de hoste inexistente: ${idHoste}`);
+    }
+    for (const [id, cerco] of Object.entries(salvo.cercos)) {
+      if (!this.atlas.existe(id)) falhar(`cerco em província inexistente: ${id}`);
+      if (!this.atlas.existePoder(cerco.sitiante)) falhar(`sitiante inexistente em ${id}`);
+    }
+    for (const [poder, capital] of Object.entries(salvo.capitais)) {
+      if (!this.atlas.existePoder(poder)) falhar(`capital de poder inexistente: ${poder}`);
+      if (!this.atlas.existe(capital)) falhar(`capital em província inexistente: ${capital}`);
+    }
+    for (const id of Object.keys(salvo.nivelDeImposto)) {
+      if (!this.economia.provincias[id]) falhar(`imposto em província não simulada: ${id}`);
+    }
+    for (const [id, construcoes] of Object.entries(salvo.construcoes)) {
+      if (!this.atlas.existe(id)) falhar(`construções em província inexistente: ${id}`);
+      for (const construcao of Object.keys(construcoes)) {
+        if (!this.catalogoDeConstrucoes.construcoes[construcao]) {
+          falhar(`construção fora do catálogo: ${construcao} em ${id}`);
+        }
+      }
+    }
+    for (const id of Object.keys(salvo.revoltas)) {
+      if (!this.economia.provincias[id]) falhar(`revolta em província não simulada: ${id}`);
+    }
+    for (const [id, obra] of Object.entries(salvo.obras)) {
+      if (!this.atlas.existe(id)) falhar(`obra em província inexistente: ${id}`);
+      if (!this.catalogoDeConstrucoes.construcoes[obra.construcao]) {
+        falhar(`obra de construção fora do catálogo: ${obra.construcao}`);
+      }
+      if (obra.nivelAlvo > this.ajustes.construcoes.nivelMaximo) {
+        falhar(`obra acima do nível máximo em ${id}`);
+      }
+    }
   }
 
   /** Escolhe o poder do jogador e abre o turno 1. Só acontece uma vez. */
@@ -1070,12 +1811,6 @@ export class Campanha {
     this.aoMudar();
   }
 
-  /**
-   * Pode investir aqui, e quanto de bônus isso compraria?
-   *
-   * Devolve o MOTIVO da recusa em vez de só `false`: é o que deixa a interface ensinar a
-   * regra sem tutorial.
-   */
   /**
    * Esta província aceita ALGUMA ação minha?
    *
@@ -1094,47 +1829,6 @@ export class Campanha {
       return { pode: false, motivo: 'esta província não é sua' };
     }
     return { pode: true, bonus: 0 };
-  }
-
-  podeInvestir(idProvincia: string, valor: number): Recusa {
-    const naProvincia = this.podeAgirEm(idProvincia);
-    if (!naProvincia.pode) return naProvincia;
-    if (!Number.isInteger(valor) || valor <= 0) {
-      return { pode: false, motivo: 'o valor precisa ser um número inteiro de moedas' };
-    }
-    const maximo = this.ajustes.economia.investimento.maximo;
-    if (valor > maximo) {
-      return {
-        pode: false,
-        motivo: `o máximo por província é ${maximo.toLocaleString('pt-BR')} moedas`,
-      };
-    }
-    const caixa = this.tesouroDe(this.donoDe(idProvincia));
-    if (valor > caixa) {
-      return {
-        pode: false,
-        motivo: `tesouro insuficiente (${caixa.toLocaleString('pt-BR')} moedas)`,
-      };
-    }
-    return { pode: true, bonus: bonusDoInvestimento(valor, this.ajustes.economia) };
-  }
-
-  /**
-   * Paga um incentivo de exploração numa província.
-   *
-   * Só existe um por província: investir de novo SUBSTITUI o que estava lá e volta a
-   * cobrar. É o que impede empilhar bônus infinitos, e é o que faz renovar cedo ser uma
-   * escolha e não um clique de rotina.
-   */
-  investir(idProvincia: string, valor: number): void {
-    const r = this.podeInvestir(idProvincia, valor);
-    if (!r.pode) throw new Error(r.motivo);
-    this.gastar(this.donoDe(idProvincia), valor);
-    this.estado.investimentos[idProvincia] = {
-      percentual: r.bonus,
-      arrecadacoesRestantes: this.ajustes.economia.investimento.arrecadacoes,
-    };
-    this.aoMudar();
   }
 
   /**
@@ -1160,13 +1854,23 @@ export class Campanha {
    */
   passarTurno(): void {
     if (!this.iniciada) throw new Error('a campanha ainda não começou');
+    // A capital caída trava a virada do JOGADOR: o GDD manda escolher outra antes de
+    // continuar, e deixar o mundo andar com a pergunta aberta faria dela um detalhe.
+    // ⚠️ Só trava quem TEM onde escolher: o exilado, sem chão nenhum, precisa que o mundo
+    // ande — é marchando e assaltando que ele volta a ter uma capital pra assentar.
+    const jogador = this.estado.jogador;
+    if (
+      jogador !== null &&
+      this.capitalPerdida(jogador) &&
+      this.territorios.temTerritorio(jogador)
+    ) {
+      throw new Error('a capital caiu: assente outra antes de passar o turno');
+    }
     this.arrecadar();
     this.pagarTropa();
-    // A colheita é do MESMO instante que a arrecadação: o ano que se fecha pertence ao
-    // mundo como o jogador o deixou. Colher depois da resolução daria a safra ao invasor
-    // que tomou a província naquela mesma virada — e a safra é do ano inteiro, não do dia
-    // da batalha.
-    this.colher();
+    // O saldo pertence ao mundo como o jogador o deixou; quem conquista passa a contar
+    // para o novo reino somente no turno seguinte, assim como a renda.
+    this.alimentar();
 
     // ⚠️ **Arrecada ANTES de resolver as marchas.** A renda do turno pertence ao mundo
     // como ele estava quando o jogador decidiu; quem conquista na resolução colhe no turno
@@ -1187,28 +1891,44 @@ export class Campanha {
       // donos consertados juntos, sem um segundo caminho que possa discordar.
       trocarDono: (id, poder) => {
         this.territorios.trocarDono(id, poder);
-        delete this.estado.investimentos[id];
+        delete this.estado.nivelDeImposto[id];
         delete this.estado.obras[id];
+        // O choque da conquista: a cidade tomada odeia o novo dono no dia da queda. É o
+        // único movimento de humor que não é gradual, e mora aqui — no caminho da
+        // CONQUISTA — em vez de na primitiva `trocarDono`, que não conhece regra nenhuma.
+        const humor = this.estado.felicidade[id];
+        if (humor !== undefined) {
+          this.estado.felicidade[id] = Math.max(
+            0,
+            humor - this.ajustes.felicidade.choqueDaConquista,
+          );
+        }
       },
     });
 
-    // Cresce com a população restante depois da folha militar. Só contam construções
-    // que já estavam prontas ao começar a passagem: as obras avançam mais abaixo, então
-    // um Celeiro concluído agora começa a ajudar no próximo turno.
+    // As capitais respondem à rodada resolvida: a queda vira notícia, e quem não é o
+    // jogador reassenta a sua pela regra derivada. A do jogador fica caída — e é ela que
+    // vai travar a PRÓXIMA virada até ele escolher.
+    this.assentarCapitais();
+
+    // O humor reage ao mundo resolvido — cercos novos, conquistas, a mesa do reino — e o
+    // pavio dos levantes corre. Antes do crescimento: quem se revoltou hoje não cresce.
+    this.atualizarFelicidade();
+
+    // Cresce com a população restante depois da folha militar. Obras avançam mais abaixo,
+    // então qualquer efeito concluído agora começa a valer no próximo turno.
     this.crescerPopulacao();
 
-    for (const [id, investimento] of Object.entries(this.estado.investimentos)) {
-      investimento.arrecadacoesRestantes -= 1;
-      if (investimento.arrecadacoesRestantes <= 0) delete this.estado.investimentos[id];
-    }
-
-    // As obras andam DEPOIS da arrecadação, pelo mesmo motivo do incentivo: quem paga no
-    // turno 1 uma obra de três turnos passa três arrecadações sem o benefício, e recebe
-    // na quarta. Adiantar isso daria um turno de graça sem ninguém perceber.
+    // As obras andam DEPOIS da arrecadação: quem paga no turno 1 uma obra de três turnos
+    // passa três arrecadações sem o benefício, e recebe na quarta. Adiantar isso daria um
+    // turno de graça sem ninguém perceber.
     for (const [id, obra] of Object.entries(this.estado.obras)) {
       obra.turnosRestantes -= 1;
       if (obra.turnosRestantes > 0) continue;
-      this.estado.construcoes[id] = [...this.construcoesEm(id), obra.construcao];
+      this.estado.construcoes[id] = {
+        ...(this.estado.construcoes[id] ?? {}),
+        [obra.construcao]: obra.nivelAlvo,
+      };
       delete this.estado.obras[id];
     }
 

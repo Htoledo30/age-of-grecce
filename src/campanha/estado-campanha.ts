@@ -1,4 +1,4 @@
-import type { Investimento } from './economia';
+import type { NivelDeImposto } from './economia';
 import type { Cerco } from '@/combate/cerco';
 import type { Exercito } from '@/combate/exercito';
 import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
@@ -33,9 +33,8 @@ export interface EstadoCampanha {
    * Moedas de cada poder, por id. **Todos os 148, não só o jogador.**
    *
    * ⚠️ Era um número só, e isso teria dado à IA um exército de graça: sem cofre próprio,
-   * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. Ver `DECISOES.md` #63
-   * e #97 — a IA joga pelas mesmas regras, e a primeira dessas regras é que dinheiro
-   * acaba.
+   * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. A IA joga pelas mesmas
+   * regras, e a primeira dessas regras é que dinheiro acaba.
    *
    * Poder sem entrada aqui vale zero, não `undefined`: quem pergunta o tesouro de um
    * poder qualquer tem que receber um número.
@@ -59,15 +58,15 @@ export interface EstadoCampanha {
    * ⚠️ **População é estado, não dado fixo.** O `dados/economia.json` guarda a população
    * INICIAL, de 700 a.C.; esta tabela é a de agora, e ela encolhe quando o poder põe
    * gente em armas — quem marcha deixa de ser tributado e deixa de lavrar. Ao fim de
-   * cada turno ela cresce até a capacidade definida pela população inicial. É o que faz
-   * mobilizar ter preço contínuo sem condenar uma província a encolher para sempre.
+   * cada turno ela pode crescer conforme a alimentação do reino. É o que faz mobilizar
+   * ter preço contínuo sem condenar uma província a encolher para sempre.
    */
   populacao: Record<string, number>;
   /**
    * De que povo é a população de cada província, em frações que somam 1.
    *
    * ⚠️ **Estado, e não dado fixo** — pela mesma razão que a população é. Nacionalidade
-   * muda devagar (`DECISOES.md` #71): gente de fora se instala, uma geração nasce sob
+   * muda devagar: gente de fora se instala, uma geração nasce sob
    * outra bandeira. Nada disso acontece ainda; o campo está aqui porque o dia em que
    * acontecer não pode exigir mover o dado de lugar no meio de um salvamento.
    *
@@ -77,22 +76,18 @@ export interface EstadoCampanha {
   /**
    * O humor de cada província, de 0 a 100.
    *
-   * ⚠️ **Ainda não faz nada** — o patch 0.0.7 do `ROADMAP.md` é que liga imposto, fome,
-   * conquista e nacionalidade a este número. Existe agora porque a região de teste
-   * precisa começar completa, e porque um valor inicial escrito à mão é o único jeito de
-   * o patch 0.0.7 ter de onde partir.
+   * Vive: anda por turno em direção a um alvo (comida do reino, cerco, domínio
+   * estrangeiro, Templo) e despenca no choque da conquista. Na faixa revoltosa a
+   * província não paga imposto — e, sob bandeira alheia, arma um levante.
    */
   felicidade: Record<string, number>;
   /**
-   * O que cada província tem guardado, por produto.
+   * Turnos consecutivos que cada província passou na faixa revoltosa, por id.
    *
-   * ⚠️ **Provincial, nunca do poder** (`DECISOES.md` #49). O império não tem um celeiro
-   * central: cada terra guarda o que colheu, e é por isso que conquistar uma província
-   * captura o que estava nela — e que sitiar dói.
-   *
-   * Ninguém consome nem produz ainda: o patch 0.0.3 enche isto por turno e o 0.0.4 esvazia.
+   * É o pavio do levante: chega ao limite do ajuste e os rebeldes pegam em armas. Some
+   * do registro assim que o humor sai da faixa — revolta não guarda rancor pela metade.
    */
-  estoques: Record<string, Record<string, number>>;
+  revoltas: Record<string, number>;
   /**
    * Exércitos em pé, pela província onde estão.
    *
@@ -134,7 +129,7 @@ export interface EstadoCampanha {
    * Hostes que vão SURTIR nesta rodada, por id.
    *
    * Surtir é o sitiado sair para atacar quem o cerca. É a única coisa que obriga o
-   * sitiante a lutar: ele declarou que não quer choque (`DECISOES.md` #32A), e sem uma
+   * sitiante a lutar: ele declarou que não quer choque, e sem uma
    * decisão do defensor os dois ficam acampados lado a lado até o fim dos tempos.
    *
    * ⚠️ **Vive ao lado das ordens e some junto com elas na virada**, pelo mesmo motivo: é
@@ -146,7 +141,7 @@ export interface EstadoCampanha {
    * A capital de cada poder, por id de poder.
    *
    * ⚠️ **Só o estado, por enquanto.** A capital ainda não faz nada: o fluxo de perdê-la e
-   * escolher outra é o patch 0.0.9 do `ROADMAP.md`. O campo existe agora porque vários
+   * escolher outra ainda será criado. O campo existe agora porque vários
    * sistemas futuros vão perguntar qual é — ineficiência administrativa, prioridade
    * alimentar em escassez, revolta, comércio interno — e cada um inventar a própria
    * resposta seria a mesma verdade em quatro lugares.
@@ -163,21 +158,20 @@ export interface EstadoCampanha {
    */
   cercos: Record<string, Cerco>;
   /**
-   * Incentivos de exploração em curso, por id de província.
+   * O nível de imposto escolhido para cada província. Ausente = normal.
    *
-   * Produto, nível e comércio-base são autorais e ficam nos dados — investir compra
-   * trabalho temporário, não muda o que a terra tem. Uma província some daqui quando o
-   * incentivo dela acaba. (População já foi autoral também, e deixou de ser: ela é
-   * estado desde que recrutar passou a custá-la.)
+   * Só as diferentes do normal entram no registro: é o diff da decisão, não uma tabela
+   * cheia — o padrão não precisa ser escrito pra valer. Substituiu os incentivos de
+   * investimento, que saíram do jogo.
    */
-  investimentos: Record<string, Investimento>;
+  nivelDeImposto: Record<string, NivelDeImposto>;
   /**
    * Construções erguidas, por id de província.
    *
    * Ao contrário do incentivo, isto **nunca sai** daqui: construção é permanente, e é
    * por isso que ela consegue absorver dinheiro que o incentivo não absorve.
    */
-  construcoes: Record<string, string[]>;
+  construcoes: Record<string, Record<string, number>>;
   /**
    * Obras em andamento, por id de província. Uma por vez em cada uma.
    *
@@ -191,6 +185,7 @@ export interface EstadoCampanha {
 /** Uma construção em andamento. */
 export interface Obra {
   construcao: string;
+  nivelAlvo: number;
   turnosRestantes: number;
 }
 

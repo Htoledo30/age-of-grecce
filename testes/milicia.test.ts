@@ -38,20 +38,20 @@ describe('a milícia é derivada da população, nunca guardada', () => {
   it('é uma fatia da população, e é FRACA de propósito', () => {
     // 1,2% — 120 dos 148 poderes começam com uma província só, e milícia forte tornaria a
     // primeira conquista impossível para 81% do mapa.
-    expect(miliciaDe(35_000, [], catalogo, combate)).toBe(420);
-    expect(miliciaDe(18_000, [], catalogo, combate)).toBe(216);
-    expect(miliciaDe(10_000, [], catalogo, combate)).toBe(120);
+    expect(miliciaDe(35_000, {}, catalogo, combate)).toBe(420);
+    expect(miliciaDe(18_000, {}, catalogo, combate)).toBe(216);
+    expect(miliciaDe(10_000, {}, catalogo, combate)).toBe(120);
   });
 
   it('província sem população não levanta ninguém', () => {
-    expect(miliciaDe(0, [], catalogo, combate)).toBe(0);
+    expect(miliciaDe(0, {}, catalogo, combate)).toBe(0);
     // As 202 sem economia configurada continuam caindo sem resistência — a mesma resposta
     // honesta que a economia já dá, em vez de inventar defensores.
     expect(nova().miliciaEm('esparta')).toBe(0);
   });
 
   it('a Muralha dobra a milícia, multiplicando a DERIVAÇÃO', () => {
-    expect(miliciaDe(35_000, ['muralha'], catalogo, combate)).toBe(840);
+    expect(miliciaDe(35_000, { muralha: 1 }, catalogo, combate)).toBe(840);
     // Não existe número de guarnição guardado pra isto somar: é o mesmo desenho do
     // Celeiro sobre o crescimento.
     expect(catalogo['muralha']?.efeito.tipo).toBe('milicia');
@@ -60,8 +60,11 @@ describe('a milícia é derivada da população, nunca guardada', () => {
   it('a Muralha não rende moeda nenhuma — ela paga em defesa', () => {
     const c = comQuartel();
     // A conta do retorno é imune ao crescimento populacional, ao contrário de comparar a
-    // renda antes e depois de três turnos de obra.
-    expect(c.retornoDaConstrucaoEm('atenas', 'muralha')?.ganhoPorTurno).toBe(0);
+    // renda antes e depois de três turnos de obra. Não rende NADA: o ganho é exatamente a
+    // manutenção negativa, sem renda escondida.
+    expect(c.retornoDaConstrucaoEm('atenas', 'muralha')?.ganhoPorTurno).toBe(
+      -construcoes.construcoes['muralha']!.manutencao[0],
+    );
 
     const antes = c.miliciaEm('atenas');
     c.construir('atenas', 'muralha');
@@ -105,12 +108,13 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
   it('província SEM gente continua caindo ao primeiro pisão', () => {
     const c = comQuartel();
     // Sem população não há quem feche portão nenhum. É fronteira desprotegida, e é o que
-    // as 200 sem economia configurada continuam sendo.
-    c.plantarHoste('tanagra', 'tanagra', 300);
-    ordenar(c, 'tanagra', 'tebas', 300, 'tanagra');
+    // as 180 sem economia configurada continuam sendo. Delfos é a vizinha vazia da
+    // região: Queroneia (de Orcomeno) faz fronteira com ela.
+    c.plantarHoste('queroneia', 'orcomeno', 300);
+    ordenar(c, 'queroneia', 'delfos', 300, 'orcomeno');
     c.passarTurno();
-    expect(c.donoDe('tebas')).toBe('tanagra');
-    expect(c.cercoEm('tebas')).toBeUndefined();
+    expect(c.donoDe('delfos')).toBe('orcomeno');
+    expect(c.cercoEm('delfos')).toBeUndefined();
   });
 
   it('assalto menor que a muralha é rechaçado, e o exército se desfaz nela', () => {

@@ -27,8 +27,8 @@ import { BIOMAS } from './pintar-terreno';
 
 /**
  * `--sugerir` não escreve mapa nenhum: só lista as ilhas órfãs com a província mais
- * próxima, em JSON pronto pra colar. A sugestão é ponto de partida pra revisão humana,
- * nunca decisão automática — ver a seção "Ilhas" do CLAUDE.md.
+ * próxima, em JSON pronto pra colar. A sugestão é apenas um ponto de partida para
+ * revisão humana, nunca uma decisão automática.
  */
 const SUGERIR = process.argv.includes('--sugerir');
 

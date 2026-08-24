@@ -36,31 +36,37 @@ test('clicar no painel de ações não troca a província selecionada', async ({
 
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
-  await expect(page.locator('.acoes__valor')).toHaveAttribute('type', 'range');
+  await expect(page.locator('.acoes__alvo')).toContainText('0/4 slots');
+  await expect(page.getByRole('button', { name: /^Lagar/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Mina/ })).toHaveCount(0);
+  // O decreto de imposto: três níveis, o vigente (Normal) marcado e desabilitado.
+  await expect(page.locator('.acoes__imposto')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Normal' })).toBeDisabled();
 
   // Passar o cursor pelo MAPA antes de ir ao painel é o que arma a armadilha: a posição
   // do mouse só é atualizada sobre o canvas, então o clique fantasma acontecia no último
   // ponto pisado no mapa — não em cima do painel. Sem este passo o teste passa mesmo com
   // o bug presente, porque o fantasma reselecionaria a própria Atenas.
   await page.mouse.move(900, 900); // mar aberto: o fantasma esconderia a ficha
-  await page.locator('.acoes__valor').click();
+  await page.getByRole('button', { name: 'Baixo' }).click();
   await expect(page.locator('.ficha')).toBeVisible();
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
 
   await page.mouse.move(500, 900); // Esparta: o fantasma trocaria a província
-  await page.getByRole('button', { name: /^Investir 250$/ }).click();
+  await page.getByRole('button', { name: 'Alto' }).click();
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
   await expect(page.locator('.ficha')).toBeVisible();
 
-  // e o investimento realmente aconteceu, em vez de virar clique no mapa
-  await expect(page.locator('.acoes__alvo')).toContainText('Incentivo de');
+  // e o decreto realmente aconteceu, em vez de virar clique no mapa
+  await expect(page.getByRole('button', { name: 'Alto' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Normal' })).toBeEnabled();
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });
 
 /**
  * O ciclo econômico inteiro numa passada: construir muda a renda na barra, aparece na
- * ficha, e a linha vira "construída" em vez de sumir.
+ * ficha, e a linha passa a oferecer o próximo nível em vez de sumir.
  */
 test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ page }) => {
   const erros: string[] = [];
@@ -89,23 +95,23 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
     'data-tooltip-corpo',
     /paga-se em \d+ turnos/,
   );
-  await expect(page.getByRole('button', { name: /^Celeiro público/ })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: /^Fazenda/ })).toHaveAttribute(
     'data-tooltip-corpo',
-    /\+\d+ → \+\d+ habitantes por turno/,
+    /\+1\/\+2\/\+3 ao saldo alimentar/,
   );
 
   await page.getByRole('button', { name: /^Ágora/ }).click();
 
-  // paga à vista e ENTREGA DEPOIS: o tesouro zerou, mas a renda ainda não subiu
-  await expect(page.locator('.barra-turno__saldo')).toHaveText('0');
+  // paga à vista e ENTREGA DEPOIS: sobram 1.000 moedas, mas a renda ainda não subiu
+  await expect(page.locator('.barra-turno__saldo')).toHaveText('1000');
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
-  await expect(page.locator('.ficha__obra')).toContainText('Ágora em obra · 3 turnos');
-  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 3 turnos');
+  await expect(page.locator('.ficha__obra')).toContainText('Ágora I em obra · 2 turnos');
+  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 2 turnos');
   // as outras continuam visíveis, dizendo por que não dá
-  await expect(page.getByRole('button', { name: /^Oficina/ })).toContainText('em obra aqui');
+  await expect(page.getByRole('button', { name: /^Mercado/ })).toContainText('em obra aqui');
 
-  // três turnos depois a obra está de pé e a renda subiu
-  for (let i = 0; i < 3; i++) {
+  // dois turnos depois a obra está de pé e a renda subiu
+  for (let i = 0; i < 2; i++) {
     await page.getByRole('button', { name: /Passar o turno/ }).click();
   }
   const rendaComAgora = await page.evaluate(
@@ -113,13 +119,14 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   );
   expect(rendaComAgora).toBeGreaterThan(renda); // a Ágora entregou
   await expect(page.locator('.barra-turno')).toContainText(`(+${rendaComAgora})`);
-  await expect(page.locator('.ficha__construcoes')).toHaveText('Ágora');
-  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('construída');
-  // a ficha mostra UMA linha de dinheiro; a decomposição mora no Governo
-  const deAtenas = await page.evaluate(
-    () => (window as unknown as { inspecao: Ganchos }).inspecao.economiaDe('atenas')?.total,
-  );
-  await expect(page.locator('.ficha__renda')).toHaveText(`rende ${deAtenas} por turno`);
+  await expect(page.locator('.ficha__construcoes')).toHaveText('Ágora I');
+  await expect(page.locator('.acoes__alvo')).toContainText('1/4 slots');
+  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('I → II');
+  // A ficha mostra o saldo COMPLETO da terra; o tooltip guarda a conta curta.
+  const saldoProvincial = page.locator('.ficha__renda');
+  await expect(saldoProvincial).toHaveText(/saldo [−+]\d+ por turno/);
+  await expect(saldoProvincial).toHaveAttribute('data-tooltip-corpo', /impostos/);
+  await expect(saldoProvincial).toHaveAttribute('data-tooltip-corpo', /tropas|= [−+]\d+ por turno/);
 
   expect(erros.join(' | ')).toBe('');
 });
@@ -148,12 +155,12 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
   await expect(page.locator('.governo')).toBeVisible();
 
   // uma linha por província do jogador, mais o rodapé de totais
-  await expect(page.locator('.balanco__tabela tbody tr')).toHaveCount(3);
+  await expect(page.locator('[data-aba="balanco"] .balanco__tabela tbody tr')).toHaveCount(3);
   const total = await page.evaluate(
     () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().renda,
   );
-  await expect(page.locator('.balanco__tabela tfoot')).toContainText(String(total));
-  await expect(page.locator('.balanco__resumo')).toContainText('3.000 moedas');
+  await expect(page.locator('[data-aba="balanco"] .balanco__tabela tfoot')).toContainText(String(total));
+  await expect(page.locator('[data-aba="balanco"] .balanco__resumo')).toContainText('3.000 moedas');
 
   // Esc fecha
   await page.keyboard.press('Escape');

@@ -15,6 +15,7 @@ import '@/ui/hostes-mapa.css';
 import '@/ui/destinos-mapa.css';
 import '@/ui/cercos-mapa.css';
 import '@/ui/cronica.css';
+import '@/ui/fim-de-jogo.css';
 import '@/ui/tooltip.css';
 
 import { iniciarEscala } from '@/estilo/escala';
@@ -34,6 +35,7 @@ import { PainelLateral } from '@/ui/painel-lateral';
 import { AcoesProvincia } from '@/ui/acoes-provincia';
 import { Governo } from '@/ui/governo';
 import { Balanco } from '@/ui/balanco';
+import { BalancoAlimentar } from '@/ui/balanco-alimentar';
 import type { VistaDeAcoes } from '@/ui/acoes-provincia';
 import { FichaProvincia } from '@/ui/ficha-provincia';
 import type { VistaDaProvincia } from '@/ui/ficha-provincia';
@@ -56,9 +58,12 @@ import type { MarcaDeCerco } from '@/ui/cercos-mapa';
 import { Cronica } from '@/ui/cronica';
 import type { LinhaDaCronica } from '@/ui/cronica';
 import { InicioJogo } from '@/ui/inicio-jogo';
+import { FimDeJogo } from '@/ui/fim-de-jogo';
 import { BarraTurno } from '@/ui/barra-turno';
 import { Tooltips } from '@/ui/tooltip';
 import { Campanha } from '@/campanha/campanha';
+import { lerSalvamento } from '@/campanha/salvamento';
+import { formatarAno } from '@/campanha/estado-campanha';
 import { Atlas } from '@/mundo/atlas';
 
 function exigir<T extends Element>(seletor: string): T {
@@ -128,11 +133,17 @@ async function iniciar(): Promise<void> {
   // província nem de uma hoste, e não pertence a nenhuma das colunas.
   const cronica = new Cronica(ui);
   const inicio = new InicioJogo(ui);
+  const fimDeJogo = new FimDeJogo(ui);
   const barraTurno = new BarraTurno(ui);
   // A casca de governo já nasce com abas: a segunda (poderes, diplomacia, modos de mapa)
   // vai custar uma linha aqui em vez de uma remodelação de layout.
   const balanco = new Balanco();
-  const governo = new Governo(ui, [balanco]);
+  // A segunda aba custou uma linha, como a casca prometia. Ela existe porque a ficha
+  // responde metade da conta da comida e a barra a outra metade, e as duas metades não
+  // fecham entre si: falta no meio o que a tropa come e o que apodrece, que não pertencem
+  // a província nenhuma.
+  const balancoAlimentar = new BalancoAlimentar();
+  const governo = new Governo(ui, [balanco, balancoAlimentar]);
   // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate
   // e diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.
   const atlas = new Atlas(provincias);
@@ -191,14 +202,22 @@ async function iniciar(): Promise<void> {
   function vistaDaProvincia(id: string): VistaDaProvincia {
     const p = atlas.provincia(id);
     const poder = campanha.poder(campanha.donoDe(id));
+    const simulada = campanha.perfilDe(id) !== null;
     return {
       nome: p.nome,
       regiao: p.regiao,
       poder: { nome: poder.nome, povo: poder.povo, cor: poder.cor },
       milicia: campanha.miliciaEm(id),
+      // A conta do humor, parcela a parcela — só onde há simulação pra contar.
+      humor: simulada
+        ? { alvo: campanha.alvoDeFelicidadeEm(id), parcelas: campanha.parcelasDeFelicidadeEm(id) }
+        : null,
       cerco: (() => {
         const cerco = campanha.cercoEm(id);
-        return cerco ? { sitiante: campanha.poder(cerco.sitiante).nome } : null;
+        const relogio = campanha.fomeDoCercoEm(id);
+        return cerco && relogio
+          ? { sitiante: campanha.poder(cerco.sitiante).nome, ...relogio }
+          : null;
       })(),
     };
   }
@@ -221,24 +240,45 @@ async function iniciar(): Promise<void> {
             tesouro: campanha.tesouro,
             renda: campanha.renda,
             manutencao: campanha.manutencao,
+            saldoDeComida: campanha.alimentacao.saldo,
+            categoriaDeComida: campanha.alimentacao.categoria,
             provincias: campanha.provinciasDe(jogador.id).length,
+            // Espelha a regra da virada: o exilado sem chão não tem o que assentar, e o
+            // botão não pode travar o único caminho dele — jogar até reconquistar.
+            capitalPerdida:
+              campanha.capitalPerdida(jogador.id) &&
+              campanha.provinciasDe(jogador.id).length > 0,
           },
     );
 
     // A ficha e o painel de investir são desenhados a partir da MESMA seleção, sempre
     // juntos: assim não existe estado em que um mostra uma província e o outro, outra.
     const obraNaFicha = selecionada ? campanha.obraEm(selecionada) : undefined;
+    const rendaNaFicha = selecionada ? campanha.economiaDe(selecionada) : null;
     ficha.mostrar(
       selecionada ? vistaDaProvincia(selecionada) : null,
-      selecionada ? campanha.economiaDe(selecionada) : null,
+      // A tropa de origem entra na vista da ficha: é conta da CAMPANHA (origem dos
+      // soldados), não da economia pura da terra.
+      rendaNaFicha && selecionada
+        ? { ...rendaNaFicha, tropaDeOrigem: campanha.custoDaTropaDe(selecionada) }
+        : null,
       obraNaFicha
         ? {
-            nome: campanha.construcoesDisponiveis[obraNaFicha.construcao]?.nome ?? '',
+            nome:
+              `${campanha.construcoesDisponiveis[obraNaFicha.construcao]?.nome ?? ''} ` +
+              `${['0', 'I', 'II', 'III'][obraNaFicha.nivelAlvo] ?? obraNaFicha.nivelAlvo}`,
             turnosRestantes: obraNaFicha.turnosRestantes,
           }
         : null,
       selecionada ? campanha.crescimentoDe(selecionada) : null,
       selecionada ? campanha.perfilDe(selecionada) : null,
+      selecionada
+        ? Object.fromEntries(
+            campanha
+              .construcoesEm(selecionada)
+              .map((id) => [id, campanha.nivelDaConstrucaoEm(selecionada as string, id)]),
+          )
+        : {},
     );
 
     acoes.mostrar(vistaDeAcoes());
@@ -294,35 +334,43 @@ async function iniciar(): Promise<void> {
     return {
       pode: true,
       provincia: { id: alvo, nome: nomeDoAlvo },
-      construcoes: Object.entries(campanha.construcoesDisponiveis).map(([id, c]) => {
+      capital: {
+        atual: campanha.jogador ? campanha.capitalDe(campanha.jogador.id) === alvo : false,
+        custo: campanha.custoDeMudancaDeCapital(),
+        urgente: campanha.jogador ? campanha.capitalPerdida(campanha.jogador.id) : false,
+        resposta: campanha.podeMudarCapital(alvo),
+      },
+      construcoes: Object.entries(campanha.construcoesDisponiveisEm(alvo)).map(([id, c]) => {
         const conta = campanha.retornoDaConstrucaoEm(alvo, id);
-        const impactoPopulacional = campanha.impactoPopulacionalDaConstrucaoEm(alvo, id);
         const r = campanha.podeConstruir(alvo, id);
+        const nivelAtual = campanha.nivelDaConstrucaoEm(alvo, id);
+        const nivelAlvo = Math.min(ajustes.jogo.construcoes.nivelMaximo, nivelAtual + 1);
         return {
           id,
           nome: c.nome,
-          custo: c.custo,
-          turnos: c.turnos,
-          erguida: erguidas.includes(id),
+          custo: c.custos[nivelAlvo - 1] ?? c.custos[2],
+          turnos: c.turnos[nivelAlvo - 1] ?? c.turnos[2],
+          nivelAtual,
+          nivelAlvo,
+          nivelMaximo: ajustes.jogo.construcoes.nivelMaximo,
           emObra: obra?.construcao === id ? obra.turnosRestantes : null,
           recusa: r.pode ? null : r.motivo,
           motivo: c.motivo,
           ganhoPorTurno: conta?.ganhoPorTurno ?? 0,
           turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
-          promessa:
-            c.efeito.tipo === 'capacidade'
-              ? c.efeito.promessa
-              : c.efeito.tipo === 'populacao'
-                ? `${c.efeito.promessa} Aqui: +${impactoPopulacional?.antes ?? 0} → +${impactoPopulacional?.depois ?? 0} habitantes por turno.`
-                : null,
+          manutencao: c.manutencao[nivelAlvo - 1] ?? c.manutencao[2],
+          rendeMoeda: c.efeito.tipo === 'renda',
+          promessa: c.promessa,
         };
       }),
-      bonusAtual: campanha.investimentoEm(alvo)?.percentual ?? 0,
-      arrecadacoesRestantes: campanha.investimentoEm(alvo)?.arrecadacoesRestantes ?? 0,
-      maximo: Math.min(campanha.tesouro, ajustes.jogo.economia.investimento.maximo),
-      avaliar: (valor) => campanha.podeInvestir(alvo, valor),
-      duracao: ajustes.jogo.economia.investimento.arrecadacoes,
-      retorno: (valor) => campanha.retornoDe(alvo, valor),
+      slots: {
+        usados: erguidas.length,
+        total: ajustes.jogo.construcoes.slotsPorProvincia,
+      },
+      imposto: {
+        nivel: campanha.nivelDeImpostoEm(alvo),
+        niveis: ajustes.jogo.economia.imposto.niveis,
+      },
     };
   }
 
@@ -330,7 +378,7 @@ async function iniciar(): Promise<void> {
    * O que o bloco de recrutamento mostra agora.
    *
    * Mesma regra do bloco de ações: sem província selecionada, some. Quando há alvo, mas
-   * não dá pra recrutar, diz o motivo — é assim que o jogador descobre que existe Quartel.
+   * não dá pra recrutar, diz o motivo.
    */
   function vistaDeRecrutamento(): VistaDeRecrutamento | null {
     if (fase !== 'campanha') return null;
@@ -342,7 +390,7 @@ async function iniciar(): Promise<void> {
     if (!campanha.podeRecrutarEm(alvo)) {
       return {
         pode: false,
-        motivo: `${atlas.nomeDe(alvo)}: é preciso um Quartel aqui para reunir tropa.`,
+        motivo: `${atlas.nomeDe(alvo)}: não há população disponível para reunir tropa.`,
       };
     }
     return {
@@ -642,6 +690,7 @@ async function iniciar(): Promise<void> {
         const obra = campanha.obraEm(id);
         return {
           nome: campanha.nomeDe(id),
+          capital: campanha.capitalDe(jogador.id) === id,
           economia: e
             ? {
                 produto: e.produto.nome,
@@ -649,16 +698,24 @@ async function iniciar(): Promise<void> {
                 impostos: e.impostos,
                 producao: e.producao,
                 comercio: e.comercio,
+                manutencao: e.manutencao,
                 total: e.total,
-                bonus: e.bonus,
+                tropa: campanha.custoDaTropaDe(id),
+                saldo: campanha.saldoDaProvincia(id) ?? 0,
+                imposto: campanha.nivelDeImpostoEm(id),
               }
             : null,
           construcoes: campanha
             .construcoesEm(id)
-            .map((c) => campanha.construcoesDisponiveis[c]?.nome ?? c),
+            .map(
+              (c) =>
+                `${campanha.construcoesDisponiveis[c]?.nome ?? c} ${['0', 'I', 'II', 'III'][campanha.nivelDaConstrucaoEm(id, c)] ?? ''}`,
+            ),
           obra: obra
             ? {
-                nome: campanha.construcoesDisponiveis[obra.construcao]?.nome ?? obra.construcao,
+                nome:
+                  `${campanha.construcoesDisponiveis[obra.construcao]?.nome ?? obra.construcao} ` +
+                  `${['0', 'I', 'II', 'III'][obra.nivelAlvo] ?? obra.nivelAlvo}`,
                 turnosRestantes: obra.turnosRestantes,
               }
             : null,
@@ -671,14 +728,102 @@ async function iniciar(): Promise<void> {
     const vista = vistaDoBalanco();
     if (!vista) return;
     balanco.desenhar(vista);
+    balancoAlimentar.desenhar(vistaDoAlimento());
     governo.alternar();
   };
 
+  /**
+   * A conta da comida do reino inteiro, província por província.
+   *
+   * ⚠️ Derivada na hora, como todas as vistas: guardar isto seria criar uma segunda
+   * verdade sobre o mesmo saldo.
+   */
+  function vistaDoAlimento(): Parameters<typeof balancoAlimentar.desenhar>[0] {
+    const jogador = campanha.jogador;
+    if (!jogador) {
+      return {
+        linhas: [],
+        subsistencia: 0,
+        exercito: 0,
+        saldoCivil: 0,
+        saldo: 0,
+        categoria: 'no-limite',
+      };
+    }
+    const balanco = campanha.balancoAlimentarDe(jogador.id);
+    const linhas = campanha.provinciasDe(jogador.id).flatMap((id) => {
+      const perfil = campanha.perfilDe(id);
+      // Província sem ficha autoral não entra na simulação: pôr uma linha de traços aqui só
+      // encheria a tabela com as 200 que ainda não são simuladas.
+      return perfil
+        ? [
+            {
+              nome: campanha.nomeDe(id),
+              produtos: campanha
+                .produtosAlimentaresEm(id)
+                .map((produto) => `${produto.nome} ${produto.nivel}`)
+                .join(' · '),
+              producao: campanha.contribuicaoAlimentarEm(id),
+              populacao: campanha.nivelPopulacionalEm(id),
+              papel: campanha.estadoAlimentarLocalEm(id),
+              sitiada: campanha.cercoEm(id) !== undefined,
+            },
+          ]
+        : [];
+    });
+    return {
+      linhas,
+      subsistencia: balanco.subsistencia,
+      exercito: balanco.exercito,
+      saldoCivil: balanco.saldoCivil,
+      saldo: balanco.saldo,
+      categoria: balanco.categoria,
+    };
+  }
+
+  /**
+   * O salvamento automático: toda mudança de estado vai pro `localStorage` na hora.
+   *
+   * Não existe botão de salvar de propósito — fechar a janela em qualquer instante
+   * preserva a partida, que é o que se espera de um jogo em 2026. O custo é um
+   * `JSON.stringify` de um estado pequeno por clique, que não se mede.
+   */
+  const CHAVE_SALVAMENTO = 'age-of-grecce:salvamento';
+  function salvarCampanha(): void {
+    if (!campanha.iniciada) return;
+    try {
+      localStorage.setItem(CHAVE_SALVAMENTO, campanha.serializar());
+    } catch (erro) {
+      // Sem espaço ou sem permissão: o jogo continua, só não persiste. Avisar no console
+      // basta — interromper a partida por causa do salvamento seria pior que perdê-lo.
+      console.warn('não foi possível salvar a campanha', erro);
+    }
+  }
+
+  /** A campanha acabou? A tela de fim aparece uma vez; o resto do jogo continua vivo. */
+  function conferirFimDeJogo(): void {
+    if (fase !== 'campanha') return;
+    const resultado = campanha.resultado();
+    if (resultado) fimDeJogo.mostrar(resultado, campanha.jogador?.nome ?? 'Seu poder');
+  }
+  fimDeJogo.aoNovaCampanha = () => {
+    try {
+      localStorage.removeItem(CHAVE_SALVAMENTO);
+    } catch {
+      // sem acesso ao armazenamento não há o que apagar
+    }
+    location.reload();
+  };
+
   // O mapa se repinta junto com a interface: mudou o dono nas regras, mudou a cor na
-  // tela, no mesmo instante e pela mesma verdade.
+  // tela, no mesmo instante e pela mesma verdade. E o disco acompanha: o que se vê é o
+  // que está salvo — e é aqui que a vitória e a derrota são percebidas, porque só
+  // mudança de estado pode produzi-las.
   campanha.aoMudar = () => {
     cena.pintarDonos((id) => campanha.donoDe(id));
     repintar();
+    salvarCampanha();
+    conferirFimDeJogo();
   };
   barraTurno.aoPassarTurno = () => virarTurno();
 
@@ -750,6 +895,20 @@ async function iniciar(): Promise<void> {
       });
     }
 
+    // A queda de capital é notícia própria: pro jogador ela também diz o que o jogo está
+    // esperando dele — sem esta linha, o botão de turno travado pareceria defeito.
+    for (const queda of campanha.quedasDeCapital) {
+      linhas.push({
+        tom: queda.poder === eu ? 'perda' : 'neutro',
+        icone: 'templo',
+        texto:
+          queda.poder === eu
+            ? `A capital caiu: ${atlas.nomeDe(queda.provincia)} está em mãos inimigas. ` +
+              'Assente outra antes de passar o turno.'
+            : `${nomeDoPoder(queda.poder)} perdeu a capital, ${atlas.nomeDe(queda.provincia)}.`,
+      });
+    }
+
     // Só os cercos NOVOS: um cerco que dura oito rodadas não é oito notícias. Quem quer
     // saber que ele continua olha a bandeira no mapa ou a ficha da província.
     for (const cerco of relatorio.cercos.filter((c) => c.novo)) {
@@ -757,6 +916,45 @@ async function iniciar(): Promise<void> {
         tom: cerco.sitiante === eu ? 'ganho' : 'perda',
         icone: 'fogo',
         texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)} — sem produção nem comércio lá dentro.`,
+      });
+    }
+
+    // "Fome no reino" só quando o POVO não come (saldo civil negativo). O aperto que é
+    // só do exército tem a própria notícia, nas perdas de tropa logo abaixo.
+    const comida = eu === null ? null : campanha.balancoAlimentarDe(eu);
+    if (comida && comida.saldoCivil < 0) {
+      linhas.push({
+        tom: 'perda',
+        icone: 'celeiro',
+        texto: `Fome no reino: o saldo civil fechou em −${-comida.saldoCivil}.`,
+      });
+    }
+
+    // ⚠️ A FOME não vem do relatório da resolução: ela acontece no reino, na virada, e
+    // não numa província onde uma batalha aconteceu. Vem da campanha, por isso.
+    for (const morte of campanha.fome.provincias) {
+      linhas.push({
+        tom: campanha.donoDe(morte.provincia) === eu ? 'perda' : 'neutro',
+        icone: 'celeiro',
+        texto: `${atlas.nomeDe(morte.provincia)} passou fome: ${morte.mortos.toLocaleString('pt-BR')} morreram.`,
+      });
+    }
+    for (const perda of campanha.fome.tropas) {
+      linhas.push({
+        tom: perda.poder === eu ? 'perda' : 'neutro',
+        icone: 'capacete',
+        texto: `Sem mantimento, ${nomeDoPoder(perda.poder)} perdeu ${perda.homens.toLocaleString('pt-BR')} homens em armas.`,
+      });
+    }
+
+    // O levante é notícia de quem SOFRE a revolta: a bandeira antiga voltou a ter braço.
+    for (const levante of campanha.revoltas) {
+      linhas.push({
+        tom: campanha.donoDe(levante.provincia) === eu ? 'perda' : 'neutro',
+        icone: 'fogo',
+        texto:
+          `${atlas.nomeDe(levante.provincia)} se levanta: ${levante.homens.toLocaleString('pt-BR')} ` +
+          `rebeldes pegam em armas pela bandeira de ${nomeDoPoder(levante.poder)}.`,
       });
     }
 
@@ -788,8 +986,9 @@ async function iniciar(): Promise<void> {
     animacaoDeMarcha.comecar(trechosDaRodada(), ajustes.animacao.segundosPorSaltoDeMarcha);
     repintar();
   }
-  acoes.aoInvestir = (idProvincia, valor) => campanha.investir(idProvincia, valor);
+  acoes.aoDefinirImposto = (idProvincia, nivel) => campanha.definirImposto(idProvincia, nivel);
   acoes.aoConstruir = (idProvincia, idConstrucao) => campanha.construir(idProvincia, idConstrucao);
+  acoes.aoTornarCapital = (idProvincia) => campanha.mudarCapital(idProvincia);
   recrutamento.aoRecrutar = (idProvincia, homens) => campanha.recrutar(idProvincia, homens);
   exercitoFicha.aoDispensar = (idHoste, homens) => campanha.dispensarHoste(idHoste, homens);
   exercitoFicha.aoAlternarMarcha = (idHoste) => {
@@ -865,15 +1064,55 @@ async function iniciar(): Promise<void> {
     if (!atenas) throw new Error('província de Atenas ausente dos dados');
     cena.posicionar(atenas.centro.x, atenas.centro.y, ajustes.camera.zoomMaximo);
   };
+  // Um poder é jogável quando TODAS as suas províncias têm economia configurada — a
+  // regra deriva dos dados, e liberar uma cidade nova é só escrever a ficha dela.
+  inicio.podeJogar = (idPoder) => campanha.semEconomia(idPoder) === 0;
+  inicio.aoContinuar = () => {
+    fase = 'campanha';
+    inicio.encerrar(campanha.jogador?.id ?? '');
+    // A câmera abre na capital do jogador: quem retoma quer ver a própria casa, não o
+    // canto do mapa onde a sessão anterior parou de olhar.
+    const capital = campanha.jogador ? campanha.capitalDe(campanha.jogador.id) : undefined;
+    const casa = provincias.provincias.find((p) => p.id === capital);
+    if (casa) cena.posicionar(casa.centro.x, casa.centro.y, ajustes.camera.zoomMaximo);
+    repintar();
+  };
+  inicio.aoRecomecar = () => {
+    // A decisão destrutiva já foi explícita no rótulo do botão. Recarregar a página é o
+    // que garante que a partida nova nasce do zero de verdade, sem estado herdado.
+    try {
+      localStorage.removeItem(CHAVE_SALVAMENTO);
+    } catch {
+      // sem acesso ao armazenamento não há o que apagar
+    }
+    location.reload();
+  };
+  // O boot pergunta pelo salvamento UMA vez. Inválido — versão velha, mapa reassado,
+  // catálogo mudado — é avisado no console e ignorado: recusar alto é melhor que misturar
+  // dois recortes em silêncio, e a partida nova continua a um clique.
+  try {
+    const salvo = localStorage.getItem(CHAVE_SALVAMENTO);
+    if (salvo !== null) {
+      campanha.restaurar(lerSalvamento(salvo));
+      if (campanha.iniciada) {
+        inicio.oferecerContinuacao(
+          `${campanha.jogador?.nome ?? ''} · turno ${campanha.turno} · ${formatarAno(campanha.ano)}`,
+        );
+      }
+    }
+  } catch (erro) {
+    console.warn('salvamento ignorado:', erro);
+  }
+
   inicio.aoComecarCampanha = (idPoder) => {
-    if (idPoder !== 'atenas') return;
+    if (campanha.semEconomia(idPoder) > 0) return;
     // Partida nova não herda marcha nenhuma: o que estivesse andando descreve um mundo
     // que deixou de existir.
     animacaoDeMarcha.parar();
     // Nem notícia: a crônica da partida anterior fala de um mundo que deixou de existir.
     cronica.esconder();
     fase = 'campanha';
-    inicio.encerrar();
+    inicio.encerrar(idPoder);
     campanha.comecar(idPoder);
   };
   cena.aoSelecionar = (indice) => {
@@ -934,12 +1173,20 @@ async function iniciar(): Promise<void> {
         poderesVivos: campanha.poderesVivos().length,
       }),
       donoDe: (idProvincia: string) => campanha.donoDe(idProvincia),
+      // O centro assado de uma província: é o que deixa o teste de tela apontar a câmera
+      // pra qualquer terra e clicar nela sem cravar coordenada de pixel.
+      centroDe: (idProvincia: string) => atlas.provincia(idProvincia).centro,
+      provinciasSimuladas: () => campanha.provinciasSimuladas,
+      resultado: () => campanha.resultado(),
+      capitalDe: (idPoder: string) => campanha.capitalDe(idPoder),
+      capitalPerdida: (idPoder: string) => campanha.capitalPerdida(idPoder),
+      mudarCapital: (idProvincia: string) => campanha.mudarCapital(idProvincia),
       darOuro: (valor: number) => campanha.darOuro(valor),
       passarTurno: () => virarTurno(),
       comecar: (idPoder: string) => {
         animacaoDeMarcha.parar();
         fase = 'campanha';
-        inicio.encerrar();
+        inicio.encerrar(idPoder);
         campanha.comecar(idPoder);
       },
       construir: (idProvincia: string, idConstrucao: string) =>
@@ -989,10 +1236,12 @@ async function iniciar(): Promise<void> {
       crescimentoDe: (idProvincia: string) => campanha.crescimentoDe(idProvincia)?.crescimento ?? 0,
       disponivelParaLevaEm: (idProvincia: string) => campanha.disponivelParaLevaEm(idProvincia),
       economiaDe: (idProvincia: string) => campanha.economiaDe(idProvincia),
-      // A economia física: o que sai da terra por turno e o que está guardado. Os dois
-      // juntos são o que o teste manual precisa observar — colheita entra, estoque sobe.
-      producaoFisicaEm: (idProvincia: string) => campanha.producaoFisicaEm(idProvincia),
-      estoqueEm: (idProvincia: string) => campanha.estoqueEm(idProvincia),
+      alimentacao: () => campanha.alimentacao,
+      balancoAlimentarDe: (idPoder: string) => campanha.balancoAlimentarDe(idPoder),
+      contribuicaoAlimentarEm: (idProvincia: string) => campanha.contribuicaoAlimentarEm(idProvincia),
+      nivelPopulacionalEm: (idProvincia: string) => campanha.nivelPopulacionalEm(idProvincia),
+      matarPopulacao: (idProvincia: string, quantos: number) =>
+        campanha.matarPopulacao(idProvincia, quantos),
       // Conquista crua, sem regra de guerra nenhuma: é o que deixa a fatia de propriedade
       // ser vista e testada antes de existir exército.
       conquistar: (idProvincia: string, idPoder: string) =>

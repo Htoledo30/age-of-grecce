@@ -2,8 +2,8 @@
  * O bloco de recrutamento: pôr gente em armas nesta província. **Só isso.**
  *
  * Ver e dispensar tropa moravam aqui e saíram para `exercito-ficha.ts`, e a razão é
- * estrutural: aquilo só funcionava enquanto a hoste e o Quartel estivessem na mesma
- * província. Assim que a tropa marchar, comandá-la a partir de um painel chamado
+ * estrutural: aquilo só funcionava enquanto a hoste estivesse na província de origem.
+ * Assim que a tropa marchar, comandá-la a partir de um painel chamado
  * "Recrutar" deixa de fazer sentido. **Recrutar é ação da PROVÍNCIA; dispensar é ação da
  * HOSTE** — seleções diferentes, painéis diferentes.
  *
@@ -94,7 +94,7 @@ export class Recrutamento {
     this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para recrutar');
     definirTooltip(this.campoHomens, {
       titulo: 'Tamanho da leva',
-      corpo: 'A barra já respeita o tesouro e a reserva civil que a província nunca cede.',
+      corpo: 'Limitado pelo ouro e pela reserva civil.',
       tom: 'custo',
     });
     this.campoHomens.addEventListener('input', () => this.avaliar());
@@ -182,9 +182,7 @@ export class Recrutamento {
       (vista.emFormacao > 0 ? ` · ${numero(vista.emFormacao)} em formação` : '');
     definirTooltip(this.alvo, {
       titulo: 'Reserva civil',
-      corpo:
-        'O limite considera quem permanece para cultivar, comerciar e manter a vida ' +
-        'local, além do ouro necessário para reunir a leva.',
+      corpo: `${numero(vista.disponivel)} habitantes podem ser recrutados.`,
     });
 
     if (this.provinciaDaQuantidade !== vista.provincia.id) {
@@ -266,9 +264,9 @@ export class Recrutamento {
     definirTooltip(this.previsao, {
       titulo: 'Custo da mobilização',
       corpo:
-        `${vista.custoPorHomem} moedas por homem para reunir.\n` +
-        `${vista.manutencaoPorHomem} por homem a cada turno em armas.\n` +
-        `A província perde ${numero(r.homens)} habitantes e parte dos impostos.`,
+        `−${numero(r.ouro)} moedas agora\n` +
+        `−${numero(manutencao)} por turno\n` +
+        `−${numero(r.homens)} habitantes`,
       tom: 'custo',
     });
     this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)}`;

@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "age-of-grecce",
-  "version": "0.0.3",
-  "description": "Jogo de estratégia por província na Grécia antiga",
+  "version": "0.0.4",
+  "description": "Jogo de estratÃ©gia por provÃ­ncia na GrÃ©cia antiga",
   "scripts": {
     "gerar-mapa": "tsx gerador/gerar-mapa.ts",
     "dev": "vite",
@@ -16,7 +16,9 @@
     "codigo-morto": "knip",
     "teste": "vitest run",
     "teste-tela": "playwright test",
+    "simular": "tsx ferramentas/simular.ts",
     "verificar": "npm run tipos && npm run lint && npm run codigo-morto && npm run teste && npm run checar",
+    "entregar": "npm run verificar && npm run teste-tela && npm run build",
     "sitios": "tsx ferramentas/sitios.ts",
     "gerar-provincias": "tsx --max-old-space-size=8192 gerador/gerar-provincias.ts",
     "ver-provincias": "python ferramentas/ver-provincias.py",

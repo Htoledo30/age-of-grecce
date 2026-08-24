@@ -78,7 +78,7 @@ export interface VistaDoExercito {
    * A surtida ao alcance desta hoste: sair para atacar quem cerca a cidade onde ela está.
    *
    * `null` quando não há cerco inimigo ali — e aí não há pergunta a fazer. É a única
-   * decisão que o SITIADO tem: sitiar não engaja (`DECISOES.md` #32A), então sem isto o
+   * decisão que o SITIADO tem: sitiar não engaja, então sem isto o
    * exército de dentro fica olhando o de fora para sempre.
    */
   surtida: { contra: string; declarada: boolean } | null;
@@ -168,9 +168,7 @@ export class ExercitoFicha {
     this.campoHomens.setAttribute('aria-label', 'Quantidade de soldados para mover');
     definirTooltip(this.campoHomens, {
       titulo: 'Força da marcha',
-      corpo:
-        'Escolha quantos homens partem. O restante permanece na província — mandar todos ' +
-        'é deixar a retaguarda vazia.',
+      corpo: 'Quem não marchar permanece defendendo a província.',
       tom: 'perigo',
     });
     this.campoHomens.addEventListener('input', () => {
@@ -205,7 +203,7 @@ export class ExercitoFicha {
     this.botaoCancelar.textContent = 'Cancelar ordem';
     definirTooltip(this.botaoCancelar, {
       titulo: 'Cancelar ordem',
-      corpo: 'A ordem ainda não foi resolvida; nenhum recurso precisa ser devolvido.',
+      corpo: 'Cancela antes da próxima virada.',
     });
     this.botaoCancelar.addEventListener('click', () => {
       const vista = this.vista;
@@ -230,7 +228,7 @@ export class ExercitoFicha {
         'Assaltar',
         'lanca' as const,
         'Assaltar a cidade',
-        'Resolve no mesmo turno: primeiro contra o exército que estiver lá, depois contra a milícia com o bônus da muralha. Custa homens, e um assalto rechaçado desfaz o exército.',
+        'Ataca agora. Enfrenta a guarnição e depois a milícia.',
       ],
       [
         this.botaoSitiar,
@@ -238,7 +236,7 @@ export class ExercitoFicha {
         'Sitiar',
         'muralha' as const,
         'Sitiar a cidade',
-        'Não custa homens e não briga com ninguém: o exército acampa ao lado da guarnição, sem engajá-la. Enquanto dura, a província sitiada não produz nem comercia — mas continua cobrando imposto e levantando tropa. Quem senta fica exposto ao exército de socorro.',
+        'Corta produção e comércio sem atacar a guarnição.',
       ],
     ] as const) {
       botao.className = 'botao exercito__botao exercito__botao--postura';
@@ -291,9 +289,7 @@ export class ExercitoFicha {
     this.botaoDispensar.type = 'button';
     definirTooltip(this.botaoDispensar, {
       titulo: 'Dispensar hoste',
-      corpo:
-        'Cada homem retorna à província de origem e volta à população de quem controla ' +
-        'aquela terra agora.',
+      corpo: 'Os homens retornam às populações de origem.',
       tom: 'perigo',
     });
     this.botaoDispensar.addEventListener('click', () => {
@@ -398,11 +394,8 @@ export class ExercitoFicha {
     if (surtida) {
       rotularComIcone(this.botaoSurtida, 'capacete', `Surtida contra ${surtida.contra}`);
       definirTooltip(this.botaoSurtida, {
-        titulo: 'Sair para atacar o cerco',
-        corpo:
-          'A hoste sai da cidade e obriga quem a cerca a lutar — sentar-se diante dos ' +
-          'muros deixa de ser uma escolha para ele. Vencendo, o cerco é levantado. ' +
-          'A milícia fica: ela defende a cidade, não vai a campo.',
+        titulo: 'Atacar o sitiante',
+        corpo: 'Vencendo, o cerco termina. A milícia fica na cidade.',
         tom: 'perigo',
       });
     }
@@ -433,9 +426,9 @@ export class ExercitoFicha {
     rotularComIcone(this.botaoMover, 'lanca', rotuloMover);
     definirTooltip(this.botaoMover, {
       titulo: 'Ordenar marcha',
-      corpo:
-        'A hoste atravessa livremente seu território. Terra inimiga pode ser o destino ' +
-        'do ataque, nunca parte intermediária do caminho.',
+      corpo: semDestino
+        ? 'Não há destino alcançável pelo seu território.'
+        : 'A ordem será resolvida na próxima virada.',
     });
 
     // ⚠️ **Enquanto se escolhe destino, o painel encolhe.** Ele fica em baixo-direita, por
@@ -498,10 +491,8 @@ export class ExercitoFicha {
       definirTooltip(this.botaoTrocarPostura, {
         titulo: trancado ? 'A muralha ainda segura' : cerco.postura === 'sitiar' ? 'Passar ao assalto' : 'Voltar a sitiar',
         corpo: trancado
-          ? `A muralha desta cidade obriga a sitiá-la por mais ${faltam} ${faltam === 1 ? 'rodada' : 'rodadas'} antes de um assalto. Escada, aríete e rampa não se improvisam diante dos muros.`
-          : 'A troca vale na próxima virada, como toda ordem. O cerco não toma a cidade por ' +
-            'si nem briga com o exército de dentro: ele aperta e espera. Quem toma é o ' +
-            'assalto, e ele custa homens.',
+          ? `Faltam ${faltam} ${faltam === 1 ? 'rodada' : 'rodadas'} para assaltar.`
+          : 'A nova postura vale na próxima virada.',
       });
     }
 

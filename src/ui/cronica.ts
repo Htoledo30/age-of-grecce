@@ -7,7 +7,7 @@
  * homens **sumia do mapa** sem uma palavra: ele via a consequência e tinha que deduzir o
  * resto. Guerra que só se adivinha não é verificável à mão.
  *
- * ⚠️ **Isto NÃO é o visor de batalha** (`ROADMAP.md`, patch 0.0.13). Não há barra, não há
+ * ⚠️ **Isto NÃO é o futuro visor de batalha.** Não há barra, não há
  * playback, não há velocidade nem botão de pular: é o texto do que já aconteceu, lido de
  * um resultado que já estava calculado. A diferença entre as duas coisas é informação
  * contra drama, e o drama tem patch próprio — ele passa a valer de verdade no dia em que a

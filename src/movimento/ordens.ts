@@ -4,7 +4,7 @@
  * **Mover não muda o mapa no instante do clique.** A ordem fica guardada, revisável e
  * cancelável, e só acontece na resolução — junto com as ordens de todo mundo. É o que
  * impede quem age primeiro de tomar uma fronteira vazia antes de o outro lado ter
- * oportunidade de mandar reforço. Ver `documentacao/design/resolucao-da-rodada.md`.
+ * oportunidade de mandar reforço.
  *
  * Este arquivo só sabe **julgar e descrever** uma ordem. Quem a executa é `resolucao.ts`.
  */

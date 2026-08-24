@@ -100,6 +100,33 @@
   background: rgb(8 13 14 / 38%);
 }
 
+/* As duas contas do reino lado a lado: quanto ouro, e por quantos turnos há comida.
+   Ficam na MESMA linha porque são consultadas juntas — o ouro diz quantos homens cabem
+   agora, a comida diz por quanto tempo. */
+.barra-turno__contas {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.barra-turno__folego {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 20px;
+  font-family: var(--fonte-numero);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.045em;
+  color: var(--ui-texto-fraco);
+}
+/* Aperto e fome se veem de longe: o número negativo é o aviso de que gente morre agora. */
+.barra-turno__folego[data-tom='aperto'] {
+  color: var(--ui-bronze-claro);
+}
+.barra-turno__folego[data-tom='fome'] {
+  color: var(--ui-sangue-claro);
+}
+
 .barra-turno__ouro {
   justify-content: flex-start;
   min-height: 38px;
@@ -120,6 +147,22 @@
 .barra-turno__saldo {
   font-weight: 800;
   color: #f0cd82;
+}
+
+.barra-turno__folego-valor {
+  font-weight: 800;
+}
+
+.barra-turno__folego-unidade {
+  font-weight: 400;
+}
+
+.barra-turno__folego-cobertura {
+  font-weight: 400;
+}
+
+.barra-turno__folego-cobertura[data-tom='deficit'] {
+  color: var(--ui-sangue-claro);
 }
 
 .barra-turno__variacao {

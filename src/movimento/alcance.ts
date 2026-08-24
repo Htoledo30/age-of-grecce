@@ -21,8 +21,7 @@ import type { Atlas } from '@/mundo/atlas';
  * As províncias alcançáveis dentro de `saltos`, **com a rota até cada uma**.
  *
  * A ordem guarda a rota, e não só o destino: sem ela, "interceptar no meio do caminho" não
- * teria como saber por onde a hoste passou. Ver
- * `documentacao/design/resolucao-da-rodada.md`.
+ * teria como saber por onde a hoste passou.
  *
  * A origem não entra no resultado — ficar parado não é destino.
  *

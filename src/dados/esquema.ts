@@ -26,6 +26,12 @@ export type Mundo = z.infer<typeof Mundo>;
  * Este esquema é a documentação do arquivo, e é o que um editor futuro vai ler pra saber
  * quais campos existem e que valores aceitam.
  */
+/** Um nível de imposto: quanto multiplica a receita e quanto pesa no humor. */
+const NivelDeImposto = z.object({
+  fator: z.number().gt(0),
+  humor: z.number().int(),
+});
+
 export const Ajustes = z.object({
   versao: z.literal(1),
   jogo: z.object({
@@ -48,43 +54,20 @@ export const Ajustes = z.object({
        */
       impostoPorHabitante: z.number().positive(),
       /**
-       * A escala da produção FÍSICA — quanta unidade de grão, gado ou prata sai da terra
-       * por turno.
+       * Os níveis de imposto por província: receita trocada por pressão social.
        *
-       * ⚠️ **Os dois números existem separados porque significam coisas diferentes.** Um
-       * diz quanta gente trabalha a terra; o outro, quanto cada uma tira por ponto de
-       * potencial. Multiplicados dariam o mesmo resultado num número só — e aí o dia de
-       * balancear "a Grécia tem mais camponeses" ficaria indistinguível de "a terra rende
-       * mais", que são decisões de design opostas.
-       *
-       * Valores iniciais de teste: o patch 0.0.4 ajusta ao ligar o consumo de alimento.
+       * É o desenho do GDD, com a régua de Rome: Total War como referência (Low ×0,8
+       * comprando ordem pública; High/Very High ×1,2–1,5 pagando em revolta). O `fator`
+       * multiplica o imposto DEPOIS da corrupção; o `humor` entra no ALVO de felicidade
+       * da província. Substituiu o decreto de investimento, que era redundante com as
+       * construções e de retorno ilegível.
        */
-      producao: z.object({
-        /** Fatia implícita da população que trabalha a terra (`DECISOES.md` #43). */
-        fracaoProdutiva: z.number().gt(0).max(1),
-        /** Unidades por produtor, por ponto de potencial natural, por turno. */
-        porProdutorPorNivel: z.number().gt(0),
-      }),
-      investimento: z.object({
-        /**
-         * Maior quantia que se pode pôr numa província de uma vez, e a que compra o teto.
-         *
-         * O bônus é medido EM RELAÇÃO a ela: investir o máximo dá o teto, metade dá
-         * metade do teto. Sem essa âncora o número não significava nada — três moedas
-         * compravam 1%, que é o tipo de conta que faz o jogador desconfiar do jogo.
-         */
-        maximo: z.number().int().positive(),
-        /** Teto do bônus. O nível da terra continua sendo quem manda. */
-        teto: z.number().gt(0).max(1),
-        /**
-         * Forma da curva entre zero e o máximo. **1 é regra de três**: 30.000 está para
-         * 25% assim como 300 está para 0,25%. Abaixo de 1 a curva encurva pra cima e as
-         * quantias pequenas passam a render mais que o proporcional — é o botão pra girar
-         * se investir pouco parecer inútil demais.
-         */
-        expoente: z.number().gt(0).max(1),
-        /** Quantas ARRECADAÇÕES o incentivo atravessa antes de acabar. */
-        arrecadacoes: z.number().int().positive(),
+      imposto: z.object({
+        niveis: z.object({
+          baixo: NivelDeImposto,
+          normal: NivelDeImposto,
+          alto: NivelDeImposto,
+        }),
       }),
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
@@ -92,34 +75,76 @@ export const Ajustes = z.object({
       /**
        * Crescimento por turno, antes das construções.
        *
-       * ⚠️ **Não existe mais capacidade máxima** (`DECISOES.md` #48A): esta taxa é aplicada
-       * direta, sem freio. O freio será o alimento, no patch 0.0.4. Até lá o crescimento é
-       * exponencial — estado intermediário conhecido.
+       * ⚠️ **Não existe capacidade máxima artificial:** esta taxa é aplicada diretamente,
+       * e a disponibilidade de alimento funciona como freio.
        */
       taxaNatural: z.number().gt(0).max(1),
     }),
+    construcoes: z.object({
+      slotsPorProvincia: z.number().int().positive(),
+      nivelMaximo: z.literal(3),
+    }),
     /**
-     * Quanto o mundo come.
+     * A corrupção: o freio do imposto, por tamanho e por distância da capital.
      *
-     * ⚠️ **O consumo ainda NÃO é cobrado de ninguém.** Isto existe hoje como a régua que
-     * dimensiona o estoque inicial da região de teste: `DECISOES.md` #11A pede cerca de
-     * cinco turnos de sobrevivência, e sem uma taxa de consumo "cinco turnos" não é uma
-     * frase verificável. O patch 0.0.4 do `ROADMAP.md` é que faz isto morder.
+     * Cada fatia é uma hipérbole saturante `teto × x / (x + meio)`; as duas se compõem
+     * por `1 − (1−a)(1−b)` e nunca chegam a 100%. Fórmula e tabela de calibração no GDD.
      */
-    alimento: z.object({
+    corrupcao: z.object({
+      tamanho: z.object({
+        /** Habitantes que uma administração arcaica cobre sem perder nada. */
+        limiar: z.number().int().nonnegative(),
+        /** Fração máxima que o tamanho pode comer, no infinito. */
+        teto: z.number().min(0).max(1),
+        /** Excesso de habitantes que compra METADE do teto. Controla a inclinação. */
+        meiaPopulacao: z.number().int().positive(),
+      }),
+      distancia: z.object({
+        /** Fração máxima que a distância pode comer, no infinito. */
+        teto: z.number().min(0).max(1),
+        /** Saltos que compram metade do teto. 6 reproduz a tabela do GDD. */
+        meioCaminho: z.number().int().positive(),
+        /** Saltos atribuídos a quem NÃO tem caminho até a capital (ilha, sem capital). */
+        semCaminho: z.number().int().positive(),
+      }),
+    }),
+    capital: z.object({
       /**
-       * Unidades de alimento que um habitante come por turno.
+       * O que custa mudar a capital por vontade própria.
        *
-       * 0,02 quer dizer que uma unidade alimenta cinquenta pessoas durante um turno — a
-       * escala é arbitrária e existe pra que os estoques sejam números legíveis em vez de
-       * dezenas de milhares.
+       * Zero quando a atual caiu em mãos alheias — a escolha forçada não é castigo. O
+       * custo existe para a mudança voluntária não virar um interruptor grátis quando a
+       * corrupção por distância passar a ler a capital.
        */
-      consumoPorHabitante: z.number().positive(),
+      custoDeMudanca: z.number().int().nonnegative(),
+    }),
+    /** Balanço alimentar anual em pontos inteiros: capacidade, não inventário. */
+    alimento: z.object({
+      /** Ponto básico dado uma vez a cada poder com território simulado. */
+      subsistenciaPorReino: z.number().int().nonnegative(),
+      /** Cada crescimento desta fração sobre a população inicial aumenta o custo em um. */
+      fracaoPopulacionalPorNivel: z.number().gt(0).max(1),
+      /** Quantos homens mobilizados, ou fração, custam um ponto. */
+      soldadosPorPonto: z.number().int().positive(),
+      /** Fatia fixa da população perdida quando o saldo civil é negativo. */
+      mortePorFome: z.number().min(0).max(1),
+      /** Fatia fixa dos homens mobilizados perdida quando o saldo final é negativo. */
+      mortePorFomeNaTropa: z.number().min(0).max(1),
+      /**
+       * A despensa de uma cidade cercada — o relógio de Bannerlord, num contador só.
+       *
+       * A cidade aguenta `mantimentos + comida da própria terra` turnos de cerco (a
+       * Fazenda é resistência de cerco). Enquanto a despensa dura, ninguém morre; quando
+       * vence, povo (−1%) e guarnição (−5%) caem juntos, todo turno.
+       */
+      cerco: z.object({
+        mantimentos: z.number().int().nonnegative(),
+      }),
     }),
     /**
      * Como o número de felicidade vira palavra na tela.
      *
-     * Internamente é 0–100; o jogador nunca vê o número cru. Ver `DECISOES.md` #68 — as
+     * Internamente é 0–100; o jogador nunca vê o número cru. As
      * cinco faixas são a interface oficial, e ficam nos dados porque são conteúdo: mexer
      * no ponto em que uma província passa a "Revoltosa" é balanço, não código.
      */
@@ -127,6 +152,9 @@ export const Ajustes = z.object({
       /**
        * Da mais infeliz para a mais feliz. `ate` é o último valor que ainda pertence à
        * faixa, e a última tem que fechar em 100 — senão existe felicidade sem nome.
+       *
+       * A PRIMEIRA faixa é a revoltosa: é nela que o imposto para de ser pago e que a
+       * contagem de revolta corre. O limiar sai da própria faixa, não de outro número.
        */
       faixas: z
         .array(z.object({ ate: z.number().int().min(0).max(100), nome: z.string().min(1) }))
@@ -141,6 +169,30 @@ export const Ajustes = z.object({
             ctx.addIssue({ code: 'custom', message: 'a última faixa tem que terminar em 100' });
           }
         }),
+      /** Para onde o humor caminha quando nada o empurra. */
+      alvoBase: z.number().int().min(0).max(100),
+      /** Quanto o humor anda por turno em direção ao alvo. Gradual, nunca salto. */
+      passoPorTurno: z.number().int().positive(),
+      /** Queda imediata quando a cidade é tomada. É o único movimento não gradual. */
+      choqueDaConquista: z.number().int().nonnegative(),
+      /**
+       * O que empurra o alvo, somado sobre a base — tudo pela situação da PRÓPRIA
+       * província: só quem passa fome recebe o peso da fome, sem parcela nacional.
+       */
+      alvo: z.object({
+        /** A própria província passando fome: dependente num reino de saldo civil
+         *  negativo, ou sitiada com a despensa vencida. */
+        fome: z.number().int(),
+        sitiada: z.number().int(),
+        /** Dono atual diferente do dono de 700 a.C.: o povo vive sob bandeira alheia. */
+        dominioEstrangeiro: z.number().int(),
+      }),
+      revolta: z.object({
+        /** Turnos consecutivos na faixa revoltosa até o levante armado. */
+        turnos: z.number().int().positive(),
+        /** Fração da população que pega em armas no levante. */
+        fracaoRebelde: z.number().gt(0).max(1),
+      }),
     }),
     /**
      * O que custa pôr e manter gente em armas.
@@ -373,9 +425,8 @@ export const Economia = z
         /**
          * Se este produto alimenta gente.
          *
-         * O patch 0.0.4 soma o estoque de todos os alimentos de uma província contra o que a
-         * população dela come. Mármore e prata nunca entram nessa conta por mais valiosos
-         * que sejam — é a distinção que faz Atenas ser rica e faminta ao mesmo tempo.
+         * O nível de cada produto alimentar soma pontos à capacidade anual do reino.
+         * Mármore e prata nunca entram nessa conta por mais valiosos que sejam.
          */
         alimento: z.boolean(),
       }),
@@ -383,7 +434,7 @@ export const Economia = z
     /**
      * Catálogo dos povos. Só nome: nacionalidade não tem número próprio.
      *
-     * Ver `DECISOES.md` #70 — nacionalidade pertence à POPULAÇÃO, não à província nem ao
+     * Nacionalidade pertence à POPULAÇÃO, não à província nem ao
      * poder, e uma província tem várias ao mesmo tempo. Manter um catálogo aqui é o que
      * impede "eleusina" e "eleusino" virarem dois povos por causa de um erro de digitação.
      */
@@ -414,9 +465,9 @@ export const Economia = z
          * "Nível menor" seria a regra errada: grão nível 3 rende menos que prata nível 2, e
          * o que faz o principal ser o principal é o que ele entrega, não o algarismo.
          *
-         * Ele não entra na renda atual de propósito: somar mais uma parcela à economia que
-         * o patch 0.0.3 vai substituir seria balancear duas vezes. O dado existe agora porque a
-         * região de teste precisa estar completa ANTES dos sistemas que a consomem.
+         * Ele não entra na renda atual de propósito: somar mais uma parcela sem a regra de
+         * circulação pronta seria balancear duas vezes. O dado já existe porque a região de
+         * teste deve estar completa antes dos sistemas que a consomem.
          */
         secundario: z.object({
           produto: z.string().min(1),
@@ -426,36 +477,27 @@ export const Economia = z
          * De que povo é a população, em frações que somam 1.
          *
          * Enquanto cada cidade se governa isto não pesa em nada. Ele existe pro dia em que
-         * Atenas tomar Elêusis e passar a mandar em 85% de gente que não é dela — ver
-         * `DECISOES.md` #72. A tensão é consequência de conquista, e por isso o dado tem
+         * Atenas tomar Elêusis e passar a mandar em 85% de gente que não é dela. A tensão é
+         * consequência de conquista, e por isso o dado tem
          * que estar escrito antes da conquista, não depois.
          */
         nacionalidades: z.record(z.string().min(1), z.number().gt(0).max(1)),
         /** Humor inicial, de 0 a 100. As faixas com nome estão em `ajustes.json`. */
         felicidade: z.number().int().min(0).max(100),
-        /**
-         * O que a província tem guardado em 700 a.C., por produto.
-         *
-         * `DECISOES.md` #11A pede cerca de cinco turnos de alimento na região de teste — o
-         * bastante pro patch 0.0.4 poder ser testado sem que ninguém morra de fome no turno 2.
-         * Um teste confere esses cinco turnos contra `alimento.consumoPorHabitante`, pra que
-         * mexer na população não invalide o estoque em silêncio.
-         */
-        estoque: z.record(z.string().min(1), z.number().nonnegative()),
-        /** O que já está de pé em 700 a.C. Ids do catálogo de construções. */
-        construcoes: z.array(z.string().min(1)),
+        /** O que já está de pé em 700 a.C.: id do catálogo para nível I, II ou III. */
+        construcoes: z.record(z.string().min(1), z.number().int().min(1).max(3)),
         /**
          * Se a costa daqui abriga navio.
          *
-         * **Não é um porto construído** — é a terra permitir um. Naval está fora do 0.0.2
-         * (`PATCH_ATUAL.md`), e o Porto é adaptação do patch 0.0.11; este campo é a pergunta
-         * que os dois vão fazer. Maratona é o caso que justifica o campo existir: ela é
+         * **Não é um porto construído** — é a terra permitir um. Este campo é a pergunta
+         * que os futuros sistemas naval e de construção de portos vão fazer. Maratona é o
+         * caso que justifica o campo existir: ela é
          * litorânea e não tem abrigo nenhum, então estar no mar não vale de nada.
          */
         ancoradouro: z.boolean(),
         /** Por que esta província é assim. Documentação junto do dado, não longe dele. */
         motivo: z.string().min(1),
-        /** Por que ela COMEÇA assim: povo, humor, estoque e o que já está de pé. */
+        /** Por que ela COMEÇA assim: povo, humor e o que já está de pé. */
         motivoDaFicha: z.string().min(1),
       }),
     ),
@@ -484,9 +526,8 @@ export const Economia = z
         });
       }
       // ⚠️ A terra dá duas coisas DIFERENTES. Repetir o produto passaria pela regra de
-      // rendimento (basta o nível ser menor) e chegaria à produção física como duas
-      // fontes do mesmo item — duas linhas iguais na ficha e uma soma que ninguém
-      // entenderia ao ler o dado.
+      // rendimento (basta o nível ser menor) e chegaria aos sistemas como duas fontes do
+      // mesmo item — uma soma que ninguém entenderia ao ler o dado.
       if (ficha.secundario.produto === ficha.produto) {
         ctx.addIssue({
           code: 'custom',
@@ -523,31 +564,37 @@ export const Economia = z
           });
         }
       }
-      for (const guardado of Object.keys(ficha.estoque)) {
-        if (!economia.produtos[guardado]) {
-          ctx.addIssue({
-            code: 'custom',
-            path: [...onde, 'estoque'],
-            message: `produto desconhecido: ${guardado}`,
-          });
-        }
-      }
     }
   });
 
 export type Economia = z.infer<typeof Economia>;
 
 /**
- * Construções econômicas: permanentes, caras, e cada uma melhora UMA parcela da renda.
+ * Construções permanentes em quatro slots, com níveis I–III.
  *
  * O efeito mora no catálogo e não se repete nas províncias — balancear todas as Ágoras
  * do mapa é mudar um número só, exatamente como acontece com o valor dos produtos.
  *
  * **Por que uma parcela cada, e não um bônus genérico:** como impostos, produção e
  * comércio pesam diferente em cada província, a melhor construção muda de lugar pra
- * lugar. Atenas tem 35.000 habitantes e quer Ágora; Sunião tem metais preciosos nível V
- * e quer Oficina. A decisão nasce dos números, sem regra especial nenhuma.
+ * lugar. Atenas tem muita gente e quer Ágora; Sunião tem minério e pode erguer Mina.
  */
+const TresNiveisPositivos = z.tuple([
+  z.number().positive(),
+  z.number().positive(),
+  z.number().positive(),
+]);
+const TresPrazosPositivos = z.tuple([
+  z.number().int().positive(),
+  z.number().int().positive(),
+  z.number().int().positive(),
+]);
+const TresCustosInteiros = z.tuple([
+  z.number().int().positive(),
+  z.number().int().positive(),
+  z.number().int().positive(),
+]);
+
 export const Construcoes = z.object({
   versao: z.literal(1),
   comentario: z.string().min(1),
@@ -555,24 +602,32 @@ export const Construcoes = z.object({
     z.string().min(1),
     z.object({
       nome: z.string().min(1),
-      /** Pago à vista e uma vez só. O efeito não expira. */
-      custo: z.number().int().positive(),
+      /** Custo e prazo explícitos de I, II e III. Upgrade paga somente o nível novo. */
+      custos: TresNiveisPositivos,
+      turnos: TresPrazosPositivos,
       /**
-       * Turnos de obra antes de a construção começar a render.
+       * Ouro por turno para manter cada nível de pé, para sempre.
        *
-       * Varia por construção de propósito: prazo igual pra todas não informaria nada e
-       * seria só atrito. Variando, ele vira mais um eixo da escolha — barata e rápida
-       * contra cara e lenta — e acompanhar o custo faz isso ler sem explicação.
+       * É o custo próprio que faz a renda provincial ser LÍQUIDA e permite província no
+       * vermelho (ver GDD): um Mercado numa terra pobre pode custar mais do que rende, e
+       * "não construir" vira decisão. Também é o ralo contínuo que faltava ao tesouro —
+       * quem enche os doze slots do reino assume uma folha permanente.
        */
-      turnos: z.number().int().positive(),
+      manutencao: TresCustosInteiros,
+      requisito: z
+        .object({
+          /** Basta possuir um destes produtos, principal ou secundário. */
+          produtos: z.array(z.string().min(1)).min(1).optional(),
+          ancoradouro: z.literal(true).optional(),
+        })
+        .optional(),
       /**
        * Em que moeda esta construção paga.
        *
        * **Nem toda construção paga em ouro, e é isso que faz a lista ser uma escolha.**
        * Se todas rendessem moeda, escolher seria aritmética: bastaria pegar a de maior
-       * retorno. O Quartel não rende nada e mesmo assim é a obra mais cara do catálogo,
-       * porque o que ele compra é a capacidade de recrutar — e isso não se compara com
-       * "+70 por turno" numa conta só.
+       * retorno. O Quartel não rende nada hoje: reserva um slot para qualidade militar
+       * futura, enquanto Fazenda compra alimento e Ágora compra arrecadação.
        *
        * União discriminada e não campos opcionais: assim o compilador obriga quem lê a
        * decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined`
@@ -589,36 +644,43 @@ export const Construcoes = z.object({
            * silenciosamente não fazer nada.
            */
           parcela: z.enum(['impostos', 'producao', 'comercio']),
-          /** Multiplica a parcela. 1,4 é mais 40%. */
-          fator: z.number().gt(1),
+          /** Fator total no nível I, II e III. */
+          fatores: TresNiveisPositivos,
         }),
         z.object({
-          tipo: z.literal('capacidade'),
-          /** O que a província passa a poder fazer. */
-          capacidade: z.enum(['recrutar']),
-          /** A promessa, escrita pro jogador. Fica no dado, não no código da interface. */
-          promessa: z.string().min(1),
+          tipo: z.literal('alimento'),
+          /** Pontos acrescentados pela construção no nível I, II e III. */
+          pontos: z.tuple([
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+          ]),
         }),
         z.object({
           tipo: z.literal('milicia'),
           /**
            * Multiplica a milícia da província. 2 é o dobro de defensores.
            *
-           * Mesmo desenho do Celeiro sobre o crescimento: multiplica a DERIVAÇÃO. Não
-           * existe número de guarnição guardado em lugar nenhum pra isto somar.
+           * Multiplica a DERIVAÇÃO. Não existe número de guarnição guardado em lugar
+           * nenhum para isto somar.
            */
-          fatorMilicia: z.number().gt(1),
-          /** A promessa genérica; a interface acrescenta os números da província. */
-          promessa: z.string().min(1),
+          fatores: TresNiveisPositivos,
         }),
         z.object({
-          tipo: z.literal('populacao'),
-          /** Multiplica somente o crescimento natural. 1,5 é mais 50%. */
-          fatorCrescimento: z.number().gt(1),
-          /** A promessa genérica; a interface acrescenta os números da província. */
-          promessa: z.string().min(1),
+          tipo: z.literal('felicidade'),
+          /** Pontos somados ao ALVO de felicidade da província no nível I, II e III. */
+          pontos: z.tuple([
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+          ]),
+        }),
+        z.object({
+          tipo: z.literal('futuro'),
         }),
       ]),
+      /** Benefício atual e, quando houver, papel futuro escrito para o jogador. */
+      promessa: z.string().min(1),
       /**
        * Esta obra obriga o inimigo a sitiar antes de poder assaltar.
        *

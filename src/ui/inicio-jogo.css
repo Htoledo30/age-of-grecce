@@ -187,3 +187,21 @@ body[data-fase-jogo='escolha'] .ficha {
     padding: 18px;
   }
 }
+
+/* A retomada de um salvamento: descrição curta sob o botão de continuar, e o aviso de
+   que recomeçar apaga a partida salva. */
+.inicio-jogo__continuacao {
+  margin: 10px 0 22px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+}
+.inicio-jogo__nota {
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ui-texto-suave, var(--ui-texto));
+  opacity: 0.75;
+}

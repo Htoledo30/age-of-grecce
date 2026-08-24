@@ -78,6 +78,10 @@
   color: var(--ui-bronze-claro);
   cursor: help;
 }
+.ficha__renda[data-tom='negativo'] {
+  color: var(--ui-sangue-claro);
+  font-weight: 700;
+}
 .ficha__total {
   padding-top: 5px;
   border-top: 1px solid var(--ui-borda-fraca);
@@ -86,26 +90,11 @@
 .ficha__lista dd.ficha__total {
   color: var(--ui-bronze-claro);
 }
-/* O secundário, a colheita e a despensa moram junto da produção porque respondem à mesma
-   pergunta: o que esta terra dá e o que ela tem. A COLHEITA é a única das três que já
-   mexe em alguma coisa — ela enche o estoque todo turno —, e por isso é a única que não
-   fica tênue: ela ganha a cor do número, como a renda logo acima. */
+/* O secundário mora junto da produção porque responde à mesma pergunta: o que esta terra
+   dá. Tênue de propósito — ele é identidade da terra, não decisão a tomar, e a
+   contabilidade da comida vive no Governo. */
 .ficha__secundario {
   margin-top: 2px;
-  font-size: 12px;
-  color: var(--ui-texto-tenue);
-  cursor: help;
-}
-.ficha__colheita {
-  margin-top: 4px;
-  font-family: var(--fonte-numero);
-  font-size: 12px;
-  color: var(--ui-texto-fraco);
-  cursor: help;
-}
-.ficha__despensa {
-  margin-top: 4px;
-  font-family: var(--fonte-numero);
   font-size: 12px;
   color: var(--ui-texto-tenue);
   cursor: help;

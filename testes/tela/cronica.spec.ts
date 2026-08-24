@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test';
  * hoste sumia do mapa e o jogador tinha que deduzir que houve batalha — e é justamente o
  * caso da surtida perdida, em que a peça some sem deixar nada no lugar.
  *
- * Não é o visor de batalha (`ROADMAP.md`, 0.0.13): aqui não há barra nem playback.
+ * Não é o futuro visor de batalha: aqui não há barra nem playback.
  */
 
 interface Ganchos {
@@ -42,18 +42,20 @@ test('a rodada sem notícia não escreve nada; a com batalha conta o que houve',
   await page.getByRole('button', { name: 'Começar campanha' }).click();
   await page.waitForSelector('.barra-turno');
 
+  // ⚠️ **A rodada quieta é medida ANTES de levantar tropa**, e isso mudou quando o saldo
+  // alimentar passou a avisar: 2.000 homens comem o dobro de 2.000 habitantes e põem o
+  // reino no vermelho, o que É notícia. Reino parado de verdade é este aqui.
+  await page.getByRole('button', { name: 'Passar o turno' }).click();
+  await expect(page.locator('.cronica')).toBeHidden();
+
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', 2000);
+    i.passarTurno();
   });
-
-  // Mundo parado: ninguém marchou, ninguém lutou. Um painel dizendo "nada aconteceu"
-  // seria ruído em cima do mapa toda rodada.
-  await page.getByRole('button', { name: 'Passar o turno' }).click();
-  await expect(page.locator('.cronica')).toBeHidden();
 
   // Assalto sobre Elêusis, que é cidade aberta: batalha de campo, milícia derrotada e
   // conquista na mesma virada.

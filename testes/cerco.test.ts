@@ -187,15 +187,15 @@ describe('SITIAR NUNCA TOMA A CIDADE — quem toma é o assalto', () => {
     const c = nova();
     c.comecar('atenas');
     c.darOuro(200_000);
-    // Tebas não tem economia configurada, logo não tem população nem milícia. Chegar a
-    // ela exige uma base vizinha: a Ática só faz fronteira com Elêusis e Tanagra.
-    c.trocarDono('tanagra', 'atenas');
-    c.plantarHoste('tanagra', 'atenas', 300);
-    ordenar(c, 'tanagra', 'tebas', 300, 'atenas');
+    // Delfos não tem economia configurada, logo não tem população nem milícia. Chegar a
+    // ela exige uma base vizinha: Queroneia, na porta noroeste da região.
+    c.trocarDono('queroneia', 'atenas');
+    c.plantarHoste('queroneia', 'atenas', 300);
+    ordenar(c, 'queroneia', 'delfos', 300, 'atenas');
     c.passarTurno();
     // Sem gente não há quem feche portão nenhum, e não há cerco a fazer.
-    expect(c.donoDe('tebas')).toBe('atenas');
-    expect(c.cercoEm('tebas')).toBeUndefined();
+    expect(c.donoDe('delfos')).toBe('atenas');
+    expect(c.cercoEm('delfos')).toBeUndefined();
   });
 });
 
@@ -263,8 +263,8 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
     surtir(c, 'eleusis', 'eleusis');
     c.passarTurno();
 
-    // √(500² − 300²) = 400. O cerco cai por consequência: sem sitiante em cima, não há
-    // cerco — não foi preciso uma regra separada para levantá-lo.
+    // A despensa da cidade ainda aguenta (grão III é resistência de cerco): ninguém
+    // passou fome antes da surtida, e √(500² − 300²) = 400. O cerco cai pela vitória.
     expect(c.forcaEm('eleusis')).toBe(400);
     expect(c.cercoEm('eleusis')).toBeUndefined();
     expect(c.hostesEm('eleusis').map((h) => h.poder)).toEqual(['eleusis']);
@@ -284,8 +284,8 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
     expect(c.donoDe('eleusis')).toBe('eleusis');
     // ⚠️ A MILÍCIA NÃO SAIU JUNTO. Ela é da cidade, e a surtida é a hoste — se ela tivesse
     // ido a campo, perder uma vez custaria a defesa da muralha e a população de uma vez só.
-    // A população só CRESCEU (o crescimento natural da virada): ninguém dela morreu.
-    expect(c.populacaoDe('eleusis')).toBeGreaterThanOrEqual(povo);
+    // E a despensa ainda aguenta: a fome do cerco só entra quando os mantimentos vencem.
+    expect(c.populacaoDe('eleusis')).toBe(povo);
     expect(c.rodada.milicianosMortos).toEqual([]);
   });
 
@@ -341,7 +341,7 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
 });
 
 /**
- * O SOCORRO — quem chega de fora para desfazer um cerco (`DECISOES.md` #33A).
+ * O SOCORRO — quem chega de fora para desfazer um cerco.
  *
  * A outra metade da surtida: o defensor obriga o choque saindo de dentro OU chegando de
  * fora. Antes, o exército de socorro entrava na província sitiada e **acampava ao lado do
@@ -427,7 +427,7 @@ describe('A MURALHA: cidade aberta cai hoje, cidade murada faz esperar', () => {
       Math.floor(
         c.populacaoDe('tanagra') *
           ajustes.combate.milicia.fracao *
-          (fator?.tipo === 'milicia' ? fator.fatorMilicia : 1),
+          (fator?.tipo === 'milicia' ? fator.fatores[0] : 1),
       ),
     );
   });

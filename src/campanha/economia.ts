@@ -7,16 +7,17 @@
  *
  * A regra que organiza tudo, e que veio do documento de design:
  *
- *     renda = impostos da população + produção do produto + comércio
+ *     renda = impostos da população + produção do produto + comércio − manutenção
  *
  * **Área não gera dinheiro.** Uma província enorme e montanhosa não é rica por ser
  * grande — a fórmula antiga, que era função só da área, foi removida inteira, sem
  * sobrar como reserva pra ninguém: duas economias diferentes escondidas no mesmo jogo
  * seria pior que uma economia incompleta.
  *
- * O produto e o NÍVEL são fixos. Investir não transforma uma costa de nível 2 numa de
- * nível 5, e não cria recurso que não existe: compra exploração temporária — mais
- * pescadores, mais mineiros, mais jornadas de colheita — por algumas arrecadações.
+ * O produto e o NÍVEL são fixos. O que o jogador gira é o NÍVEL DE IMPOSTO da província
+ * — receita trocada por pressão social, como no GDD — e o que ele ergue são construções.
+ * (O antigo decreto de investimento saiu: era redundante com as construções e de retorno
+ * ilegível; a alavanca clara de "quero mais dinheiro desta terra AGORA" é o imposto.)
  *
  * O campo já se chamou `potencial`, e o nome foi trocado porque prometia o que o sistema
  * não faz: potencial soa como coisa que se desenvolve. Nível é grau, é identidade da
@@ -29,28 +30,32 @@ type AjustesEconomia = Ajustes['jogo']['economia'];
 type FichaEconomica = Economia['provincias'][string];
 type CatalogoDeConstrucoes = Construcoes['construcoes'];
 
-/**
- * O que a província tem de permanente e de temporário no momento do cálculo.
- *
- * Agrupado num objeto em vez de virar mais dois parâmetros soltos: a função já tinha
- * quatro, e ordem de argumento posicional é o tipo de coisa que se troca sem o
- * compilador reclamar quando os dois são do mesmo tipo.
- */
-export interface EstadoDaProvincia extends BaseDaProvincia {
-  /** Incentivo em curso, se houver. */
-  investimento: Investimento | undefined;
-}
+/** Os três níveis de imposto de uma província. `normal` é o padrão de toda terra. */
+export type NivelDeImposto = 'baixo' | 'normal' | 'alto';
 
 /**
- * O que a província é AGORA, tirando o incentivo.
+ * O que a província é AGORA, no momento do cálculo.
  *
- * Separado porque as contas de retorno precisam comparar "com e sem incentivo" sobre a
- * mesma base — e porque acrescentar `populacao` como mais um parâmetro solto ao lado de
- * `valor` daria dois `number` adjacentes que o compilador deixaria trocar em silêncio.
+ * Agrupado num objeto em vez de parâmetros soltos: ordem de argumento posicional é o
+ * tipo de coisa que se troca sem o compilador reclamar quando vários são `number`.
  */
 export interface BaseDaProvincia {
-  /** Ids de construções já erguidas ali. */
-  construcoes: readonly string[];
+  /** Construções já erguidas ali, com nível I–III. */
+  construcoes: Readonly<Record<string, number>>;
+  /**
+   * Fração do imposto perdida entre o campo e o tesouro. 0 é administração perfeita.
+   *
+   * Vem calculada de fora — tamanho da população e distância da capital são assunto da
+   * campanha, que conhece o mapa e a capital; esta função só aplica a fração ao imposto.
+   */
+  corrupcao: number;
+  /**
+   * Quanto o nível de imposto escolhido multiplica a arrecadação. 1 é o normal.
+   *
+   * Vem resolvido de fora (nível → fator via `ajustes.json`): esta função aplica o
+   * número e não conhece a tabela.
+   */
+  fatorDeImposto: number;
   /**
    * Habitantes que ainda estão na província.
    *
@@ -60,6 +65,12 @@ export interface BaseDaProvincia {
    * batalha.
    */
   populacao: number;
+  /**
+   * O povo está na faixa revoltosa: ninguém coleta imposto de quem está pronto pra
+   * queimar o coletor. Produção e comércio continuam — a vida segue, o Estado é que não
+   * entra — e a manutenção também: os prédios não deixam de custar.
+   */
+  revoltosa: boolean;
   /**
    * Há inimigo sentado em cima dela.
    *
@@ -72,60 +83,36 @@ export interface BaseDaProvincia {
   sitiada: boolean;
 }
 
-/** Um investimento em curso numa província. Vive no estado da campanha. */
-export interface Investimento {
-  /** Fração somada à produção, já com o teto aplicado. 0,25 é 25%. */
-  percentual: number;
-  /** Quantas arrecadações ainda carregam o bônus. Chega a zero e o incentivo acaba. */
-  arrecadacoesRestantes: number;
-}
-
-/** As três parcelas da renda, separadas — é assim que a ficha explica o número. */
+/** As parcelas da renda, separadas — é assim que a ficha explica o número. */
 export interface RendaDaProvincia {
   produto: { id: string; nome: string; valor: number };
   nivel: number;
   populacao: number;
   impostos: number;
-  /** Produção já com construção e com o bônus do investimento, se houver. */
+  /** A fração de corrupção que o imposto desta província pagou. */
+  corrupcao: number;
+  /** O fator do nível de imposto que o jogador escolheu. 1 é o normal. */
+  fatorDeImposto: number;
+  /** O povo recusou o coletor: os impostos acima são zero por revolta, não por conta. */
+  revoltosa: boolean;
+  /** Produção já com o fator das construções. */
   producao: number;
-  /** Quanto a produção seria sem incentivo (mas já com construção). */
-  producaoSemIncentivo: number;
   comercio: number;
+  /**
+   * O que as construções erguidas custam por turno para ficar de pé.
+   *
+   * É o que faz o `total` ser LÍQUIDO e permite província no vermelho: um Mercado numa
+   * terra pobre pode custar mais do que rende, e "não construir" vira decisão. Cobra
+   * inclusive sob cerco — a muralha não deixa de precisar de reparo porque há um exército
+   * na porta, e é mais um jeito de o cerco apertar quem está dentro.
+   */
+  manutencao: number;
+  /** Impostos + produção + comércio − manutenção. Pode ser negativo, e isso é o aviso. */
   total: number;
-  bonus: number;
   /** O que cada construção erguida ali está somando, por parcela. */
   construcoes: readonly string[];
 }
 
-/**
- * Quanto de bônus um investimento compra.
- *
- * A conta é uma **regra de três contra o investimento máximo**: pôr o máximo compra o
- * teto, pôr metade compra metade do teto. É isso que dá sentido ao número na tela —
- * antes a curva era uma raiz solta no ar, e três moedas compravam 1%, o que faz o
- * jogador desconfiar do jogo inteiro.
- *
- * O `expoente` é a forma da curva: 1 é a regra de três pura, e abaixo de 1 as quantias
- * pequenas rendem mais que o proporcional. Fica em `dados/ajustes.json` porque é
- * exatamente o botão a girar se investir pouco parecer inútil demais.
- *
- * O teto garante que nenhuma quantia transforme uma província comum numa potência: o
- * nível da terra continua sendo quem manda.
- */
-export function bonusDoInvestimento(valor: number, ajustes: AjustesEconomia): number {
-  if (valor <= 0) return 0;
-  const fracao = Math.min(1, valor / ajustes.investimento.maximo);
-  return ajustes.investimento.teto * fracao ** ajustes.investimento.expoente;
-}
-
-/**
- * Calcula a renda de uma província configurada.
- *
- * O comércio sai da produção JÁ INCENTIVADA de propósito: mais azeite prensado é mais
- * azeite pra vender, e é isso que faz o porto valer a pena. Numa província sem saída, o
- * mesmo investimento rende bem menos — que é a decisão que o comércio-base existe pra
- * criar.
- */
 /**
  * Quanto as construções erguidas multiplicam uma parcela da renda.
  *
@@ -134,18 +121,18 @@ export function bonusDoInvestimento(valor: number, ajustes: AjustesEconomia): nu
  * valer antes de alguém acrescentar a segunda.
  */
 function fatorDasConstrucoes(
-  construcoes: readonly string[],
+  construcoes: Readonly<Record<string, number>>,
   catalogo: CatalogoDeConstrucoes,
   parcela: 'impostos' | 'producao' | 'comercio',
 ): number {
   let fator = 1;
-  for (const id of construcoes) {
+  for (const [id, nivel] of Object.entries(construcoes)) {
     const construcao = catalogo[id];
     if (!construcao) throw new Error(`construção inexistente no catálogo: ${id}`);
-    // Construção de capacidade não entra na renda: o Quartel não rende moeda nenhuma, e
-    // é justamente por isso que ele não é comparável com a Ágora numa conta só.
     const efeito = construcao.efeito;
-    if (efeito.tipo === 'renda' && efeito.parcela === parcela) fator *= efeito.fator;
+    if (efeito.tipo === 'renda' && efeito.parcela === parcela) {
+      fator *= efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] ?? 1;
+    }
   }
   return fator;
 }
@@ -155,94 +142,59 @@ export function rendaDaProvincia(
   catalogo: Economia['produtos'],
   construcoes: CatalogoDeConstrucoes,
   ajustes: AjustesEconomia,
-  estado: EstadoDaProvincia,
+  estado: BaseDaProvincia,
 ): RendaDaProvincia {
   const produto = catalogo[ficha.produto];
   if (!produto) throw new Error(`produto inexistente no catálogo: ${ficha.produto}`);
 
-  const bonus =
-    estado.investimento && estado.investimento.arrecadacoesRestantes > 0
-      ? estado.investimento.percentual
-      : 0;
   const fator = (parcela: 'impostos' | 'producao' | 'comercio'): number =>
     fatorDasConstrucoes(estado.construcoes, construcoes, parcela);
 
-  // Arredonda cada parcela, e não só o total: é o que faz a soma das três linhas da ficha
+  // Arredonda cada parcela, e não só o total: é o que faz a soma das linhas da ficha
   // bater exata com o número da barra de turno, sem sobra de centavo em canto nenhum.
-  const impostos = Math.round(estado.populacao * ajustes.impostoPorHabitante * fator('impostos'));
+  // A fórmula do GDD, inteira e numa multiplicação só: população × taxa × (1−corrupção)
+  // × nível de imposto × construções. O povo revoltoso não paga nada.
+  const impostos = estado.revoltosa
+    ? 0
+    : Math.round(
+        estado.populacao *
+          ajustes.impostoPorHabitante *
+          (1 - estado.corrupcao) *
+          estado.fatorDeImposto *
+          fator('impostos'),
+      );
 
-  // A construção entra ANTES do incentivo, e é isso que faz os dois se comporem: quem
-  // ergue a Oficina primeiro tem uma produção maior pro incentivo multiplicar depois.
-  // Existe uma ordem de operações pro jogador descobrir.
-  const producaoSemIncentivo = produto.valor * ficha.nivel * fator('producao');
   // O cerco zera as duas parcelas que dependem do CAMPO e da ESTRADA. O imposto continua:
   // ver `sitiada` em `BaseDaProvincia`.
-  const producao = estado.sitiada ? 0 : Math.round(producaoSemIncentivo * (1 + bonus));
+  const producao = estado.sitiada
+    ? 0
+    : Math.round(produto.valor * ficha.nivel * fator('producao'));
   const comercio = estado.sitiada
     ? 0
     : Math.round(producao * ficha.comercioBase * fator('comercio'));
+
+  // A folha das construções: soma da manutenção de cada nível erguido. Não depende de
+  // cerco nem de imposto — é compromisso permanente, e é isso que a torna um ralo.
+  let manutencao = 0;
+  for (const [id, nivel] of Object.entries(estado.construcoes)) {
+    const construcao = construcoes[id];
+    if (!construcao) throw new Error(`construção inexistente no catálogo: ${id}`);
+    manutencao += construcao.manutencao[Math.max(0, Math.min(2, nivel - 1))] ?? 0;
+  }
 
   return {
     produto: { id: ficha.produto, nome: produto.nome, valor: produto.valor },
     nivel: ficha.nivel,
     populacao: estado.populacao,
     impostos,
+    corrupcao: estado.corrupcao,
+    fatorDeImposto: estado.fatorDeImposto,
+    revoltosa: estado.revoltosa,
     producao,
-    producaoSemIncentivo,
     comercio,
-    total: impostos + producao + comercio,
-    bonus,
-    construcoes: estado.construcoes,
-  };
-}
-
-/** Se este investimento se paga, e em quantos turnos. */
-export interface RetornoDoInvestimento {
-  bonus: number;
-  /** Quanto a província passa a render a mais por turno. */
-  ganhoPorTurno: number;
-  /** O que o incentivo rende ao todo, nas arrecadações que ele dura. */
-  ganhoTotal: number;
-  /** Turnos até o ganho cobrir o que foi pago. `Infinity` quando não cobre nunca. */
-  turnosParaPagar: number;
-  /** O incentivo devolve o que custou antes de acabar? */
-  vale: boolean;
-}
-
-/**
- * Faz a conta que o jogador precisa antes de gastar: **isto se paga?**
- *
- * Compara a renda com e sem o incentivo em vez de estimar por fórmula — assim o número
- * mostrado é o mesmo que o jogo vai somar no tesouro, arredondamento incluído. Sem isso
- * a tela prometeria um ganho e a arrecadação entregaria outro.
- */
-export function retornoDoInvestimento(
-  ficha: FichaEconomica,
-  catalogo: Economia['produtos'],
-  construcoes: CatalogoDeConstrucoes,
-  ajustes: AjustesEconomia,
-  base: BaseDaProvincia,
-  valor: number,
-): RetornoDoInvestimento {
-  const bonus = bonusDoInvestimento(valor, ajustes);
-  const arrecadacoes = ajustes.investimento.arrecadacoes;
-  const sem = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
-    ...base,
-    investimento: undefined,
-  }).total;
-  const com = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
-    ...base,
-    investimento: { percentual: bonus, arrecadacoesRestantes: arrecadacoes },
-  }).total;
-
-  const ganhoPorTurno = com - sem;
-  const ganhoTotal = ganhoPorTurno * arrecadacoes;
-  return {
-    bonus,
-    ganhoPorTurno,
-    ganhoTotal,
-    turnosParaPagar: ganhoPorTurno > 0 ? valor / ganhoPorTurno : Number.POSITIVE_INFINITY,
-    vale: ganhoTotal >= valor,
+    manutencao,
+    total: impostos + producao + comercio - manutencao,
+    construcoes: Object.keys(estado.construcoes),
   };
 }
 
@@ -258,13 +210,10 @@ export interface RetornoDaConstrucao {
 /**
  * Faz a conta da obra: **quanto ela acrescenta e em quantos turnos devolve o preço.**
  *
- * Diferente do incentivo, não existe "vale ou não vale": construção é permanente, então
- * ela sempre se paga um dia. O que importa é *quando* — uma Ágora que devolve em 40
- * turnos é outra coisa de uma que devolve em 300.
- *
- * Compara duas rendas reais em vez de estimar por fórmula, pelo mesmo motivo do
- * incentivo: o número mostrado tem que ser o que o jogo vai somar no tesouro,
- * arredondamento incluído.
+ * Construção é permanente, então ela sempre se paga um dia — o que importa é *quando*:
+ * uma Ágora que devolve em 40 turnos é outra coisa de uma que devolve em 300. Compara
+ * duas rendas reais em vez de estimar por fórmula: o número mostrado tem que ser o que o
+ * jogo vai somar no tesouro, arredondamento incluído.
  */
 export function retornoDaConstrucao(
   ficha: FichaEconomica,
@@ -277,30 +226,23 @@ export function retornoDaConstrucao(
   const construcao = construcoes[idConstrucao];
   if (!construcao) throw new Error(`construção inexistente no catálogo: ${idConstrucao}`);
 
-  // Duas perguntas diferentes, mesma conta: pra construção que ainda não existe, "quanto
-  // ela ACRESCENTARIA"; pra que já existe, "quanto ela ESTÁ dando". Sem essa distinção a
-  // linha de uma Ágora construída mostrava o efeito de uma segunda Ágora por cima dela.
   const erguidas = base.construcoes;
-  const jaErguida = erguidas.includes(idConstrucao);
-  const sem = jaErguida ? erguidas.filter((id) => id !== idConstrucao) : erguidas;
-  const com = jaErguida ? erguidas : [...erguidas, idConstrucao];
+  const nivelAtual = erguidas[idConstrucao] ?? 0;
+  const nivelAlvo = Math.min(3, nivelAtual + 1);
 
-  const antes = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
-    ...base,
-    construcoes: sem,
-    investimento: undefined,
-  }).total;
+  const antes = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, base).total;
   const depois = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
     ...base,
-    construcoes: com,
-    investimento: undefined,
+    construcoes: { ...erguidas, [idConstrucao]: nivelAlvo },
   }).total;
 
   const ganhoPorTurno = depois - antes;
   return {
-    custo: construcao.custo,
+    custo: construcao.custos[nivelAlvo - 1] ?? construcao.custos[2],
     ganhoPorTurno,
     turnosParaPagar:
-      ganhoPorTurno > 0 ? construcao.custo / ganhoPorTurno : Number.POSITIVE_INFINITY,
+      ganhoPorTurno > 0
+        ? (construcao.custos[nivelAlvo - 1] ?? construcao.custos[2]) / ganhoPorTurno
+        : Number.POSITIVE_INFINITY,
   };
 }

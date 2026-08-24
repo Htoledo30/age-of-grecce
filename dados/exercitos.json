@@ -1,8 +1,17 @@
 {
   "versao": 1,
-  "comentario": "A tropa que ja estava EM PE em 700 a.C., provincia por provincia. Chave e a provincia; a hoste e do dono dela no comeco da partida, e os homens sao daquela terra. IMPORTANTE: eles SAEM da populacao escrita em economia.json - o manancial humano e um so, e sem isso dispensar uma guarnicao inicial criaria gente do nada. Provincia que nao esta aqui comeca sem tropa nenhuma, que e o caso das 203 restantes.",
+  "comentario": "A tropa que ja estava EM PE em 700 a.C., provincia por provincia. Chave e a provincia; a hoste e do dono dela no comeco da partida, e os homens sao daquela terra. IMPORTANTE: eles SAEM da populacao escrita em economia.json - o manancial humano e um so, e sem isso dispensar uma guarnicao inicial criaria gente do nada. Provincia que nao esta aqui comeca sem tropa nenhuma e confia na milicia. A regua: potencias militares (Argos de Fidon) e cidades em guerra aberta (a Lelantina) mantem tropa de pe; cidades prosperas mantem o minimo; aldeias, nada.",
   "guarnicoes": {
     "eleusis": 500,
-    "tanagra": 500
+    "tanagra": 500,
+    "megara": 500,
+    "corinto": 800,
+    "tebas": 700,
+    "orcomeno": 400,
+    "tespias": 300,
+    "calcis": 600,
+    "eretria": 600,
+    "argos": 1000,
+    "sicion": 400
   }
 }
