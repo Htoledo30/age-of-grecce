@@ -1,0 +1,142 @@
+/*
+ * A janela de batalha: um véu sobre o mapa e um cartão no centro, como o fim de jogo.
+ *
+ * Ela para o jogo enquanto está aberta de propósito — assistir à batalha é a tensão, e um
+ * cartão de canto seria mais uma coisa piscando enquanto o jogador olha outra.
+ */
+#ui > .batalha {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  background: rgb(5 9 10 / 55%);
+  backdrop-filter: blur(2px);
+}
+#ui > .batalha[hidden] {
+  display: none;
+}
+.batalha > * {
+  width: 560px;
+}
+.batalha__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 26px 34px 0;
+  border: 1px solid var(--ui-borda);
+  border-bottom: 0;
+  background: linear-gradient(145deg, rgb(25 33 36 / 97%), rgb(10 15 17 / 95%));
+  color: var(--ui-texto);
+}
+.batalha__placar,
+.batalha__barras,
+.batalha__narracao,
+.batalha__botoes {
+  padding: 0 34px;
+  border: 1px solid var(--ui-borda);
+  border-top: 0;
+  border-bottom: 0;
+  background: linear-gradient(145deg, rgb(25 33 36 / 97%), rgb(10 15 17 / 95%));
+  color: var(--ui-texto);
+}
+.batalha__placar {
+  padding-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  opacity: 0.6;
+}
+
+/* Um lado por linha: nome, barra que encolhe, e a conta em pé. */
+.batalha__barras {
+  display: grid;
+  gap: 14px;
+  padding-top: 18px;
+}
+.batalha__lado {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+}
+.batalha__nome {
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+/* A muralha é modificador VISÍVEL: ela aparece ao lado de quem a tem. */
+.batalha__muro {
+  margin-left: 8px;
+  padding: 1px 6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border: 1px solid rgb(239 125 34 / 45%);
+  color: rgb(239 125 34);
+}
+.batalha__conta {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.batalha__trilho {
+  grid-column: 1 / -1;
+  height: 10px;
+  background: rgb(255 255 255 / 8%);
+  overflow: hidden;
+}
+.batalha__cheio {
+  height: 100%;
+  /* A largura anima sozinha: é o encolher que conta a batalha. */
+  transition: width 260ms ease-out;
+}
+/* Na perseguição a barra despenca, e a cor avisa que aqui é onde morre gente. */
+.batalha__cheio[data-fase='perseguicao'] {
+  background: rgb(190 60 48) !important;
+}
+
+.batalha__narracao {
+  min-height: 3.2em;
+  padding-top: 18px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.batalha__narracao[data-fase='perseguicao'] {
+  color: rgb(226 128 116);
+}
+.batalha__narracao[data-fase='recuo'] {
+  color: rgb(214 198 140);
+}
+
+.batalha__botoes {
+  display: flex;
+  gap: 10px;
+  padding-top: 20px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--ui-borda);
+}
+.batalha__botao {
+  flex: 1;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--ui-texto);
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid var(--ui-borda);
+  cursor: pointer;
+}
+.batalha__botao:hover:not(:disabled) {
+  background: rgb(255 255 255 / 12%);
+}
+.batalha__botao:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.batalha__botao[hidden] {
+  display: none;
+}
+.batalha__botao--fim {
+  background: rgb(214 198 140 / 16%);
+  border-color: rgb(214 198 140 / 45%);
+}

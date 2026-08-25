@@ -10,13 +10,19 @@
  */
 
 import type { Forca } from './forcas';
+import type { Ajustes } from '@/dados/esquema';
 import type { RelatorioEmConstrucao } from './relatorio';
+
+type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 import { travarLados } from './travar-lados';
 
 export function naEstrada(
   forcas: readonly Forca[],
   passo: number,
   batalhas: RelatorioEmConstrucao['batalhas'],
+  batalha: AjustesDaBatalha,
+  dispersaram: (porOrigem: Readonly<Record<string, number>>) => void,
+  refugio: (provincia: string, poder: string) => string | null,
 ): void {
   const andando = forcas.filter((f) => f.viva && f.rota[passo] !== undefined);
 
@@ -29,7 +35,20 @@ export function naEstrada(
       // A troca: o destino de um é a origem do outro, nos dois sentidos.
       if (a.rota[passo] !== b.posicao || b.rota[passo] !== a.posicao) continue;
       // Quem vence na estrada CONTINUA: não há província onde parar.
-      travarLados([a], [b], null, batalhas, false);
+      // Na estrada não há chão de ninguém para segurar: o desempate sai do id, que é
+      // arbitrário mas nunca varia — e duas forças exatamente iguais se cruzando de
+      // frente é caso de laboratório, não de partida.
+      travarLados(
+        [a],
+        [b],
+        null,
+        batalhas,
+        false,
+        batalha,
+        dispersaram,
+        a.poder.localeCompare(b.poder) <= 0 ? 'a' : 'b',
+        refugio,
+      );
     }
   }
 }

@@ -37,6 +37,9 @@ const Ordem = z.object({
   rota: z.array(z.string().min(1)).min(1),
   homens: z.number().int().positive(),
   postura: Postura,
+  // `default` pelo mesmo motivo das revoltas: salvamento de antes do recuo ainda carrega, e
+  // a ordem dele simplesmente é a de lutar até a linha ceder.
+  recuarAos: z.number().gt(0).max(1).nullable().default(null),
 });
 
 const Cerco = z.object({

@@ -15,6 +15,8 @@ describe('a ordem é registrada, e nada se move', () => {
       rota: ['maratona'],
       homens: 1000,
       postura: 'sitiar' as const,
+      // `null` é o padrão: lutar até a linha ceder. Recuar é ordem que se dá.
+      recuarAos: null,
     });
   });
 

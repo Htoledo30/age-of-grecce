@@ -40,7 +40,65 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a economia é sobre a TERRA, não sobre cabeças
+### Agora: a guerra tem forma — choque, quebra e perseguição
+
+Item 3 da sequência de Henrique. `√(maior² − menor²)` saiu do jogo: era uma raiz quadrada
+sobre dois números, sem decisão dentro dela, sem recuo, e sem nada para o jogador ver.
+
+**A batalha agora tem duas fases.** No choque os dois lados batem ao mesmo tempo até um
+perder a fração de quebra e a linha ceder; depois vem a perseguição, e é ali que morre gente.
+Levado até o fim, o choque É a lei quadrada — a diferença é que ele **para na quebra**, e é a
+parada que salva o perdedor e preserva o vencedor.
+
+| encontro | vence com | custo | perdedor sobra |
+|---|---:|---:|---:|
+| 1.000 × 1.000 | 375 | −63% | 93 |
+| 1.000 × 900 | 520 | −48% | 80 |
+| 1.000 × 500 | 840 | −16% | 20 |
+| 1.000 × 200 | 970 | −3% | 12 |
+
+Henrique escolheu esta curva entre três, e por dois defeitos que ele apontou na primeira:
+*"não pode existir empate"* e *"tá sobrando muito soldado vivo pós batalha, 1000x1000 sobra
+500 wtf"*.
+
+- **Não existe empate.** Quem ataca precisa vencer; barrar o invasor é a vitória de quem
+  segura o chão, e quem chama passa o defensor como desempate. Com empate, os dois exércitos
+  ficavam na província e brigavam de novo toda rodada — o jogo não saía do lugar.
+- **O atacante também quebra**, e é isso que dá chance ao defensor menor: 1.000 contra 900 em
+  campo aberto é do atacante, e atrás da muralha a linha DELE cede primeiro. Veio de muralha e
+  quebra, não de counter de tropa.
+- **Quem quebra perde a hoste, não a geração:** quem escapa da perseguição volta à população
+  da terra natal.
+- **Recuar** é a terceira saída, e é decisão de HORA — quem já cedeu não recua mais. Com
+  vizinha própria o exército sai inteiro; na última província ele se desfaz, mas os homens
+  voltam à população. Regra de Henrique: *"se for última província ele morre e foda-se, ou
+  volta para a população de onde saiu"*. **Ainda desligado**: falta ligar `recuaAos` à ordem
+  de marcha e pôr o botão na janela.
+- **A janela de batalha** abre só nas do jogador, depois da rodada resolvida, e reproduz a
+  lista de rounds que a regra produz SEMPRE. Ela não recalcula nada, e um teste de tela
+  confere que o último round bate com o que o mapa ficou. A muralha aparece nela como
+  modificador visível — o multiplicador escondido que o Codex removeu não voltou pela porta
+  dos fundos.
+
+⚠️ **A troca desenterrou três bugs, e nenhum era do cálculo novo.** Eram buracos que a
+aniquilação escondia, porque antes era impossível dois exércitos sobrarem de pé no mesmo
+lugar: a rodada entrava em LAÇO (onze batalhas numa província numa rodada só); dois invasores
+assaltavam a mesma praça no mesmo turno, um tomando e o outro retomando; e o dono mudava no
+meio da varredura, com o ex-dono retomando a cidade que acabara de perder. Viraram uma regra:
+**não se assalta a muralha com exército inimigo intacto nas costas**, e a província muda de
+mão uma vez por rodada.
+
+⚠️ **Consequência de balanço:** o vencedor sai mais forte do que saía com a lei quadrada, e
+por isso cidade SEM Muralha cai mais fácil. O contrapeso é que a Muralha passou a valer muito
+mais — ser rechaçado de um assalto destrói o exército atacante, o que dá ao cerco sentido de
+alternativa em vez de lentidão.
+
+A disciplina que pagou: **a interface foi fixada num passo separado, com o cálculo velho
+atrás dela e a suíte verde.** Quando o miolo mudou, dava para saber que o que quebrava era o
+cálculo e não a costura — e o bloco da lei quadrada em `adjudicacao.test.ts` gritou, provando
+que a troca aconteceu de verdade em vez de ficar atrás de uma bifurcação esquecida.
+
+### O que veio antes: a economia é sobre a TERRA, não sobre cabeças
 
 Henrique: *"tem algo muito errado em como estamos fazendo o sistema de receber dinheiro. Em
 Age of History 2 e Rome Total War 1 tem local que rende muito mais dinheiro e com menos

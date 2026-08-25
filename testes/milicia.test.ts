@@ -161,23 +161,30 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     c.passarTurno(); // ⚠️ a leva leva uma rodada pra virar hoste: ver formacao-de-leva.ts
     expect(c.forcaEm('atenas')).toBe(600);
     const milicia = c.miliciaEm('atenas');
-    // O invasor é maior que o exército de campo e — depois de pagar por essa vitória —
-    // menor que a milícia. Ganha o campo e perde a cidade, que é a faixa nova que o cerco
-    // criou e que antes não existia.
+    // O invasor é maior que o exército de campo. O que ele leva para a muralha é o que
+    // SOBRAR do primeiro choque — e é essa dependência entre os dois choques que este teste
+    // guarda. Quem fica com a cidade no fim é balanço: com a lei quadrada o invasor chegava
+    // à muralha com 360 e perdia; com choque e perseguição ele chega com mais e leva. O que
+    // não pode mudar é serem DOIS choques, o segundo pago pelo primeiro.
     const invasor = 700;
     c.plantarHoste('tanagra', 'tanagra', invasor);
     ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
     c.passarTurno();
 
-    const sobrouDoCampo = Math.round(Math.sqrt(invasor * invasor - 600 * 600));
-    expect(sobrouDoCampo).toBeGreaterThan(0);
-    expect(sobrouDoCampo).toBeLessThan(milicia);
-    expect(c.donoDe('atenas')).toBe('atenas');
     // Duas batalhas na mesma província e no mesmo turno: o campo e a muralha.
     expect(c.rodada.batalhas).toHaveLength(2);
-    expect(c.rodada.batalhas[0]).toMatchObject({ vencedor: 'tanagra' });
-    expect(c.rodada.batalhas[1]).toMatchObject({ vencedor: 'atenas' });
+    expect(c.rodada.batalhas[0]).toMatchObject({ vencedor: 'tanagra', tipo: 'campo' });
+    expect(c.rodada.batalhas[1]).toMatchObject({ tipo: 'assalto' });
+
+    // O segundo choque é pago pelo primeiro: quem assalta a muralha é o que sobrou do campo,
+    // e é mais barato que o invasor inteiro.
+    const sobrouDoCampo = c.rodada.batalhas[0]!.sobreviventes;
+    expect(sobrouDoCampo).toBeGreaterThan(0);
+    expect(sobrouDoCampo).toBeLessThan(invasor);
+    // E a cidade fica com quem levou a melhor no segundo, não no primeiro.
+    expect(c.donoDe('atenas')).toBe(c.rodada.batalhas[1]!.vencedor);
+    expect(milicia).toBeGreaterThan(0);
   });
 });
 

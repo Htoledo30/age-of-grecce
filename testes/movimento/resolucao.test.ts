@@ -12,7 +12,7 @@ describe('resolução: partida, chegada, choque', () => {
       hostes: tabuleiro(hoste('atenas', 'a', 1000)),
       proximaHoste: 90,
       ordens: {
-        h_a: { origem: 'a', rota: ['b', 'c'], homens: 1000, postura: 'assaltar' as const },
+        h_a: { origem: 'a', rota: ['b', 'c'], homens: 1000, postura: 'assaltar' as const, recuarAos: null },
       },
       surtidas: [],
       cercos: {},
@@ -28,7 +28,7 @@ describe('resolução: partida, chegada, choque', () => {
     const estado: EstadoDaResolucao = {
       hostes: tabuleiro(hoste('atenas', 'a', 500)),
       proximaHoste: 90,
-      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const, recuarAos: null } },
       surtidas: [],
       cercos: {},
     };
@@ -41,8 +41,8 @@ describe('resolução: partida, chegada, choque', () => {
       hostes: tabuleiro(hoste('atenas', 'a', 300), hoste('atenas', 'b', 700)),
       proximaHoste: 90,
       ordens: {
-        h_a: { origem: 'a', rota: ['c'], homens: 300, postura: 'assaltar' as const },
-        h_b: { origem: 'b', rota: ['c'], homens: 700, postura: 'assaltar' as const },
+        h_a: { origem: 'a', rota: ['c'], homens: 300, postura: 'assaltar' as const, recuarAos: null },
+        h_b: { origem: 'b', rota: ['c'], homens: 700, postura: 'assaltar' as const, recuarAos: null },
       },
       surtidas: [],
       cercos: {},
@@ -60,7 +60,7 @@ describe('resolução: partida, chegada, choque', () => {
     const estado: EstadoDaResolucao = {
       hostes: tabuleiro(misturada),
       proximaHoste: 90,
-      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const, recuarAos: null } },
       surtidas: [],
       cercos: {},
     };
@@ -74,7 +74,7 @@ describe('resolução: partida, chegada, choque', () => {
     const estado: EstadoDaResolucao = {
       hostes: tabuleiro(),
       proximaHoste: 90,
-      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const } },
+      ordens: { h_a: { origem: 'a', rota: ['b'], homens: 500, postura: 'assaltar' as const, recuarAos: null } },
       surtidas: [],
       cercos: {},
     };
@@ -87,7 +87,7 @@ describe('resolução: partida, chegada, choque', () => {
       hostes: tabuleiro(hoste('atenas', 'a', 1000)),
       proximaHoste: 90,
       ordens: {
-        h_a: { origem: 'a', rota: ['b', 'c'], homens: 400, postura: 'assaltar' as const },
+        h_a: { origem: 'a', rota: ['b', 'c'], homens: 400, postura: 'assaltar' as const, recuarAos: null },
       },
       surtidas: [],
       cercos: {},
@@ -112,8 +112,9 @@ describe('determinismo — a exigência que não é opcional', () => {
           rota: ['meio'],
           homens: 300,
           postura: 'assaltar' as const,
+        recuarAos: null,
         },
-        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const, recuarAos: null },
       },
       surtidas: [],
       cercos: {},
@@ -138,8 +139,9 @@ describe('determinismo — a exigência que não é opcional', () => {
           rota: ['meio'],
           homens: 300,
           postura: 'assaltar' as const,
+        recuarAos: null,
         },
-        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const, recuarAos: null },
       },
       surtidas: [],
       cercos: {},
@@ -148,12 +150,13 @@ describe('determinismo — a exigência que não é opcional', () => {
       hostes: tabuleiro(hoste('atenas', 'abido', 700), hoste('atenas', 'zacinto', 300)),
       proximaHoste: 90,
       ordens: {
-        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const },
+        h_abido: { origem: 'abido', rota: ['meio'], homens: 700, postura: 'assaltar' as const, recuarAos: null },
         h_zacinto: {
           origem: 'zacinto',
           rota: ['meio'],
           homens: 300,
           postura: 'assaltar' as const,
+        recuarAos: null,
         },
       },
       surtidas: [],

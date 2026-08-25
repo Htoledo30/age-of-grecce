@@ -36,9 +36,11 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
     surtir(c, 'eleusis', 'eleusis');
     c.passarTurno();
 
-    // A despensa da cidade ainda aguenta (grão III é resistência de cerco): ninguém
-    // passou fome antes da surtida, e √(500² − 300²) = 400. O cerco cai pela vitória.
-    expect(c.forcaEm('eleusis')).toBe(400);
+    // A despensa da cidade ainda aguenta (grão III é resistência de cerco): ninguém passou
+    // fome antes da surtida. Quantos sobram é balanço — era √(500² − 300²) e a lei quadrada
+    // morreu — então o que o teste guarda é que a guarnição venceu e pagou por isso.
+    expect(c.forcaEm('eleusis')).toBeGreaterThan(0);
+    expect(c.forcaEm('eleusis')).toBeLessThan(500);
     expect(c.cercoEm('eleusis')).toBeUndefined();
     expect(c.hostesEm('eleusis').map((h) => h.poder)).toEqual(['eleusis']);
     expect(c.rodada.batalhas).toMatchObject([{ provincia: 'eleusis', vencedor: 'eleusis' }]);
@@ -58,8 +60,12 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
     // ⚠️ A MILÍCIA NÃO SAIU JUNTO. Ela é da cidade, e a surtida é a hoste — se ela tivesse
     // ido a campo, perder uma vez custaria a defesa da muralha e a população de uma vez só.
     // E a despensa ainda aguenta: a fome do cerco só entra quando os mantimentos vencem.
-    expect(c.populacaoDe('eleusis')).toBe(povo);
     expect(c.rodada.milicianosMortos).toEqual([]);
+    // ⚠️ **A população SOBE, e é a regra nova.** A surtida quebrou, mas quem escapou da
+    // perseguição está vivo e voltou para dentro dos muros. Quebrar custa o exército, não a
+    // geração — antes, perder a surtida apagava aqueles homens do mundo, e a cidade pagava
+    // duas vezes: na hora de levantar a hoste e de novo na hora de perdê-la.
+    expect(c.populacaoDe('eleusis')).toBeGreaterThan(povo);
   });
 
   it('quem surte não marcha, e quem marcha não surte: é uma ordem por hoste por rodada', () => {

@@ -46,6 +46,8 @@ export class ExercitoFicha {
   aoCancelarOrdem: (idHoste: string) => void = () => {};
   /** A postura da ordem que está sendo composta. */
   aoEscolherPostura: (postura: 'assaltar' | 'sitiar') => void = () => {};
+  /** A ordem de recuo da marcha que está sendo composta. */
+  aoTrocarRecuo: (recuar: boolean) => void = () => {};
   /** A postura de um cerco JÁ em pé. Vale na próxima virada, como toda ordem. */
   aoTrocarPosturaDoCerco: (idProvincia: string, postura: 'assaltar' | 'sitiar') => void =
     () => {};
@@ -92,6 +94,7 @@ export class ExercitoFicha {
 
     this.escolhaDaMarcha.aoMudarQuantidade = (homens) => this.aoMudarQuantidade(homens);
     this.escolhaDePostura.aoEscolher = (postura) => this.aoEscolherPostura(postura);
+    this.escolhaDePostura.aoTrocarRecuo = (recuar) => this.aoTrocarRecuo(recuar);
     this.comandoDeMarcha.aoAlternarMarcha = (id) => this.aoAlternarMarcha(id);
     this.comandoDeMarcha.aoCancelarOrdem = (id) => this.aoCancelarOrdem(id);
     this.comandoDeCerco.aoSurtir = (id) => this.aoSurtir(id);

@@ -60,6 +60,9 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.exercitoFicha.aoSurtir = (idHoste) => campanha.surtir(idHoste);
   // Confirma a ordem contra o alvo já apontado. É aqui que assaltar e sitiar deixam de ser um
   // ajuste e viram a decisão que fecha a ordem.
+  tela.exercitoFicha.aoTrocarRecuo = (recuar) => {
+    selecao.recuarNaProximaMarcha = recuar;
+  };
   tela.exercitoFicha.aoEscolherPostura = (postura) => {
     if (selecao.marchando === null || selecao.alvoHostil === null) return;
     campanha.ordenarMarcha(
@@ -68,9 +71,13 @@ export function ligarAcoes(jogo: Jogo): void {
       selecao.homensParaMarchar,
       undefined,
       postura,
+      // A ordem de recuo é dada com a marcha e vale só para ela: a próxima começa em
+      // "lutar até o fim", que é o padrão de quem não disse nada.
+      selecao.recuarNaProximaMarcha ? ajustes.jogo.combate.batalha.limiarDeRecuo : null,
     );
     selecao.marchando = null;
     selecao.alvoHostil = null;
+    selecao.recuarNaProximaMarcha = false;
     repintar();
   };
   tela.exercitoFicha.aoTrocarPosturaDoCerco = (id, postura) => campanha.mudarPostura(id, postura);

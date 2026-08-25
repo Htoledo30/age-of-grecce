@@ -129,6 +129,14 @@
       "cerco": {
         "rodadasParaAssaltarMuralha": 2
       },
+      "batalha": {
+        "rodadasDeChoque": 8,
+        "letalidadeDoChoque": 0.15,
+        "limiarDeQuebra": 0.6,
+        "letalidadeDaPerseguicao": 0.75,
+        "fracaoDoRecuo": 0.1,
+        "limiarDeRecuo": 0.3
+      },
       "milicia": {
         "fracao": 0.012,
         "fracaoMorta": 0.5

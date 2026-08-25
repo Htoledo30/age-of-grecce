@@ -8,12 +8,19 @@
 
 import { soma } from './forcas';
 import type { Forca } from './forcas';
+import type { Ajustes } from '@/dados/esquema';
 import type { RelatorioEmConstrucao } from './relatorio';
+
+type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 import { travarLados } from './travar-lados';
 
 export function naProvincia(
   forcas: Forca[],
   batalhas: RelatorioEmConstrucao['batalhas'],
+  batalha: AjustesDaBatalha,
+  dispersaram: (porOrigem: Readonly<Record<string, number>>) => void,
+  refugio: (provincia: string, poder: string) => string | null,
+  donoDe: (idProvincia: string) => string,
   querLutar: (forca: Forca) => boolean,
   choqueObrigado: (provincia: string, presentes: readonly Forca[]) => boolean,
 ): void {
@@ -57,7 +64,13 @@ export function naProvincia(
       const maior = ordenadas[0];
       const segunda = ordenadas[1];
       if (!maior || !segunda) break;
-      travarLados(
+      // ⚠️ **Empate encerra a província nesta rodada.** Com choque e perseguição os dois
+      // lados podem terminar de pé, e aí eles continuam sendo os dois maiores presentes: sem
+      // esta saída o laço os emparelha de novo, e de novo, até os dois zerarem. Foi
+      // exatamente o que aconteceu — onze batalhas na mesma província numa rodada só, e os
+      // homens sumindo sem dispersar. Ninguém cedeu hoje; brigam de novo na próxima rodada,
+      // ou um deles marcha embora.
+      const houveVencedor = travarLados(
         vivas.filter((f) => f.poder === maior.poder),
         vivas.filter((f) => f.poder === segunda.poder),
         provincia,
@@ -67,7 +80,22 @@ export function naProvincia(
         // aqui existe. Deixar o vencedor seguir daria um segundo choque no mesmo passo e
         // quebraria a regra de "todos chegam antes de qualquer choque".
         true,
+        batalha,
+        dispersaram,
+        // ⚠️ Quem SEGURA O CHÃO leva o empate: num jogo de conquista, quem ataca precisa
+        // vencer, e barrar o invasor já é a vitória de quem defende. Sem dono presente — dois
+        // estrangeiros disputando terra de um terceiro — desempata o id, que é arbitrário mas
+        // nunca varia.
+        segunda.poder === donoDe(provincia)
+          ? 'b'
+          : maior.poder === donoDe(provincia)
+            ? 'a'
+            : maior.poder.localeCompare(segunda.poder) <= 0
+              ? 'a'
+              : 'b',
+        refugio,
       );
+      if (!houveVencedor) break;
     }
   }
 }

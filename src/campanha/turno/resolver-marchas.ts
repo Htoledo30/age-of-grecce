@@ -17,9 +17,28 @@ import { miliciaEm } from '../guerra/defesa-local';
 
 export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
+    batalha: nucleo.ajustes.combate.batalha,
     donoDe: (id) => donoDe(nucleo, id),
     miliciaDe: (id) => miliciaEm(nucleo, id),
     impedeAssaltoImediato: (id) => impedeAssaltoImediatoEm(nucleo, id),
+    // ⚠️ Quebrar custa o EXÉRCITO, não a geração: quem escapou da perseguição volta para a
+    // terra natal e torna a pagar tributo e a poder ser recrutado. Sem isto, perder uma
+    // batalha apagava aqueles homens do mundo — e a província que levantou a leva pagava
+    // duas vezes, na hora de recrutar e de novo na hora de perder.
+    // ⚠️ **É a última província que decide o recuo.** Com duas ou mais terras ligadas o
+    // exército sai inteiro e continua sendo um exército; na última não há para onde ir, e ele
+    // se desfaz — os homens voltam à população em vez de morrer na perseguição. Vizinha por
+    // GEOGRAFIA e posse, a mesma pergunta que a rede de trocas e a corrupção já fazem.
+    refugio: (provincia, poder) =>
+      nucleo.atlas
+        .provincia(provincia)
+        .vizinhas.filter((vizinha) => donoDe(nucleo, vizinha) === poder)
+        .sort()[0] ?? null,
+    dispersaram: (porOrigem) => {
+      for (const [terra, quantos] of Object.entries(porOrigem)) {
+        nucleo.estado.populacao[terra] = populacaoDe(nucleo, terra) + quantos;
+      }
+    },
     miliciaPerdida: (id, perdidos) => {
       // ⚠️ Só os MORTOS saem da população; o resto dispersa e volta pra casa. Aniquilar a
       // milícia inteira arruinaria a província pro resto da campanha — são os mesmos

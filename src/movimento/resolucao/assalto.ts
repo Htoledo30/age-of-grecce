@@ -5,7 +5,7 @@
  * força combatida; não existe multiplicador defensivo escondido para desfazer.
  */
 
-import { resolverChoque } from '@/combate/batalha';
+import { lado, resolverBatalha } from '@/combate/batalha';
 import { defesaNoAssalto, milicianosPerdidos } from '@/combate/cerco';
 import { forcaDe, retirar } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
@@ -22,9 +22,14 @@ export function assaltar(
   levantar: (provincia: string) => void,
 ): void {
   const dono = mundo.donoDe(provincia);
+  // O assalto é contra a MURALHA, e por isso o defensor entra no relatório com o aguento
+  // dela: é assim que a janela mostra o muro como um modificador visível, round a round, em
+  // vez de um multiplicador escondido dentro do número da defesa.
+  const aguentoDaMuralha = 1;
   const atacantes = forcaDe(hoste);
   const defesa = defesaNoAssalto(milicianos);
-  const choque = resolverChoque(atacantes, defesa);
+  // A cidade leva o empate: quem assalta precisa VENCER, e ser barrado já é derrota.
+  const choque = resolverBatalha(lado(atacantes), lado(defesa), mundo.batalha, 'b');
 
   const perder = (perdidos: number): void => {
     if (perdidos <= 0) return;
@@ -33,13 +38,19 @@ export function assaltar(
   };
 
   if (choque.vencedor === 'a') {
-    retirar(hoste, atacantes - choque.sobreviventes);
+    retirar(hoste, atacantes - choque.sobreviventesA);
     perder(milicianos);
     relatorio.batalhas.push({
       provincia,
       vencedor: hoste.poder,
       perdedores: [dono],
-      sobreviventes: choque.sobreviventes,
+      sobreviventes: choque.sobreviventesA,
+      lados: [
+        { poder: hoste.poder, homens: atacantes, aguento: 1 },
+        { poder: dono, homens: defesa, aguento: aguentoDaMuralha },
+      ],
+      rounds: choque.rounds,
+      desfecho: choque.desfecho,
       tipo: 'assalto',
     });
     tomar(provincia, hoste.poder);
@@ -51,17 +62,20 @@ export function assaltar(
   levantar(provincia);
   perder(
     choque.vencedor === 'b'
-      ? milicianosPerdidos(milicianos, choque.sobreviventes)
+      ? milicianosPerdidos(milicianos, choque.sobreviventesB)
       : milicianos,
   );
   relatorio.batalhas.push({
     provincia,
     vencedor: choque.vencedor === 'b' ? dono : null,
     perdedores: choque.vencedor === 'b' ? [hoste.poder] : [hoste.poder, dono],
-    sobreviventes:
-      choque.vencedor === 'b'
-        ? Math.floor(choque.sobreviventes)
-        : 0,
+    sobreviventes: choque.vencedor === 'b' ? Math.floor(choque.sobreviventesB) : 0,
+    lados: [
+      { poder: hoste.poder, homens: atacantes, aguento: 1 },
+      { poder: dono, homens: defesa, aguento: aguentoDaMuralha },
+    ],
+    rounds: choque.rounds,
+    desfecho: choque.desfecho,
     tipo: 'assalto',
   });
 }

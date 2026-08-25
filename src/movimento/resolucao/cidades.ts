@@ -45,6 +45,18 @@ export function resolverCidades(
   // vezes numa rodada só.
   const antes = { ...estado.cercos };
 
+  // ⚠️ **E a foto dos DONOS, pelo mesmo motivo.** O laço troca o dono da província enquanto
+  // anda, e sem a foto o ex-dono vira estrangeiro no meio da varredura: a cidade caía e era
+  // retomada na mesma rodada, com a crônica escrevendo as duas conquistas. Uma província muda
+  // de mão UMA vez por rodada — quem quiser de volta marcha na próxima.
+  const donoNoInicio = new Map<string, string>();
+  for (const idHoste of Object.keys(estado.hostes)) {
+    const hoste = estado.hostes[idHoste];
+    if (hoste) donoNoInicio.set(hoste.posicao, mundo.donoDe(hoste.posicao));
+  }
+  const donoDe = (provincia: string): string =>
+    donoNoInicio.get(provincia) ?? mundo.donoDe(provincia);
+
   // ⚠️ **Um caminho só para apagar cerco**, e ele conta a notícia junto. O cerco morre em três
   // lugares diferentes — o sitiante saiu, o assalto foi rechaçado, a cidade caiu — e com três
   // `delete` soltos a crônica ia esquecer de um deles em silêncio.
@@ -76,7 +88,7 @@ export function resolverCidades(
     // antes. Agora o sitiante pode continuar acampado com o exército do dono do lado, e apagar
     // o cerco aqui teria dado ao defensor uma forma de quebrá-lo sem lutar — bastava mandar
     // qualquer hoste voltar para casa.
-    if (hoste.poder === mundo.donoDe(provincia)) {
+    if (hoste.poder === donoDe(provincia)) {
       if (!estaAli(provincia, estado.cercos[provincia]?.sitiante)) levantar(provincia);
       continue;
     }
@@ -85,7 +97,7 @@ export function resolverCidades(
     // Cidade sem quem feche o portão cai ao primeiro ingresso — mas exército do dono acampado
     // ali É quem fecha o portão, mesmo com a milícia zerada. Sem esta condição, sentar numa
     // província despovoada tomava a cidade por cima do exército que a defendia.
-    if (milicianos <= 0 && !estaAli(provincia, mundo.donoDe(provincia))) {
+    if (milicianos <= 0 && !estaAli(provincia, donoDe(provincia))) {
       tomar(provincia, hoste.poder);
       continue;
     }
@@ -107,7 +119,22 @@ export function resolverCidades(
       meu ? cerco.rodadas : 0,
       ajustes.cerco,
     );
-    const postura: Postura = pedida === 'assaltar' && faltam > 0 ? 'sitiar' : pedida;
+    // ⚠️ **O assalto só sai se o CAMPO já foi ganho.** Quem quis assaltar já brigou no passo
+    // anterior, contra a guarnição e contra qualquer outro invasor; chegar aqui com um deles
+    // ainda de pé quer dizer que aquele choque não decidiu nada. Não se sobe a muralha com
+    // exército inimigo intacto nas costas — senta-se, e tenta-se de novo na rodada seguinte.
+    //
+    // A regra faltava porque era impossível chegar a esta situação: o choque sempre aniquilava
+    // um dos lados. Com choque e perseguição, um EMPATE deixa os dois de pé — e sem estas duas
+    // linhas o invasor tomava a cidade por cima do exército que acabara de segurá-lo, e dois
+    // invasores empatados assaltavam a mesma praça na mesma rodada, um tomando e o outro
+    // retomando.
+    const naProvincia = presentes.get(provincia) ?? [];
+    const invasores = new Set(naProvincia.filter((p) => p !== donoDe(provincia)));
+    const defensorDePe = naProvincia.includes(donoDe(provincia));
+    const campoIndeciso = invasores.size > 1 || defensorDePe;
+    const postura: Postura =
+      pedida === 'assaltar' && (faltam > 0 || campoIndeciso) ? 'sitiar' : pedida;
 
     if (postura === 'assaltar') {
       assaltar(estado, provincia, hoste, milicianos, mundo, relatorio, tomar, levantar);

@@ -110,8 +110,10 @@ export class Campanha extends ConsultasDeGuerra {
     homens: number,
     porPoder: string | null = this.nucleo.estado.jogador,
     postura: Postura = 'sitiar',
+    /** `null` (o padrão) é lutar até a linha ceder. Ver `OrdemDeMarcha.recuarAos`. */
+    recuarAos: number | null = null,
   ): void {
-    ordenarMarcha(this.nucleo, idHoste, destino, homens, porPoder, postura);
+    ordenarMarcha(this.nucleo, idHoste, destino, homens, porPoder, postura, recuarAos);
     this.aoMudar();
   }
 

@@ -273,7 +273,19 @@ são preservadas na restauração.
 - Movimento é simultâneo, determinístico e limitado inicialmente a uma fronteira por
   rodada.
 - Pode marchar apenas parte da hoste; forças do mesmo poder se fundem ao se encontrar.
-- A matemática de combate atual é numérica, determinística e provisória.
+- **A batalha é choque + perseguição** (`combate/batalha.ts`), com quatro botões em
+  `ajustes.json`: rodadas de choque, letalidade do choque, limiar de quebra e letalidade da
+  perseguição. Substituiu `√(maior² − menor²)`, que aniquilava quem perdia.
+- **Não existe empate**: quem chama passa o defensor como desempate, e barrar o invasor é a
+  vitória de quem segura o chão. A muralha entra por `aguento`, que divide o dano recebido e
+  aparece VISÍVEL na janela — o multiplicador escondido que foi removido não volta.
+- **Recuar** (`recuaAos`) sai de campo antes da quebra por uma fração pequena e sem
+  perseguição. `refugio` é uma pergunta que a resolução faz e a campanha responde: vizinha
+  própria por geografia e posse, ou `null` na última terra. **Ainda desligado** — ninguém
+  preenche `recuaAos`; a ordem de marcha é onde ele vai entrar.
+- **A janela de batalha** (`ui/batalha.ts`) abre só nas batalhas do jogador, depois da rodada
+  resolvida, e reproduz a lista de rounds. Ela não recalcula nada e fechar não muda o mapa —
+  um teste de tela confere que o último round bate com o que a regra deixou.
 - Milícia deriva da população e não é um estoque humano separado.
 - Sitiar não engaja automaticamente a guarnição nem conquista a cidade. Assaltar engaja e
   tenta tomar a praça. A cidade sitiada continua cobrando imposto e recrutando; quem

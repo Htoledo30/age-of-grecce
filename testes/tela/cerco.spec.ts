@@ -258,7 +258,15 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
       return { meus: i.forcaEm('atenas', 'atenas'), deles: i.forcaEm('atenas', 'eleusis') };
     }),
-  ).toEqual({ meus: 490, deles: 0 });
+    // ⚠️ Era `{ meus: 490 }`, um número da lei quadrada cravado aqui. Ela morreu: o que
+    // sobra sai de choque, quebra e perseguição, e é balanço. O que este teste guarda é que a
+    // surtida venceu — o sitiante sumiu e o defensor continua de pé.
+  ).toMatchObject({ deles: 0 });
+  expect(
+    await page.evaluate(() =>
+      (window as unknown as { inspecao: Ganchos }).inspecao.forcaEm('atenas', 'atenas'),
+    ),
+  ).toBeGreaterThan(0);
   await expect(page.locator('.cercos__marca[data-provincia="atenas"]')).toHaveCount(0);
   expect(erros).toEqual([]);
 });

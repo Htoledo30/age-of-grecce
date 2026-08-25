@@ -301,6 +301,28 @@ já conseguem explicar o resultado.
 ## Guerra terrestre
 
 - Hostes têm identidade própria e podem dividir parte de seus homens.
+- **A batalha tem duas fases: choque e perseguição.** No choque os dois lados batem ao mesmo
+  tempo, e a linha CEDE quando um deles perde a fração de quebra. Levado até o fim isso é a
+  lei quadrada; a diferença é que ele **para na quebra**, e é a parada que salva o perdedor e
+  preserva o vencedor — exército antigo não lutava até o último homem. Depois vem a
+  perseguição, e é onde morre gente: falange quebrada é chacina.
+- **Não existe empate.** Quem ataca precisa vencer; barrar o invasor já é a vitória de quem
+  segura o chão, e o desempate vai sempre para o defensor.
+- **O atacante também quebra**, e é isso que dá chance ao defensor menor: uma força maior que
+  sangra primeiro perde a batalha que a aritmética dizia ser dela. A Muralha entra como
+  resistência VISÍVEL, aparecendo round a round na janela.
+- **Recuar é a terceira saída, e é decisão de HORA.** Antes de a linha ceder, um lado pode
+  sair de campo: paga uma fração pequena e escapa da perseguição. Com uma terra vizinha
+  própria, o exército sobrevive inteiro e marcha para lá; na última província não há para
+  onde ir, e a hoste se desfaz — mas os homens voltam à população em vez de morrer na fuga.
+  Quem já cedeu não recua mais.
+- **Quem quebra perde a HOSTE, não a geração:** quem escapa da perseguição volta para a terra
+  natal e torna a pagar tributo e a poder ser recrutado.
+- **A batalha produz o passo a passo SEMPRE**, inclusive nas que ninguém assiste. A janela do
+  jogador reproduz essa lista; quem não assiste a joga fora. É o que impede a tela de mentir:
+  não existe uma fórmula para decidir e outra para animar.
+- **Não se assalta a muralha com exército inimigo intacto nas costas.** Se o campo não foi
+  decidido, senta-se e tenta-se na rodada seguinte.
 - Recrutamento custa ouro e população e leva tempo de formação.
 - **O mapa abre em paz: nenhuma província começa com tropa.** Milícia é a única defesa
   inicial, e o exército de cada poder é escolha do jogador desde o primeiro turno. Tropa

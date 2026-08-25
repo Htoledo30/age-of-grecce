@@ -22,6 +22,7 @@ import '@/ui/marchas-mapa.css';
 import '@/ui/hostes-mapa.css';
 import '@/ui/destinos-mapa.css';
 import '@/ui/cercos-mapa.css';
+import '@/ui/batalha.css';
 import '@/ui/cronica.css';
 import '@/ui/fim-de-jogo.css';
 import '@/ui/tooltip.css';

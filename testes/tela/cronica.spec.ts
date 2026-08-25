@@ -71,6 +71,17 @@ test('a rodada sem notícia não escreve nada; a com batalha conta o que houve',
   const cronica = page.locator('.cronica');
   await expect(cronica).toBeVisible();
   await expect(cronica.locator('.cronica__titulo')).toContainText('Rodada');
+  // ⚠️ A janela de batalha abre por cima de tudo e é MODAL: o jogador assiste ao que houve
+  // antes de voltar ao mapa. E ela vem em FILA — um assalto produz duas batalhas na mesma
+  // província (o campo e a muralha), e fechar a primeira abre a segunda.
+  await expect(page.locator('.batalha')).toBeVisible();
+  for (let i = 0; i < 6 && (await page.locator('.batalha').isVisible()); i++) {
+    await page.locator('.batalha__botao', { hasText: 'Deixar correr' }).click();
+    await expect(page.locator('.batalha__botao--fim')).toBeVisible({ timeout: 20_000 });
+    await page.locator('.batalha__botao--fim').click();
+  }
+  await expect(page.locator('.batalha')).toBeHidden();
+
   await expect(cronica).toContainText('Batalha em Elêusis');
   await expect(cronica).toContainText('Atenas venceu');
   await expect(cronica).toContainText('Elêusis passou de Eleusis para Atenas');

@@ -32,6 +32,18 @@ export interface OrdemDeMarcha {
    * província vazia ela não significa nada — e não precisa significar.
    */
   postura: Postura;
+  /**
+   * Sai de campo se perder esta fração, ou `null` para lutar até a linha ceder.
+   *
+   * ⚠️ **É ordem dada ANTES, e é isso que a torna interessante.** O general grego dizia ao
+   * exército o que fazer e depois assistia de longe — quem manda "lute até quebrar" pode
+   * ganhar a batalha que a aritmética dizia perdida, e pode perder o exército inteiro. Quem
+   * manda recuar guarda a tropa e entrega o chão.
+   *
+   * A janela de batalha REPRODUZ o que aconteceu; ela não decide. Se um dia o turno virar
+   * pausável, o botão entre os rounds entra por aqui sem mudar a regra.
+   */
+  recuarAos: number | null;
 }
 
 /** Por que uma ordem foi recusada — ou o consentimento de registrá-la. */

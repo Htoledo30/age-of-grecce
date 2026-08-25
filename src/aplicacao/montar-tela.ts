@@ -13,6 +13,7 @@ import { AnimacaoDeMarcha } from '@/ui/animacao-de-marcha';
 import { Balanco } from '@/ui/balanco';
 import { BalancoAlimentar } from '@/ui/balanco-alimentar';
 import { BarraTurno } from '@/ui/barra-turno';
+import { JanelaDeBatalha } from '@/ui/batalha';
 import { CercosMapa } from '@/ui/cercos-mapa';
 import { Cronica } from '@/ui/cronica';
 import { DestinosMapa } from '@/ui/destinos-mapa';
@@ -72,6 +73,9 @@ export function montarTela(
   // A crônica fica no alto à direita, sozinha: é notícia da rodada inteira, não de uma
   // província nem de uma hoste, e não pertence a nenhuma das colunas.
   const cronica = new Cronica(ui);
+  // A janela de batalha para o jogo enquanto está aberta, então ela vem por cima do mapa e
+  // dos marcadores, e por baixo do fim de campanha — que é a única coisa mais definitiva.
+  const batalha = new JanelaDeBatalha(ui);
   const inicio = new InicioJogo(ui);
   const fimDeJogo = new FimDeJogo(ui);
   const barraTurno = new BarraTurno(ui);
@@ -99,6 +103,7 @@ export function montarTela(
     balancoAlimentar,
     mercado,
     cronica,
+    batalha,
     inicio,
     fimDeJogo,
     hostesMapa,

@@ -9,7 +9,10 @@
 
 import type { Cerco, Postura } from '@/combate/cerco';
 import type { Exercito } from '@/combate/exercito';
+import type { Ajustes } from '@/dados/esquema';
 import type { OrdemDeMarcha } from '../ordens';
+
+type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 
 /** O recorte do estado que a resolução mexe. Nada além disto. */
 export interface EstadoDaResolucao {
@@ -31,6 +34,14 @@ export interface EstadoDaResolucao {
 
 /** O que a resolução precisa perguntar e mudar no mundo em volta. */
 export interface MundoDaResolucao {
+  /**
+   * As regras da batalha: rodadas de choque, letalidades e limiar de quebra.
+   *
+   * ⚠️ **Isto não contradiz o `miliciaPerdida` logo abaixo.** Aquela fração é balanço que a
+   * campanha APLICA depois, e por isso não mora aqui. Estas são as regras do próprio choque,
+   * e o choque acontece aqui dentro — quem resolve a batalha precisa saber como ela funciona.
+   */
+  batalha: AjustesDaBatalha;
   donoDe: (idProvincia: string) => string;
   trocarDono: (idProvincia: string, idPoder: string) => void;
   /** Quantos milicianos esta província põe em pé. Zero onde não há população. */
@@ -50,6 +61,42 @@ export interface MundoDaResolucao {
    * fração — se conhecesse, o número de balanço estaria em dois lugares.
    */
   miliciaPerdida: (idProvincia: string, perdidos: number) => void;
+  /**
+   * Homens que DISPERSARAM depois de quebrar, por terra natal.
+   *
+   * ⚠️ **Quebrar custa o exército, não a geração.** Quem escapa da perseguição está vivo, e
+   * volta para casa: a província recupera aqueles habitantes, que voltam a pagar tributo e a
+   * poder ser recrutados. É a mesma regra que a milícia derrotada já seguia, agora valendo
+   * para a hoste — antes, perder uma batalha apagava os homens do mundo.
+   *
+   * É por isso que o RECUO ordenado vai valer alguma coisa: quem sai antes de quebrar
+   * preserva a HOSTE; quem quebra preserva só a gente.
+   */
+  dispersaram: (porOrigem: Readonly<Record<string, number>>) => void;
+  /**
+   * Para onde este poder recua saindo desta província, ou `null` se não houver para onde.
+   *
+   * ⚠️ **É a última província que decide.** Quem tem duas ou mais terras ligadas salva o
+   * exército: ele marcha para a vizinha e continua sendo um exército. Quem está na última não
+   * tem para onde ir — a hoste se desfaz e os homens voltam à população de onde saíram. Ainda
+   * é melhor que quebrar, porque escapa da perseguição, mas o exército acabou.
+   *
+   * A resolução não conhece o mapa nem a tabela de donos: pergunta e recebe um id ou `null`.
+   */
+  refugio: (provincia: string, poder: string) => string | null;
+}
+
+/**
+ * Um lado como ele entrou na batalha. A janela precisa do nome e do tamanho de partida.
+ *
+ * Sem `export` enquanto ninguém precisar do NOME: `RelatorioDaRodada` já carrega a forma, e o
+ * `codigo-morto` cobra tipo exportado que ninguém importa.
+ */
+interface LadoNoRelatorio {
+  poder: string;
+  homens: number;
+  /** Multiplicador de resistência — a muralha. 1 é campo aberto. */
+  aguento: number;
 }
 
 /** O que aconteceu na rodada — pra crônica, pra interface e pros testes. */
@@ -70,6 +117,17 @@ export interface RelatorioDaRodada {
     vencedor: string | null;
     perdedores: readonly string[];
     sobreviventes: number;
+    /**
+     * Os dois lados como entraram, e o passo a passo do que houve entre eles.
+     *
+     * ⚠️ **Vem SEMPRE, inclusive nas batalhas que ninguém vai assistir.** É o que garante que
+     * a janela reproduza a matemática que decidiu em vez de ilustrar por cima de um resultado
+     * calculado por outra conta — quem não assiste joga a lista fora e usa só o desfecho.
+     */
+    lados: readonly [LadoNoRelatorio, LadoNoRelatorio];
+    rounds: readonly { a: number; b: number; fase: 'choque' | 'perseguicao' | 'recuo' }[];
+    /** Como terminou para o perdedor: a linha cedeu, ou ele saiu de campo a tempo. */
+    desfecho: 'quebrou' | 'recuou';
     /**
      * Que tipo de choque foi.
      *

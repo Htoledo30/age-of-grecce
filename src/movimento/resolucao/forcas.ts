@@ -31,6 +31,8 @@ export interface Forca {
   rota: readonly string[];
   posicao: string;
   partiuDe: string;
+  /** Fração de baixas em que esta força sai de campo. `null` = luta até quebrar. */
+  recuarAos: number | null;
   /** Morreu num choque. Não some da lista: sair no meio da varredura muda o resultado. */
   viva: boolean;
 }
@@ -83,6 +85,7 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
           rota: ordem.rota,
           posicao: onde,
           partiuDe: onde,
+          recuarAos: ordem.recuarAos,
           viva: true,
         });
       }
@@ -94,6 +97,9 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
         poder: hoste.poder,
         origem: { ...hoste.origem },
         rota: [],
+        // ⚠️ Quem FICA não recua: o recuo é ordem dada com a marcha, e quem está parado em
+        // casa não recebeu nenhuma. Um defensor que quisesse recuar teria de ter marchado.
+        recuarAos: null,
         posicao: onde,
         partiuDe: onde,
         viva: true,

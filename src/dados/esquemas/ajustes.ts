@@ -342,6 +342,61 @@ export const Ajustes = z.object({
          */
         rodadasParaAssaltarMuralha: z.number().int().min(0),
       }),
+      /**
+       * A BATALHA: choque e perseguição, com dois botões de letalidade separados.
+       *
+       * ⚠️ **É a diferença entre os dois que faz a guerra ter forma.** No choque morre
+       * pouco; na fuga morre muito. Um exército que sai antes de quebrar preserva quase
+       * tudo, e é por isso que recuar é decisão em vez de covardia — sem os dois botões
+       * separados, recuar seria só perder mais devagar.
+       *
+       * O choque é a lei quadrada em forma de rodadas: cada lado tira do outro uma fatia
+       * da PRÓPRIA força, simultaneamente. Levada até o fim, ela dá exatamente
+       * `√(maior² − menor²)`, que era a conta anterior — a diferença é que **ela para
+       * antes**, na quebra. É a parada que salva o perdedor e preserva o vencedor: exército
+       * antigo não lutava até o último homem, e o que decidia a batalha era a linha ceder.
+       */
+      batalha: z.object({
+        /** Quantas rodadas o choque dura, no máximo, se ninguém quebrar antes. */
+        rodadasDeChoque: z.number().int().positive(),
+        /**
+         * Fatia da própria força que um lado tira do inimigo por rodada de choque.
+         *
+         * Sobe isto e as batalhas viram aniquilação mútua; desce e ninguém quebra dentro
+         * das rodadas, e toda batalha termina empatada e cara.
+         */
+        letalidadeDoChoque: z.number().gt(0).max(1),
+        /**
+         * Fatia das baixas que faz a linha CEDER. 0,4 é "perdi 40% e quebrei".
+         *
+         * É este número que dá chance ao defensor menor: o atacante também quebra, e uma
+         * força maior que sangra primeiro perde a batalha que a aritmética dizia ser dela.
+         */
+        limiarDeQuebra: z.number().gt(0).max(1),
+        /**
+         * Fatia dos que sobraram do lado quebrado que morre na fuga.
+         *
+         * Alta de propósito: falange quebrada é chacina, e é aqui que a guerra antiga
+         * cobra. O que escapa é gente viva — volta para a terra natal, e essa é a
+         * diferença entre perder um exército e perder uma geração.
+         */
+        letalidadeDaPerseguicao: z.number().gt(0).max(1),
+        /**
+         * Fatia que um lado perde ao SAIR DE CAMPO ordenado, antes de quebrar.
+         *
+         * Pequena de propósito, e é a diferença para a perseguição que faz o recuo ser
+         * decisão: quem sai a tempo continua sendo um exército; quem quebra perde a hoste e
+         * manda os homens para casa.
+         */
+        fracaoDoRecuo: z.number().gt(0).max(1),
+        /**
+         * Em que fração de baixas a ordem "recuar se virar" sai de campo.
+         *
+         * Tem que ser MENOR que `limiarDeQuebra`, senão a linha cede antes e a ordem nunca
+         * chega a valer nada — recuar é decisão de hora.
+         */
+        limiarDeRecuo: z.number().gt(0).max(1),
+      }),
       milicia: z.object({
         /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */
         fracao: z.number().gt(0).max(1),

@@ -45,9 +45,18 @@ export function resolverRodada(
 
   const forcas = partir(estado);
   for (let passo = 0; passo < ajustes.saltosPorRodada; passo++) {
-    naEstrada(forcas, passo, relatorio.batalhas);
+    naEstrada(forcas, passo, relatorio.batalhas, mundo.batalha, mundo.dispersaram, mundo.refugio);
     chegar(forcas, passo);
-    naProvincia(forcas, relatorio.batalhas, querLutar, choqueObrigado);
+    naProvincia(
+      forcas,
+      relatorio.batalhas,
+      mundo.batalha,
+      mundo.dispersaram,
+      mundo.refugio,
+      mundo.donoDe,
+      querLutar,
+      choqueObrigado,
+    );
   }
   pousar(estado, forcas, relatorio.marchas);
   resolverCidades(estado, ajustes, mundo, posturas, relatorio);

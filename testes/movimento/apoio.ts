@@ -35,10 +35,24 @@ export function comHoste(homens = 1000, onde = 'atenas'): Campanha {
 export function mundoDe(
   donos: Record<string, string> = {},
   milicias: Record<string, number> = {},
+  refugios: Record<string, string> = {},
 ) {
   const mortos: Record<string, number> = {};
+  // Quem quebrou e escapou: o teste consegue conferir que os homens voltaram para casa.
+  const dispersos: Record<string, number> = {};
   return {
     donos,
+    dispersos,
+    // As regras do choque vêm dos dados de verdade: um mundo de teste com batalha própria
+    // testaria uma guerra que o jogo não joga.
+    batalha: ajustes.combate.batalha,
+    // Mundo de teste sem mapa: o refúgio é declarado por quem monta o cenário.
+    refugio: (_provincia: string, poder: string) => refugios[poder] ?? null,
+    dispersaram: (porOrigem: Readonly<Record<string, number>>) => {
+      for (const [terra, quantos] of Object.entries(porOrigem)) {
+        dispersos[terra] = (dispersos[terra] ?? 0) + quantos;
+      }
+    },
     mortos,
     donoDe: (id: string) => donos[id] ?? 'ninguem',
     trocarDono: (id: string, poder: string) => {

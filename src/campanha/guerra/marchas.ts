@@ -70,12 +70,20 @@ export function ordenarMarcha(
   homens: number,
   porPoder: string | null,
   postura: Postura,
+  /** `null` (o padrão) é lutar até a linha ceder. Ver `OrdemDeMarcha.recuarAos`. */
+  recuarAos: number | null = null,
 ): void {
   const r = podeOrdenarMarcha(nucleo, idHoste, destino, homens, porPoder);
   if (!r.pode) throw new Error(r.motivo);
   const hoste = nucleo.mobilizacao.hoste(idHoste);
   if (!hoste) throw new Error(`não há hoste ${idHoste}`);
-  nucleo.estado.ordens[idHoste] = { origem: hoste.posicao, rota: r.rota, homens, postura };
+  nucleo.estado.ordens[idHoste] = {
+    origem: hoste.posicao,
+    rota: r.rota,
+    homens,
+    postura,
+    recuarAos,
+  };
 }
 
 /**

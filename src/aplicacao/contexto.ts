@@ -20,6 +20,7 @@ import type { AnimacaoDeMarcha } from '@/ui/animacao-de-marcha';
 import type { Balanco } from '@/ui/balanco';
 import type { BalancoAlimentar } from '@/ui/balanco-alimentar';
 import type { BarraTurno } from '@/ui/barra-turno';
+import type { JanelaDeBatalha } from '@/ui/batalha';
 import type { CercosMapa } from '@/ui/cercos-mapa';
 import type { Cronica } from '@/ui/cronica';
 import type { DestinosMapa } from '@/ui/destinos-mapa';
@@ -47,6 +48,7 @@ export interface Tela {
   balancoAlimentar: BalancoAlimentar;
   mercado: Mercado;
   cronica: Cronica;
+  batalha: JanelaDeBatalha;
   inicio: InicioJogo;
   fimDeJogo: FimDeJogo;
   hostesMapa: HostesMapa;
@@ -91,6 +93,14 @@ export class SelecaoDaTela {
 
   /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
   homensParaMarchar = 0;
+
+  /**
+   * A ordem de recuo da próxima marcha: sair de campo se a batalha virar.
+   *
+   * Estado de TELA como o resto: é o que o jogador escolheu enquanto compõe a ordem, e some
+   * quando ela é registrada. Quem guarda de verdade é a `OrdemDeMarcha`.
+   */
+  recuarNaProximaMarcha = false;
 
   /**
    * O destino HOSTIL já apontado, esperando o jogador dizer o que fazer ao chegar.

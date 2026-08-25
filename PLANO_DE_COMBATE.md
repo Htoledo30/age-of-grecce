@@ -161,17 +161,33 @@ que é a especialização que o GDD diz que os slots existem para forçar.
 
 ## 7. Ordem de implementação
 
-**Item 3:**
+**Item 3 — FEITO, menos a última linha.**
 
-1. Fixar a interface do resolvedor com um teste ANTES de trocar o miolo: entra composição
-   (hoje: só número), sai `{ vencedor, sobreviventes, rounds }`.
-2. Escrever o resolvedor de choque + perseguição como função pura.
-3. Trocar `resolverChoque` pelos três chamadores. Rodar a suíte — marcha, cerco, encontro na
-   estrada e surtida têm que continuar passando.
-4. Calibrar no simulador: batalha não pode virar sempre aniquilação, e defensor menor com
-   muralha tem que ter chance real.
-5. Construir a janela, consumindo a lista de rounds. Só nas batalhas do jogador.
-6. Recuo, e moral se valer a pena.
+1. ✅ **Interface fixada antes do miolo**, com o cálculo velho atrás dela e a suíte inteira
+   verde. Pagou-se sozinha: quando o miolo mudou, foi possível saber que o que quebrou era o
+   cálculo e não a costura.
+2. ✅ **Choque + perseguição** como função pura, com quatro botões em `ajustes.json`.
+3. ✅ **Trocado nos três chamadores.** `movimento/adjudicacao.test.ts` perdeu o bloco da lei
+   quadrada — e era o ponto: foram os testes dela que gritaram, provando que a troca aconteceu
+   de verdade em vez de ficar atrás de uma bifurcação esquecida.
+4. ✅ **Sem empate**, e o desempate vai para quem segura o chão.
+5. ✅ **Recuo**, com `refugio`: vizinha própria salva o exército, última província devolve os
+   homens à população. **Ainda desligado** — falta quem decida.
+6. ✅ **A janela**, reproduzindo a lista de rounds, só nas batalhas do jogador.
+7. ⬜ **Ligar o recuo**: `recuaAos` na ordem de marcha, e o botão na janela.
+8. ⬜ Moral, se valer a pena.
+
+### Três bugs que a troca desenterrou
+
+Nenhum era do cálculo novo — eram buracos que a aniquilação escondia, porque **antes era
+impossível dois exércitos sobrarem de pé no mesmo lugar**:
+
+- a rodada entrava em LAÇO: onze batalhas na mesma província numa rodada só;
+- dois invasores assaltavam a mesma praça no mesmo turno, um tomando e o outro retomando;
+- o dono mudava no meio da varredura e o ex-dono retomava a cidade que acabara de perder.
+
+Os três viraram uma regra: **não se assalta a muralha com exército inimigo intacto nas
+costas**, e a província muda de mão uma vez por rodada.
 
 **Item 3½:** armas pela rede de trocas, custo/folha/comida por arma, e o Quartel de volta.
 
