@@ -4,175 +4,558 @@
   "construcoes": {
     "agora": {
       "nome": "Ágora",
-      "custos": [2000, 4000, 7000],
-      "turnos": [2, 3, 4],
-      "manutencao": [3, 6, 10],
-      "efeito": { "tipo": "corrupcao", "alvo": "tamanho", "fatores": [0.6, 0.35, 0.15] },
+      "custos": [
+        2000,
+        4000,
+        7000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        3,
+        6,
+        10
+      ],
+      "efeito": {
+        "tipo": "corrupcao",
+        "alvo": "tamanho",
+        "fatores": [
+          0.6,
+          0.35,
+          0.15
+        ]
+      },
       "promessa": "Corta a corrupção que vem de haver gente demais para administrar. Vale mais onde há mais gente.",
       "motivo": "Administração, cobrança e vida cívica onde há gente para organizar. Quanto maior a cidade, mais se perde no caminho — e mais ela devolve."
     },
     "mercado": {
       "nome": "Mercado",
-      "custos": [2000, 4000, 7000],
-      "turnos": [2, 3, 4],
-      "manutencao": [3, 6, 10],
-      "efeito": { "tipo": "troca", "fatores": [1.3, 1.6, 2.0] },
-      "promessa": "Multiplica a renda da rede de trocas do REINO inteiro. Vale uma vez só, e vale mais quanto mais bens distintos você alcança.",
-      "motivo": "Nao cria produto: faz o reino tirar mais de cada bem distinto que ja alcanca. Por isso vale mais depois de conquistar, e nao antes."
+      "custos": [
+        2000,
+        4000,
+        7000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        3,
+        6,
+        10
+      ],
+      "efeito": {
+        "tipo": "troca",
+        "fatores": [
+          1.3,
+          1.6,
+          2.0
+        ]
+      },
+      "promessa": "Multiplica a rede de trocas do REINO inteiro e o trânsito desta praça.",
+      "motivo": "A praça tem dois lados: cobra de quem passa aqui e distribui o que o reino alcança. Por isso ela vale na encruzilhada rica E no império largo."
     },
     "armaria": {
       "nome": "Armaria",
-      "custos": [1600, 3200, 5800],
-      "turnos": [2, 3, 4],
-      "manutencao": [5, 10, 16],
-      "efeito": { "tipo": "arma", "arma": "hoplita" },
+      "custos": [
+        1600,
+        3200,
+        5800
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        5,
+        10,
+        16
+      ],
+      "efeito": {
+        "tipo": "arma",
+        "arma": "hoplita"
+      },
       "promessa": "Esta província passa a levantar HOPLITAS: a linha que aguenta, e que faz o inimigo quebrar primeiro. Sem ela a terra só levanta leves.",
       "motivo": "A panóplia — escudo, elmo, greva — é cara, e é ela que separa o cidadão em armas do lavrador com uma lança. Qualquer terra pode erguer: o que custa não é o direito, é o slot."
     },
     "acampamento-de-arqueiro": {
       "nome": "Acampamento de arqueiro",
-      "custos": [1400, 2800, 5000],
-      "turnos": [2, 3, 4],
-      "manutencao": [4, 8, 14],
-      "requisito": { "produtos": ["madeira"] },
-      "efeito": { "tipo": "arma", "arma": "arqueiro" },
+      "custos": [
+        1400,
+        2800,
+        5000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        4,
+        8,
+        14
+      ],
+      "requisito": {
+        "produtos": [
+          "madeira"
+        ]
+      },
+      "efeito": {
+        "tipo": "arma",
+        "arma": "arqueiro"
+      },
       "promessa": "Esta província passa a levantar ARQUEIROS: tiram muito e quebram rápido. Ganham cedo ou não ganham.",
       "motivo": "Arco é madeira curada, e por isso ele só nasce onde a serra dá lenha. Toda a madeira do mapa está em terra pequena — Plateia, Téspias e Cinúria — e é o que elas têm que os grandes não têm."
     },
     "treinamento-de-cavaleiros": {
       "nome": "Treinamento de cavaleiros",
-      "custos": [2200, 4400, 7500],
-      "turnos": [3, 4, 5],
-      "manutencao": [7, 14, 22],
-      "requisito": { "produtos": ["cavalos"] },
-      "efeito": { "tipo": "arma", "arma": "cavalaria" },
+      "custos": [
+        2200,
+        4400,
+        7500
+      ],
+      "turnos": [
+        3,
+        4,
+        5
+      ],
+      "manutencao": [
+        7,
+        14,
+        22
+      ],
+      "requisito": {
+        "produtos": [
+          "cavalos"
+        ]
+      },
+      "efeito": {
+        "tipo": "arma",
+        "arma": "cavalaria"
+      },
       "promessa": "Esta província passa a levantar CAVALARIA: ela quase não muda o choque, ela muda o DEPOIS — multiplica a perseguição, e decide se você destruiu o exército inimigo ou só o empurrou.",
       "motivo": "Cavalo se cria em pasto de planície, e o mapa tem dois: a planície argiva de Fídon e a bacia do Copais. Tomar uma delas não é renda a mais, é uma arma que você não tinha."
     },
     "quartel": {
       "nome": "Quartel",
-      "custos": [1500, 3000, 5500],
-      "turnos": [1, 2, 3],
-      "manutencao": [5, 10, 16],
-      "efeito": { "tipo": "qualidade", "fatores": [1.1, 1.2, 1.3] },
+      "custos": [
+        1500,
+        3000,
+        5500
+      ],
+      "turnos": [
+        1,
+        2,
+        3
+      ],
+      "manutencao": [
+        5,
+        10,
+        16
+      ],
+      "efeito": {
+        "tipo": "qualidade",
+        "fatores": [
+          1.1,
+          1.2,
+          1.3
+        ]
+      },
       "promessa": "Toda tropa levantada NESTA província sai melhor treinada — as quatro armas, um pouco. O treino é carimbado no recrutamento: perder a província não piora quem já está em armas, piora os que virão.",
       "motivo": "Pátio de treino, arsenal e alojamento. Ele MELHORA soldados; quem concede o direito de levantar cada arma são a Armaria, o Acampamento e o Treinamento."
     },
     "muralha": {
       "nome": "Muralha",
-      "custos": [2000, 4000, 7000],
-      "turnos": [2, 3, 4],
-      "manutencao": [8, 16, 26],
-      "efeito": { "tipo": "milicia", "fatores": [1.25, 1.5, 1.75] },
+      "custos": [
+        2000,
+        4000,
+        7000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        8,
+        16,
+        26
+      ],
+      "efeito": {
+        "tipo": "milicia",
+        "fatores": [
+          1.25,
+          1.5,
+          1.75
+        ]
+      },
       "promessa": "Melhora a milícia local e impede assalto imediato.",
       "impedeAssaltoImediato": true,
       "motivo": "Defesa permanente que ocupa um slot mesmo nos anos de paz."
     },
     "templo": {
       "nome": "Templo",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [5, 10, 16],
-      "efeito": { "tipo": "felicidade", "pontos": [5, 8, 12] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        5,
+        10,
+        16
+      ],
+      "efeito": {
+        "tipo": "felicidade",
+        "pontos": [
+          5,
+          8,
+          12
+        ]
+      },
       "promessa": "Eleva a felicidade da província em +5/+8/+12 — o remédio contra o povo revoltoso.",
       "motivo": "Centro religioso e cívico: onde o deus mora, o povo aguenta mais."
     },
     "porto": {
       "nome": "Porto",
-      "custos": [2500, 5000, 8500],
-      "turnos": [3, 4, 5],
-      "manutencao": [8, 16, 26],
-      "requisito": { "ancoradouro": true },
-      "efeito": { "tipo": "renda", "parcela": "comercio", "fatores": [1.5, 1.9, 2.4] },
-      "promessa": "Aumenta o comércio; será a base da conexão marítima e do sistema naval.",
-      "motivo": "Só cabe onde a costa oferece ancoradouro real."
+      "custos": [
+        2500,
+        5000,
+        8500
+      ],
+      "turnos": [
+        3,
+        4,
+        5
+      ],
+      "manutencao": [
+        8,
+        16,
+        26
+      ],
+      "requisito": {
+        "ancoradouro": true
+      },
+      "ligaPorMar": true,
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "transito",
+        "fatores": [
+          1.5,
+          1.9,
+          2.4
+        ]
+      },
+      "promessa": "Liga esta terra ao resto do reino por mar, e aumenta o trânsito local.",
+      "motivo": "Só cabe onde a costa oferece ancoradouro real. Com Porto nas duas pontas, mercadoria atravessa o mar — mas exército, não: isso é frota."
     },
     "estrada": {
       "nome": "Estrada",
-      "custos": [1500, 3000, 5000],
-      "turnos": [2, 3, 4],
-      "manutencao": [2, 4, 7],
-      "efeito": { "tipo": "corrupcao", "alvo": "distancia", "fatores": [0.6, 0.35, 0.15] },
+      "custos": [
+        1500,
+        3000,
+        5000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        2,
+        4,
+        7
+      ],
+      "efeito": {
+        "tipo": "corrupcao",
+        "alvo": "distancia",
+        "fatores": [
+          0.6,
+          0.35,
+          0.15
+        ]
+      },
       "promessa": "Corta a corrupção da DISTÂNCIA até a capital. Não rende nada na própria capital: ela existe para a terra conquistada longe.",
       "motivo": "Liga o interior: encurta a terra distante para quem governa. Prédio de imperio, nao de cidade-estado — na capital ela nao tem o que encurtar."
     },
     "fazenda": {
       "nome": "Fazenda",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["graos"] },
-      "efeito": { "tipo": "alimento", "pontos": [1, 2, 3] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "graos"
+        ]
+      },
+      "efeito": {
+        "tipo": "alimento",
+        "pontos": [
+          1,
+          2,
+          3
+        ]
+      },
       "promessa": "Acrescenta +1/+2/+3 ao saldo alimentar do reino.",
       "motivo": "Aprofunda a vocação cerealista de uma terra que já produz grãos."
     },
     "pastagem": {
       "nome": "Pastagem",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["gado"] },
-      "efeito": { "tipo": "alimento", "pontos": [1, 2, 3] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "gado"
+        ]
+      },
+      "efeito": {
+        "tipo": "alimento",
+        "pontos": [
+          1,
+          2,
+          3
+        ]
+      },
       "promessa": "Acrescenta +1/+2/+3 ao saldo alimentar do reino.",
       "motivo": "Organiza rebanhos onde o gado já é parte real da terra."
     },
     "porto-pesqueiro": {
       "nome": "Porto pesqueiro",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["peixe"], "ancoradouro": true },
-      "efeito": { "tipo": "alimento", "pontos": [1, 2, 3] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "peixe"
+        ],
+        "ancoradouro": true
+      },
+      "efeito": {
+        "tipo": "alimento",
+        "pontos": [
+          1,
+          2,
+          3
+        ]
+      },
       "promessa": "Acrescenta +1/+2/+3 ao saldo alimentar do reino.",
       "motivo": "Explora pesca onde há peixe e costa capaz de receber embarcações."
     },
     "lagar": {
       "nome": "Lagar",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["azeite"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "azeite"
+        ]
+      },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fatores": [
+          1.4,
+          1.75,
+          2.2
+        ]
+      },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Prensas e armazenamento para terras de oliveiras."
     },
     "vinhedo": {
       "nome": "Vinhedo",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["vinho"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "vinho"
+        ]
+      },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fatores": [
+          1.4,
+          1.75,
+          2.2
+        ]
+      },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Cultivo e prensagem especializados para terras de vinho."
     },
     "serraria": {
       "nome": "Serraria",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["madeira"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "madeira"
+        ]
+      },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fatores": [
+          1.4,
+          1.75,
+          2.2
+        ]
+      },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Exploração local de madeira; não torna madeira requisito para todas as obras."
     },
     "mina": {
       "nome": "Mina",
-      "custos": [2200, 4500, 7500],
-      "turnos": [3, 4, 5],
-      "manutencao": [8, 16, 26],
-      "requisito": { "produtos": ["ferro", "metais-preciosos"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
+      "custos": [
+        2200,
+        4500,
+        7500
+      ],
+      "turnos": [
+        3,
+        4,
+        5
+      ],
+      "manutencao": [
+        8,
+        16,
+        26
+      ],
+      "requisito": {
+        "produtos": [
+          "ferro",
+          "metais-preciosos"
+        ]
+      },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fatores": [
+          1.4,
+          1.75,
+          2.2
+        ]
+      },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Poços, galerias e beneficiamento somente onde há minério."
     },
     "pedreira": {
       "nome": "Pedreira",
-      "custos": [1800, 3500, 6000],
-      "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "requisito": { "produtos": ["marmore"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
+      "custos": [
+        1800,
+        3500,
+        6000
+      ],
+      "turnos": [
+        2,
+        3,
+        4
+      ],
+      "manutencao": [
+        6,
+        12,
+        20
+      ],
+      "requisito": {
+        "produtos": [
+          "marmore"
+        ]
+      },
+      "efeito": {
+        "tipo": "renda",
+        "parcela": "producao",
+        "fatores": [
+          1.4,
+          1.75,
+          2.2
+        ]
+      },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Extrai pedra onde o mármore existe; não é uma Oficina genérica disfarçada."
     }

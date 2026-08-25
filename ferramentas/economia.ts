@@ -39,10 +39,10 @@ const nova = (): Campanha => new Campanha(atlas, economia, construcoes, ajustes,
 const c0 = nova(); c0.comecar('atenas');
 const provs = Object.keys(economia.provincias).map((id) => {
   const e = c0.economiaDe(id)!;
-  const bruto = e.impostos + e.producao + e.comercio;
-  return { id, pop: e.populacao, total: e.total, imp: e.impostos, pr: e.producao, com: e.comercio,
+  const bruto = e.impostos + e.producao + e.transito;
+  return { id, pop: e.populacao, total: e.total, imp: e.impostos, pr: e.producao, com: e.transito,
            corr: e.corrupcao, porMil: e.total / (e.populacao / 1000),
-           terra: bruto > 0 ? (e.producao + e.comercio) / bruto : 0 };
+           terra: bruto > 0 ? (e.producao + e.transito) / bruto : 0 };
 });
 let inv = 0, pares = 0;
 for (const a of provs) for (const b of provs) { if (a.pop >= b.pop) continue; pares++; if (a.total > b.total) inv++; }

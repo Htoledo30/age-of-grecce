@@ -78,6 +78,7 @@ function imprimirRetorno(catalogo: Catalogo, economia: Economia, ajustes: Ajuste
           fatorDeImposto: 1,
           revoltosa: false,
           sitiada: false,
+          ligada: true,
         },
         idConstrucao,
       );

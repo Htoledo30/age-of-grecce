@@ -94,7 +94,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     linhas.push({
       tom: cerco.sitiante === eu ? 'ganho' : 'perda',
       icone: 'fogo',
-      texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)} — sem produção nem comércio lá dentro.`,
+      texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)} — sem produção nem trânsito lá dentro.`,
     });
   }
 

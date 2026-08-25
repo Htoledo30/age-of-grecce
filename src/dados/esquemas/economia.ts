@@ -65,10 +65,16 @@ export const Economia = z
          */
         nivel: z.number().int().min(1).max(5),
         /**
-         * Quanto da produção vira comércio. É posição, porto e rota — é o que deixa uma
-         * província enriquecer vendendo, e não só produzindo.
+         * O quanto passa por aqui. É posição, porto e rota — é o que deixa uma província
+         * enriquecer pelo que atravessa o chão dela, e não só pelo que ela produz.
+         *
+         * ⚠️ **Chamava-se `comercioBase`, e o nome mentia.** Comércio pressupõe alguém do
+         * outro lado; isto é o pedágio da POSIÇÃO, cobrado sem parceiro nenhum. Enquanto não
+         * houver diplomacia para dar a contraparte, a palavra "comércio" fica reservada para
+         * o que ela significa de verdade — e a tela para de insinuar um parceiro que não
+         * existe. Ver `GDD.md`, "Comércio interno e externo".
          */
-        comercioBase: z.number().nonnegative(),
+        transitoBase: z.number().nonnegative(),
         /**
          * O segundo produto da terra, sempre mais fraco que o principal.
          *

@@ -14,7 +14,7 @@ interface Ganchos {
   economiaDe: (idProvincia: string) => {
     impostos: number;
     producao: number;
-    comercio: number;
+    transito: number;
     total: number;
   } | null;
   campanha: () => { tesouro: number; renda: number };
@@ -108,7 +108,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
     return i.economiaDe('eleusis');
   });
   expect(sitiada?.producao).toBe(0);
-  expect(sitiada?.comercio).toBe(0);
+  expect(sitiada?.transito).toBe(0);
   expect(sitiada?.impostos).toBeGreaterThan(0);
   await expect(page.locator('.ficha__renda')).toHaveText(/saldo [−+][\d.]+ por turno/);
   expect(erros).toEqual([]);

@@ -44,7 +44,7 @@ describe('a economia é sobre a terra, não sobre cabeças', () => {
           ficha.secundario.nivel *
           eco.pesoDoSecundario,
     );
-    expect(e.comercio).toBeLessThan(ficha.comercioBase * eco.escalaDeComercio);
+    expect(e.transito).toBeLessThan(ficha.transitoBase * eco.escalaDeTransito);
   });
 
   it('não existe província sem corrupção: o degrau de limiar sumiu', () => {
@@ -78,13 +78,13 @@ describe('a economia é sobre a terra, não sobre cabeças', () => {
   it('o comércio é POSIÇÃO, não uma fatia da lavoura', () => {
     const c = nova();
     c.comecar('atenas');
-    // Duas terras com o mesmo `comercioBase` rendem o mesmo comércio, por mais diferente
-    // que seja o que elas plantam. Era `produção × comercioBase`, e por isso Corinto — a
-    // potência comercial grega, com o maior `comercioBase` do mapa — tirava um quinto da
+    // Duas terras com o mesmo `transitoBase` rendem o mesmo comércio, por mais diferente
+    // que seja o que elas plantam. Era `produção × transitoBase`, e por isso Corinto — a
+    // potência comercial grega, com o maior `transitoBase` do mapa — tirava um quinto da
     // renda do comércio: um entreposto cujo comércio é um quinto da renda não é entreposto.
     const porBase = new Map<number, string[]>();
     for (const [id, ficha] of Object.entries(economia.provincias)) {
-      porBase.set(ficha.comercioBase, [...(porBase.get(ficha.comercioBase) ?? []), id]);
+      porBase.set(ficha.transitoBase, [...(porBase.get(ficha.transitoBase) ?? []), id]);
     }
     const gemeas = [...porBase.values()].find((ids) => ids.length > 1);
     expect(gemeas).toBeDefined();
@@ -92,8 +92,8 @@ describe('a economia é sobre a terra, não sobre cabeças', () => {
     // Mesma base, mesmo bruto de comércio — o que muda é só a corrupção de cada uma.
     // Margem de 2: cada parcela é arredondada sozinha antes de chegar ao tesouro, e
     // desfazer a corrupção para trás traz o resto do arredondamento junto.
-    const brutoA = c.economiaDe(a!)!.comercio / (1 - c.corrupcaoEm(a!).total);
-    const brutoB = c.economiaDe(b!)!.comercio / (1 - c.corrupcaoEm(b!).total);
+    const brutoA = c.economiaDe(a!)!.transito / (1 - c.corrupcaoEm(a!).total);
+    const brutoB = c.economiaDe(b!)!.transito / (1 - c.corrupcaoEm(b!).total);
     expect(Math.abs(brutoA - brutoB)).toBeLessThan(2);
   });
 

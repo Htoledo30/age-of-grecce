@@ -53,12 +53,13 @@ export function checarEconomia(): void {
       fatorDeImposto: 1,
       revoltosa: false,
       sitiada: false,
+      ligada: true,
     });
     porPoder.set(provincia.dono, (porPoder.get(provincia.dono) ?? 0) + renda.total);
     console.log(
       `  ${provincia.nome.padEnd(12)} ${renda.produto.nome.padEnd(17)} ` +
         `nivel ${renda.nivel} · impostos ${String(renda.impostos).padStart(4)} ` +
-        `· produção ${String(renda.producao).padStart(4)} · comércio ${String(renda.comercio).padStart(3)} ` +
+        `· produção ${String(renda.producao).padStart(4)} · comércio ${String(renda.transito).padStart(3)} ` +
         `= ${String(renda.total).padStart(4)}`,
     );
   }

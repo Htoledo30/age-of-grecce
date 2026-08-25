@@ -40,7 +40,75 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: quatro armas, e nenhuma é a resposta
+### Agora: o comércio que não precisa de parceiro
+
+Item 4 da sequência de Henrique, **partido em dois como o item 3 foi** — e a razão apareceu
+ao olhar de perto: comércio são duas coisas, e só uma podia ser construída.
+
+O **interno** já existia e funcionava (a rede de trocas). O **externo** era `transitoBase ×
+escala`: um número fixo, sem contraparte e sem risco. Corinto rendia o mesmo em paz com toda a
+Grécia ou em guerra com toda ela. ⚠️ **A cadeia real de dependência é IA → diplomacia →
+comércio externo**, o inverso da ordem planejada — inventar um parceiro agora seria construir
+mentira. Henrique escolheu partir: o que não precisa de parceiro foi feito; tratados, acordo
+de grãos e bloqueio viram o item 4½, depois da diplomacia.
+
+**1. O Porto liga o mar à rede.** Duas terras suas com Porto estão ligadas entre si, por mais
+mar que haja no meio. É o que ele sempre prometeu e nunca entregou — até aqui só multiplicava
+um número. Salamina deixa de estar fora do jogo, e "onde ergo o segundo Porto?" vira pergunta
+de mapa.
+
+⚠️ **Precisa de porto NOS DOIS lados.** Navio mercante atraca em algum lugar; uma ponta
+sozinha é um cais olhando para o horizonte. É também o que faz o Porto ser decisão emparelhada
+— dois slots, duas obras — em vez de um interruptor.
+
+⚠️ **Mercadoria embarca; exército não.** Mercadoria aqui é abstrata (sem inventário, sem
+caravana, sem navio no mapa), então rota de mar abstrata cabe. Hoste é peça concreta: movê-la
+por mar exige frota, que é o sistema naval. Confundir as duas daria teletransporte de exército
+com nome de comércio.
+
+**2. A parcela virou TRÂNSITO, e ganhou risco.** O nome mentia — comércio pressupõe alguém do
+outro lado, e não há ninguém. E ela agora exige **rota até a capital**: terra cortada do resto
+do reino não manda o pedágio ao tesouro. É a única parcela em que isso vale, porque é a única
+que existe por causa de um caminho; imposto e produção continuam, que o lavrador colhe e o
+coletor cobra mesmo com o reino partido. Partir um império ao meio passa a custar caro a ele.
+
+A regra mordeu no primeiro turno, na autoria que já existia: **Mégara possui Salamina**, que
+não faz fronteira terrestre com nada — a ilha entrou como `cortada` e Mégara abre 20/turno
+mais pobre, com o conserto disponível (Porto nas duas). É a única província cortada do mapa no
+turno 1, e foi conferida uma a uma nos 18 poderes.
+
+**3. O Mercado deixou de ser armadilha.** Ele é uma praça, e uma praça faz duas coisas: cobra
+de quem passa por AQUI e distribui o que o reino inteiro alcança. O mesmo número move as duas
+pernas.
+
+| Mercado — retorno | antes | agora |
+|---|---:|---:|
+| Hermíone | 157 turnos | **41** |
+| Plateia | 100 | **50** |
+| Caristo | 122 | **54** |
+| Tanagra | 130 | **65** |
+| Tebas | 301 | **101** |
+| Corinto | **1.729** | **153** |
+| Atenas | 106 | **59** |
+| Sicion, Mégara (império esticado) | **nunca** | 150 · 93 |
+
+⚠️ **Cada perna sozinha já foi armadilha, e as duas medições estão registradas.** Só LOCAL:
+`transitoBase` é 0,18 em Tanagra contra 0,60 em Corinto, e multiplicador em cima de quase nada
+não paga obra. Só NACIONAL: o preço escala pelo peso da terra que ergue, então Corinto pagava
+o preço mais alto do catálogo por um ganho que dependia de quantas províncias ela tinha — e
+ela tem uma. **A perna local paga a encruzilhada; a nacional paga o império.**
+
+⚠️ Efeito colateral bem-vindo: Corinto abre com Mercado I na autoria, e a perna local fez a
+renda dela subir de 287 para 314 — o empório corintio finalmente aparece no número.
+
+**4. Uma pergunta, três consumidores.** `campanha/comercio/circulacao.ts` responde "o reino
+alcança esta terra?" para a rede, para a parcela de trânsito e para a tela. Antes cada um
+responderia por conta própria, e um dia diriam coisas diferentes sobre a mesma província.
+
+Falta Henrique jogar: se o segundo Porto parece valer o slot, e se perder o corredor terrestre
+dói na hora certa.
+
+### O que veio antes: quatro armas, e nenhuma é a resposta
 
 Henrique pediu isto no meio do item 3, e a pergunta dele foi a que desenhou o sistema:
 *"não tem arqueiro? e qual a diferença entre tropa leve e hoplita? e o que o quartel vai
@@ -190,9 +258,11 @@ o único dial com faixa larga, então ela mandava em tudo** — sem ninguém ter
 
 Quatro defeitos, todos consertados:
 
-1. **O comércio era filho da produção** (`produção × comercioBase`). Corinto, a potência
-   comercial grega com o maior `comercioBase` do mapa, tirava **21% da renda do comércio**.
-   Agora comércio é POSIÇÃO: `comercioBase × escala`, e uma vila de porto vive do mar.
+1. **O trânsito era filho da produção** (`produção × transitoBase`). Corinto, a potência
+   comercial grega com o maior `transitoBase` do mapa, tirava **21% da renda dali**.
+   Agora ele é POSIÇÃO: `transitoBase × escala`, e uma vila de porto vive do mar. (A parcela
+   se chamava "comércio"; virou **trânsito** no item 4, quando ficou claro que comércio
+   pressupõe alguém do outro lado.)
 2. **O produto secundário não rendia nada.** Toda província tem dois produtos autorais com
    nível, e metade da autoria econômica estava desligada da economia.
 3. **A faixa de `valor` era 1,87×.** Alargada para 4× — pelo TOPO, não comprimindo a base,
@@ -342,9 +412,9 @@ sem caravana, sem preço.
 - **Um bem DISTINTO rende uma vez**, por mais terras que o deem. Duas províncias de azeite
   não dobram nada. É o que faz tomar a terra do vinho valer mais do que tomar a segunda
   terra de grão — conquista com valor não-linear, que o jogo não tinha.
-- **Circula quem é seu, não está sitiado e chega à capital por terra própria** (mesmo
-  `alcanceDe` que a hoste usa). Reino partido não faz um mercado só; Salamina fica de fora
-  até existir Porto e mar; sem capital, a rede inteira para.
+- **Circula quem é seu, não está sitiado e chega à capital** — por terra sua ou, desde o item
+  4, por mar entre dois Portos seus. Reino partido não faz um mercado só; com Porto nas duas
+  metades, faz. Sem capital, a rede inteira para.
 - O **produto secundário** finalmente serve para alguma coisa — era dado escrito desde
   sempre, esperando a regra de circulação. Continua fora da renda da terra.
 - A renda do reino passou a ser `terras + rede`. ⚠️ A tabela do Governo é província a

@@ -5,7 +5,7 @@
  * estado e — em breve — despesa de exército não cabem na ficha de um território, e a
  * barra de turno só tem espaço pra um número sem dizer de onde ele vem.
  *
- * **Aqui é o único lugar onde impostos, produção e comércio aparecem separados.** Na
+ * **Aqui é o único lugar onde impostos, produção e trânsito aparecem separados.** Na
  * ficha da província eles eram ruído: informação de contador competindo com a identidade
  * do território. A ficha diz o que o lugar é; esta tabela diz quanto ele rende.
  */
@@ -25,7 +25,7 @@ export interface LinhaDoBalanco {
     nivel: number;
     impostos: number;
     producao: number;
-    comercio: number;
+    transito: number;
     /** Folha das construções erguidas. É o que faz o total ser líquido. */
     manutencao: number;
     total: number;
@@ -62,7 +62,7 @@ const COLUNAS = [
   'produção',
   'impostos',
   'produz',
-  'comércio',
+  'trânsito',
   'manutenção',
   'renda',
   'tropa',
@@ -88,7 +88,7 @@ export class Balanco implements AbaDoGoverno {
     const somas = {
       impostos: 0,
       producao: 0,
-      comercio: 0,
+      transito: 0,
       manutencao: 0,
       total: 0,
       tropa: 0,
@@ -98,7 +98,7 @@ export class Balanco implements AbaDoGoverno {
       if (!l.economia) continue;
       somas.impostos += l.economia.impostos;
       somas.producao += l.economia.producao;
-      somas.comercio += l.economia.comercio;
+      somas.transito += l.economia.transito;
       somas.manutencao += l.economia.manutencao;
       somas.total += l.economia.total;
       somas.tropa += l.economia.tropa;
@@ -153,7 +153,7 @@ export class Balanco implements AbaDoGoverno {
         '',
         moeda(somas.impostos),
         moeda(somas.producao),
-        moeda(somas.comercio),
+        moeda(somas.transito),
         somas.manutencao > 0 ? `−${moeda(somas.manutencao)}` : '0',
         moeda(somas.total),
         somas.tropa > 0 ? `−${moeda(somas.tropa)}` : '0',
@@ -192,7 +192,7 @@ export class Balanco implements AbaDoGoverno {
       `${e.produto} ${romano(e.nivel)}`,
       moeda(e.impostos),
       moeda(e.producao),
-      moeda(e.comercio),
+      moeda(e.transito),
       e.manutencao > 0 ? `−${moeda(e.manutencao)}` : '0',
       moeda(e.total),
       e.tropa > 0 ? `−${moeda(e.tropa)}` : '0',

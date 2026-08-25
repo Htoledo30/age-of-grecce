@@ -75,7 +75,7 @@ export const Construcoes = z.object({
            * o carregamento falha com o caminho do campo, em vez de a construção
            * silenciosamente não fazer nada.
            */
-          parcela: z.enum(['impostos', 'producao', 'comercio']),
+          parcela: z.enum(['impostos', 'producao', 'transito']),
           /** Fator total no nível I, II e III. */
           fatores: TresNiveisPositivos,
         }),
@@ -133,17 +133,25 @@ export const Construcoes = z.object({
         z.object({
           tipo: z.literal('troca'),
           /**
-           * Multiplica a renda da REDE DE TROCAS do reino — não a parcela local.
+           * A praça: multiplica a REDE do reino **e** o trânsito desta província.
            *
-           * É investimento nacional posto num lugar só. Multiplicar o comércio da própria
-           * província era o defeito: `comercioBase` é 0,18 em Tanagra contra 0,60 em
-           * Corinto, e multiplicador em cima de quase nada é quase nada — o Mercado não se
-           * pagava em província nenhuma fora das duas potências comerciais. Ligado à rede,
-           * ele vale mais quanto mais bens DISTINTOS o reino alcança, e passa a ligar
-           * construção a conquista.
+           * ⚠️ **Duas pernas, e o mesmo número move as duas** — porque uma praça faz duas
+           * coisas: cobra de quem passa por AQUI e distribui o que o reino inteiro alcança.
            *
-           * ⚠️ Vale UMA vez por reino, pelo melhor nível erguido: dois Mercados não
-           * multiplicam a mesma rede duas vezes.
+           * Cada perna sozinha já foi armadilha, e as duas medições estão registradas. Só
+           * LOCAL: `transitoBase` é 0,18 em Tanagra contra 0,60 em Corinto, e multiplicador
+           * em cima de quase nada não paga obra nenhuma. Só NACIONAL: o preço da obra escala
+           * pelo peso da terra que a ergue, então Corinto pagava o preço mais alto do
+           * catálogo por um ganho que dependia de quantas províncias ela tinha — e ela tem
+           * uma; o Mercado ia a 1.729 turnos de retorno ali e a "nunca" em metade do mapa.
+           *
+           * Juntas, elas se corrigem: **a perna local paga a encruzilhada rica, a nacional
+           * paga o império largo.** Medido do poder mais pobre ao mais rico, o retorno caiu
+           * para uma faixa comparável à dos outros prédios.
+           *
+           * ⚠️ A perna NACIONAL vale uma vez por reino, pelo melhor nível erguido: dois
+           * Mercados não multiplicam a mesma rede duas vezes. A perna LOCAL é de cada praça,
+           * como qualquer obra de renda.
            */
           fatores: TresNiveisPositivos,
         }),
@@ -193,6 +201,18 @@ export const Construcoes = z.object({
        * amarraria o combate a um id de conteúdo, e o `0.0.10` vai refazer o catálogo.
        */
       impedeAssaltoImediato: z.boolean().optional(),
+      /**
+       * Esta obra liga a província ao resto do reino POR MAR.
+       *
+       * ⚠️ **Fora do `efeito`, pela mesma razão do `impedeAssaltoImediato`.** Multiplicar
+       * uma parcela de renda e abrir uma rota marítima são coisas diferentes: o Porto faz as
+       * duas, mas um farol, um estaleiro ou uma feitoria futura podem fazer só uma. E ler a
+       * regra pelo id `porto` amarraria a circulação a um id de conteúdo.
+       *
+       * ⚠️ **Vale só para MERCADORIA.** Exército não embarca por aqui: hoste é peça concreta
+       * no mapa e mover uma por mar exige frota, que é o sistema naval.
+       */
+      ligaPorMar: z.boolean().optional(),
       /** Por que ela existe e onde ela vale. Documentação junto do dado. */
       motivo: z.string().min(1),
     }),

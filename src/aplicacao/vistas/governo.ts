@@ -41,7 +41,7 @@ export function vistaDoBalanco(jogo: Jogo): VistaDoBalanco | null {
               nivel: e.nivel,
               impostos: e.impostos,
               producao: e.producao,
-              comercio: e.comercio,
+              transito: e.transito,
               manutencao: e.manutencao,
               total: e.total,
               tropa: campanha.custoDaTropaDe(id),

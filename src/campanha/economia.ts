@@ -89,6 +89,18 @@ export interface BaseDaProvincia {
    * dos 139 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
    */
   sitiada: boolean;
+  /**
+   * Há rota até a capital do próprio dono — por terra sua ou por mar entre Portos seus.
+   *
+   * ⚠️ **Terra cortada perde o TRÂNSITO, e só ele.** Imposto e produção continuam: o
+   * lavrador colhe e o coletor cobra mesmo com o reino partido ao meio. O que não acontece é
+   * o pedágio chegar ao tesouro — trânsito é a parcela que existe porque há uma ROTA, e sem
+   * rota não há o que cobrar.
+   *
+   * É por aqui que a guerra ganha uma consequência econômica que não é cerco: partir um
+   * império ao meio passa a custar caro a ele, e um segundo Porto costura a ferida.
+   */
+  ligada: boolean;
 }
 
 /** As parcelas da renda, separadas — é assim que a ficha explica o número. */
@@ -105,7 +117,14 @@ export interface RendaDaProvincia {
   revoltosa: boolean;
   /** Produção já com o fator das construções. */
   producao: number;
-  comercio: number;
+  transito: number;
+  /**
+   * O trânsito acima é zero porque a rota até a capital foi cortada, e não por conta.
+   *
+   * Existe pelo mesmo motivo que `revoltosa`: um zero sem explicação na ficha lê-se como
+   * defeito do jogo. A tela diz qual das duas coisas aconteceu.
+   */
+  cortada: boolean;
   /**
    * O que as construções erguidas custam por turno para ficar de pé.
    *
@@ -131,16 +150,27 @@ export interface RendaDaProvincia {
 function fatorDasConstrucoes(
   construcoes: Readonly<Record<string, number>>,
   catalogo: CatalogoDeConstrucoes,
-  parcela: 'impostos' | 'producao' | 'comercio',
+  parcela: 'impostos' | 'producao' | 'transito',
 ): number {
   let fator = 1;
   for (const [id, nivel] of Object.entries(construcoes)) {
     const construcao = catalogo[id];
     if (!construcao) throw new Error(`construção inexistente no catálogo: ${id}`);
     const efeito = construcao.efeito;
-    if (efeito.tipo === 'renda' && efeito.parcela === parcela) {
-      fator *= efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] ?? 1;
-    }
+    const fatorDoNivel = (): number =>
+      ('fatores' in efeito ? efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] : 1) ?? 1;
+    if (efeito.tipo === 'renda' && efeito.parcela === parcela) fator *= fatorDoNivel();
+    // ⚠️ **A praça tem DOIS lados, e o mesmo número move os dois.** O `troca` multiplica a
+    // rede do reino — isso mora em `rede-de-trocas.ts` — e multiplica também o TRÂNSITO
+    // daqui, que é o que se cobra de quem passa por esta praça.
+    //
+    // As duas pernas juntas não são enfeite: são o que faz o Mercado existir no mapa
+    // inteiro. Só nacional, ele era armadilha na encruzilhada rica — Corinto pagava o preço
+    // mais alto do catálogo por um ganho que dependia de quantas terras ela tinha, e ela tem
+    // uma. Só local, era armadilha na terra pobre de trânsito — multiplicador em cima de
+    // quase nada não paga obra nenhuma. A perna local paga a encruzilhada; a nacional paga o
+    // império.
+    if (efeito.tipo === 'troca' && parcela === 'transito') fator *= fatorDoNivel();
   }
   return fator;
 }
@@ -155,7 +185,7 @@ export function rendaDaProvincia(
   const produto = catalogo[ficha.produto];
   if (!produto) throw new Error(`produto inexistente no catálogo: ${ficha.produto}`);
 
-  const fator = (parcela: 'impostos' | 'producao' | 'comercio'): number =>
+  const fator = (parcela: 'impostos' | 'producao' | 'transito'): number =>
     fatorDasConstrucoes(estado.construcoes, construcoes, parcela);
 
   // Arredonda cada parcela, e não só o total: é o que faz a soma das linhas da ficha
@@ -204,13 +234,13 @@ export function rendaDaProvincia(
           secundario.valor * ficha.secundario.nivel * ajustes.pesoDoSecundario) *
           fator('producao'),
       );
-  // ⚠️ **O comércio NÃO é uma fatia da produção.** Era `producao × comercioBase`, e isso
-  // fazia o entreposto depender da própria lavoura: Corinto, com o maior `comercioBase` do
-  // mapa, tirava um quinto da renda do comércio. Posição não se planta — `comercioBase`
+  // ⚠️ **O comércio NÃO é uma fatia da produção.** Era `producao × transitoBase`, e isso
+  // fazia o entreposto depender da própria lavoura: Corinto, com o maior `transitoBase` do
+  // mapa, tirava um quinto da renda do comércio. Posição não se planta — `transitoBase`
   // multiplica uma escala própria, e uma vila de porto pode viver do mar.
-  const comercio = estado.sitiada
+  const transito = estado.sitiada || !estado.ligada
     ? 0
-    : chega(ficha.comercioBase * ajustes.escalaDeComercio * fator('comercio'));
+    : chega(ficha.transitoBase * ajustes.escalaDeTransito * fator('transito'));
 
   // A folha das construções: soma da manutenção de cada nível erguido. Não depende de
   // cerco nem de imposto — é compromisso permanente, e é isso que a torna um ralo.
@@ -230,9 +260,10 @@ export function rendaDaProvincia(
     fatorDeImposto: estado.fatorDeImposto,
     revoltosa: estado.revoltosa,
     producao,
-    comercio,
+    transito,
+    cortada: !estado.ligada && !estado.sitiada,
     manutencao,
-    total: impostos + producao + comercio - manutencao,
+    total: impostos + producao + transito - manutencao,
     construcoes: Object.keys(estado.construcoes),
   };
 }

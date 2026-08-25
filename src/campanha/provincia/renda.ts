@@ -11,6 +11,7 @@ import { escalaDeObra, pesoEconomicoDe } from '../custo-de-obra';
 import { rendaDaProvincia } from '../economia';
 import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
+import { ligadaACapital } from '../comercio/circulacao';
 import { rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
@@ -28,6 +29,7 @@ export function baseDe(nucleo: NucleoDaCampanha, idProvincia: string): BaseDaPro
     fatorDeImposto: fatorDeImpostoEm(nucleo, idProvincia),
     revoltosa: emRevoltaEm(nucleo, idProvincia),
     sitiada: estaSitiada(nucleo, idProvincia),
+    ligada: ligadaACapital(nucleo, idProvincia),
   };
 }
 

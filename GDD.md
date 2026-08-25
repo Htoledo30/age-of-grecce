@@ -56,14 +56,18 @@ lugares e um mapa com um censo. As três parcelas:
 ```
 imposto  = população × taxa × nível de imposto × construções
 produção = (valor_principal × nível + valor_secundário × nível × peso) × construções
-comércio = comercioBase × escala × construções
-renda    = (imposto + produção + comércio) × (1 − corrupção) − folha das construções
+trânsito = transitoBase × escala × construções     (zero sem rota até a capital)
+renda    = (imposto + produção + trânsito) × (1 − corrupção) − folha das construções
 ```
 
-- **O comércio não é uma fatia da produção.** Ele é POSIÇÃO, porto e rota: uma vila de porto
-  pode viver do mar sem plantar nada. ⚠️ Ele já foi `produção × comercioBase`, e por isso
-  Corinto — a potência comercial grega, com o maior `comercioBase` do mapa — tirava um quinto
-  da renda do comércio.
+- **O trânsito não é uma fatia da produção.** Ele é POSIÇÃO, porto e rota: uma vila de porto
+  pode viver do mar sem plantar nada. ⚠️ Ele já foi `produção × transitoBase`, e por isso
+  Corinto — a potência comercial grega, com o maior `transitoBase` do mapa — tirava um quinto
+  da renda dali.
+- **E ele é a única parcela que exige ROTA.** Terra cortada da capital não manda o pedágio ao
+  tesouro; imposto e produção continuam. A parcela se chamava "comércio" e foi renomeada
+  quando ficou claro que comércio pressupõe alguém do outro lado — ver *Comércio interno e
+  externo*.
 - **Os DOIS produtos da terra rendem**, o segundo com peso menor. Toda província tem os dois
   escritos com nível, e por muito tempo o segundo não valia um centavo.
 - **A corrupção come as três parcelas**, não só o imposto: é o que se perde entre a província
@@ -82,28 +86,34 @@ São **duas coisas**, e hoje só uma existe de verdade. Escrito aqui para entrar
 pequenos no futuro, não agora.
 
 **Interno — construído.** A rede de trocas: cada bem DISTINTO que o reino alcança rende uma
-vez por turno. Ele circula se a terra é sua, não está sitiada e chega à capital por terra
-própria. Tem risco de verdade — sitiar a terra que dá o bem, partir o reino ao meio ou tomar
-a capital cortam a rede.
+vez por turno. Ele circula se a terra é sua, não está sitiada e chega à capital — por terra
+própria **ou por mar, entre dois Portos seus**. Tem risco de verdade: sitiar a terra que dá o
+bem, partir o reino ao meio ou tomar a capital cortam a rede.
 
-**Externo — hoje é só um número.** A parcela `comercio` da renda nasceu pensando em comércio
-externo: `comercioBase` é o pedágio da posição, e a ficha de Corinto diz isso na cara ("tudo
-que cruza da Itália ao Egeu paga passagem aqui"). Mas ela virou `comercioBase × escala`, um
-valor fixo **sem contraparte e sem risco**: a única coisa no jogo que o reduz é o cerco
-daquela província. Corinto rende o mesmo em paz com toda a Grécia ou em guerra com toda ela.
+**A parcela agora se chama TRÂNSITO, e o nome é honesto.** Ela nasceu chamada de "comércio"
+pensando em comércio externo — `transitoBase` é o pedágio da posição, e a ficha de Corinto diz
+isso na cara ("tudo que cruza da Itália ao Egeu paga passagem aqui"). Mas comércio pressupõe
+alguém do outro lado, e não há ninguém: a palavra ficou reservada para quando houver.
 
-⚠️ **O que o faz parecer de mentira não é o nome — é a falta de parceiro e a falta de risco.**
-O interno pode ser cortado de três jeitos; o externo, de nenhum.
+**E ela ganhou risco.** Era um valor fixo que só o cerco reduzia — Corinto rendia o mesmo em
+paz com toda a Grécia ou em guerra com toda ela. Agora o trânsito **exige rota até a
+capital**: terra cortada do resto do reino não manda o pedágio ao tesouro. É a única parcela
+em que isso vale, porque é a única que existe por causa de um caminho — imposto e produção
+continuam, que o lavrador colhe e o coletor cobra mesmo com o reino partido ao meio.
 
-**O que ele precisa para existir, e por que os três vêm juntos:**
+⚠️ **Partir um império ao meio passa a custar caro a ele**, e um segundo Porto costura a
+ferida. É consequência econômica de guerra sem precisar de diplomacia nenhuma.
 
-- **Diplomacia** dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que a
-  guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
+**Externo — ainda não existe, e não pode existir sozinho.** Comércio com parceiro precisa de:
+
+- **Diplomacia**, que dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que
+  a guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
   sem disparar flecha.
-- **Mar e zonas marítimas** dão o bloqueio, que é o risco: fechar o Euripo e Cálcis sente.
-- **Renomear** a parcela atual (posição, trânsito, pedágio) libera a palavra "comércio" para
-  significar comércio de verdade quando ele chegar. Enquanto não chegar, a tela não deve
-  insinuar que existe alguém do outro lado.
+- **Mar e zonas marítimas**, que dão o bloqueio: fechar o Euripo e Cálcis sente.
+
+⚠️ A cadeia de dependência é **IA → diplomacia → comércio externo**, e ela é o inverso da
+ordem em que os itens foram planejados. Por isso o item 4 foi partido em dois, como o 3 foi:
+o que não precisa de parceiro foi construído; o resto espera quem esteja do outro lado.
 
 - Produtos representam a capacidade anual e a identidade econômica da terra, não um
   inventário de unidades acumuladas.
@@ -161,9 +171,15 @@ O interno pode ser cortado de três jeitos; o externo, de nenhum.
   por turno, **uma vez só** — duas províncias de azeite não rendem duas vezes. É isso que dá
   à conquista um valor não-linear: tomar a única terra de vinho vale mais que tomar a segunda
   terra de grão, e é aí que a variedade do mapa vira decisão.
-- Um bem circula quando a província que o dá é sua, **não está sitiada** e **chega à capital
-  por terra própria**. Reino partido em dois não faz um mercado só, e ilha sem ligação
-  terrestre fica de fora enquanto Porto e mar não existirem. Sem capital não há rede.
+- Um bem circula quando a província que o dá é sua, **não está sitiada** e **chega à
+  capital** — por terra sua, ou por mar entre dois Portos seus. Reino partido em dois não faz
+  um mercado só; com Porto nas duas metades, faz. Sem capital não há rede.
+- **O Porto liga por mar, e precisa de porto nos DOIS lados.** Navio mercante atraca em algum
+  lugar: uma ponta sozinha é um cais olhando para o horizonte. É o que tira Salamina de fora
+  do jogo, e o que faz "onde ergo o segundo Porto?" ser pergunta de mapa.
+- ⚠️ **Mercadoria embarca; exército não.** Mercadoria aqui é abstrata — sem inventário, sem
+  caravana, sem navio no mapa —, então rota de mar abstrata cabe. Hoste é peça concreta, com
+  posição e batalha: movê-la por mar exige frota, que é o sistema naval.
 - O produto SECUNDÁRIO da província entra por aqui — é o que ele sempre esperou para servir
   a alguma coisa. Ele continua fora da renda da terra, que é do principal.
 - Escassez é distribuída de forma compreensível, com prioridade limitada da capital.
@@ -276,11 +292,17 @@ nunca do estado vivo, senão mobilizar baratearia as obras.
 
 Cada prédio ataca uma pergunta diferente, e nenhum é o outro com números trocados: a Ágora
 corta a corrupção de TAMANHO (engolir população), a Estrada corta a de DISTÂNCIA (espalhar o
-império, e por isso ela não rende nada na própria capital), o Mercado multiplica a rede de
-trocas do REINO (ampliar a rede, e vale uma vez só).
+império, e por isso ela não rende nada na própria capital), o Porto abre a rota de MAR, e o
+Mercado é a praça — ele multiplica a rede do REINO e o trânsito da própria terra.
+
+⚠️ **O Mercado tem duas pernas de propósito, e cada uma sozinha já foi armadilha.** Só local,
+ele não pagava onde o trânsito é pequeno; só nacional, ele não pagava na encruzilhada rica de
+uma província só — o preço da obra escala pelo peso da terra, e Corinto pagava o preço mais
+alto do catálogo por um ganho que dependia de quantas províncias ela tinha. **A perna local
+paga a encruzilhada; a nacional paga o império.**
 
 - Ágora: economia, administração e futura redução de corrupção;
-- Mercado: circulação e comércio;
+- Mercado: a praça — multiplica a rede de trocas do REINO e o trânsito desta terra;
 - Quartel: não é requisito para recrutar — multiplica o TREINO da tropa levantada naquela
   província, e o treino é carimbado na leva;
 - Armaria: libera o hoplita naquela província, e não pede produto nenhum — é escolha de
@@ -289,7 +311,8 @@ trocas do REINO (ampliar a rede, e vale uma vez só).
 - Treinamento de cavaleiros: libera a cavalaria, e só nasce onde há cavalos;
 - Muralha: fortalece milícia e impede assalto imediato;
 - Templo: felicidade, cultura ou estabilidade futura;
-- Porto: conexão econômica marítima e base do sistema naval;
+- Porto: liga esta terra ao reino POR MAR (precisa de porto nos dois lados) e aumenta o
+  trânsito local; base do futuro sistema naval;
 - Estradas: possível ligação entre movimento, mercado e administração;
 - construções de exploração são liberadas pelos produtos principal e secundário: Fazenda
   para Grãos, Pastagem para Gado, Porto pesqueiro para Peixe, Lagar para Azeite, Vinhedo

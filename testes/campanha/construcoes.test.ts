@@ -66,7 +66,7 @@ describe('construções', () => {
     if (mina?.efeito.tipo !== 'renda') throw new Error('Mina deveria render moeda');
     const producaoNova = Math.round((antes?.producao ?? 0) * mina.efeito.fatores[0]);
     // ⚠️ **O comércio NÃO sobe junto.** Ele já foi uma fatia da produção, e por isso a Mina
-    // levantava as duas parcelas de uma vez; hoje comércio é POSIÇÃO — `comercioBase` vezes
+    // levantava as duas parcelas de uma vez; hoje comércio é POSIÇÃO — `transitoBase` vezes
     // uma escala própria — e a Mina mexe só no que a terra dá. Devolvendo a folha ao ganho,
     // sobra exatamente o delta da produção, com um de folga para o arredondamento de cada
     // parcela.
@@ -74,7 +74,7 @@ describe('construções', () => {
     const delta = producaoNova - (antes?.producao ?? 0);
     expect(ganho + folhaDaMina).toBeGreaterThanOrEqual(delta - 1);
     expect(ganho + folhaDaMina).toBeLessThanOrEqual(delta + 1);
-    expect(c.economiaDe('sounion')?.comercio).toBe(antes?.comercio);
+    expect(c.economiaDe('sounion')?.transito).toBe(antes?.transito);
   });
 
   it('toda construção erguida cobra manutenção: a renda é líquida', () => {
@@ -90,7 +90,7 @@ describe('construções', () => {
     expect(e?.manutencao).toBe(folha);
     // O total é a soma das três parcelas MENOS a folha — é o que a barra soma no tesouro.
     expect(e?.total).toBe(
-      (e?.impostos ?? 0) + (e?.producao ?? 0) + (e?.comercio ?? 0) - folha,
+      (e?.impostos ?? 0) + (e?.producao ?? 0) + (e?.transito ?? 0) - folha,
     );
     // Obra em andamento ainda não cobra: paga-se pelo que está de pé.
     const semNada = nova();
@@ -119,10 +119,11 @@ describe('construções', () => {
         fatorDeImposto: 1,
         revoltosa: false,
         sitiada: true,
+        ligada: true,
       },
     );
     expect(sitiada.producao).toBe(0);
-    expect(sitiada.comercio).toBe(0);
+    expect(sitiada.transito).toBe(0);
     expect(sitiada.manutencao).toBe(muralha.manutencao[2]);
     expect(sitiada.total).toBe(sitiada.impostos - muralha.manutencao[2]);
     expect(sitiada.total).toBeLessThan(0);
@@ -303,7 +304,7 @@ describe('construções', () => {
     for (let i = 0; i < construcoes.construcoes['mina']!.turnos[0]; i++) c.passarTurno();
     for (const id of ['atenas', 'maratona', 'sounion']) {
       const e = c.economiaDe(id);
-      for (const n of [e?.impostos, e?.producao, e?.comercio, e?.total]) {
+      for (const n of [e?.impostos, e?.producao, e?.transito, e?.total]) {
         expect(Number.isInteger(n)).toBe(true);
       }
     }

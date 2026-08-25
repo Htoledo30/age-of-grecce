@@ -28,7 +28,7 @@ const OPCOES = [
     rotulo: 'Sitiar',
     icone: 'muralha' as const,
     titulo: 'Sitiar a cidade',
-    corpo: 'Corta produção e comércio sem atacar a guarnição.',
+    corpo: 'Corta produção e trânsito sem atacar a guarnição.',
   },
 ];
 

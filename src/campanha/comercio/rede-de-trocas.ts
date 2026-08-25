@@ -13,17 +13,18 @@
  *
  * 1. **é sua** — território alheio não abastece ninguém;
  * 2. **não está sitiada** — cidade cercada sai da circulação inteira, como já sai da mesa;
- * 3. **chega à capital por terra própria** — reino partido em dois não faz um mercado só, e
- *    ilha sem ligação terrestre fica de fora até o Porto e o mar existirem.
+ * 3. **chega à capital** — por terra sua, ou por mar entre dois Portos seus. Reino partido
+ *    em dois não faz um mercado só; com porto nas duas metades, faz.
  *
- * O terceiro item é o que faz a geografia continuar mandando, e é o mesmo caminho que a
- * hoste percorre: `alcanceDe` responde "este reino é contínuo a partir daqui?".
+ * O terceiro item é o que faz a geografia continuar mandando, e a resposta mora em
+ * `circulacao.ts` — a mesma que a parcela de trânsito da renda usa, para as duas nunca
+ * discordarem sobre a mesma província.
  */
 
-import { alcanceDe } from '@/movimento/alcance';
 import type { NucleoDaCampanha } from '../nucleo';
-import { construcoesEm, donoDe, fichaDe, nivelDaConstrucaoEm } from '../provincia/consultas';
+import { construcoesEm, fichaDe, nivelDaConstrucaoEm } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
+import { ligadasACapital } from './circulacao';
 
 export interface BemEmCirculacao {
   id: string;
@@ -34,29 +35,12 @@ export interface BemEmCirculacao {
   provincias: readonly string[];
 }
 
-/**
- * As províncias do poder ligadas à capital por terra PRÓPRIA, a capital inclusive.
- *
- * Vazio quando não há capital — e isso é consequência, não descuido: sem sede não há
- * mercado, e o reino que perdeu a capital passa um turno sem a rede até assentar outra.
- */
-function ligadasAcapital(nucleo: NucleoDaCampanha, idPoder: string): ReadonlySet<string> {
-  const capital = nucleo.estado.capitais[idPoder];
-  if (capital === undefined) return new Set();
-  const alcancadas = alcanceDe(
-    nucleo.atlas,
-    capital,
-    (id) => donoDe(nucleo, id) === idPoder,
-  );
-  return new Set([capital, ...alcancadas]);
-}
-
 /** Os bens distintos que chegam ao reino, em ordem de id. */
 export function bensEmCirculacao(
   nucleo: NucleoDaCampanha,
   idPoder: string,
 ): readonly BemEmCirculacao[] {
-  const ligadas = ligadasAcapital(nucleo, idPoder);
+  const ligadas = ligadasACapital(nucleo, idPoder);
   const porBem = new Map<string, string[]>();
 
   for (const id of [...nucleo.territorios.provinciasDe(idPoder)].sort()) {
@@ -93,7 +77,7 @@ export function rendaDeTrocas(nucleo: NucleoDaCampanha, idPoder: string): number
  * liga construção a conquista em vez de deixar as duas em trilhos separados.
  *
  * ⚠️ Antes o Mercado multiplicava a parcela de comércio da PRÓPRIA província, e isso o
- * tornava uma armadilha: `comercioBase` é 0,18 em Tanagra contra 0,60 em Corinto, e
+ * tornava uma armadilha: `transitoBase` é 0,18 em Tanagra contra 0,60 em Corinto, e
  * multiplicador em cima de quase nada não paga 2.000 moedas nem a manutenção.
  */
 export function fatorDeMercadoAtual(nucleo: NucleoDaCampanha, idPoder: string): number {

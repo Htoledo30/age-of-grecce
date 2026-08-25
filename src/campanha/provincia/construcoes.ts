@@ -14,7 +14,7 @@ import { gastar, tesouroDe } from '../governo/tesouro';
 import { construcoesEm, donoDe, fichaDe, nivelDaConstrucaoEm } from './consultas';
 import { podeAgirEm } from './permissoes';
 import { baseDe, escalaDeObraEm } from './renda';
-import { custoDaObra, manutencaoDaObra } from '../custo-de-obra';
+import { custoDaObra } from '../custo-de-obra';
 import { fatorDeMercadoAtual, rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { alivioDasObras } from '../corrupcao';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
@@ -75,12 +75,7 @@ export function retornoDaConstrucaoEm(
   const ficha = fichaDe(nucleo, idProvincia);
   if (!ficha) return null;
   const base = baseDe(nucleo, idProvincia);
-  const efeito = nucleo.catalogo[idConstrucao]?.efeito;
-  // O Mercado paga na REDE, que é nacional: a renda da própria província não muda um
-  // centavo. Sem este ramo ele apareceria como puro prejuízo na ficha — o mesmo defeito
-  // que a Ágora tinha antes de a corrupção entrar na conta.
-  if (efeito?.tipo === 'troca') return retornoDoMercado(nucleo, idProvincia, idConstrucao);
-  return retornoDaConstrucao(
+  const local = retornoDaConstrucao(
     ficha,
     nucleo.economia.produtos,
     nucleo.catalogo,
@@ -89,6 +84,20 @@ export function retornoDaConstrucaoEm(
     idConstrucao,
     corrupcaoComAObra(nucleo, idProvincia, idConstrucao, base),
   );
+  // ⚠️ **A praça tem duas pernas, e a ficha tem que somar as duas.** A perna local já veio
+  // acima, dentro da renda da província; a nacional é a rede do reino, que não cabe em
+  // província nenhuma. Sem esta soma o Mercado apareceria pela metade — que foi exatamente o
+  // defeito que a Ágora teve antes de a corrupção entrar na conta.
+  const efeito = nucleo.catalogo[idConstrucao]?.efeito;
+  if (efeito?.tipo !== 'troca') return local;
+  const naRede = ganhoNaRede(nucleo, idProvincia, idConstrucao);
+  const ganhoPorTurno = local.ganhoPorTurno + naRede;
+  return {
+    custo: local.custo,
+    ganhoPorTurno,
+    turnosParaPagar:
+      ganhoPorTurno > 0 ? local.custo / ganhoPorTurno : Number.POSITIVE_INFINITY,
+  };
 }
 
 /**
@@ -177,29 +186,26 @@ function corrupcaoComAObra(
   return 1 - (1 - tamanho) * (1 - distancia);
 }
 
-/** O que um Mercado novo acrescenta: a diferença na rede do reino, menos a folha dele. */
-function retornoDoMercado(
+/**
+ * O que o Mercado acrescenta à REDE do reino por turno — a perna nacional dele.
+ *
+ * Vale por REINO e pelo MELHOR Mercado: dois deles não fazem o mesmo bem circular duas
+ * vezes. É por isso que o segundo Mercado só rende a diferença de nível, e é isso que
+ * impede "um Mercado em cada província" de ser a jogada óbvia.
+ */
+function ganhoNaRede(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   idConstrucao: string,
-): RetornoDaConstrucao {
+): number {
   const construcao = nucleo.catalogo[idConstrucao];
   const idPoder = donoDe(nucleo, idProvincia);
   const nivelAlvo = Math.min(3, nivelDaConstrucaoEm(nucleo, idProvincia, idConstrucao) + 1);
-  const escala = escalaDeObraEm(nucleo, idProvincia);
-  const custo = construcao ? custoDaObra(construcao, nivelAlvo, escala) : 0;
-  const manutencao = construcao ? manutencaoDaObra(construcao, nivelAlvo, escala) : 0;
-
   const antes = rendaDeTrocas(nucleo, idPoder);
   const efeito = construcao?.efeito;
   const fatorNovo = efeito?.tipo === 'troca' ? (efeito.fatores[nivelAlvo - 1] ?? 1) : 1;
   const fatorAtual = fatorDeMercadoAtual(nucleo, idPoder);
-  const depois = fatorAtual > 0 ? Math.round((antes / fatorAtual) * Math.max(fatorAtual, fatorNovo)) : antes;
-
-  const ganhoPorTurno = depois - antes - manutencao;
-  return {
-    custo,
-    ganhoPorTurno,
-    turnosParaPagar: ganhoPorTurno > 0 ? custo / ganhoPorTurno : Number.POSITIVE_INFINITY,
-  };
+  if (fatorAtual <= 0) return 0;
+  const depois = Math.round((antes / fatorAtual) * Math.max(fatorAtual, fatorNovo));
+  return depois - antes;
 }

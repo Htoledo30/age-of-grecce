@@ -128,7 +128,7 @@
       "populacao": 35000,
       "produto": "azeite",
       "nivel": 4,
-      "comercioBase": 0.55,
+      "transitoBase": 0.55,
       "motivo": "A Atica vive de azeite, e a cidade tem o Pireu: o comercio-base mais alto da Grecia arcaica vem da posicao e do porto, nao do produto.",
       "secundario": {
         "produto": "graos",
@@ -146,7 +146,7 @@
       "populacao": 18000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.25,
+      "transitoBase": 0.25,
       "motivo": "A planicie de Maratona e a terra de cereal da Atica - o que nao e elogio: a Atica era POBRE em cereal, e Atenas importava grao do Ponto Euxino. Nivel 2 e o que diz isso. Ela e provincia de gente e de imposto, nao de producao. Costa aberta e sem porto de peso: escoa pouco.",
       "secundario": {
         "produto": "gado",
@@ -164,7 +164,7 @@
       "populacao": 16000,
       "produto": "graos",
       "nivel": 3,
-      "comercioBase": 0.3,
+      "transitoBase": 0.3,
       "motivo": "A planicie Triasia e das melhores terras de cereal da Atica, e o santuario de Demeter esta aqui - a deusa do grao. Nivel 3: e a melhor terra de cereal da Atica, e a melhor da Atica ainda nao e a Tessalia nem a Messenia - o 4 e o 5 ficam guardados pra elas. Escoa pela baia de Eleusis e pela estrada do Istmo, mas sem porto de peso.",
       "secundario": {
         "produto": "azeite",
@@ -185,7 +185,7 @@
       "populacao": 17000,
       "produto": "gado",
       "nivel": 2,
-      "comercioBase": 0.18,
+      "transitoBase": 0.18,
       "motivo": "Beocia oriental, no alto Asopo: terra de encosta, nao planicie de cereal como Tebas e Orcomeno. Gado e o que a Beocia foi na arcaica, mas o rebanho de peso estava na bacia do Copais, nao aqui: nivel 2. Interior, longe do Euripo: escoa mal, e por isso e o vizinho pobre - tomar Tanagra rende menos que tomar Eleusis, e a decisao existe por causa disso.",
       "secundario": {
         "produto": "vinho",
@@ -207,7 +207,7 @@
       "populacao": 10000,
       "produto": "metais-preciosos",
       "nivel": 3,
-      "comercioBase": 0.3,
+      "transitoBase": 0.3,
       "motivo": "O Lourion fica aqui: a prata que pagou a frota de Salamina. Pouca gente, nivel maximo - e a prova de que area e populacao nao decidem riqueza.",
       "secundario": {
         "produto": "marmore",
@@ -225,7 +225,7 @@
       "populacao": 14000,
       "produto": "gado",
       "nivel": 2,
-      "comercioBase": 0.4,
+      "transitoBase": 0.4,
       "motivo": "Teognis reclama da terra megarense por escrito: pedra e pasto magro, ovelha e cabra em encosta. O que Megara tem e POSICAO - o Istmo passa por ela, com porto nos dois golfos (Niseia no Saronico, Pagas no de Corinto). Comercio-base alto numa producao pequena: e a cidade que ja mandou colonos a Sicilia e ao Bosforo porque a terra nao segurava a gente dela.",
       "secundario": {
         "produto": "graos",
@@ -245,7 +245,7 @@
       "populacao": 3000,
       "produto": "peixe",
       "nivel": 2,
-      "comercioBase": 0.2,
+      "transitoBase": 0.2,
       "motivo": "A ilha do estreito vive do mar que a cerca: peixe no canal raso entre ela e a Atica. Sem exercito que chegue la sem navio, ela e hoje um anexo tranquilo de Megara - ate o dia em que houver frota.",
       "secundario": {
         "produto": "graos",
@@ -264,7 +264,7 @@
       "populacao": 25000,
       "produto": "azeite",
       "nivel": 3,
-      "comercioBase": 0.6,
+      "transitoBase": 0.6,
       "motivo": "Em 700 a.C. Corinto E a potencia comercial grega - a ceramica protocorintia domina os mercados do Mediterraneo, e Siracusa e Corcira ja sao colonias dela. O comercio-base mais alto do mapa vem do Istmo com dois portos (Lequeu no golfo de Corinto, Cencreias no Saronico): tudo que cruza da Italia ao Egeu paga passagem aqui. O azeite e bom; a posicao e unica.",
       "secundario": {
         "produto": "graos",
@@ -284,7 +284,7 @@
       "populacao": 22000,
       "produto": "graos",
       "nivel": 3,
-      "comercioBase": 0.22,
+      "transitoBase": 0.22,
       "motivo": "A maior cidade da Beocia, sentada entre as planicies do Asopo e do Teneris - terra funda de cereal, o que a Atica nao tem. Interior: escoa pela estrada e pelo Euripo alheio, e por isso o comercio nao acompanha a producao. E a vizinha grande que toda Atica aprende a vigiar.",
       "secundario": {
         "produto": "gado",
@@ -305,7 +305,7 @@
       "populacao": 12000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.15,
+      "transitoBase": 0.15,
       "motivo": "Beocia do sul, aos pes do Helicao - terra de lavoura comum, sem a planicie funda de Tebas nem o pasto do Copais. Interior sem saida propria: escoa pouco.",
       "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
@@ -320,7 +320,7 @@
       "populacao": 8000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.15,
+      "transitoBase": 0.15,
       "motivo": "A pequena cidade entre o Citerao e o Asopo, na beira sul da Beocia. Lavoura comum de planicie alta; sem porto, sem estrada propria.",
       "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
@@ -336,7 +336,7 @@
       "populacao": 15000,
       "produto": "gado",
       "nivel": 3,
-      "comercioBase": 0.15,
+      "transitoBase": 0.15,
       "motivo": "A bacia do Copais: o lago raso que seca em pasto e da o melhor rebanho da Grecia central. O Orcomeno minio era proverbio de riqueza ja em Homero. Interior profundo: a riqueza e real, o escoamento nao.",
       "secundario": { "produto": "cavalos", "nivel": 2 },
       "nacionalidades": {
@@ -353,7 +353,7 @@
       "populacao": 7000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.12,
+      "transitoBase": 0.12,
       "motivo": "O vale do Cefiso na porta noroeste da Beocia: lavoura de vale e encosta de vinha. E corredor de passagem - quem desce da Focida para a Beocia passa por aqui - e corredor nao enriquece, so ve passar.",
       "secundario": {
         "produto": "vinho",
@@ -372,7 +372,7 @@
       "populacao": 16000,
       "produto": "ferro",
       "nivel": 3,
-      "comercioBase": 0.45,
+      "transitoBase": 0.45,
       "motivo": "O bronze deu nome a cidade (chalkos) e a metalurgia calcidica - armas e caldeiroes - e famosa no Egeu inteiro. Dona do Euripo, o estreito onde toda a navegacao interna da Grecia oriental se espreme, e ja mandou colonos a Italia e a Calcidica. A guerra pela planicie Lelantina contra Eretria esta acesa AGORA.",
       "secundario": {
         "produto": "graos",
@@ -392,7 +392,7 @@
       "populacao": 8000,
       "produto": "vinho",
       "nivel": 2,
-      "comercioBase": 0.25,
+      "transitoBase": 0.25,
       "motivo": "O norte da Eubeia que Homero chama de 'rica em vinhas'. Encosta virada pro canal, vinho bom e porto pequeno: vive do que planta e do que passa rumo ao golfo Pagasetico.",
       "secundario": {
         "produto": "peixe",
@@ -411,7 +411,7 @@
       "populacao": 14000,
       "produto": "vinho",
       "nivel": 2,
-      "comercioBase": 0.4,
+      "transitoBase": 0.4,
       "motivo": "A rival de Calcis do outro lado da planicie Lelantina. Marinheira antes de tudo - Pitecusas e Al-Mina conhecem os barcos eretrios ha um seculo. Vinho da planicie disputada e peixe do golfo; a riqueza de verdade chega pelo mar.",
       "secundario": {
         "produto": "peixe",
@@ -431,7 +431,7 @@
       "populacao": 6000,
       "produto": "marmore",
       "nivel": 2,
-      "comercioBase": 0.25,
+      "transitoBase": 0.25,
       "motivo": "O sul da Eubeia, aos pes do monte Oque: o marmore verde-listrado da regiao e a unica coisa que faz o mundo olhar pra ca. Pouca gente, terra aspera, um bom fundeadouro na rota de quem dobra o cabo.",
       "secundario": {
         "produto": "peixe",
@@ -449,7 +449,7 @@
       "populacao": 9000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.2,
+      "transitoBase": 0.2,
       "motivo": "A Locrida Opuntia, na costa do canal Euboico: lavoura de faixa costeira e o porto de Cino escoando pro estreito. Terra antiga e modesta - Opunte reivindica Patroclo e pouco mais.",
       "secundario": {
         "produto": "gado",
@@ -467,7 +467,7 @@
       "populacao": 13000,
       "produto": "azeite",
       "nivel": 2,
-      "comercioBase": 0.3,
+      "transitoBase": 0.3,
       "motivo": "A planicie costeira a oeste de Corinto: hortas e olivais que a antiguidade inteira elogiou. Vive bem e na sombra - o porto e bom, mas quem manda no golfo e a vizinha do Istmo.",
       "secundario": {
         "produto": "graos",
@@ -485,7 +485,7 @@
       "populacao": 20000,
       "produto": "gado",
       "nivel": 3,
-      "comercioBase": 0.25,
+      "transitoBase": 0.25,
       "motivo": "'Argos criadora de cavalos', diz Homero - a planicie argiva e o melhor pasto do Peloponeso oriental. E 700 a.C. e o SECULO DE ARGOS: Fidon esta unificando a Argolida na ponta da lanca, e a falange argiva e a mais temida da Grecia. A renda e boa; o exercito e o argumento.",
       "secundario": { "produto": "cavalos", "nivel": 2 },
       "nacionalidades": {
@@ -503,7 +503,7 @@
       "populacao": 6000,
       "produto": "gado",
       "nivel": 2,
-      "comercioBase": 0.12,
+      "transitoBase": 0.12,
       "motivo": "A cidadela homerica virou aldeia: pasto de encosta entre as ruinas da era do bronze. O nome pesa mais que a terra.",
       "secundario": {
         "produto": "vinho",
@@ -522,7 +522,7 @@
       "populacao": 5000,
       "produto": "peixe",
       "nivel": 2,
-      "comercioBase": 0.15,
+      "transitoBase": 0.15,
       "motivo": "A costa magra entre a Argolida e a Laconia: pesca na Tireatida e pouco mais. O valor dela nunca foi o que produz - e ONDE fica: a marca de fronteira entre Argos e Esparta, que vao brigar por ela durante trezentos anos.",
       "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
@@ -538,7 +538,7 @@
       "populacao": 9000,
       "produto": "vinho",
       "nivel": 2,
-      "comercioBase": 0.3,
+      "transitoBase": 0.3,
       "motivo": "A costa leste da Argolida, virada pro Saronico: vinhas de encosta e um porto na rota de Egina. O santuario de Asclepio ainda e um altar rural - a fama vem depois.",
       "secundario": {
         "produto": "graos",
@@ -556,7 +556,7 @@
       "populacao": 7000,
       "produto": "graos",
       "nivel": 2,
-      "comercioBase": 0.25,
+      "transitoBase": 0.25,
       "motivo": "A ponta da Argolida, com a planicie pequena e o porto de Pogon abrigado pela ilha de Calauria. Terra de Teseu na lenda ateniense - e o parentesco mitico com Atenas e diplomacia pronta.",
       "secundario": {
         "produto": "peixe",
@@ -574,7 +574,7 @@
       "populacao": 5000,
       "produto": "peixe",
       "nivel": 2,
-      "comercioBase": 0.3,
+      "transitoBase": 0.3,
       "motivo": "A cidadezinha da ponta sul vive do mar duas vezes: do pescado e do murice - o caramujo da purpura, que tinge a la dos ricos do Egeu inteiro. Producao minuscula, comercio desproporcional.",
       "secundario": {
         "produto": "graos",

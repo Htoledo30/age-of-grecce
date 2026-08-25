@@ -49,7 +49,7 @@ export function pesoEconomicoDe(
     ficha.populacao * economia.impostoPorHabitante +
     principal * ficha.nivel +
     segundo * ficha.secundario.nivel * economia.pesoDoSecundario +
-    ficha.comercioBase * economia.escalaDeComercio
+    ficha.transitoBase * economia.escalaDeTransito
   );
 }
 

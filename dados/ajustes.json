@@ -7,7 +7,7 @@
     "economia": {
       "impostoPorHabitante": 0.004,
       "pesoDoSecundario": 0.5,
-      "escalaDeComercio": 210,
+      "escalaDeTransito": 210,
       "imposto": {
         "niveis": {
           "baixo": {

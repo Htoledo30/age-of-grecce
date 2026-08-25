@@ -168,7 +168,7 @@ describe('a cidade sitiada perde o campo e a estrada, nunca o imposto', () => {
     expect(c.cercoEm('eleusis')).toBeDefined();
     const durante = c.economiaDe('eleusis');
     expect(durante?.producao).toBe(0);
-    expect(durante?.comercio).toBe(0);
+    expect(durante?.transito).toBe(0);
     // O imposto FICA. Cortá-lo deixaria sem saída quem tem uma província só — que é a
     // situação de 111 dos 139 poderes. Sitiado e sem dinheiro é derrota anunciada, não
     // decisão.

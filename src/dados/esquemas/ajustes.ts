@@ -89,16 +89,21 @@ export const Ajustes = z.object({
        */
       pesoDoSecundario: z.number().nonnegative().max(1),
       /**
-       * O que `comercioBase` vale em moedas quando cheio.
+       * O que `transitoBase` vale em moedas quando cheio.
        *
-       * ⚠️ **O comércio deixou de ser filho da produção.** Era `produção × comercioBase`,
-       * e por isso Corinto — a potência comercial grega, com o maior `comercioBase` do mapa
-       * — tirava 21% da renda do comércio: um entreposto cujo comércio é um quinto da renda
-       * não é entreposto. Comércio é POSIÇÃO, porto e rota; ele não pode depender do
-       * tamanho da própria lavoura. Agora `comercioBase` multiplica esta escala e nada
-       * mais, e uma cidadezinha de porto pode viver do mar sem plantar nada.
+       * ⚠️ **O trânsito deixou de ser filho da produção.** Era `produção × transitoBase`,
+       * e por isso Corinto — a potência comercial grega, com o maior `transitoBase` do mapa
+       * — tirava 21% da renda dali: um entreposto cujo pedágio é um quinto da renda não é
+       * entreposto. Trânsito é POSIÇÃO, porto e rota; ele não pode depender do tamanho da
+       * própria lavoura. Agora `transitoBase` multiplica esta escala e nada mais, e uma
+       * cidadezinha de porto pode viver do mar sem plantar nada.
+       *
+       * ⚠️ **E ele exige ROTA até a capital.** Terra cortada do resto do reino não manda o
+       * pedágio ao tesouro — é a única parcela em que isso vale, porque é a única que existe
+       * por causa de um caminho. Imposto e produção continuam: o lavrador colhe e o coletor
+       * cobra mesmo com o reino partido ao meio.
        */
-      escalaDeComercio: z.number().positive(),
+      escalaDeTransito: z.number().positive(),
       /**
        * Os níveis de imposto por província: receita trocada por pressão social.
        *

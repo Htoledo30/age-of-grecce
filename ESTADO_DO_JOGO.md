@@ -33,6 +33,7 @@ para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
 - iniciar uma campanha com qualquer cidade da Grécia central e navegar pelo mapa;
 - selecionar províncias e hostes;
 - arrecadar, decretar o nível de imposto de cada província, construir e acompanhar obras;
+- ligar terras por MAR erguendo Porto nas duas pontas — é assim que Salamina entra na rede;
 - recrutar por ARMA — leves em qualquer terra, hoplitas com Armaria, arqueiros onde há
   madeira, cavalaria onde há cavalos —, esperar a formação e dispensar soldados;
 - dividir, reunir e mover hostes por ordens simultâneas;
@@ -70,7 +71,7 @@ para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
 
 ### Economia e população
 
-A economia monetária calcula impostos, produção abstrata e comércio; ela paga tropas e
+A economia monetária calcula impostos, produção abstrata e trânsito; ela paga tropas e
 construções. Produtos são capacidade anual e identidade da terra, não unidades acumuladas.
 
 **A renda é sobre a TERRA, não sobre cabeças** — 71% dela vem do que a província é, e não de
@@ -81,12 +82,12 @@ parcelas, todas mordidas pela corrupção antes de chegar ao tesouro:
 ```
 imposto  = população × impostoPorHabitante × nível de imposto × construções
 produção = (valor_principal × nível + valor_secundário × nível × pesoDoSecundario) × construções
-comércio = comercioBase × escalaDeComercio × construções
+trânsito = transitoBase × escalaDeTransito × construções (zero sem rota até a capital)
 ```
 
 ⚠️ Três coisas mudaram de forma, não de número, e desfazer qualquer uma volta a achatar tudo:
-o **comércio deixou de ser uma fatia da produção** (era `produção × comercioBase`, e por isso
-Corinto tirava um quinto da renda do comércio); o **produto secundário passou a render** (ele
+o **trânsito deixou de ser uma fatia da produção** (era `produção × transitoBase`, e por isso
+Corinto tirava um quinto da renda dali); o **produto secundário passou a render** (ele
 estava escrito com nível em toda província e valia zero); e a **corrupção passou a comer as
 três parcelas**, não só o imposto. `npm run economia` mede tudo isso do poder mais pobre ao
 mais rico, cedo, meio e fim de jogo.
@@ -100,7 +101,7 @@ investimento, removido por ser redundante com as construções e de retorno ileg
 A **rede de trocas** é a outra metade da renda, e ela é NACIONAL: cada bem distinto ao
 alcance do reino rende um valor por turno, **uma vez só** — duas províncias de azeite não
 rendem duas vezes. Um bem circula quando a terra que o dá é sua, não está sitiada e chega à
-capital por terra própria (o mesmo `alcanceDe` da hoste); reino partido não faz um mercado
+capital — por terra sua ou por mar entre dois Portos seus; reino partido não faz um mercado
 só, ilha sem ligação terrestre fica de fora, e sem capital a rede para. É por aqui que o
 produto **secundário** da província passou a servir para alguma coisa. A aba **Mercado** do
 Governo lista o que circula, de onde vem, e — o mais útil — o que está FORA do alcance, que
@@ -131,8 +132,15 @@ aliviá-la — virava armadilha em metade do mapa.
 **Ágora e Estrada reduzem corrupção, e cada uma ataca uma metade:** a Ágora a de TAMANHO
 (gente demais para administrar), a Estrada a de DISTÂNCIA (por isso ela não rende nada na
 própria capital — é prédio de império, não de cidade-estado). O **Mercado** não mexe em
-corrupção: ele multiplica a renda da rede de trocas do REINO, uma vez só, e vale mais quanto
-mais bens distintos se alcança. Os três pararam de ser o mesmo prédio com números diferentes.
+corrupção: ele é a praça, e tem DUAS pernas — multiplica a rede de trocas do REINO (uma vez
+só, pelo melhor nível erguido) e o TRÂNSITO da própria província. O **Porto** abre a rota de
+mar. Nenhum é o outro com números trocados.
+
+⚠️ As duas pernas do Mercado existem porque cada uma sozinha era armadilha, e as duas
+medições estão registradas: só local, ele não pagava onde `transitoBase` é pequeno; só
+nacional, o preço escalava pelo peso da terra e Corinto ia a 1.729 turnos de retorno, com
+"nunca" em metade do mapa. Juntas, o retorno caiu para 41–153 turnos do poder mais pobre ao
+mais rico.
 
 Não existe teto populacional artificial. Crescimento, recrutamento, baixas e desmobilização
 usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito para

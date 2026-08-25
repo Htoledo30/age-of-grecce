@@ -70,7 +70,7 @@ export class ComandoDeCerco {
 
     this.linhaCerco.textContent =
       cerco.postura === 'sitiar'
-        ? `Acampado diante de ${vista.provincia.nome} — sem produção nem comércio lá dentro`
+        ? `Acampado diante de ${vista.provincia.nome} — sem produção nem trânsito lá dentro`
         : `Assaltando ${vista.provincia.nome} na próxima virada`;
     // A muralha tranca o assalto até o cerco ter durado o bastante. O botão fica na tela
     // dizendo quanto falta — sumir em silêncio seria o jogador achando que o comando sumiu.

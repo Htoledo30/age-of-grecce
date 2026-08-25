@@ -6,7 +6,7 @@
  * clique nenhum: o jogador escolhe no mapa e lê aqui.
  *
  * A economia aparece **decomposta**, e não como um total só. Impostos, produção e
- * comércio separados é o que deixa o jogador entender por que Sunião rende mais que
+ * trânsito separados é o que deixa o jogador entender por que Sunião rende mais que
  * Maratona tendo menos gente e menos terra — e é o que faz o investimento ser uma
  * decisão em vez de um chute.
  */
@@ -187,7 +187,7 @@ export class FichaProvincia {
       tom: 'custo',
     });
 
-    // Uma linha de dinheiro, não três. A decomposição em impostos, produção e comércio
+    // Uma linha de dinheiro, não três. A decomposição em impostos, produção e trânsito
     // mora na janela de Governo — aqui ela era informação de contador competindo com a
     // identidade do território. Clicar numa província e não saber quanto ela vale seria
     // pior que o excesso, então o total fica.
@@ -202,7 +202,7 @@ export class FichaProvincia {
         `+${moeda(renda.impostos)} impostos` +
         (renda.corrupcao > 0 ? ` (corrupção ${Math.round(renda.corrupcao * 100)}%)` : '') +
         `\n+${moeda(renda.producao)} produção` +
-        `\n+${moeda(renda.comercio)} comércio` +
+        `\n+${moeda(renda.transito)} trânsito` +
         (renda.manutencao > 0 ? `\n−${moeda(renda.manutencao)} construções` : '') +
         (renda.tropaDeOrigem > 0
           ? `\n−${moeda(renda.tropaDeOrigem)} tropas`
@@ -214,7 +214,7 @@ export class FichaProvincia {
     const filhos: HTMLElement[] = [titulo, renderimento];
     if (this.perfil) {
       // O secundário é uma LINHA, não uma segunda parcela: ele ainda não entra na renda,
-      // porque somar dinheiro antes do comércio existir seria balancear duas
+      // porque somar dinheiro antes do trânsito existir seria balancear duas
       // vezes. Ele está na tela porque é identidade da terra — Atenas dar grão
       // nível 2 é o que explica a fome dela.
       const segundo = document.createElement('p');

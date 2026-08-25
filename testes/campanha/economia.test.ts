@@ -30,12 +30,12 @@ describe('economia da Ática', () => {
           produto.valor * ficha.nivel +
             segundo.valor * ficha.secundario.nivel * eco.pesoDoSecundario,
         ),
-        // O comércio é POSIÇÃO e não uma fatia da lavoura: `comercioBase` vezes a escala.
-        comercio: chega(ficha.comercioBase * eco.escalaDeComercio),
+        // O comércio é POSIÇÃO e não uma fatia da lavoura: `transitoBase` vezes a escala.
+        transito: chega(ficha.transitoBase * eco.escalaDeTransito),
       });
       // O total é a soma das três, e cada parcela é arredondada sozinha — é isso que faz
       // a ficha bater exata com a barra de turno, sem sobra de centavo.
-      expect(r?.total).toBe((r?.impostos ?? 0) + (r?.producao ?? 0) + (r?.comercio ?? 0));
+      expect(r?.total).toBe((r?.impostos ?? 0) + (r?.producao ?? 0) + (r?.transito ?? 0));
     }
   });
 
@@ -78,7 +78,7 @@ describe('economia da Ática', () => {
     for (const id of ['atenas', 'maratona', 'sounion']) {
       const e = c.economiaDe(id);
       expect(e).not.toBeNull();
-      for (const n of [e?.impostos, e?.producao, e?.comercio, e?.total]) {
+      for (const n of [e?.impostos, e?.producao, e?.transito, e?.total]) {
         expect(Number.isInteger(n)).toBe(true);
       }
     }

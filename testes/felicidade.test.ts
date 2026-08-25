@@ -160,7 +160,7 @@ describe('o humor dentro da campanha', () => {
     expect(e?.impostos).toBe(0);
     expect(e?.revoltosa).toBe(true);
     expect(e?.producao).toBeGreaterThan(0);
-    expect(e?.comercio).toBeGreaterThan(0);
+    expect(e?.transito).toBeGreaterThan(0);
   });
 
   it('sob bandeira alheia, a revolta arma um levante depois do pavio queimar', () => {

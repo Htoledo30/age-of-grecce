@@ -16,7 +16,7 @@ interface Ganchos {
   economiaDe: (idProvincia: string) => {
     impostos: number;
     producao: number;
-    comercio: number;
+    transito: number;
     total: number;
   } | null;
   comecar: (idPoder: string) => void;
