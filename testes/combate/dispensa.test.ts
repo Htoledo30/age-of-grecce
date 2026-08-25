@@ -52,10 +52,19 @@ describe('dispensar devolve cada um à sua terra', () => {
       c.passarTurno();
       c.dispensar('atenas', 1000);
     }
-    // Mobilizada, Atenas cai de Farta para Abastecida e cresce um pouco menos nesses anos.
-    // A diferença é demografia, não gente engolida pela dispensa.
+    // ⚠️ Mobilizar CUSTA, e o preço é crescimento: com a mesa apertada, os mil homens em
+    // armas seguram o saldo em zero e Atenas não cresce naqueles turnos. A que ficou parada
+    // cresce. O que este teste guarda é que a diferença é DEMOGRAFIA — ninguém foi engolido
+    // pela dispensa —, e por isso a conta se fecha pelo lado de quem voltou.
     expect(c.populacaoDe('atenas')).toBeLessThan(parado.populacaoDe('atenas'));
-    expect(Math.abs(c.populacaoDe('atenas') - parado.populacaoDe('atenas'))).toBeLessThanOrEqual(100);
+    // Os mil homens do último ciclo estão de volta na terra: a hoste ficou vazia.
+    expect(c.forcaEm('atenas')).toBe(0);
+    // E o mundo não perdeu gente: o que falta em Atenas é o que ela deixou de crescer,
+    // nunca mais do que o próprio crescimento de três turnos parados.
+    const cresceuParado = parado.populacaoDe('atenas') - comQuartel().populacaoDe('atenas');
+    expect(parado.populacaoDe('atenas') - c.populacaoDe('atenas')).toBeLessThanOrEqual(
+      Math.max(cresceuParado, 0),
+    );
   });
 });
 

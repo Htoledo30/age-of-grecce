@@ -8,7 +8,10 @@ export interface LinhaDoAlimento {
   nome: string;
   produtos: string;
   producao: number;
+  /** O que a gente dela come — sai da FAIXA de população, não de um ponto fixo por terra. */
   populacao: number;
+  /** O nome da faixa, para o custo não parecer um número tirado do nada. */
+  faixa: string;
   /** O papel local: sustentadora, equilibrada ou dependente. */
   papel: 'sustentadora' | 'equilibrada' | 'dependente';
   sitiada: boolean;
@@ -91,7 +94,7 @@ export class BalancoAlimentar implements AbaDoGoverno {
       linha.nome,
       linha.produtos || 'nenhum',
       `+${linha.producao}`,
-      `−${linha.populacao}`,
+      linha.faixa ? `−${linha.populacao} · ${linha.faixa}` : `−${linha.populacao}`,
       comSinal(saldo),
       linha.sitiada ? 'fora da circulação' : NOME_DO_PAPEL[linha.papel],
     ]);

@@ -6,7 +6,7 @@
  */
 
 import type { VistaDeAcoes } from '@/ui/acoes-provincia';
-import type { VistaDaProvincia } from '@/ui/ficha-provincia';
+import type { VistaDaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import type { Jogo } from '../contexto';
 
@@ -25,6 +25,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
     nome: p.nome,
     regiao: p.regiao,
     poder: { nome: poder.nome, povo: poder.povo, cor: poder.cor },
+    faixa: campanha.faixaDaProvinciaEm(id),
     milicia: campanha.miliciaEm(id),
     // A conta do humor, parcela a parcela — só onde há simulação pra contar.
     humor: simulada

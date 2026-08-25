@@ -62,12 +62,22 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
   `saldo final = saldo civil − exército`. **O povo come primeiro.**
 - Produtos alimentares somam seus níveis principal e secundário; construções alimentares
   somam por cima.
-- Toda província começa em População I (`−1`) e sobe um nível a cada 25% acima da
-  população inicial; se a população cair, o nível também cai. O saldo local
-  (`produção − nível`) dá o papel dela: Sustentadora, Equilibrada ou Dependente.
-- O exército do poder, hostes e levas em formação, custa `−1` por mil homens ou fração —
-  exceto as tropas presas em cidades sitiadas do próprio poder, que comem da despensa da
-  cidade.
+- **O tamanho da província pesa na mesa**: cada terra cai numa FAIXA de população absoluta
+  (`ajustes.json`) e come os pontos dela. Não é upgrade — não se compra faixa, não há prédio
+  de governo que a suba e não existe punição por não construir; quem faz a província evoluir
+  são as construções. A faixa só lê a população e diz quanto ela consome, e o nome dela é a
+  régua que a ficha mostra ao lado do número cru de habitantes.
+- ⚠️ A régua já foi RELATIVA (um nível a cada 25% acima da própria população inicial), e o
+  efeito era que Atenas com 35.000 e Salamina com 3.000 custavam o mesmo ponto: o tamanho não
+  importava, só a variação dele. Com a faixa absoluta, a Ática — populosa e pobre em cereal,
+  como o dado dela mesma diz — passa a sentir isso, e tomar Elêusis vira pão, não renda.
+- O saldo local (`produção − faixa`) dá o papel da terra: Sustentadora, Equilibrada ou
+  Dependente.
+- O exército do poder, hostes e levas em formação, custa `−1` por cada `soldadosPorPonto`
+  homens ou fração — exceto as tropas presas em cidades sitiadas do próprio poder, que comem
+  da despensa da cidade. ⚠️ O número existe para que um soldado coma da ordem de **três
+  civis**; com a faixa por tamanho essa razão passou a ser mensurável, e antes ela era 35×
+  sem que ninguém pudesse ver.
 - Consequências: saldo civil negativo é **Fome** — as províncias DEPENDENTES perdem `−1%`
   (sustentadoras nunca morrem pelas outras) e o exército `−5%`. Saldo civil fechado com
   final negativo é **Exército sem mantimentos** — só a tropa perde `−5%`, nenhum civil

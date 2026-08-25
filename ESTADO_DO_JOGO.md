@@ -105,11 +105,21 @@ futuro prometido nas fichas delas.
 Não existe teto populacional artificial. Crescimento, recrutamento, baixas e desmobilização
 usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito.
 
-Comida é saldo em pontos do poder, em DUAS contas: `saldo civil = subsistência (+1) +
-alimentos − níveis populacionais` e `saldo final = civil − exército` (`−1` por mil
-soldados ou fração, excluindo tropas presas em cidades sitiadas próprias). População sobe
-um nível a cada 25% acima do valor inicial; o saldo local (`produção − nível`) dá o papel
-da terra: Sustentadora, Equilibrada ou Dependente.
+Comida é saldo em pontos do poder, em DUAS contas: `saldo civil = subsistência + alimentos
+− faixas de população` e `saldo final = civil − exército` (`−1` por `soldadosPorPonto`
+homens ou fração, excluindo tropas presas em cidades sitiadas próprias).
+
+**O tamanho da província pesa**: cada terra cai numa FAIXA de população absoluta, definida em
+`ajustes.json`, e come os pontos dela — Atenas (35.000) custa mais que Salamina (3.000). Não
+é upgrade de cidade: não se compra faixa e não há punição por não construir; quem faz a
+província evoluir são as construções. O nome da faixa é a régua que a ficha mostra ao lado do
+número de habitantes, e é a MESMA que decide o consumo — um sistema, um trabalho. O saldo
+local (`produção − faixa`) dá o papel da terra: Sustentadora, Equilibrada ou Dependente.
+
+⚠️ A régua era RELATIVA (um nível a cada 25% acima da própria população inicial), e por isso
+o tamanho não importava para a comida — só a variação dele. Consequência prática de trocar:
+Atenas abre **apertada** (a menor folga entre os 18 poderes jogáveis), porque tem 63.000
+pessoas numa terra que o próprio dado descreve como pobre em cereal.
 
 **O povo come primeiro.** Civil negativo é **Fome**: as Dependentes (não sitiadas) perdem
 `−1%` — sustentadoras nunca morrem pelas outras — e o exército `−5%`. Civil fechado com

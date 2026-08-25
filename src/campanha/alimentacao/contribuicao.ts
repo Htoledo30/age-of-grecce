@@ -5,8 +5,9 @@
  * locais que o balanço do reino soma e que a fome usa pra decidir quem morre.
  */
 
-import { estadoAlimentarLocal, nivelPopulacional } from '@/producao/alimentacao';
+import { estadoAlimentarLocal } from '@/producao/alimentacao';
 import type { EstadoAlimentarLocal } from '@/producao/alimentacao';
+import { custoDaPopulacao, nomeDaFaixa } from '@/populacao/faixas';
 import type { NucleoDaCampanha } from '../nucleo';
 import { construcoesEm, fichaDe, nivelDaConstrucaoEm, populacaoDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
@@ -67,18 +68,21 @@ export function contribuicaoAlimentarEm(
     : contribuicaoAlimentarLivreEm(nucleo, idProvincia);
 }
 
-/** Quantos pontos de alimento a população desta província consome. */
-export function nivelPopulacionalEm(
-  nucleo: NucleoDaCampanha,
-  idProvincia: string,
-): number {
-  const ficha = fichaDe(nucleo, idProvincia);
-  if (!ficha) return 0;
-  return nivelPopulacional(
-    populacaoDe(nucleo, idProvincia),
-    ficha.populacao,
-    nucleo.ajustes.alimento.fracaoPopulacionalPorNivel,
-  );
+/**
+ * Quantos pontos de alimento a população desta província consome.
+ *
+ * Sai da FAIXA em que ela cai — o tamanho pesa. Zero onde não há ficha autoral: província
+ * não simulada não tem gente, e não se inventa consumo para ninguém.
+ */
+export function nivelPopulacionalEm(nucleo: NucleoDaCampanha, idProvincia: string): number {
+  if (!fichaDe(nucleo, idProvincia)) return 0;
+  return custoDaPopulacao(populacaoDe(nucleo, idProvincia), nucleo.ajustes.populacao.faixas);
+}
+
+/** O nome da faixa desta terra — a régua que a ficha mostra ao lado do número cru. */
+export function faixaDaProvinciaEm(nucleo: NucleoDaCampanha, idProvincia: string): string {
+  if (!fichaDe(nucleo, idProvincia)) return '';
+  return nomeDaFaixa(populacaoDe(nucleo, idProvincia), nucleo.ajustes.populacao.faixas);
 }
 
 /**

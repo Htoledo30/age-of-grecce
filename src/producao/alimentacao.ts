@@ -12,6 +12,9 @@
  * sozinhas), nunca das sustentadoras — quem planta pra dois não morre porque o vizinho
  * não planta pra um.
  *
+ * **O tamanho da província importa**: quanto ela come sai da FAIXA de população dela (ver
+ * `populacao/faixas.ts`), não de um ponto fixo por terra. Atenas pesa mais que Salamina.
+ *
  * **Cidade sitiada está fora da circulação inteira**: não contribui, não pesa, e as
  * tropas dentro dela não entram no custo do exército — ela vive do próprio relógio de
  * mantimentos (ver `Campanha.fomeDoCercoEm`).
@@ -31,8 +34,13 @@ export type CategoriaAlimentar =
 export type EstadoAlimentarLocal = 'sustentadora' | 'equilibrada' | 'dependente';
 
 export interface ProvinciaNoBalanco {
-  populacaoAtual: number;
-  populacaoInicial: number;
+  /**
+   * O que ela come por turno, já resolvido pela faixa de população.
+   *
+   * ⚠️ Chega PRONTO, e não como população crua: a régua das faixas vive em `ajustes.json` e
+   * quem a lê é `populacao/faixas.ts`. Esta função soma pontos, não classifica terras.
+   */
+  custoDaPopulacao: number;
   /** Soma dos níveis alimentares e construções da terra, LIVRE (sem olhar cerco). */
   producaoAlimentar: number;
   /** Sitiada fica fora da circulação: não contribui, não pesa, não entra na conta. */
@@ -50,18 +58,6 @@ export interface BalancoAlimentarDoPoder {
   /** O saldo civil menos o exército. É o número da barra. */
   saldo: number;
   categoria: CategoriaAlimentar;
-}
-
-/** Demanda dinâmica: I até 124,99% da população inicial, II a partir de 125%, etc. */
-export function nivelPopulacional(
-  atual: number,
-  inicial: number,
-  fracaoPorNivel: number,
-): number {
-  if (atual <= 0) return 0;
-  if (inicial <= 0 || fracaoPorNivel <= 0) return 1;
-  const degraus = Math.floor((atual - inicial) / (inicial * fracaoPorNivel));
-  return Math.max(1, 1 + degraus);
 }
 
 /** O exército inteiro é somado antes de arredondar: dez hostes pequenas não pagam dez vezes. */
@@ -100,11 +96,7 @@ export function balancoAlimentar(
   const livres = provincias.filter((p) => !p.sitiada);
   const subsistencia = livres.length > 0 ? ajustes.subsistenciaPorReino : 0;
   const producao = livres.reduce((soma, p) => soma + Math.max(0, p.producaoAlimentar), 0);
-  const populacao = livres.reduce(
-    (soma, p) =>
-      soma + nivelPopulacional(p.populacaoAtual, p.populacaoInicial, ajustes.fracaoPopulacionalPorNivel),
-    0,
-  );
+  const populacao = livres.reduce((soma, p) => soma + p.custoDaPopulacao, 0);
   const exercito = custoMilitar(totalDeSoldados, ajustes.soldadosPorPonto);
   const saldoCivil = subsistencia + producao - populacao;
   const saldo = saldoCivil - exercito;

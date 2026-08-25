@@ -24,7 +24,7 @@ import type { CercosMapa } from '@/ui/cercos-mapa';
 import type { Cronica } from '@/ui/cronica';
 import type { DestinosMapa } from '@/ui/destinos-mapa';
 import type { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
-import type { FichaProvincia } from '@/ui/ficha-provincia';
+import type { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import type { FimDeJogo } from '@/ui/fim-de-jogo';
 import type { Governo } from '@/ui/governo';
 import type { HostesMapa } from '@/ui/hostes-mapa';

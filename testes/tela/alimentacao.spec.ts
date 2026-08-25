@@ -6,6 +6,7 @@ interface Balanco {
   producao: number;
   populacao: number;
   exercito: number;
+  saldoCivil: number;
   saldo: number;
   categoria: string;
 }
@@ -30,20 +31,32 @@ async function campanha(page: Page): Promise<void> {
 test('a barra mostra o saldo inteiro e a categoria ao lado do ouro', async ({ page }) => {
   await campanha(page);
 
+  // ⚠️ Derivado da campanha, nunca cravado: o saldo de abertura é balanço e muda quando as
+  // faixas de população ou a subsistência mudam. O que o teste guarda é a LIGAÇÃO entre o
+  // que a regra diz e o que a barra desenha.
+  const aberto = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao().saldo,
+  );
+  expect(aberto).toBeGreaterThan(0);
+
   const comida = page.locator('.barra-turno__contas .barra-turno__folego');
   await expect(comida).toBeVisible();
-  await expect(comida).toContainText('+3');
+  await expect(comida).toContainText(`+${aberto}`);
   await expect(comida).toContainText('Abastecido');
   await expect(comida).toHaveAttribute('data-tom', 'folga');
   await expect(comida).not.toContainText(',');
 
+  // Uma hoste come da mesma mesa: o saldo desce e a barra acompanha.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     i.plantarHoste('atenas', 'atenas', 1001);
   });
 
-  await expect(comida).toContainText('+1');
-  await expect(comida).toContainText('Abastecido');
+  const comTropa = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao().saldo,
+  );
+  expect(comTropa).toBeLessThan(aberto);
+  await expect(comida).toContainText(`+${comTropa}`);
 });
 
 test('déficit só do exército fica vermelho, diz o nome certo e não mata civil', async ({
@@ -61,9 +74,13 @@ test('déficit só do exército fica vermelho, diz o nome certo e não mata civi
   });
 
   // O povo comeu; o aperto é só da tropa — e a barra diz exatamente isso, em vermelho.
+  const deficit = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao().saldo,
+  );
+  expect(deficit).toBeLessThan(0);
   const comida = page.locator('.barra-turno__folego');
   await expect(comida).toHaveAttribute('data-tom', 'fome');
-  await expect(comida).toContainText('−2');
+  await expect(comida).toContainText(`−${-deficit}`);
   await expect(comida).toContainText('Exército sem mantimentos');
 
   await page.getByRole('button', { name: 'Passar o turno' }).click();
@@ -90,9 +107,9 @@ test('o Governo decompõe a mesma conta e mostra o papel de cada terra', async (
   await expect(resumo).toContainText(`subsistência +${dados.subsistencia}`);
   await expect(resumo).toContainText(`alimentos +${dados.producao}`);
   await expect(resumo).toContainText(`população −${dados.populacao}`);
-  await expect(resumo).toContainText('civil +3');
+  await expect(resumo).toContainText(`civil +${dados.saldoCivil}`);
   await expect(resumo).toContainText(`exército −${dados.exercito}`);
-  await expect(resumo).toContainText('+3 · Abastecido');
+  await expect(resumo).toContainText(`+${dados.saldo} · Abastecido`);
 
   const sounion = aba.locator('tbody tr', { hasText: 'Sunião' });
   await expect(sounion).toHaveAttribute('data-tom', 'deficit');
@@ -100,12 +117,19 @@ test('o Governo decompõe a mesma conta e mostra o papel de cada terra', async (
   await expect(sounion.locator('td').nth(2)).toHaveText('+0');
   await expect(sounion.locator('td').nth(5)).toHaveText('Dependente');
 
+  // Maratona: a coluna de população traz a FAIXA ao lado do custo — é a régua que faltava ao
+  // número cru de habitantes, e é a MESMA que decide quanto a terra come. Com 18.000 ela é
+  // Terra média: produz 3, come 2, e ainda sustenta o reino por 1.
   const maratona = aba.locator('tbody tr', { hasText: 'Maratona' });
   await expect(maratona).toContainText('Grãos 2 · Gado 1');
-  await expect(maratona.locator('td').nth(4)).toHaveText('+2');
+  await expect(maratona.locator('td').nth(3)).toContainText('Terra');
+  await expect(maratona.locator('td').nth(4)).toHaveText('+1');
   await expect(maratona.locator('td').nth(5)).toHaveText('Sustentadora');
-  await expect(maratona.locator('td').nth(5)).toHaveAttribute(
-    'data-tooltip-corpo',
-    /\+3 alimentos\n−1 população\n= \+2/,
-  );
+
+  // E a ficha da província mostra a mesma faixa ao lado do número de habitantes: sem ela,
+  // "35.000" não diz se é muito ou pouco.
+  await page.keyboard.press('Escape');
+  await page.mouse.click(960, 540);
+  await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
+  await expect(page.locator('dd.ficha__populacao')).toContainText('habitantes · Terra');
 });

@@ -40,7 +40,45 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a rede de trocas — bem comercial é ACESSO, não estoque
+### Agora: a faixa de população — o tamanho da província passou a pesar
+
+Henrique reclamou que as populações pareciam número solto ("10.000, 35.000, 20.000, fica
+meio no foda-se"). Não eram — cada uma das 25 tem motivo histórico escrito ao lado. O
+problema era outro: **o tamanho não importava para a comida.** A régua era relativa (um
+nível a cada 25% acima da própria população inicial), então Atenas com 35.000 e Salamina com
+3.000 custavam o mesmo ponto, e Argos produzir o dobro de Atenas era irrelevante.
+
+A proposta que ele trouxe do outro chat era melhor que a minha (que era só cosmética, um
+nome ao lado do número) e foi essa que entrou, com os cortes medidos contra os dados:
+
+- **Faixa ABSOLUTA de população** em `ajustes.json`: cinco degraus, `custo` explícito, a
+  última sem `ate` para pegar o resto. **Não é upgrade de província** — não se compra faixa,
+  não há prédio de governo que a suba, não existe punição por não construir; quem faz a
+  província evoluir são as construções. Rome 1 foi recusado pelo motivo dele, que é certo:
+  Atenas começaria no topo com mais tudo.
+- **O nome da faixa é a régua** que a ficha mostra ao lado dos habitantes, e é a MESMA que
+  decide o consumo. Um sistema, um trabalho — a minha ideia de faixa só-visual virou
+  desnecessária.
+- ⚠️ **Os números dele quebravam o turno 1**: cinco dos dezoito poderes jogáveis abriam em
+  fome ou travados, Atenas incluída (−4). Os cortes finais saíram de medição, não de números
+  redondos.
+- **Atenas abre apertada de propósito** (+1, a menor folga do mapa) contra Argos em +8: é a
+  Ática populosa e pobre em cereal que os próprios dados descrevem. Tomar Elêusis passou a
+  ser pão, e a Fazenda vale 9 mil habitantes a mais em 100 turnos.
+- Dois ajustes acompanharam, medidos: `subsistenciaPorReino` 1 → 2 (sem ela Atenas ficava em
+  0 e **não conseguia recrutar um único soldado**) e `soldadosPorPonto` 1.000 → 3.000 — este
+  porque a faixa tornou a razão soldado:civil mensurável e ela estava em **9,1 civis por
+  soldado** (antes da mudança era 35×, invisível). Em 3.000, um soldado come 3 civis.
+
+Simulação: paz de 500 turnos estabiliza em 94.688 habitantes sem um ano de fome (o freio da
+escada funciona), Fazenda I leva a 103.556, e nenhum cenário abre em desastre.
+
+Falta Henrique jogar e dizer se o aperto de Atenas está no ponto. Fica em aberto, e é dele:
+**o equilíbrio entre poderes** (Caristo com 1 província e 6.000 contra Atenas com 3 e
+63.000) — que se resolve agrupando províncias pequenas ou apertando quem é jogável, não pela
+faixa.
+
+### O que veio antes: a rede de trocas — bem comercial é ACESSO, não estoque
 
 Henrique trouxe um GDD de outro jogo (*Hegemonia* v0.3) e perguntou o que valia. Vale uma
 coisa, e ela foi implementada: **você alcança o mármore ou não alcança**. Sem inventário,

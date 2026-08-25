@@ -103,10 +103,14 @@ describe('a região configurada está completa', () => {
 });
 
 describe('o que está escrito obedece às regras que tornam a região jogável', () => {
-  it('Atenas começa abastecida e a conta fecha com números inteiros', () => {
+  it('Atenas abre no fio, e a conta fecha com números inteiros', () => {
     const c = nova();
     c.comecar('atenas');
-    expect(c.alimentacao).toMatchObject({ saldo: 3, saldoCivil: 3, categoria: 'abastecido' });
+    // Positiva, mas apertada: 63.000 pessoas numa terra pobre em cereal. Sem exército, o
+    // saldo final é o civil — nada come além do povo.
+    expect(c.alimentacao.saldo).toBeGreaterThan(0);
+    expect(c.alimentacao.saldoCivil).toBe(c.alimentacao.saldo);
+    expect(c.alimentacao.categoria).toBe('abastecido');
     expect(c.alimentacao.saldo).toBe(
       c.alimentacao.subsistencia +
         c.alimentacao.producao -
@@ -193,12 +197,17 @@ describe('o que está nos dados chega ao estado da partida', () => {
     expect(c.podeRecrutarEm('maratona')).toBe(true);
   });
 
-  it('o nível populacional lê a população atual e pode recuar', () => {
+  it('a faixa é ABSOLUTA: Atenas pesa mais que Salamina, e pode recuar de faixa', () => {
     const c = nova();
     c.comecar('atenas');
-    expect(c.nivelPopulacionalEm('atenas')).toBe(1);
-    c.matarPopulacao('atenas', 10_000);
-    expect(c.nivelPopulacionalEm('atenas')).toBe(1);
+    // ⚠️ O contrário da regra antiga, que media cada terra contra ela mesma e fazia as duas
+    // custarem o mesmo ponto. Aqui o tamanho é que manda.
+    expect(c.nivelPopulacionalEm('atenas')).toBeGreaterThan(
+      c.nivelPopulacionalEm('salamina'),
+    );
+    const antes = c.nivelPopulacionalEm('atenas');
+    c.matarPopulacao('atenas', 25_000);
+    expect(c.nivelPopulacionalEm('atenas')).toBeLessThan(antes);
   });
 });
 

@@ -65,6 +65,50 @@ export const Ajustes = z.object({
        * e a disponibilidade de alimento funciona como freio.
        */
       taxaNatural: z.number().gt(0).max(1),
+      /**
+       * As faixas de população: **quanto cada província pesa na mesa do reino.**
+       *
+       * ⚠️ **Absolutas, não relativas à própria província.** A regra anterior media o
+       * crescimento de cada terra contra ela mesma, e por isso Atenas com 35.000 e Salamina
+       * com 3.000 custavam o mesmo ponto: o tamanho não importava para a comida, só a
+       * variação dele. Com faixas absolutas, a Ática populosa e pobre em cereal passa a
+       * sentir o que os próprios dados dizem sobre ela.
+       *
+       * **Não é upgrade de província.** Não se compra faixa, não há prédio de governo que a
+       * suba, e não existe punição por "não atualizar" a cidade — quem faz a província
+       * evoluir são as construções. A faixa só lê a população e diz quanto ela come.
+       *
+       * A ÚLTIMA faixa não tem `ate`: ela pega tudo acima da anterior, e é isso que garante
+       * que nenhuma população fique sem faixa. As demais sobem em ordem.
+       */
+      faixas: z
+        .array(
+          z.object({
+            /** Último habitante que ainda pertence à faixa. Ausente só na última. */
+            ate: z.number().int().positive().optional(),
+            nome: z.string().min(1),
+            /** Pontos de alimento que a província consome por turno. */
+            custo: z.number().int().nonnegative(),
+          }),
+        )
+        .min(1)
+        .superRefine((faixas, ctx) => {
+          for (let i = 1; i < faixas.length; i++) {
+            const anterior = faixas[i - 1]?.ate;
+            const atual = faixas[i]?.ate;
+            if (anterior === undefined) {
+              ctx.addIssue({ code: 'custom', message: 'só a última faixa pode não ter `ate`' });
+            } else if (atual !== undefined && atual <= anterior) {
+              ctx.addIssue({ code: 'custom', message: 'as faixas têm que subir' });
+            }
+          }
+          if (faixas[faixas.length - 1]?.ate !== undefined) {
+            ctx.addIssue({
+              code: 'custom',
+              message: 'a última faixa tem que ficar sem `ate` para pegar o resto',
+            });
+          }
+        }),
     }),
     construcoes: z.object({
       slotsPorProvincia: z.number().int().positive(),
@@ -108,8 +152,6 @@ export const Ajustes = z.object({
     alimento: z.object({
       /** Ponto básico dado uma vez a cada poder com território simulado. */
       subsistenciaPorReino: z.number().int().nonnegative(),
-      /** Cada crescimento desta fração sobre a população inicial aumenta o custo em um. */
-      fracaoPopulacionalPorNivel: z.number().gt(0).max(1),
       /** Quantos homens mobilizados, ou fração, custam um ponto. */
       soldadosPorPonto: z.number().int().positive(),
       /** Fatia fixa da população perdida quando o saldo civil é negativo. */

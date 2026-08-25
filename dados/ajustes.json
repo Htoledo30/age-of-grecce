@@ -8,14 +8,49 @@
       "impostoPorHabitante": 0.005,
       "imposto": {
         "niveis": {
-          "baixo": { "fator": 0.8, "humor": 6 },
-          "normal": { "fator": 1, "humor": 0 },
-          "alto": { "fator": 1.35, "humor": -8 }
+          "baixo": {
+            "fator": 0.8,
+            "humor": 6
+          },
+          "normal": {
+            "fator": 1,
+            "humor": 0
+          },
+          "alto": {
+            "fator": 1.35,
+            "humor": -8
+          }
         }
       }
     },
     "populacao": {
-      "taxaNatural": 0.005
+      "taxaNatural": 0.005,
+      "faixas": [
+        {
+          "ate": 14999,
+          "nome": "Terra pequena",
+          "custo": 1
+        },
+        {
+          "ate": 29999,
+          "nome": "Terra média",
+          "custo": 2
+        },
+        {
+          "ate": 59999,
+          "nome": "Terra grande",
+          "custo": 3
+        },
+        {
+          "ate": 119999,
+          "nome": "Terra imensa",
+          "custo": 4
+        },
+        {
+          "nome": "Terra descomunal",
+          "custo": 5
+        }
+      ]
     },
     "construcoes": {
       "slotsPorProvincia": 4,
@@ -37,9 +72,8 @@
       "custoDeMudanca": 2000
     },
     "alimento": {
-      "subsistenciaPorReino": 1,
-      "fracaoPopulacionalPorNivel": 0.25,
-      "soldadosPorPonto": 1000,
+      "subsistenciaPorReino": 2,
+      "soldadosPorPonto": 3000,
       "mortePorFome": 0.01,
       "mortePorFomeNaTropa": 0.05,
       "cerco": {

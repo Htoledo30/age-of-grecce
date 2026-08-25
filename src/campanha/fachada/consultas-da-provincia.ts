@@ -14,6 +14,7 @@ import type { CatalogoDeConstrucoes, Recusa } from '../nucleo';
 import type { PerfilDaProvincia } from '../perfil-da-provincia';
 import {
   contribuicaoAlimentarEm,
+  faixaDaProvinciaEm,
   estadoAlimentarLocalEm,
   nivelPopulacionalEm,
   produtosAlimentaresEm,
@@ -154,6 +155,16 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
 
   nivelPopulacionalEm(idProvincia: string): number {
     return nivelPopulacionalEm(this.nucleo, idProvincia);
+  }
+
+  /**
+   * O nome da faixa de população desta terra — a régua ao lado do número cru.
+   *
+   * Sem ela, "35.000 habitantes" não diz nada: grande comparado com quê? A faixa responde, e
+   * é a MESMA que decide quanto a terra come. Um sistema, um trabalho.
+   */
+  faixaDaProvinciaEm(idProvincia: string): string {
+    return faixaDaProvinciaEm(this.nucleo, idProvincia);
   }
 
   saldoAlimentarLocalEm(idProvincia: string): number {

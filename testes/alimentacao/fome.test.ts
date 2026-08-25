@@ -28,11 +28,13 @@ describe('a fome: o povo come primeiro, e ela é local', () => {
   });
 
   it('civil negativo é Fome: morrem as DEPENDENTES, nunca as sustentadoras', () => {
-    // O caminho oficial de forjar o cenário: salvar, engordar Atenas, restaurar. Com
-    // 90.000 habitantes o nível dela vai a VII e o saldo civil do reino afunda.
+    // O caminho oficial de forjar o cenário: salvar, engordar Atenas, restaurar.
+    // ⚠️ Com a faixa ABSOLUTA é preciso empurrar bem mais alto que antes: a régua não mede
+    // mais o crescimento contra a própria província, e sim o tamanho dela. Duzentos mil
+    // habitantes põem Atenas na faixa mais cara e afundam o saldo civil do reino.
     const campanha = nova();
     const salvo = lerSalvamento(campanha.serializar());
-    salvo.populacao['atenas'] = 90_000;
+    salvo.populacao['atenas'] = 200_000;
     campanha.restaurar(salvo);
 
     const balanco = campanha.alimentacao;

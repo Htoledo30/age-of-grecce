@@ -92,6 +92,7 @@ export function vistaDoAlimento(jogo: Jogo): VistaDoAlimento {
               .join(' · '),
             producao: campanha.contribuicaoAlimentarEm(id),
             populacao: campanha.nivelPopulacionalEm(id),
+            faixa: campanha.faixaDaProvinciaEm(id),
             papel: campanha.estadoAlimentarLocalEm(id),
             sitiada: campanha.cercoEm(id) !== undefined,
           },

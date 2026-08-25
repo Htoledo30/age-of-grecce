@@ -1,20 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Campanha } from '../../src/campanha/campanha';
+import { ajustes } from '../apoio/mundo';
 import { nova } from './apoio';
 
 describe('o equilíbrio alimentar: crescer nunca pode virar fome', () => {
-  it('Atenas começa em +3, abastecida, por uma conta que fecha inteira', () => {
-    const comida = nova().alimentacao;
-    expect(comida).toMatchObject({
-      subsistencia: 1,
-      producao: 5,
-      populacao: 3,
-      exercito: 0,
-      saldoCivil: 3,
-      saldo: 3,
-      categoria: 'abastecido',
-    });
+  it('Atenas abre APERTADA: muita gente numa terra pobre em cereal', () => {
+    // ⚠️ É o retrato que os próprios dados pediam. A Ática tem 63.000 pessoas e produz 5
+    // pontos de alimento; com a faixa de população pesando o tamanho de cada terra, ela
+    // abre com a menor folga do mapa. O motivo de Maratona no economia.json diz por quê:
+    // "a Ática era POBRE em cereal". Conquistar Elêusis passa a ser pão, não renda.
+    const c = nova();
+    const comida = c.alimentacao;
+    const custo = c
+      .provinciasDe('atenas')
+      .reduce((soma, id) => soma + c.nivelPopulacionalEm(id), 0);
+
+    expect(comida.subsistencia).toBe(ajustes.alimento.subsistenciaPorReino);
+    expect(comida.populacao).toBe(custo);
+    expect(comida.exercito).toBe(0);
+    expect(comida.saldoCivil).toBe(comida.subsistencia + comida.producao - comida.populacao);
+    expect(comida.saldo).toBe(comida.saldoCivil);
+    // Positiva, mas no fio: é a mais apertada entre os poderes jogáveis.
+    expect(comida.saldo).toBeGreaterThan(0);
+    expect(comida.saldo).toBeLessThan(c.balancoAlimentarDe('argos').saldo);
   });
 
   it('crescer nunca vira fome: 500 turnos de paz sem um único saldo negativo', () => {
@@ -72,11 +81,14 @@ describe('o equilíbrio alimentar: crescer nunca pode virar fome', () => {
   });
 
   it('o custo de várias hostes é calculado pelo total mobilizado', () => {
+    // ⚠️ Somado ANTES de arredondar: dez hostes pequenas não pagam dez vezes. O degrau vem
+    // do ajuste, não de um número decorado — mudar `soldadosPorPonto` não quebra o teste.
+    const porPonto = ajustes.alimento.soldadosPorPonto;
     const campanha = nova();
-    campanha.plantarHoste('atenas', 'atenas', 400);
-    campanha.plantarHoste('maratona', 'atenas', 400);
+    campanha.plantarHoste('atenas', 'atenas', Math.floor(porPonto / 2));
+    campanha.plantarHoste('maratona', 'atenas', porPonto - Math.floor(porPonto / 2));
     expect(campanha.alimentacao.exercito).toBe(1);
-    campanha.plantarHoste('sounion', 'atenas', 201);
+    campanha.plantarHoste('sounion', 'atenas', 1);
     expect(campanha.alimentacao.exercito).toBe(2);
   });
 

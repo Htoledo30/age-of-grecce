@@ -5,20 +5,34 @@ import {
   categoriaAlimentar,
   custoMilitar,
   mortosPelaFome,
-  nivelPopulacional,
 } from '../../src/producao/alimentacao';
+import { custoDaPopulacao, faixaDaPopulacao } from '../../src/populacao/faixas';
 import { ajustes } from '../apoio/mundo';
 import { nova } from './apoio';
 
 describe('a conta curta da alimentação', () => {
-  it('faz a população subir e descer de nível em faixas de 25%', () => {
-    expect(nivelPopulacional(0, 10_000, 0.25)).toBe(0);
-    expect(nivelPopulacional(1, 10_000, 0.25)).toBe(1);
-    expect(nivelPopulacional(12_499, 10_000, 0.25)).toBe(1);
-    expect(nivelPopulacional(12_500, 10_000, 0.25)).toBe(2);
-    expect(nivelPopulacional(15_000, 10_000, 0.25)).toBe(3);
-    expect(nivelPopulacional(20_000, 10_000, 0.25)).toBe(5);
-    expect(nivelPopulacional(11_000, 10_000, 0.25)).toBe(1);
+  it('a faixa é ABSOLUTA: quem tem mais gente come mais, venha de onde vier', () => {
+    // ⚠️ É o contrário da regra antiga, que media cada terra contra ela mesma e por isso
+    // fazia Atenas com 35.000 custar o mesmo que Salamina com 3.000.
+    const faixas = ajustes.populacao.faixas;
+    const primeira = faixas[0]!;
+    const ultima = faixas[faixas.length - 1]!;
+
+    expect(custoDaPopulacao(0, faixas)).toBe(0); // terra vazia não pesa na mesa
+    expect(custoDaPopulacao(1, faixas)).toBe(primeira.custo);
+    expect(custoDaPopulacao(primeira.ate!, faixas)).toBe(primeira.custo);
+    expect(custoDaPopulacao(primeira.ate! + 1, faixas)).toBeGreaterThan(primeira.custo);
+    // A última não tem teto: por mais que o reino cresça, ninguém fica sem faixa.
+    expect(custoDaPopulacao(10_000_000, faixas)).toBe(ultima.custo);
+    expect(faixaDaPopulacao(10_000_000, faixas)?.nome).toBe(ultima.nome);
+
+    // E o custo nunca desce quando a população sobe.
+    let anterior = 0;
+    for (const p of [1, 5_000, 15_000, 25_000, 35_000, 90_000]) {
+      const custo = custoDaPopulacao(p, faixas);
+      expect(custo).toBeGreaterThanOrEqual(anterior);
+      anterior = custo;
+    }
   });
 
   it('arredonda o exército total uma vez, não cada hoste', () => {
@@ -32,22 +46,22 @@ describe('a conta curta da alimentação', () => {
   it('as duas contas: civil primeiro, exército depois — e a sitiada fora de ambas', () => {
     const resultado = balancoAlimentar(
       [
-        { populacaoAtual: 10_000, populacaoInicial: 10_000, producaoAlimentar: 4, sitiada: false },
-        { populacaoAtual: 10_000, populacaoInicial: 10_000, producaoAlimentar: 0, sitiada: false },
+        { custoDaPopulacao: 1, producaoAlimentar: 4, sitiada: false },
+        { custoDaPopulacao: 1, producaoAlimentar: 0, sitiada: false },
         // A sitiada não contribui, não pesa e não conta: vive da própria despensa.
-        { populacaoAtual: 9_000, populacaoInicial: 9_000, producaoAlimentar: 7, sitiada: true },
+        { custoDaPopulacao: 3, producaoAlimentar: 7, sitiada: true },
       ],
       1001,
       ajustes.alimento,
     );
+    const sub = ajustes.alimento.subsistenciaPorReino;
     expect(resultado).toMatchObject({
-      subsistencia: 1,
-      producao: 4,
-      populacao: 2,
-      exercito: 2,
-      saldoCivil: 3,
-      saldo: 1,
-      categoria: 'abastecido',
+      subsistencia: sub,
+      producao: 4, // a sitiada não entra
+      populacao: 2, // 1 + 1; a sitiada não pesa
+      exercito: custoMilitar(1001, ajustes.alimento.soldadosPorPonto),
+      saldoCivil: sub + 4 - 2,
+      saldo: sub + 4 - 2 - custoMilitar(1001, ajustes.alimento.soldadosPorPonto),
     });
   });
 

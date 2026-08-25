@@ -13,9 +13,9 @@
 import { balancoAlimentar } from '@/producao/alimentacao';
 import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 import type { NucleoDaCampanha } from '../nucleo';
-import { fichaDe, populacaoDe, simuladasDe } from '../provincia/consultas';
+import { simuladasDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
-import { contribuicaoAlimentarLivreEm } from './contribuicao';
+import { contribuicaoAlimentarLivreEm, nivelPopulacionalEm } from './contribuicao';
 
 /** Conta única que alimenta regra, barra e Governo. */
 export function balancoAlimentarDe(
@@ -23,8 +23,7 @@ export function balancoAlimentarDe(
   idPoder: string,
 ): BalancoAlimentarDoPoder {
   const provincias = simuladasDe(nucleo, idPoder).map((id) => ({
-    populacaoAtual: populacaoDe(nucleo, id),
-    populacaoInicial: fichaDe(nucleo, id)?.populacao ?? 0,
+    custoDaPopulacao: nivelPopulacionalEm(nucleo, id),
     producaoAlimentar: contribuicaoAlimentarLivreEm(nucleo, id),
     sitiada: estaSitiada(nucleo, id),
   }));

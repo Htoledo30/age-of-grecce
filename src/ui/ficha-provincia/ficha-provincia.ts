@@ -14,46 +14,21 @@
 import type { PerfilDaProvincia } from '@/campanha/perfil-da-provincia';
 import type { RendaDaProvincia } from '@/campanha/economia';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
-import { definirTooltip } from './tooltip';
-import type { ConteudoDeTooltip } from './tooltip';
+import { definirTooltip } from '../tooltip';
+import {
+  campo,
+  comSinal,
+  faseDoCerco,
+  moeda,
+  povos,
+  romano,
+  tooltipDaPopulacao,
+  tooltipDoCerco,
+  tooltipDoHumor,
+} from './textos';
+import type { VistaDaProvincia } from './vista';
 
-/**
- * A província como a ficha precisa vê-la.
- *
- * Composta pelo `main` a partir do atlas (nome, região) e da campanha (dono de AGORA).
- * A camada de mapa não monta isto: ela sabe onde cada província está desenhada, não de
- * quem ela é hoje — e quando montava, montava com o dono assado e mentia depois da
- * primeira conquista.
- */
-export interface VistaDaProvincia {
-  nome: string;
-  regiao: string;
-  poder: { nome: string; povo: string; cor: string };
-  /**
-   * Quantos milicianos a província põe em pé se alguém vier.
-   *
-   * Fica na tela porque decide: é o número que diz se o vizinho consegue tomar isto, e é
-   * o que a Muralha compra. Zero onde não há população — e a ficha diz isso do mesmo jeito
-   * que já diz "economia não configurada".
-   */
-  milicia: number;
-  /**
-   * A conta do alvo do humor, parcela a parcela — a legibilidade da barra de comida
-   * aplicada à felicidade. `null` onde não há simulação.
-   */
-  humor: { alvo: number; parcelas: readonly { rotulo: string; pontos: number }[] } | null;
-  /**
-   * Quem está sitiando esta província, e em que pé a despensa dela está.
-   *
-   * Fica na ficha porque é a metade da mecânica que acontece COM o jogador: a renda dele
-   * cai, o relógio da fome corre, e ele precisa saber por quê e até quando.
-   */
-  cerco: {
-    sitiante: string;
-    mantimentosRestantes: number;
-    fomeAtiva: boolean;
-  } | null;
-}
+export type { VistaDaProvincia } from './vista';
 
 export class FichaProvincia {
   /** Nomes das construções, pra ficha não ter que repetir o catálogo. */
@@ -161,14 +136,21 @@ export class FichaProvincia {
         corpo: `${moeda(provincia.milicia)} habitantes defendem a província quando ela é atacada.`,
       }),
       ...(renda
-        ? campo('população', `${moeda(renda.populacao)} habitantes`, 'ficha__populacao', {
-            ...(populacao
-              ? tooltipDaPopulacao(populacao)
-              : {
-                  titulo: 'População',
-                  corpo: `${moeda(renda.populacao)} habitantes.`,
-                }),
-          })
+        ? campo(
+            'população',
+            provincia.faixa
+              ? `${moeda(renda.populacao)} habitantes · ${provincia.faixa}`
+              : `${moeda(renda.populacao)} habitantes`,
+            'ficha__populacao',
+            {
+              ...(populacao
+                ? tooltipDaPopulacao(populacao)
+                : {
+                    titulo: 'População',
+                    corpo: `${moeda(renda.populacao)} habitantes.`,
+                  }),
+            },
+          )
         : []),
     );
     this.mostrarEconomia(renda);
@@ -261,127 +243,4 @@ export class FichaProvincia {
     }
     this.economia.replaceChildren(...filhos);
   }
-}
-
-/**
- * A composição da população numa linha: "Eleusina 85% · Ateniense 15%".
- *
- * Povo único sai sem porcentagem — "Ateniense 100%" é ruído, e a maioria das províncias
- * é assim. A porcentagem só aparece quando ela significa alguma coisa.
- */
-/**
- * O crescimento como frase, e não como sinal grudado num número.
- *
- * ⚠️ **Zero é ESTÁVEL, não "+0".** A alimentação criou uma faixa em que o povo nem cresce
- * nem mingua — é onde o reino descansa — e escrever "+0 por turno" ali parecia defeito.
- * Negativo também não pode virar "+-24": míngua é outra notícia, e a ficha diz isso.
- */
-function tooltipDaPopulacao(
-  populacao: CrescimentoPopulacional & { limitadoPelaAlimentacao: boolean },
-): ConteudoDeTooltip {
-  if (populacao.limitadoPelaAlimentacao) {
-    return {
-      titulo: 'População mantida',
-      corpo: 'A alimentação cobre a população atual, sem permitir crescimento.',
-    };
-  }
-  if (populacao.crescimento < 0) {
-    return {
-      titulo: 'População caindo',
-      corpo: `−${moeda(-populacao.crescimento)} no próximo turno.`,
-      tom: 'perigo',
-    };
-  }
-  if (populacao.crescimento > 0) {
-    return {
-      titulo: 'População subindo',
-      corpo: `+${moeda(populacao.crescimento)} no próximo turno.`,
-    };
-  }
-  return {
-    titulo: 'Sem crescimento líquido',
-    corpo: 'Nascimentos e mortes se equilibram neste turno.',
-  };
-}
-
-function tooltipDoHumor(
-  atual: number,
-  humor: VistaDaProvincia['humor'] & {},
-): ConteudoDeTooltip {
-  const alvo = humor.alvo;
-  const movimento = atual < alvo ? 'subindo' : atual > alvo ? 'caindo' : 'mantido';
-  return {
-    titulo: `Humor ${movimento}: ${atual} → ${alvo}`,
-    corpo:
-      humor.parcelas
-        .map((p) => `${p.rotulo} ${p.pontos >= 0 ? `+${p.pontos}` : `−${-p.pontos}`}`)
-        .join(' · ') + ` = ${alvo}`,
-    tom: atual > alvo ? 'perigo' : 'informacao',
-  };
-}
-
-function tooltipDoCerco(
-  cerco: { mantimentosRestantes: number; fomeAtiva: boolean },
-): ConteudoDeTooltip {
-  if (cerco.fomeAtiva) {
-    return {
-      titulo: 'Mantimentos esgotados',
-      corpo: '−1% de população e −5% da guarnição por turno.',
-      tom: 'perigo',
-    };
-  }
-  return {
-    titulo: `Mantimentos: ${cerco.mantimentosRestantes} ${
-      cerco.mantimentosRestantes === 1 ? 'turno' : 'turnos'
-    }`,
-    corpo: 'Sem crescimento enquanto o cerco durar.',
-  };
-}
-
-function povos(perfil: PerfilDaProvincia): string {
-  const fatias = perfil.nacionalidades;
-  if (fatias.length === 1) return fatias[0]?.nome ?? '';
-  return fatias.map((f) => `${f.nome} ${Math.round(f.fracao * 100)}%`).join(' · ');
-}
-
-/** Grau de 1 a 5 em algarismo romano. A tabela é o mapa inteiro: não existe nível 6. */
-function romano(nivel: number): string {
-  return ['I', 'II', 'III', 'IV', 'V'][nivel - 1] ?? String(nivel);
-}
-
-function moeda(valor: number): string {
-  return valor.toLocaleString('pt-BR');
-}
-
-function comSinal(valor: number): string {
-  return valor >= 0 ? `+${moeda(valor)}` : `−${moeda(-valor)}`;
-}
-
-/** Em que pé está a despensa da cidade cercada, como o jogador precisa ler. */
-function faseDoCerco(cerco: { mantimentosRestantes: number; fomeAtiva: boolean }): string {
-  if (cerco.fomeAtiva) return 'a cidade passa fome';
-  return `mantimentos para ${cerco.mantimentosRestantes} ${
-    cerco.mantimentosRestantes === 1 ? 'turno' : 'turnos'
-  }`;
-}
-
-function campo(
-  rotulo: string,
-  valor: string,
-  classe?: string,
-  extra?: ConteudoDeTooltip,
-): [HTMLElement, HTMLElement] {
-  const dt = document.createElement('dt');
-  dt.textContent = rotulo;
-  const dd = document.createElement('dd');
-  dd.textContent = valor;
-  if (classe) {
-    dt.className = classe;
-    dd.className = classe;
-  }
-  if (extra) {
-    definirTooltip(dt, extra);
-    definirTooltip(dd, extra);
-  }
-  return [dt, dd];
 }

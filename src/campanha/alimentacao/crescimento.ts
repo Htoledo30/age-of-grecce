@@ -13,7 +13,7 @@
 
 import { calcularCrescimentoPopulacional } from '@/populacao/crescimento';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
-import { nivelPopulacional } from '@/producao/alimentacao';
+import { custoDaPopulacao } from '@/populacao/faixas';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe, fichaDe, populacaoDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
@@ -34,12 +34,10 @@ function crescimentoTravadoPara(
   for (const id of nucleo.territorios.provinciasDe(idPoder)) {
     const ficha = fichaDe(nucleo, id);
     if (!ficha || estaSitiada(nucleo, id)) continue;
+    // ⚠️ É aqui que a trava ganhou dente: crescer pode EMPURRAR a província para a faixa
+    // seguinte, e com ela um ponto a mais de consumo. A projeção enxerga isso antes.
     const proxima = projetar(nucleo, id, 1).proxima;
-    populacaoProjetada += nivelPopulacional(
-      proxima,
-      ficha.populacao,
-      nucleo.ajustes.alimento.fracaoPopulacionalPorNivel,
-    );
+    populacaoProjetada += custoDaPopulacao(proxima, nucleo.ajustes.populacao.faixas);
   }
   const saldoProjetado =
     balanco.subsistencia + balanco.producao - populacaoProjetada - balanco.exercito;

@@ -17,7 +17,7 @@ import { CercosMapa } from '@/ui/cercos-mapa';
 import { Cronica } from '@/ui/cronica';
 import { DestinosMapa } from '@/ui/destinos-mapa';
 import { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
-import { FichaProvincia } from '@/ui/ficha-provincia';
+import { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import { FimDeJogo } from '@/ui/fim-de-jogo';
 import { Governo } from '@/ui/governo';
 import { HostesMapa } from '@/ui/hostes-mapa';
