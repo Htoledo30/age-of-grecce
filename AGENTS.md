@@ -144,7 +144,9 @@ Henrique escolheu esta curva entre três, e por dois defeitos que ele apontou na
   vizinha própria o exército sai inteiro; na última província ele se desfaz, mas os homens
   voltam à população. Regra de Henrique: *"se for última província ele morre e foda-se, ou
   volta para a população de onde saiu"*. Está LIGADO de ponta a ponta: a ficha da hoste
-  alterna entre "Lutar até o fim" e "Recuar se virar", e a ordem carrega `recuarAos`.
+  alterna entre "Lutar até o fim" e "Poupar o exército", e a ordem carrega `recuarAos`. O
+  rótulo nomeia o PRÊMIO e não a derrota: chamado de "Recuar se virar", ninguém escolhia a
+  opção certa — as duas ordens atacam, e o que muda é o que se leva se der errado.
 - **A janela de batalha** abre só nas do jogador, depois da rodada resolvida, e reproduz a
   lista de rounds que a regra produz SEMPRE. Ela não recalcula nada, e um teste de tela
   confere que o último round bate com o que o mapa ficou. A muralha aparece nela como

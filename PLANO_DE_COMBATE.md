@@ -212,7 +212,7 @@ que é a especialização que o GDD diz que os slots existem para forçar.
 5. ✅ **Recuo**, com `refugio`: vizinha própria salva o exército, última província devolve os
    homens à população.
 6. ✅ **A janela**, reproduzindo a lista de rounds, só nas batalhas do jogador.
-7. ✅ **O recuo ligado**: `recuarAos` na ordem de marcha, e o botão "Recuar se virar" na
+7. ✅ **O recuo ligado**: `recuarAos` na ordem de marcha, e o botão "Poupar o exército" na
    ficha da hoste.
 8. ⬜ Moral, se valer a pena.
 

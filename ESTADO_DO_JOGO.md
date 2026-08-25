@@ -311,7 +311,7 @@ são preservadas na restauração.
   perseguição — a fração sobe se o vencedor tiver cavalaria. `refugio` é uma pergunta que a
   resolução faz e a campanha responde: vizinha própria por geografia e posse, ou `null` na
   última terra. Está LIGADO de ponta a ponta: a ficha da hoste alterna entre "Lutar até o
-  fim" e "Recuar se virar", e a ordem de marcha carrega `recuarAos`.
+  fim" e "Poupar o exército", e a ordem de marcha carrega `recuarAos`.
 - **A janela de batalha** (`ui/batalha.ts`) abre só nas batalhas do jogador, depois da rodada
   resolvida, e reproduz a lista de rounds. Ela não recalcula nada e fechar não muda o mapa —
   um teste de tela confere que o último round bate com o que a regra deixou.

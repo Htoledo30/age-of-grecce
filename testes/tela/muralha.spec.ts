@@ -65,6 +65,16 @@ test('contra a cidade murada o assalto não é escolha do dia; contra a aberta �
     'Elêusis: o que fazer ao chegar?',
   );
   await expect(page.getByRole('button', { name: /Assaltar/ })).toBeEnabled();
+
+  // ⚠️ **A ordem de batalha nomeia o PRÊMIO, nunca a derrota.** Ela já se chamou "Recuar se
+  // virar" e ninguém escolheria isso — decisão de Henrique. As duas ordens atacam; o que
+  // muda é o que se leva quando dá errado, o chão ou o exército.
+  const ordem = page.locator('.exercito__botao--recuo');
+  await expect(ordem).toHaveText(/Lutar até o fim/);
+  await ordem.click();
+  await expect(ordem).toHaveText(/Poupar o exército/);
+  await expect(ordem).not.toHaveText(/[Rr]ecuar/);
+
   expect(erros).toEqual([]);
 });
 

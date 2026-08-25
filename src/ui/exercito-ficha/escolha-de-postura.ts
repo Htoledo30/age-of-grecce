@@ -39,7 +39,12 @@ export class EscolhaDePostura {
   private readonly botaoRecuo = document.createElement('button');
 
   aoEscolher: (postura: Postura) => void = () => {};
-  /** Muda a ordem de recuo desta marcha. `true` é sair de campo se a batalha virar. */
+  /**
+   * Muda a ordem desta marcha. `true` é sair de campo se a batalha virar.
+   *
+   * O nome interno continua falando em RECUO porque é isso que a regra faz — o rótulo da
+   * tela é que nomeia o prêmio em vez da perda. Ver `desenharRecuo`.
+   */
   aoTrocarRecuo: (recuar: boolean) => void = () => {};
 
   constructor(pai: HTMLElement) {
@@ -80,11 +85,16 @@ export class EscolhaDePostura {
     rotularComIcone(
       this.botaoRecuo,
       this.recuar ? 'muralha' : 'lanca',
-      this.recuar ? 'Recuar se virar' : 'Lutar até o fim',
+      // ⚠️ **O rótulo nomeia o PRÊMIO, não a derrota.** Este botão já se chamou "Recuar se
+      // virar", e ninguém escolhe uma opção batizada pelo que ela perde — mesmo sendo a
+      // jogada certa. As duas ordens atacam; o que muda é o que se leva quando dá errado: o
+      // chão ou o exército. Dito assim, sair de campo soa a decisão de general em vez de
+      // covardia, que é exatamente o que ela é.
+      this.recuar ? 'Poupar o exército' : 'Lutar até o fim',
     );
     this.botaoRecuo.dataset['ligado'] = this.recuar ? 'sim' : 'nao';
     definirTooltip(this.botaoRecuo, {
-      titulo: this.recuar ? 'Ordem: recuar' : 'Ordem: lutar',
+      titulo: this.recuar ? 'Ordem: poupar o exército' : 'Ordem: lutar até o fim',
       corpo: this.recuar
         ? 'Sai de campo antes de a linha ceder. Perde pouco, escapa da perseguição, e o ' +
           'exército sobrevive — mas entrega o chão. Sem terra sua vizinha, a hoste se desfaz ' +
