@@ -40,7 +40,78 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a guerra tem forma — choque, quebra e perseguição
+### Agora: quatro armas, e nenhuma é a resposta
+
+Henrique pediu isto no meio do item 3, e a pergunta dele foi a que desenhou o sistema:
+*"não tem arqueiro? e qual a diferença entre tropa leve e hoplita? e o que o quartel vai
+fazer? não quero 100% historicamente correto, arqueiro é legal de ter."* Depois ele fechou o
+desenho sozinho: *"todas as províncias possuem os soldados leves; o quartel continua
+melhorando os soldados, porém adiciona outra construção que seja para ter o hoplita — todos
+os lugares vão ter acesso, mas todos vão querer fazer hoplita, e aí vira mais uma decisão."*
+
+**A hoste virou uma lista de contingentes** — terra natal, arma e treino de cada grupo — e a
+força é a soma deles. Baixa, destacamento e dispensa saem proporcionalmente de CADA
+contingente: sem isso, um destacamento levaria a cavalaria inteira por acidente de índice.
+
+**Quem levanta o quê é decidido no MAPA, província por província.** Leve em toda parte, sem
+construir nada; hoplita com Armaria (sem requisito de produto — é escolha de slot); arqueiro
+com Acampamento de arqueiro, só onde há madeira; cavalaria com Treinamento de cavaleiros, só
+onde há cavalos. Ninguém fica sem exército: quem não gastou slot joga com massa barata.
+
+| arma | ataque | aguento | custo | comida | bate |
+|---|---:|---:|---:|---:|---|
+| leve | 1,00 | 1,00 | 1,00 | 1,0 | — |
+| hoplita | 1,00 | 1,50 | 1,25 | 1,0 | cavalaria |
+| arqueiro | 1,90 | 0,70 | 1,30 | 1,0 | hoplita |
+| cavalaria | 1,55 | 1,00 | 1,60 | 1,8 | arqueiro |
+
+⚠️ **A conta que governa o balanço das armas é `ataque × aguento`, e ela entra ao QUADRADO
+das cabeças.** Um lado vence quando `homens² × ataque × aguento` é maior — é a lei quadrada
+com os dois modificadores dentro. Consequência prática, e é ela que derrubou a primeira
+calibragem: **toda tropa cara perde a corrida de números**, porque o preço divide as cabeças
+e as cabeças entram ao quadrado. Foi por isso que a cavalaria começou como armadilha em todas
+as réguas.
+
+`npm run armas` é o banco de provas, e o critério é **toda arma tem que ganhar alguma
+coluna**: o leve vence por MOEDA (exército agora, sem prédio), hoplita e arqueiro vencem por
+BOCA (o império grande, onde falta comida e não ouro), e o triângulo decide a coluna por
+GENTE. A cavalaria não vence nenhuma das três — ela compra **o depois**, e por isso tem uma
+coluna própria: quanto do derrotado volta para casa.
+
+| cavalaria no vencedor | o derrotado leva para casa |
+|---:|---:|
+| 0% | 15% |
+| 5% | 9% |
+| 10% | 7% |
+| 20% | 4% |
+
+⚠️ **O bônus da cavalaria SATURA** (`meiaCavalaria`), e não é enfeite de realismo: é o que
+salva a arma de ser armadilha. Proporcional, esquadrão nenhum se pagaria — 20% de cavalaria
+custa 20% do orçamento e devolve muito menos que 20% no choque. Saturando, 10% já compram a
+maior parte da caçada, que é exatamente o que a cavalaria deve comprar. Ela também encarece o
+RECUO do inimigo: sem isso, uma ordem de recuo tornaria o adversário imune ao cavalo.
+
+**O cavalo cobra em comida, não em ouro.** O balanço alimentar passou a somar BOCAS
+(`bocasEmArmasDe`), não homens; a folha de pagamento continua por cabeça. Assim a cavalaria é
+pressão sobre a TERRA, e um reino faminto não a sustenta com o tesouro cheio.
+
+**A milícia é sempre leve de qualidade 1**, e nunca recebe Armaria, Quartel nem acampamento —
+decisão de Henrique: *"milícia é um último escudo, não é para ser treinada nem nada"*. Se as
+obras militares a melhorassem, defender sairia de graça e recrutar deixaria de ser decisão.
+
+**O treino é carimbado na leva** e multiplica o ataque, não o aguento. Se multiplicasse os
+dois, o Quartel III renderia 1,69 e a ficha continuaria dizendo 1,3 — o número que o jogador
+lê tem que ser o efeito que ele recebe. E carimbar em vez de consultar significa que tomar o
+Quartel do inimigo piora as reposições dele, não o exército que ele já tem.
+
+⚠️ **A calibragem foi refeita três vezes, e as duas primeiras estavam erradas por medir
+pouco.** Na primeira, o counter de 1,4 não bastava para o arqueiro vencer o hoplita que ele
+supostamente conta — o produto base dele era 30% menor, e a vantagem inteira não cobria a
+diferença; o triângulo existia no `ajustes.json` e não existia em campo. Na segunda, o leve
+vencia as três réguas de uma vez. Só a tabela cruzada de exércitos inteiros, com dois
+orçamentos diferentes, mostrou as duas coisas.
+
+### O que veio antes: a guerra ganhou forma — choque, quebra e perseguição
 
 Item 3 da sequência de Henrique. `√(maior² − menor²)` saiu do jogo: era uma raiz quadrada
 sobre dois números, sem decisão dentro dela, sem recuo, e sem nada para o jogador ver.
@@ -72,8 +143,8 @@ Henrique escolheu esta curva entre três, e por dois defeitos que ele apontou na
 - **Recuar** é a terceira saída, e é decisão de HORA — quem já cedeu não recua mais. Com
   vizinha própria o exército sai inteiro; na última província ele se desfaz, mas os homens
   voltam à população. Regra de Henrique: *"se for última província ele morre e foda-se, ou
-  volta para a população de onde saiu"*. **Ainda desligado**: falta ligar `recuaAos` à ordem
-  de marcha e pôr o botão na janela.
+  volta para a população de onde saiu"*. Está LIGADO de ponta a ponta: a ficha da hoste
+  alterna entre "Lutar até o fim" e "Recuar se virar", e a ordem carrega `recuarAos`.
 - **A janela de batalha** abre só nas do jogador, depois da rodada resolvida, e reproduz a
   lista de rounds que a regra produz SEMPRE. Ela não recalcula nada, e um teste de tela
   confere que o último round bate com o que o mapa ficou. A muralha aparece nela como
@@ -361,14 +432,15 @@ Falta Henrique jogar a regra nova.
 
 - comida é um saldo anual inteiro do reino, sem estoque ou deterioração;
 - a conta soma subsistência, níveis de alimentos e construções alimentares, e desconta
-  níveis populacionais e o exército mobilizado;
+  níveis populacionais e as BOCAS do exército mobilizado — cavalo come por vários homens;
 - saldo negativo causa fome; zero trava o crescimento; sobras maiores aceleram o
   crescimento;
 - cada província tem quatro slots de construção e cada edifício pode chegar ao nível III;
 - construções universais convivem com construções liberadas pelo produto local ou por
   ancoradouro;
-- recrutamento é uma ação básica; Quartel não é requisito e seu bônus de qualidade fica
-  para um trabalho futuro;
+- recrutamento é por ARMA; o Quartel não é requisito e multiplica o TREINO carimbado na
+  leva; Armaria, Acampamento de arqueiro e Treinamento de cavaleiros liberam as outras três
+  armas, província por província;
 - falta de ouro causa deserção e devolve homens às origens;
 - fome causa mortes e não devolve população; quando o déficit é obra de cercos (a conta
   fecharia com as terras sitiadas livres), a fome mata dentro da cidade sitiada — o resto
@@ -404,7 +476,9 @@ Nenhum número abaixo foi jogado — todos foram medidos por simulação, e simu
 4. **O tesouro inicial em 3.500.** Ele subiu de 3.000 porque Atenas não conseguia erguer a
    própria Ágora no turno 1 e o jogo abria com uma espera. Para os pequenos, 3.500 são três
    obras de uma vez — pode ser cedo demais.
-5. **O Quartel escondido.** Ele volta com o combate; até lá o catálogo tem um prédio a menos.
+5. **As quatro armas.** `npm run armas` diz que nenhuma domina as réguas, mas régua não é
+   partida: falta saber se, jogando, dá vontade de erguer Armaria em vez de mais uma Ágora, e
+   se um esquadrão de cavalaria parece valer o que custa quando é o SEU ouro.
 6. **A folha militar casa/campanha** e o mapa que abre em paz — pendências da sessão anterior
    que continuam de pé.
 
@@ -432,6 +506,10 @@ Nenhum número abaixo foi jogado — todos foram medidos por simulação, e simu
   nasceu de um erro real: a Ágora foi consertada medindo em Atenas e continuava armadilha em
   metade do mapa. `npm run economia` faz esse corte sozinho — do poder mais pobre ao mais
   rico, cedo, meio e fim de jogo. Rode depois de mexer em QUALQUER número de economia.
+- **A mesma disciplina vale para as armas: `npm run armas` depois de mexer em QUALQUER número
+  de combate.** Um duelo isolado não mede nada — o que revela dominância é a tabela cruzada de
+  exércitos inteiros, com mais de um ORÇAMENTO (ouro e comida limitam em fases diferentes do
+  jogo). Duas calibragens erradas passaram por não olhar as duas tabelas.
 - **Ao mexer num dial, confira a largura dele contra os outros.** Um número que varia 1,87×
   no mapa não decide nada quando outro varia 11,7× — foi assim que população passou a mandar
   na economia inteira sem ninguém escolher isso.

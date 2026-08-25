@@ -5,8 +5,11 @@
  * uma província atualize a ficha dela no mesmo instante.
  */
 
+import { homensEmFormacao } from '@/combate/formacao-de-leva';
 import type { VistaDeAcoes } from '@/ui/acoes-provincia';
 import type { VistaDaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
+import { ARMAS } from '@/combate/exercito';
+import { motivoDaArmaTrancada } from '@/combate/recrutamento';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import type { Jogo } from '../contexto';
 
@@ -116,18 +119,35 @@ export function vistaDeRecrutamento(jogo: Jogo): VistaDeRecrutamento | null {
       motivo: `${atlas.nomeDe(alvo)}: não há população disponível para reunir tropa.`,
     };
   }
+  const liberadas = campanha.armasEm(alvo);
   return {
     pode: true,
     provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
     populacao: campanha.populacaoDe(alvo),
     disponivel: campanha.disponivelParaLevaEm(alvo),
-    maximo: campanha.maximoParaLevaEm(alvo),
-    emFormacao: campanha.formacaoEm(alvo)?.homens ?? 0,
-    custoPorHomem: ajustes.jogo.combate.custoPorHomem,
+    emFormacao: homensEmFormacao(campanha.formacaoEm(alvo)),
+    // ⚠️ **As quatro, sempre**, e não só as liberadas: é o painel que ensina que existe
+    // cavalaria e o que ela exige. Mostrar só o que já dá para fazer esconderia a decisão
+    // de construir, que é a parte interessante.
+    armas: ARMAS.map((arma) => {
+      const dados = ajustes.jogo.combate.batalha.armas[arma];
+      const liberada = liberadas.includes(arma);
+      return {
+        arma,
+        liberada,
+        motivo: liberada ? '' : motivoDaArmaTrancada(arma),
+        custoPorHomem: ajustes.jogo.combate.custoPorHomem * dados.custo,
+        maximo: liberada ? campanha.maximoParaLevaEm(alvo, arma) : 0,
+        comida: dados.comida,
+        ataque: dados.ataque,
+        aguento: dados.aguento,
+      };
+    }),
+    treino: campanha.treinoEm(alvo),
     // A leva nasce e fica EM CASA: a previsão mostra o que ela vai custar de verdade no
     // próximo turno. O preço de marchar é outro, e o painel diz qual.
     manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem.emCasa,
     manutencaoEmCampanha: ajustes.jogo.combate.manutencaoPorHomem.emCampanha,
-    avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
+    avaliar: (homens, arma) => campanha.podeRecrutar(alvo, homens, arma),
   };
 }

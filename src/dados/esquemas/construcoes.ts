@@ -148,6 +148,37 @@ export const Construcoes = z.object({
           fatores: TresNiveisPositivos,
         }),
         z.object({
+          tipo: z.literal('arma'),
+          /**
+           * A arma que esta obra LIBERA nesta província.
+           *
+           * ⚠️ **Libera por PROVÍNCIA, não por reino.** Armaria em Atenas quer dizer hoplita
+           * recrutado em Atenas; Maratona sem ela levanta leves. É isso que transforma "qual
+           * das minhas terras é a militar?" numa pergunta com resposta no mapa, e é como as
+           * explorações já funcionam — Mina só onde há ferro.
+           *
+           * O `leve` não aparece aqui: ele é a linha de base e toda terra o levanta sem
+           * construir nada. Ninguém fica sem exército por não ter erguido prédio.
+           */
+          arma: z.enum(['hoplita', 'arqueiro', 'cavalaria']),
+        }),
+        z.object({
+          tipo: z.literal('qualidade'),
+          /**
+           * O treino que esta obra CARIMBA na tropa levantada aqui, por nível.
+           *
+           * ⚠️ **Carimbado no recrutamento, não consultado na batalha.** Se fosse lido da
+           * província na hora do choque, perder a terra transformaria veteranos em recrutas no
+           * meio da campanha. Tomar o Quartel do inimigo não piora o exército que ele tem —
+           * piora os que virão, e essa é uma pressão de campanha muito melhor.
+           *
+           * ⚠️ **Fica ABAIXO do número.** Mesmo princípio do counter: vantagem, não
+           * dominância. Um poder pequeno com treino alto ficaria intocável, e a gente
+           * quebraria o "defensor menor tem chance" pelo outro lado.
+           */
+          fatores: TresNiveisPositivos,
+        }),
+        z.object({
           tipo: z.literal('futuro'),
         }),
       ]),

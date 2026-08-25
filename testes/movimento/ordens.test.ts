@@ -29,7 +29,7 @@ describe('a ordem é registrada, e nada se move', () => {
     expect(c.forcaEm('maratona')).toBe(1000);
     expect(unicaEm(c, 'maratona')?.poder).toBe('atenas');
     // E a terra natal não muda com a marcha: estes homens continuam devendo a Atenas.
-    expect(unicaEm(c, 'maratona')?.origem).toEqual({ atenas: 1000 });
+    expect(porTerraOuVazio(unicaEm(c, 'maratona'))).toEqual({ atenas: 1000 });
   });
 
   it('nenhuma ordem sobrevive à virada', () => {
@@ -127,3 +127,10 @@ describe('a ordem recusada diz o motivo', () => {
     expect(podeOrdenar(c, 'atenas', 'sounion', 500)).toMatchObject({ pode: true });
   });
 });
+
+/** `porTerra` tolerando hoste ausente: o teste falha na asserção, não num `undefined`. */
+function porTerraOuVazio(e: { contingentes: readonly { terra: string; homens: number }[] } | undefined) {
+  const conta: Record<string, number> = {};
+  for (const c of e?.contingentes ?? []) conta[c.terra] = (conta[c.terra] ?? 0) + c.homens;
+  return conta;
+}

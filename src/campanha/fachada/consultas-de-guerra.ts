@@ -6,7 +6,7 @@
  */
 
 import type { Cerco } from '@/combate/cerco';
-import type { Exercito } from '@/combate/exercito';
+import type { Arma, Exercito } from '@/combate/exercito';
 import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import type { OrdemDeMarcha, RecusaDeOrdem } from '@/movimento/ordens';
@@ -14,6 +14,7 @@ import type { RelatorioDaRodada } from '@/movimento/resolucao/relatorio';
 import type { Permissao } from '../nucleo';
 import { assaltoEm, cercoEm, cercos, impedeAssaltoImediatoEm } from '../guerra/cercos';
 import { podeRecrutar } from '../guerra/levas';
+import { armasEm, treinoEm } from '../provincia/armas-da-provincia';
 import { podeOrdenarMarcha, rotasDaHoste } from '../guerra/marchas';
 import { ordemDaHoste, ordens, surtidaDe } from '../guerra/ordens-da-rodada';
 import { podeSurtir, sitianteDaHosteDe } from '../guerra/surtidas';
@@ -98,13 +99,35 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
     return this.nucleo.mobilizacao.disponivelParaLevaEm(idProvincia);
   }
 
-  /** Quantos homens a população e o tesouro DO DONO permitem recrutar neste instante. */
-  maximoParaLevaEm(idProvincia: string): number {
-    return this.nucleo.mobilizacao.maximoParaLevaEm(idProvincia, this.donoDe(idProvincia));
+  /**
+   * As armas que esta terra levanta agora. `leve` está sempre nela — ninguém fica sem
+   * exército por não ter erguido prédio nenhum.
+   */
+  armasEm(idProvincia: string): readonly Arma[] {
+    return armasEm(this.nucleo, idProvincia);
   }
 
-  podeRecrutar(idProvincia: string, homens: number): RecusaDeLeva {
-    return podeRecrutar(this.nucleo, idProvincia, homens);
+  /**
+   * O treino que a tropa levantada aqui recebe. 1 é tropa comum; o Quartel sobe isto.
+   *
+   * A tela mostra este número ANTES da leva porque ele é carimbado no recrutamento: quem
+   * levanta hoje leva o treino de hoje para sempre.
+   */
+  treinoEm(idProvincia: string): number {
+    return treinoEm(this.nucleo, idProvincia);
+  }
+
+  /** Quantos homens a população e o tesouro DO DONO permitem recrutar neste instante. */
+  maximoParaLevaEm(idProvincia: string, arma: Arma = 'leve'): number {
+    return this.nucleo.mobilizacao.maximoParaLevaEm(
+      idProvincia,
+      this.donoDe(idProvincia),
+      arma,
+    );
+  }
+
+  podeRecrutar(idProvincia: string, homens: number, arma: Arma = 'leve'): RecusaDeLeva {
+    return podeRecrutar(this.nucleo, idProvincia, homens, arma);
   }
 
   // ── Marchas e surtidas ──────────────────────────────────────────────────────────────

@@ -86,13 +86,28 @@
   overflow: hidden;
 }
 .batalha__cheio {
+  display: flex;
   height: 100%;
   /* A largura anima sozinha: é o encolher que conta a batalha. */
   transition: width 260ms ease-out;
 }
+/* As armas dentro da barra. Só aparecem em exército misto — um só de leves fica liso. */
+.batalha__faixa {
+  height: 100%;
+}
 /* Na perseguição a barra despenca, e a cor avisa que aqui é onde morre gente. */
 .batalha__cheio[data-fase='perseguicao'] {
   background: rgb(190 60 48) !important;
+}
+.batalha__cheio[data-fase='perseguicao'] .batalha__faixa {
+  background: rgb(190 60 48) !important;
+}
+/* A composição, ao lado do nome: quantos de cada arma ainda estão em pé. */
+.batalha__armas {
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.72;
 }
 
 .batalha__narracao {

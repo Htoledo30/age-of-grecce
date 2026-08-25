@@ -15,7 +15,12 @@ interface Ganchos {
   passarTurno: () => void;
   recrutar: (idProvincia: string, homens: number) => void;
   forcaEm: (idProvincia: string, idPoder?: string) => number;
-  plantarHoste: (idProvincia: string, idPoder: string, homens: number) => void;
+  plantarHoste: (
+    idProvincia: string,
+    idPoder: string,
+    homens: number,
+    arma?: 'leve' | 'hoplita' | 'arqueiro' | 'cavalaria',
+  ) => void;
   hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
   ordenarMarcha: (
     idHoste: string,
@@ -108,4 +113,47 @@ test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu
   ).toBe(donoAntes);
 
   expect(erros).toEqual([]);
+});
+
+/**
+ * A janela mostra DE QUE é feito cada lado, e não só quantos são.
+ *
+ * Sem isto, duas batalhas com o mesmo número de homens ficam idênticas na tela — e a decisão
+ * de composição, que é a mais interessante que o jogador toma antes de marchar, não aparece
+ * em lugar nenhum depois dela.
+ */
+test('a janela mostra as armas de cada lado, e as faixas encolhem com a barra', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.waitForSelector('body[data-pronto="sim"]');
+  await page.getByRole('button', { name: 'Iniciar jogo' }).click();
+  await page.waitForTimeout(600);
+  await page.mouse.click(960, 540);
+  await page.getByRole('button', { name: 'Começar campanha' }).click();
+  await page.waitForSelector('.barra-turno');
+
+  await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.darOuro(60_000);
+    // Atenas põe em campo um exército MISTO; Elêusis vem só com hoplitas.
+    i.plantarHoste('atenas', 'atenas', 600, 'leve');
+    i.plantarHoste('eleusis', 'eleusis', 800, 'hoplita');
+    const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
+    if (!deles) throw new Error('a hoste de Elêusis não subiu');
+    i.ordenarMarcha(deles.id, 'atenas', 800, 'eleusis', 'assaltar');
+  });
+  await page.getByRole('button', { name: 'Passar o turno' }).click();
+
+  await expect(page.locator('.batalha')).toBeVisible();
+  // Cada lado escreve a própria composição ao lado do nome. Sem depender da ORDEM: quem é o
+  // lado A sai da força de cada um, e cravar isso aqui seria cravar balanço.
+  await expect(page.locator('.batalha__armas')).toHaveCount(2);
+  await expect(page.locator('.batalha__barras')).toContainText('leves');
+  await expect(page.locator('.batalha__barras')).toContainText('hoplitas');
+
+  // E ela acompanha a batalha: depois de um round, os números da composição caem junto.
+  const antes = await page.locator('.batalha__armas').first().textContent();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.locator('.batalha__armas').first()).not.toHaveText(antes ?? '');
 });

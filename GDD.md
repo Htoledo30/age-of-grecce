@@ -263,8 +263,10 @@ Upgrades não consomem outro slot, pagam somente o nível novo e levam prazo pr�
 Construções normalmente sobrevivem à conquista.
 
 **Todo prédio comprável tem que servir AGORA.** O que só promete fica escondido do catálogo
-até ter função — é o caso do Quartel, que volta com o combate. Vender promessa é pior que não
-vender nada: o jogador paga, não vê diferença, e passa a duvidar do resto do catálogo.
+até ter função. Vender promessa é pior que não vender nada: o jogador paga, não vê diferença,
+e passa a duvidar do resto do catálogo. O Quartel já esteve escondido por esse motivo e
+voltou quando passou a carimbar treino na leva — a regra é essa: some enquanto não entrega,
+volta quando entregar.
 
 **O preço de uma obra acompanha a riqueza da terra que a ergue**, e a folha dela junto. Preço
 fixo contra renda variável nunca serve província pequena: com o preço igual para todos, a
@@ -279,8 +281,12 @@ trocas do REINO (ampliar a rede, e vale uma vez só).
 
 - Ágora: economia, administração e futura redução de corrupção;
 - Mercado: circulação e comércio;
-- Quartel: não é requisito para recrutar; dará qualidade ou bônus futuro às tropas
-  formadas naquela província;
+- Quartel: não é requisito para recrutar — multiplica o TREINO da tropa levantada naquela
+  província, e o treino é carimbado na leva;
+- Armaria: libera o hoplita naquela província, e não pede produto nenhum — é escolha de
+  slot, não permissão do mapa;
+- Acampamento de arqueiro: libera o arqueiro, e só nasce onde há madeira;
+- Treinamento de cavaleiros: libera a cavalaria, e só nasce onde há cavalos;
 - Muralha: fortalece milícia e impede assalto imediato;
 - Templo: felicidade, cultura ou estabilidade futura;
 - Porto: conexão econômica marítima e base do sistema naval;
@@ -292,15 +298,21 @@ trocas do REINO (ampliar a rede, e vale uma vez só).
 
 Construções de alimento somam `+1/+2/+3` comida. As demais melhoram a exploração ou o
 comércio sem criar estoque. A Oficina genérica foi substituída por construções locais.
-Não exigir madeira, ferro ou outra mercadoria para construir ou
-recrutar enquanto isso não trouxer uma decisão melhor que o custo em ouro e slots.
+Construir e recrutar continuam custando ouro, slot e população — **nenhuma obra e nenhuma
+leva consome mercadoria**. O produto da terra entra como REQUISITO, e não como insumo: onde
+há madeira pode-se erguer o acampamento de arqueiro, onde há cavalos o treinamento de
+cavaleiros. É a mesma porta das explorações — Mina só onde há ferro — e não abre um estoque
+de guerra pela porta dos fundos.
 
 Não criar um atributo genérico de desenvolvimento quando população, economia e construções
 já conseguem explicar o resultado.
 
 ## Guerra terrestre
 
-- Hostes têm identidade própria e podem dividir parte de seus homens.
+- Hostes têm identidade própria e podem dividir parte de seus homens. Uma hoste é uma lista
+  de **contingentes** — terra natal, arma e treino de cada grupo —, e a força é a soma deles.
+  Baixa, destacamento e dispensa saem proporcionalmente de cada contingente: nunca do
+  primeiro da lista.
 - **A batalha tem duas fases: choque e perseguição.** No choque os dois lados batem ao mesmo
   tempo, e a linha CEDE quando um deles perde a fração de quebra. Levado até o fim isso é a
   lei quadrada; a diferença é que ele **para na quebra**, e é a parada que salva o perdedor e
@@ -323,7 +335,45 @@ já conseguem explicar o resultado.
   não existe uma fórmula para decidir e outra para animar.
 - **Não se assalta a muralha com exército inimigo intacto nas costas.** Se o campo não foi
   decidido, senta-se e tenta-se na rodada seguinte.
-- Recrutamento custa ouro e população e leva tempo de formação.
+- Recrutamento custa ouro e população e leva tempo de formação. A ARMA é escolhida na leva,
+  e o preço é dela: o mesmo tesouro põe em campo mais leves do que hoplitas.
+
+### As quatro armas
+
+**Toda província levanta LEVES, sempre, sem construir nada.** Ele é a régua do jogo inteiro —
+ataque 1, aguento 1 — e vale exatamente o que vale um miliciano. As outras três estão ACIMA
+dessa linha e cada uma exige uma obra NAQUELA terra: Armaria para o hoplita, Acampamento de
+arqueiro (onde há madeira) para o arqueiro, Treinamento de cavaleiros (onde há cavalos) para
+a cavalaria. Ninguém fica sem exército por não ter erguido prédio nenhum: quem não gastou
+slot joga com massa barata, que é jogar de outro jeito.
+
+**O triângulo é suave e fecha:** o hoplita quebra a cavalaria, a cavalaria atropela o
+arqueiro, o arqueiro fura o hoplita. O leve não bate ninguém e não é batido por ninguém. A
+vantagem é BÔNUS de quem tem a arma certa, nunca penalidade de quem a sofre — contar as duas
+pontas dobraria o efeito e faria cem arqueiros destruírem trezentos hoplitas. E ela vale só
+contra a FATIA do inimigo que aquela arma bate: um cavaleiro solto do outro lado não dá ao
+hoplita a vantagem inteira.
+
+**Cada arma ganha uma régua diferente, e nenhuma ganha todas.** O leve rende mais por MOEDA —
+é a tropa de quem precisa de exército agora. O hoplita e o arqueiro rendem mais por BOCA — são
+a tropa do império grande, onde o que falta é comida e não ouro. A cavalaria não vence
+nenhuma das duas: ela compra **o depois**. É a única coisa que decide quanto do derrotado
+volta para casa, e o bônus dela SATURA — um esquadrão pequeno já entrega a maior parte da
+caçada, porque não é preciso um cavalo por fugitivo para caçar fugitivos.
+
+**O cavalo cobra em COMIDA, não em ouro.** A folha de pagamento continua sendo por cabeça;
+o que muda é a mesa do reino, onde um cavaleiro pesa por vários homens. Assim a cavalaria é
+uma pressão sobre a terra, e um reino faminto não a sustenta nem com o tesouro cheio.
+
+**O treino é carimbado na leva e nunca mais consultado.** Perder a província depois não
+transforma veterano em recruta no meio da campanha, e tomar o Quartel do inimigo piora as
+reposições dele, não o exército que ele já tem. O treino multiplica o ataque e não o aguento:
+se fizesse os dois, o Quartel viraria multiplicador quadrático e a ficha estaria mentindo
+sobre o próprio número.
+
+**A milícia é sempre leve comum, e nunca melhora.** Ela não passa por Armaria, Quartel nem
+acampamento: é o lavrador com a lança que tinha em casa, o último escudo da cidade e não um
+exército de graça. Só a Muralha a fortalece — obra de defesa, não obra de exército.
 - **O mapa abre em paz: nenhuma província começa com tropa.** Milícia é a única defesa
   inicial, e o exército de cada poder é escolha do jogador desde o primeiro turno. Tropa
   inicial embutida respondia "quanto exército eu aguento?" antes de o jogador decidir

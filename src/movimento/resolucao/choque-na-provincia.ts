@@ -57,7 +57,7 @@ export function naProvincia(
       const ordenadas = [...poderes]
         .map((poder) => ({
           poder,
-          forca: vivas.filter((f) => f.poder === poder).reduce((s, f) => s + soma(f.origem), 0),
+          forca: vivas.filter((f) => f.poder === poder).reduce((s, f) => s + soma(f.contingentes), 0),
         }))
         .sort((x, y) => y.forca - x.forca || x.poder.localeCompare(y.poder));
 

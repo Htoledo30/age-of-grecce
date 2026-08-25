@@ -28,6 +28,11 @@ estado — a mesma regra que `batalha.ts` já carrega escrita no cabeçalho.
 
 ## 2. O que mudou: as armas não são iguais para todo mundo
 
+> ⚠️ **Esta seção foi superada pelo que se construiu.** O gancho acabou sendo a
+> CONSTRUÇÃO, não a rede de trocas — ver a seção 5, item 3½. O texto fica porque a
+> conclusão dele continua valendo: composição de exército é pergunta de MAPA, e um poder sem
+> acesso a cavalo não fica sem jogo, fica com um exército de forma diferente.
+
 O plano original dava hoplita, cavalaria e arqueiro a toda pólis, em pedra-papel-tesoura
 simétrico. **O pedra-papel-tesoura fica; a simetria sai.**
 
@@ -118,24 +123,55 @@ jogador ganha a tela de batalha animada no item 3, sem uma única arma nova.
 Isto sozinho entrega as duas coisas que Henrique pediu: baixas compreensíveis (choque baixo,
 fuga alta) e chance ao defensor menor (muralha, terreno, quebra, recuo).
 
-### Item 3½ — as armas, depois do comércio
+### Item 3½ — as armas — FEITO, e diferente do que esta seção planejava
 
-Hoplita, cavalaria e tropa leve, com counter suave (alvo 1.4), **liberadas pela rede de
-trocas**. Vem depois do item 4 porque é o comércio que dá sentido à escassez: sem a rede
-madura, "acesso a cavalo" é uma regra solta.
+O plano previa três armas liberadas pela **rede de trocas**, depois do comércio. O que se
+construiu foram **quatro armas liberadas por CONSTRUÇÃO**, antes do comércio. Henrique
+mudou as duas coisas, e as duas mudanças melhoraram o desenho.
 
-Aqui entra a mudança estrutural de base: a leva passa a saber **que arma é**, além de
-de que província veio.
+**Por que quatro e não três.** O plano fazia do hoplita "a espinha de todo mundo" — mas ele
+custa uma obra, e uma obra é um slot. Um poder que gastou os quatro slots em economia ficaria
+sem exército nenhum. Henrique fechou isso: *"podemos fazer o seu soldado leve voltar, quartel
+continua melhorando os soldados, porém adiciona outra construção que seja para ter o hoplita;
+todos os lugares vão ter acesso, mas todos vão querer fazer hoplita — e aí vira mais uma
+decisão."* O **leve** é a linha de base: toda província levanta, sempre, sem construir nada.
+Ele é fraco e barato, e aguenta por QUANTIDADE. Assim ninguém fica sem exército, e a Armaria
+deixa de ser um pedágio para participar do jogo.
 
----
+**Por que construção e não rede de trocas.** A rede entrega um bem ao REINO inteiro; a
+construção pergunta *qual das minhas terras é a militar?*, que é a especialização que os
+quatro slots existem para forçar. Foi ideia do próprio Henrique, e ele juntou as duas: o
+prédio é a porta, e o PRODUTO da terra é o requisito do prédio — acampamento de arqueiro só
+onde há madeira, treinamento de cavaleiros só onde há cavalos. A conquista continua ganhando
+um motivo que não é renda ("tomo Argos porque quero cavalo"), e nada disso abriu um estoque
+de guerra: o produto é requisito, nunca insumo.
+
+**O que ficou de pé do plano original**: o counter suave em 1,4, o carimbo da qualidade no
+recrutamento, a milícia como infantaria crua, e o cavalo comendo muito.
+
+**A milícia é sempre leve de qualidade 1** e nunca melhora — decisão de Henrique: *"milícia é
+um último escudo, não é para ser treinada nem nada"*. É o que a seção 4 pedia, com um nome
+melhor: ela não é "sem tipo", ela É a linha de base, e vale exatamente o que vale um leve.
+
+**O cavalo cobra em COMIDA, não em ouro.** O balanço alimentar do reino passou a somar BOCAS
+em vez de homens; a folha de pagamento continua por cabeça. Cavalaria virou pressão sobre a
+TERRA — um reino faminto não a sustenta nem com o tesouro cheio.
+
+⚠️ **A lição de calibragem, que o plano não previa.** A força de um lado é
+`homens² × ataque × aguento`: os modificadores entram lineares e as CABEÇAS entram ao
+quadrado. Logo **toda tropa cara perde a corrida de números**, e a cavalaria nasceu armadilha
+em todas as réguas. O conserto não foi baixar o preço dela — foi fazer o bônus de perseguição
+**saturar**: 10% de cavalaria já compram a maior parte da caçada, porque não é preciso um
+cavalo por fugitivo para caçar fugitivos. `npm run armas` é o banco de provas que mostrou
+isso, e o critério dele é *toda arma tem que ganhar alguma coluna*.
 
 ## 6. O Quartel
 
-Ele está **escondido** desde a revisão das construções: `efeito.tipo === 'futuro'` não entra
-em catálogo nenhum. Vendia 1.500 moedas de promessa — o jogador pagava, não via diferença, e
-passava a duvidar do resto do catálogo.
+Ele esteve **escondido** desde a revisão das construções: `efeito.tipo === 'futuro'` não
+entra em catálogo nenhum. Vendia 1.500 moedas de promessa — o jogador pagava, não via
+diferença, e passava a duvidar do resto do catálogo.
 
-**Ele volta no item 3½, com a função que Henrique desenhou:**
+**VOLTOU no item 3½, com a função que Henrique desenhou:**
 
 > Quartel é melhoria geral de qualidade para toda tropa recrutada naquela província.
 
@@ -149,7 +185,9 @@ inimigo **não piora o exército que ele tem — piora os que virão**, e isso �
 campanha muito melhor que um truque que apaga o exército alheio.
 
 **O teto fica abaixo do número.** Mesmo princípio do counter: Quartel III em torno de +30%,
-não +200%. Senão um poder pequeno com Quartel III fica intocável, e a gente quebra o
+não +200%. Construído assim — `1,1/1,2/1,3` —, e o treino multiplica o **ataque e não o
+aguento**: se multiplicasse os dois, o nível III renderia 1,69 e a ficha continuaria dizendo
+1,3. Senão um poder pequeno com Quartel III fica intocável, e a gente quebra o
 "defensor menor tem chance" pelo outro lado.
 
 E o que impede o Quartel de virar obrigatório em toda província — o defeito clássico do
@@ -172,9 +210,10 @@ que é a especialização que o GDD diz que os slots existem para forçar.
    de verdade em vez de ficar atrás de uma bifurcação esquecida.
 4. ✅ **Sem empate**, e o desempate vai para quem segura o chão.
 5. ✅ **Recuo**, com `refugio`: vizinha própria salva o exército, última província devolve os
-   homens à população. **Ainda desligado** — falta quem decida.
+   homens à população.
 6. ✅ **A janela**, reproduzindo a lista de rounds, só nas batalhas do jogador.
-7. ⬜ **Ligar o recuo**: `recuaAos` na ordem de marcha, e o botão na janela.
+7. ✅ **O recuo ligado**: `recuarAos` na ordem de marcha, e o botão "Recuar se virar" na
+   ficha da hoste.
 8. ⬜ Moral, se valer a pena.
 
 ### Três bugs que a troca desenterrou
@@ -189,7 +228,21 @@ impossível dois exércitos sobrarem de pé no mesmo lugar**:
 Os três viraram uma regra: **não se assalta a muralha com exército inimigo intacto nas
 costas**, e a província muda de mão uma vez por rodada.
 
-**Item 3½:** armas pela rede de trocas, custo/folha/comida por arma, e o Quartel de volta.
+### Item 3½ — FEITO
+
+1. ✅ **A hoste virou lista de contingentes** (terra, arma, treino), com baixa e destacamento
+   proporcionais a cada um.
+2. ✅ **Quatro armas** em `ajustes.json`, com o leve como régua (ataque 1, aguento 1).
+3. ✅ **Três construções** liberando hoplita, arqueiro e cavalaria, província por província.
+4. ✅ **O Quartel de volta**, multiplicando o treino carimbado na leva.
+5. ✅ **A batalha lê composição** (`combate/composicao.ts`), com o triângulo e a perseguição
+   da cavalaria; `batalha.ts` continua sem conhecer arma nenhuma.
+6. ✅ **Comida por BOCAS**; folha de pagamento segue por cabeça.
+7. ✅ **Interface**: recrutar por arma (as quatro sempre visíveis, as trancadas com o motivo)
+   e uma faixa por arma na janela de batalha.
+8. ✅ **`npm run armas`**, o banco de provas — por gente, por moeda, por boca, o triângulo, a
+   tabela cruzada de exércitos e o que sobra do derrotado.
+9. ⬜ Falta Henrique JOGAR: régua não é partida.
 
 ---
 
@@ -199,13 +252,16 @@ Item 3: letalidade do choque, letalidade da perseguição, número de rounds (ou
 quebra), bônus de aguento por nível de muralha, fração perdida no recuo ordenado, e — se
 houver moral — limiar e efeito do general.
 
-Item 3½: ataque e aguento por arma, fator de counter (alvo 1.4), multiplicador de
-perseguição da cavalaria, custo/folha/comida por arma, e o teto de qualidade do Quartel.
+Item 3½ — está lá: ataque, aguento, custo e comida por arma; `counter` (1,4);
+`perseguicaoPorCavalaria` e `meiaCavalaria` (a saturação); e os fatores de qualidade do
+Quartel em `dados/construcoes.json`.
 
 ---
 
 ## 9. Em uma frase
 
-Item 3 dá ao jogo uma batalha que se entende — mata pouco no choque, muito na fuga, deixa
-recuar, e produz a lista de rounds que a janela reproduz sem poder mentir. Item 3½ dá a ela
-armas que o **mapa** distribui, para que escolher com quem jogar continue importando.
+Item 3 deu ao jogo uma batalha que se entende — mata pouco no choque, muito na fuga, deixa
+recuar, e produz a lista de rounds que a janela reproduz sem poder mentir. Item 3½ deu a ela
+quatro armas que o **mapa** distribui por construção, com o leve garantindo que ninguém fique
+sem exército — para que escolher com quem jogar, e o que erguer em cada terra, continue
+importando.

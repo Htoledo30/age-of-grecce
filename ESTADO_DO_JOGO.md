@@ -33,7 +33,8 @@ para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
 - iniciar uma campanha com qualquer cidade da Grécia central e navegar pelo mapa;
 - selecionar províncias e hostes;
 - arrecadar, decretar o nível de imposto de cada província, construir e acompanhar obras;
-- recrutar usando ouro e população, esperar a formação e dispensar soldados;
+- recrutar por ARMA — leves em qualquer terra, hoplitas com Armaria, arqueiros onde há
+  madeira, cavalaria onde há cavalos —, esperar a formação e dispensar soldados;
 - dividir, reunir e mover hostes por ordens simultâneas;
 - enfrentar batalhas em províncias e encontros na estrada;
 - assaltar, sitiar, fazer surtida, socorrer uma cidade e conquistar território;
@@ -134,7 +135,8 @@ corrupção: ele multiplica a renda da rede de trocas do REINO, uma vez só, e v
 mais bens distintos se alcança. Os três pararam de ser o mesmo prédio com números diferentes.
 
 Não existe teto populacional artificial. Crescimento, recrutamento, baixas e desmobilização
-usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito.
+usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito para
+recrutar — ele multiplica o treino da leva.
 
 Comida é saldo em pontos do poder, em DUAS contas: `saldo civil = subsistência + alimentos
 − faixas de população` e `saldo final = civil − exército` (`−1` por `soldadosPorPonto`
@@ -203,11 +205,17 @@ Explorações aparecem conforme produto principal ou secundário: Fazenda, Pasta
 pesqueiro, Lagar, Vinhedo, Serraria, Mina e Pedreira. Fazenda, Pastagem e Porto pesqueiro dão
 `+1/+2/+3` comida; as demais explorações multiplicam a produção.
 
-**O Quartel está ESCONDIDO do catálogo.** Todo prédio comprável tem que servir agora, e o
-efeito dele é `futuro`: ele explicava bem o próprio papel futuro e cobrava 1.500 moedas por
-ele — o jogador pagava, não via diferença e passava a duvidar do resto do catálogo. Qualquer
-prédio com `efeito.tipo === 'futuro'` fica fora de todo catálogo; o Quartel volta com o
-combate, quando "qualidade de tropa" tiver onde existir (ver `PLANO_DE_COMBATE.md`).
+**O Quartel VOLTOU ao catálogo**, e agora entrega: `efeito.tipo === 'qualidade'`, com
+fatores `1,1/1,2/1,3` sobre o TREINO da tropa levantada naquela província. Ele passou um
+tempo escondido por vender promessa — a regra segue valendo para qualquer prédio com
+`efeito.tipo === 'futuro'`, que fica fora de todo catálogo até entregar alguma coisa.
+
+**Três obras novas liberam armas, e a liberação é por PROVÍNCIA:** `armaria` (hoplita, sem
+requisito de produto), `acampamento-de-arqueiro` (arqueiro, só onde há madeira) e
+`treinamento-de-cavaleiros` (cavalaria, só onde há cavalos). O efeito é
+`{ tipo: 'arma', arma }`, e `campanha/provincia/armas-da-provincia.ts` é quem lê o catálogo
+e responde o que a terra levanta. Nenhuma delas consome mercadoria: o produto é REQUISITO,
+como em Mina só onde há ferro.
 
 Templo soma pontos ao ALVO de felicidade da província (+5/+8/+12). Muralha melhora a milícia
 e impede assalto imediato. O número de milicianos mostrado na ficha é exatamente a força
@@ -276,13 +284,34 @@ são preservadas na restauração.
 - **A batalha é choque + perseguição** (`combate/batalha.ts`), com quatro botões em
   `ajustes.json`: rodadas de choque, letalidade do choque, limiar de quebra e letalidade da
   perseguição. Substituiu `√(maior² − menor²)`, que aniquilava quem perdia.
+- **A batalha lê a COMPOSIÇÃO** (`combate/composicao.ts`). Cada lado chega com três números
+  por homem — ataque, aguento e o multiplicador da caçada —, todos medidos em leves, e
+  `batalha.ts` não conhece hoplita nem arqueiro. As baixas são proporcionais entre os
+  contingentes, então a composição não muda durante a batalha e os três números são
+  constantes do primeiro round ao último.
+- **As quatro armas** (`combate.batalha.armas`): leve (a régua: ataque 1, aguento 1, o mesmo
+  valor de um miliciano), hoplita (aguenta), arqueiro (mata) e cavalaria (persegue). O
+  triângulo é hoplita → cavalaria → arqueiro → hoplita, com `counter` multiplicando o ataque
+  de quem tem a arma certa, proporcional à fatia inimiga que ela bate. Sem penalidade para
+  quem sofre: contar as duas pontas dobraria o efeito.
+- **A cavalaria compra o DEPOIS.** `perseguicaoPorCavalaria` multiplica a caçada do vencedor
+  e o custo do recuo do perdedor, e SATURA por `meiaCavalaria`: um esquadrão de 10% já
+  entrega a maior parte do bônus. Sem a saturação ela seria armadilha — a força cresce com o
+  quadrado das cabeças, e toda tropa cara perde a corrida de números.
+- **O cavalo cobra em comida, não em ouro.** `bocasEmArmasDe` alimenta o balanço alimentar em
+  BOCAS (`armas[arma].comida`), e não em homens; a folha de pagamento segue por cabeça.
+- **A milícia é sempre leve comum de qualidade 1** e nunca recebe Armaria, Quartel nem
+  acampamento. Só a Muralha a fortalece.
+- **O treino é carimbado na leva** (`treinoEm` lido no recrutamento) e multiplica o ataque, e
+  não o aguento. Perder a província depois não rebaixa quem já está em armas.
 - **Não existe empate**: quem chama passa o defensor como desempate, e barrar o invasor é a
   vitória de quem segura o chão. A muralha entra por `aguento`, que divide o dano recebido e
   aparece VISÍVEL na janela — o multiplicador escondido que foi removido não volta.
 - **Recuar** (`recuaAos`) sai de campo antes da quebra por uma fração pequena e sem
-  perseguição. `refugio` é uma pergunta que a resolução faz e a campanha responde: vizinha
-  própria por geografia e posse, ou `null` na última terra. **Ainda desligado** — ninguém
-  preenche `recuaAos`; a ordem de marcha é onde ele vai entrar.
+  perseguição — a fração sobe se o vencedor tiver cavalaria. `refugio` é uma pergunta que a
+  resolução faz e a campanha responde: vizinha própria por geografia e posse, ou `null` na
+  última terra. Está LIGADO de ponta a ponta: a ficha da hoste alterna entre "Lutar até o
+  fim" e "Recuar se virar", e a ordem de marcha carrega `recuarAos`.
 - **A janela de batalha** (`ui/batalha.ts`) abre só nas batalhas do jogador, depois da rodada
   resolvida, e reproduz a lista de rounds. Ela não recalcula nada e fechar não muda o mapa —
   um teste de tela confere que o último round bate com o que a regra deixou.
@@ -295,6 +324,9 @@ são preservadas na restauração.
 - O sitiado pode fazer surtida e reforços externos atacam o sitiante ao chegar.
 - Cidade murada exige cerco antes do assalto; cidade aberta pode ser assaltada de imediato.
 - A crônica distingue batalha de campo, estrada e assalto.
+- A janela de batalha desenha **uma faixa por arma** dentro da barra de cada lado e escreve a
+  composição ao lado do nome; o painel de recrutamento mostra as quatro armas sempre, com as
+  trancadas apagadas e o motivo no tooltip.
 
 ## Estrutura técnica
 
@@ -346,6 +378,9 @@ Comandos principais:
 - `npm run verificar`: tipos, lint, código morto, testes unitários e dados;
 - `npm run teste-tela`: Playwright, limitado a dois workers;
 - `npm run simular`: cenários longos de paz, construção e pressão militar no terminal;
+- `npm run economia`: banco de provas da economia, do poder mais pobre ao mais rico;
+- `npm run armas`: banco de provas das armas — por gente, por moeda, por boca, o triângulo e
+  o que sobra do derrotado;
 - `npm run entregar`: verificação, testes de tela e build numa única chamada;
 - `npm run build`: build de produção;
 - `npm run capturar`: captura 1920×1080 e erros de console;

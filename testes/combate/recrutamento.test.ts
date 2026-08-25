@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { homensEmFormacao } from '../../src/combate/formacao-de-leva';
 
 import {
   avaliarLeva,
@@ -15,7 +16,15 @@ const combate = ajustes.combate;
 
 describe('recrutamento: as contas', () => {
   it('o custo e a manutenção saem dos ajustes, em inteiros', () => {
-    expect(custoDaLeva(1000, combate)).toBe(1000 * combate.custoPorHomem);
+    // ⚠️ O custo passou a depender da ARMA: o leve é o homem-padrão, e cada arma acima dele
+    // cobra o seu múltiplo. É essa diferença que faz massa barata ser uma estratégia em vez
+    // de um enfeite.
+    expect(custoDaLeva(1000, combate)).toBe(
+      Math.round(1000 * combate.custoPorHomem * combate.batalha.armas.leve.custo),
+    );
+    expect(custoDaLeva(1000, combate, 'cavalaria')).toBeGreaterThan(
+      custoDaLeva(1000, combate, 'hoplita'),
+    );
     expect(manutencaoDe(1000, combate.manutencaoPorHomem.emCasa)).toBe(
       Math.round(1000 * combate.manutencaoPorHomem.emCasa),
     );
@@ -27,7 +36,7 @@ describe('recrutamento: as contas', () => {
 
   it('não impõe fração nem lote mínimo: o limite é a população MENOS o piso', () => {
     const piso = combate.populacaoMinima;
-    const situacao = { populacao: 35_000, tesouro: 200_000, temQuartel: true };
+    const situacao = { populacao: 35_000, tesouro: 200_000, armas: ['leve' as const] };
     const cabe = 35_000 - piso;
     expect(avaliarLeva(1, situacao, combate)).toMatchObject({ pode: true, homens: 1 });
     expect(avaliarLeva(cabe, situacao, combate)).toMatchObject({ pode: true, homens: cabe });
@@ -37,8 +46,11 @@ describe('recrutamento: as contas', () => {
   });
 
   it('oferece como teto somente o que população e tesouro permitem pagar', () => {
+    // Derivado do custo do LEVE, que é a arma padrão: cravar 1.000 aqui mediria o preço,
+    // não a regra.
     const pelaRiqueza = { populacao: 35_000, tesouro: 3_000 };
-    expect(maximoDaLeva(pelaRiqueza, combate)).toBe(1000);
+    const cabem = Math.floor(3_000 / (combate.custoPorHomem * combate.batalha.armas.leve.custo));
+    expect(maximoDaLeva(pelaRiqueza, combate)).toBe(cabem);
 
     const pelaPopulacao = {
       populacao: combate.populacaoMinima + 37,
@@ -46,11 +58,19 @@ describe('recrutamento: as contas', () => {
     };
     expect(maximoDaLeva(pelaPopulacao, combate)).toBe(37);
     expect(maximoDaLeva({ ...pelaRiqueza, tesouro: 0 }, combate)).toBe(0);
+    // E o teto é POR ARMA, porque o preço é por arma: o mesmo tesouro põe menos hoplitas em
+    // campo do que leves. Oferecer o teto do leve com o hoplita escolhido faria a barra
+    // prometer uma leva que o botão recusa.
+    expect(maximoDaLeva(pelaRiqueza, combate, 'hoplita')).toBeLessThan(
+      maximoDaLeva(pelaRiqueza, combate),
+    );
+    // Quando é a POPULAÇÃO que limita, a arma não muda nada: gente não fica mais barata.
+    expect(maximoDaLeva(pelaPopulacao, combate, 'hoplita')).toBe(37);
   });
 
   it('no piso, a província para de ceder gente e diz por quê', () => {
     const piso = combate.populacaoMinima;
-    const noPiso = { populacao: piso, tesouro: 200_000, temQuartel: true };
+    const noPiso = { populacao: piso, tesouro: 200_000, armas: ['leve' as const] };
     expect(avaliarLeva(1, noPiso, combate)).toMatchObject({
       motivo: `esta província não cede mais gente: ela precisa manter ${piso.toLocaleString('pt-BR')} habitantes`,
     });
@@ -100,9 +120,11 @@ describe('recrutar custa ouro E população', () => {
     expect(unicaEm(c, 'atenas')).toBeUndefined();
     expect(c.formacaoEm('atenas')).toMatchObject({
       poder: 'atenas',
-      homens: 1000,
       prontaNoTurno: c.turno + 1,
     });
+    // O total é DERIVADO dos contingentes, nunca guardado ao lado deles — mesma regra da
+    // hoste. Guardar um total junto do detalhe é convidar os dois a discordarem.
+    expect(homensEmFormacao(c.formacaoEm('atenas'))).toBe(1000);
 
     c.passarTurno();
     expect(c.formacaoEm('atenas')).toBeUndefined();
@@ -162,8 +184,104 @@ describe('recrutar custa ouro E população', () => {
 
   it('recusa quando falta ouro, dizendo quanto falta', () => {
     const c = comQuartel();
-    const cabe = Math.floor(c.tesouro / combate.custoPorHomem);
+    // Pelo preço do LEVE, que é a arma que `podeRecrutar` cota por omissão.
+    const porHomem = combate.custoPorHomem * combate.batalha.armas.leve.custo;
+    const cabe = Math.floor(c.tesouro / porHomem);
     const demais = cabe + 1;
     expect(c.podeRecrutar('atenas', demais)).toMatchObject({ motivo: /faltam .* moedas/ });
+  });
+});
+
+describe('cada arma tem a sua terra', () => {
+  it('o LEVE não pede prédio nenhum: ninguém fica sem exército', () => {
+    // ⚠️ A promessa que sustenta o sistema inteiro. Quem não gastou slot em obra militar joga
+    // com massa barata — que é jogar de outro jeito, não é ficar sem jogar.
+    const c = nova();
+    c.comecar('atenas');
+    expect(c.armasEm('atenas')).toEqual(['leve']);
+    expect(c.podeRecrutar('atenas', 100)).toMatchObject({ pode: true });
+    expect(c.podeRecrutar('atenas', 100, 'leve')).toMatchObject({ pode: true });
+  });
+
+  it('sem a obra, a recusa diz QUAL obra falta — e vem antes da conta do ouro', () => {
+    // Recusar por ouro numa arma que a província nem levanta mandaria o jogador juntar
+    // dinheiro para nada. O portão da arma é o primeiro de todos.
+    const c = nova();
+    c.comecar('atenas');
+    expect(c.podeRecrutar('atenas', 100, 'hoplita')).toMatchObject({ motivo: /Armaria/ });
+    expect(c.podeRecrutar('atenas', 1_000_000, 'arqueiro')).toMatchObject({ motivo: /madeira/ });
+    expect(c.podeRecrutar('atenas', 1_000_000, 'cavalaria')).toMatchObject({ motivo: /cavalos/ });
+  });
+
+  it('a liberação é por PROVÍNCIA, não por reino', () => {
+    // É isto que transforma "qual das minhas terras é a militar?" numa pergunta com resposta
+    // no mapa — a mesma regra das explorações: Mina só onde há ferro.
+    const c = comQuartel();
+    c.darOuro(400_000);
+    c.construir('atenas', 'armaria');
+    for (let i = 0; i < 6; i++) c.passarTurno();
+
+    expect(c.armasEm('atenas')).toContain('hoplita');
+    expect(c.armasEm('maratona')).not.toContain('hoplita');
+    expect(c.podeRecrutar('atenas', 100, 'hoplita')).toMatchObject({ pode: true });
+    expect(c.podeRecrutar('maratona', 100, 'hoplita')).toMatchObject({ motivo: /Armaria/ });
+  });
+
+  it('o hoplita custa mais que o leve, e a diferença sai dos ajustes', () => {
+    const c = comQuartel();
+    c.darOuro(400_000);
+    c.construir('atenas', 'armaria');
+    for (let i = 0; i < 6; i++) c.passarTurno();
+
+    const leve = c.podeRecrutar('atenas', 1000);
+    const hoplita = c.podeRecrutar('atenas', 1000, 'hoplita');
+    expect(leve).toMatchObject({ pode: true });
+    expect(hoplita).toMatchObject({ pode: true });
+    if (!leve.pode || !hoplita.pode) throw new Error('as duas levas deviam caber');
+    expect(hoplita.ouro / leve.ouro).toBeCloseTo(
+      combate.batalha.armas.hoplita.custo / combate.batalha.armas.leve.custo,
+      2,
+    );
+    // O teto da tela nunca oferece mais hoplitas do que leves — aqui é a POPULAÇÃO que
+    // limita os dois, e é por isso que a comparação é frouxa: o corte pelo ouro está no
+    // teste de `maximoDaLeva`, onde o tesouro é que aperta.
+    expect(c.maximoParaLevaEm('atenas', 'hoplita')).toBeLessThanOrEqual(
+      c.maximoParaLevaEm('atenas'),
+    );
+  });
+
+  it('a leva sai com a arma e o TREINO do dia, e nunca mais os perde', () => {
+    // ⚠️ Carimbado no recrutamento: se a batalha perguntasse à província, perder a terra
+    // transformaria veteranos em recrutas no meio da campanha. Tomar o Quartel do inimigo
+    // piora as reposições dele, não o exército que ele já tem.
+    const c = comQuartel();
+    c.darOuro(400_000);
+    c.construir('atenas', 'armaria');
+    for (let i = 0; i < 6; i++) c.passarTurno();
+    const treino = c.treinoEm('atenas');
+    expect(treino).toBeGreaterThan(1);
+
+    c.recrutar('atenas', 500, 'hoplita');
+    expect(c.formacaoEm('atenas')?.contingentes).toEqual([
+      { arma: 'hoplita', qualidade: treino, homens: 500 },
+    ]);
+
+    c.passarTurno();
+    const hoste = unicaEm(c, 'atenas');
+    expect(hoste?.contingentes).toEqual([
+      { terra: 'atenas', arma: 'hoplita', qualidade: treino, homens: 500 },
+    ]);
+  });
+
+  it('duas armas na mesma terra no mesmo turno não se atropelam', () => {
+    const c = comQuartel();
+    c.darOuro(400_000);
+    c.construir('atenas', 'armaria');
+    for (let i = 0; i < 6; i++) c.passarTurno();
+
+    c.recrutar('atenas', 300, 'leve');
+    c.recrutar('atenas', 200, 'hoplita');
+    expect(homensEmFormacao(c.formacaoEm('atenas'))).toBe(500);
+    expect(c.formacaoEm('atenas')?.contingentes).toHaveLength(2);
   });
 });

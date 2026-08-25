@@ -7,7 +7,9 @@
  * quem chama vive atrás de `import.meta.env.DEV`.
  */
 
+import type { Arma } from '@/combate/exercito';
 import { forcaDe } from '@/combate/exercito';
+import { homensEmFormacao } from '@/combate/formacao-de-leva';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { virarTurno } from './virar-turno';
@@ -45,10 +47,16 @@ export function instalarInspecao(jogo: Jogo): void {
       campanha.custoDaObraEm(idProvincia, idConstrucao, nivel),
     construir: (idProvincia: string, idConstrucao: string) =>
       campanha.construir(idProvincia, idConstrucao),
-    recrutar: (idProvincia: string, homens: number) => campanha.recrutar(idProvincia, homens),
+    recrutar: (idProvincia: string, homens: number, arma?: Arma) =>
+      campanha.recrutar(idProvincia, homens, arma),
     forcaEm: (idProvincia: string, idPoder?: string) =>
       campanha.forcaEm(idProvincia, idPoder ?? campanha.donoDe(idProvincia)),
-    formacaoEm: (idProvincia: string) => campanha.formacaoEm(idProvincia),
+    // O total vem DERIVADO ao lado do detalhe, como em `hostesEm`: a leva guarda
+    // contingentes, e quem inspeciona quase sempre quer só o número de homens.
+    formacaoEm: (idProvincia: string) => {
+      const formacao = campanha.formacaoEm(idProvincia);
+      return formacao ? { ...formacao, homens: homensEmFormacao(formacao) } : undefined;
+    },
     dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
     hostesEm: (idProvincia: string) =>
       campanha.hostesEm(idProvincia).map((h) => ({
@@ -78,8 +86,8 @@ export function instalarInspecao(jogo: Jogo): void {
       campanha.surtir(idHoste, porPoder ?? campanha.jogador?.id ?? null),
     // Põe uma hoste de qualquer poder no mapa, do nada: é assim que se monta um inimigo no
     // tabuleiro pra ver a guerra rodar enquanto não há IA.
-    plantarHoste: (idProvincia: string, idPoder: string, homens: number) =>
-      campanha.plantarHoste(idProvincia, idPoder, homens),
+    plantarHoste: (idProvincia: string, idPoder: string, homens: number, arma?: Arma) =>
+      campanha.plantarHoste(idProvincia, idPoder, homens, arma),
     rodada: () => campanha.rodada,
     miliciaEm: (idProvincia: string) => campanha.miliciaEm(idProvincia),
     ordens: () => campanha.ordens(),

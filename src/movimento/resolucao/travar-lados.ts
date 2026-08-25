@@ -6,9 +6,10 @@
  * de virar uma regra escondida.
  */
 
-import { lado, resolverBatalha } from '@/combate/batalha';
+import { resolverBatalha } from '@/combate/batalha';
+import { porArma, valorEmCampo } from '@/combate/composicao';
 import type { Ajustes } from '@/dados/esquema';
-import { exercitoVazio, retirar, somarLeva } from '@/combate/exercito';
+import { retirar, terrasDe } from '@/combate/exercito';
 import { soma } from './forcas';
 import type { Forca } from './forcas';
 import type { RelatorioEmConstrucao } from './relatorio';
@@ -36,17 +37,25 @@ export function travarLados(
   // Sem lugar é encontro na estrada; com lugar é choque de campo. O assalto é o único que não
   // passa por aqui: ele é contra a muralha, não contra um exército.
   const tipo = provincia === null ? ('estrada' as const) : ('campo' as const);
-  const totalA = ladoA.reduce((s, f) => s + soma(f.origem), 0);
-  const totalB = ladoB.reduce((s, f) => s + soma(f.origem), 0);
+  const totalA = ladoA.reduce((s, f) => s + soma(f.contingentes), 0);
+  const totalB = ladoB.reduce((s, f) => s + soma(f.contingentes), 0);
   // O recuo é do LADO, e vem da ordem que cada força trouxe: se qualquer uma delas mandou
   // recuar, o lado inteiro recua junto — um exército não sai pela metade.
   const recuoDe = (forcas: readonly Forca[]): number | null => {
     const pedidos = forcas.map((f) => f.recuarAos).filter((x): x is number => x !== null);
     return pedidos.length > 0 ? Math.min(...pedidos) : null;
   };
+  // ⚠️ **As armas dos DOIS lados entram juntas**, e não uma de cada vez: o counter é
+  // relativo, e o que um exército vale depende de quem está na frente dele. Trezentos
+  // hoplitas valem uma coisa contra cavalaria e outra contra arqueiro, e é isso que faz
+  // olhar o inimigo antes de marchar ser uma decisão.
+  const armasA = ladoA.flatMap((f) => f.contingentes);
+  const armasB = ladoB.flatMap((f) => f.contingentes);
+  const valorA = valorEmCampo(armasA, armasB, ajustes);
+  const valorB = valorEmCampo(armasB, armasA, ajustes);
   const r = resolverBatalha(
-    { ...lado(totalA), recuaAos: recuoDe(ladoA) },
-    { ...lado(totalB), recuaAos: recuoDe(ladoB) },
+    { ...valorA, recuaAos: recuoDe(ladoA) },
+    { ...valorB, recuaAos: recuoDe(ladoB) },
     ajustes,
     desempate,
   );
@@ -72,8 +81,8 @@ export function travarLados(
     perdedores: [...new Set(perdedores.map((f) => f.poder))].sort(),
     sobreviventes,
     lados: [
-      { poder: ladoA[0]?.poder ?? 'ninguem', homens: totalA, aguento: 1 },
-      { poder: ladoB[0]?.poder ?? 'ninguem', homens: totalB, aguento: 1 },
+      { poder: ladoA[0]?.poder ?? 'ninguem', homens: totalA, aguento: 1, composicao: porArma(armasA) },
+      { poder: ladoB[0]?.poder ?? 'ninguem', homens: totalB, aguento: 1, composicao: porArma(armasB) },
     ],
     rounds: r.rounds,
     desfecho: r.desfecho,
@@ -82,37 +91,43 @@ export function travarLados(
   return true;
 }
 
-/** Encolhe um lado até `alvo` homens, proporcionalmente entre as forças e as terras natais. */
+/**
+ * Encolhe um lado até `alvo` homens, proporcionalmente entre as forças E dentro de cada uma.
+ *
+ * ⚠️ **Duas proporções, e as duas importam.** Entre as forças, para a ordem das chegadas não
+ * virar regra escondida; e DENTRO de cada força, entre os contingentes, para uma derrota não
+ * comer a cavalaria inteira e deixar os leves intactos por acidente de índice. A segunda o
+ * `retirar` já faz — por isso ele é reaproveitado força a força em vez de reimplementado.
+ */
 function reduzirLado(lado: readonly Forca[], alvo: number): void {
-  const total = lado.reduce((s, f) => s + soma(f.origem), 0);
+  const total = lado.reduce((s, f) => s + soma(f.contingentes), 0);
   if (total <= alvo || total === 0) return;
 
-  // Reaproveita `retirar`, que já reparte proporcionalmente e fecha exato no arredondamento.
-  const caixa = exercitoVazio('provisorio', 'provisorio', 'provisorio');
-  for (const f of lado) {
-    for (const [terra, homens] of Object.entries(f.origem)) somarLeva(caixa, terra, homens);
-  }
-  retirar(caixa, total - alvo);
-
-  // Redistribui o que sobrou de volta, na proporção do que cada força tinha.
-  const sobrou = { ...caixa.origem };
-  for (const f of lado) {
-    const meu = soma(f.origem);
-    const nova: Record<string, number> = {};
-    for (const [terra, homens] of Object.entries(sobrou)) {
-      const parte = Math.floor((homens * meu) / total);
-      if (parte > 0) nova[terra] = parte;
+  const aPerder = total - alvo;
+  const perdas = lado.map((f) => Math.floor((soma(f.contingentes) * aPerder) / total));
+  // O resto do arredondamento vai nas maiores forças, uma baixa por vez, pra soma fechar
+  // exata: sobra aqui viraria homem sumido ou homem inventado.
+  let resto = aPerder - perdas.reduce((s, x) => s + x, 0);
+  while (resto > 0) {
+    let escolhida = -1;
+    let maior = 0;
+    for (const [i, f] of lado.entries()) {
+      const sobra = soma(f.contingentes) - (perdas[i] ?? 0);
+      if (sobra > maior) {
+        maior = sobra;
+        escolhida = i;
+      }
     }
-    f.origem = nova;
-    if (soma(nova) === 0) f.viva = false;
+    if (escolhida < 0) break;
+    perdas[escolhida] = (perdas[escolhida] ?? 0) + 1;
+    resto -= 1;
   }
 
-  // O resto do arredondamento vai pra maior força viva, pra soma fechar exata.
-  const falta = alvo - lado.reduce((s, f) => s + soma(f.origem), 0);
-  const maior = [...lado].filter((f) => f.viva).sort((x, y) => soma(y.origem) - soma(x.origem))[0];
-  if (falta > 0 && maior) {
-    const terra = Object.keys(sobrou).sort()[0];
-    if (terra !== undefined) maior.origem[terra] = (maior.origem[terra] ?? 0) + falta;
+  for (const [i, f] of lado.entries()) {
+    const caixa = { id: 'provisorio', poder: f.poder, posicao: f.posicao, contingentes: f.contingentes };
+    retirar(caixa, perdas[i] ?? 0);
+    f.contingentes = caixa.contingentes;
+    if (soma(f.contingentes) === 0) f.viva = false;
   }
 }
 
@@ -122,9 +137,9 @@ function dispersar(
   dispersaram: (porOrigem: Readonly<Record<string, number>>) => void,
 ): void {
   for (const f of lado) {
-    if (Object.keys(f.origem).length > 0) dispersaram(f.origem);
+    if (f.contingentes.length > 0) dispersaram(terrasDe(f.contingentes));
     f.viva = false;
-    f.origem = {};
+    f.contingentes = [];
   }
 }
 
@@ -146,10 +161,10 @@ function recolher(
     // Na estrada não existe província de onde sair: quem recua de um encontro volta ao lugar
     // de onde partiu naquele passo.
     const destino = provincia === null ? f.partiuDe : refugio(provincia, f.poder);
-    if (destino === null || Object.keys(f.origem).length === 0) {
-      if (Object.keys(f.origem).length > 0) dispersaram(f.origem);
+    if (destino === null || f.contingentes.length === 0) {
+      if (f.contingentes.length > 0) dispersaram(terrasDe(f.contingentes));
       f.viva = false;
-      f.origem = {};
+      f.contingentes = [];
       continue;
     }
     f.posicao = destino;

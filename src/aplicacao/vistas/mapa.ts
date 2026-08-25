@@ -5,6 +5,7 @@
  * segunda verdade sobre onde as coisas estão.
  */
 
+import { homensEmFormacao } from '@/combate/formacao-de-leva';
 import { forcaDe } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import type { TrechoDeMarcha } from '@/ui/animacao-de-marcha';
@@ -72,7 +73,7 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
     const formacao = campanha.formacaoEm(exercito.posicao);
     // A leva engrossa o marcador da hoste do MESMO poder. Numa cidade sitiada a leva é do
     // defensor, e somá-la ao acampamento do sitiante contaria recrutas do inimigo.
-    const leva = formacao?.poder === exercito.poder ? formacao.homens : 0;
+    const leva = formacao?.poder === exercito.poder ? homensEmFormacao(formacao) : 0;
     return {
       id: exercito.id,
       provincia: exercito.posicao,
@@ -108,7 +109,7 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
         x: centro.x,
         y: centro.y,
         forca: 0,
-        emFormacao: formacao.homens,
+        emFormacao: homensEmFormacao(formacao),
         cor: poder.cor,
         nomeDoPoder: poder.nome,
         minha: formacao.poder === meu,

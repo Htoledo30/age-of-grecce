@@ -88,7 +88,7 @@ export class EscolhaDePostura {
       corpo: this.recuar
         ? 'Sai de campo antes de a linha ceder. Perde pouco, escapa da perseguição, e o ' +
           'exército sobrevive — mas entrega o chão. Sem terra sua vizinha, a hoste se desfaz ' +
-          'e os homens voltam para casa.'
+          'e os homens voltam para casa. Diante de cavalaria, sair custa mais caro.'
         : 'Luta até quebrar. Pode ganhar a batalha que a aritmética dizia perdida — e pode ' +
           'perder o exército inteiro na perseguição.',
     });

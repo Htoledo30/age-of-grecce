@@ -50,7 +50,7 @@ describe('resolução: partida, chegada, choque', () => {
     resolverRodada(estado, ajustes.combate, mundoDe());
     expect(forcaDe(em(estado, 'c'))).toBe(1000);
     // A terra natal de cada um sobrevive à fusão.
-    expect(em(estado, 'c')?.origem).toEqual({ a: 300, b: 700 });
+    expect(porTerraOuVazio(em(estado, 'c'))).toEqual({ a: 300, b: 700 });
   });
 
   it('o destacamento leva uma parcela proporcional de cada terra natal', () => {
@@ -66,8 +66,8 @@ describe('resolução: partida, chegada, choque', () => {
     };
     resolverRodada(estado, ajustes.combate, mundoDe());
     // Metade de cada, não 500 da primeira da lista: a ordem das levas não pode virar regra.
-    expect(em(estado, 'b')?.origem).toEqual({ atenas: 350, maratona: 150 });
-    expect(em(estado, 'a')?.origem).toEqual({ atenas: 350, maratona: 150 });
+    expect(porTerraOuVazio(em(estado, 'b'))).toEqual({ atenas: 350, maratona: 150 });
+    expect(porTerraOuVazio(em(estado, 'a'))).toEqual({ atenas: 350, maratona: 150 });
   });
 
   it('ordem cuja hoste sumiu antes da virada simplesmente não marcha', () => {
@@ -165,6 +165,13 @@ describe('determinismo — a exigência que não é opcional', () => {
     expect(resolverRodada(primeiro, ajustes.combate, mundoDe())).toEqual(
       resolverRodada(invertido, ajustes.combate, mundoDe()),
     );
-    expect(em(primeiro, 'meio')?.origem).toEqual(em(invertido, 'meio')?.origem);
+    expect(porTerraOuVazio(em(primeiro, 'meio'))).toEqual(porTerraOuVazio(em(invertido, 'meio')));
   });
 });
+
+/** `porTerra` tolerando hoste ausente: o teste falha na asserção, não num `undefined`. */
+function porTerraOuVazio(e: { contingentes: readonly { terra: string; homens: number }[] } | undefined) {
+  const conta: Record<string, number> = {};
+  for (const c of e?.contingentes ?? []) conta[c.terra] = (conta[c.terra] ?? 0) + c.homens;
+  return conta;
+}

@@ -14,12 +14,14 @@
  */
 
 import type { Ajustes } from '@/dados/esquema';
-import type { Exercito } from '../exercito';
+import type { Exercito, Arma } from '../exercito';
 import type { LevaEmFormacao, ResultadoDasFormacoes } from '../formacao-de-leva';
 import { avaliarLeva, maximoDaLeva } from '../recrutamento';
 import type { RecusaDeLeva } from '../recrutamento';
 import { matarDaFormacao, matarDaHoste, matarPorFome } from './baixas';
 import {
+  bocasDaHoste,
+  bocasEmArmasDe,
   custoDaTropaDe,
   disponivelParaLevaEm,
   forcaDaHoste,
@@ -102,6 +104,15 @@ export class Mobilizacao {
     return homensDe(this.estado, idPoder);
   }
 
+  /** Bocas em armas: o número que a mesa do reino usa. Cavalo come por vários homens. */
+  bocasEmArmasDe(idPoder: string): number {
+    return bocasEmArmasDe(this.estado, this.ajustes, idPoder);
+  }
+
+  bocasDaHoste(idHoste: string): number {
+    return bocasDaHoste(this.estado, this.ajustes, idHoste);
+  }
+
   homensEmArmasDe(idProvincia: string): number {
     return homensEmArmasDe(this.estado, idProvincia);
   }
@@ -114,25 +125,44 @@ export class Mobilizacao {
     return disponivelParaLevaEm(this.estado, this.ajustes, idProvincia);
   }
 
-  /** Teto real da leva: população cedida e ouro do PODER contam ao mesmo tempo. */
-  maximoParaLevaEm(idProvincia: string, idPoder: string): number {
+  /**
+   * Teto real da leva: população cedida e ouro do PODER contam ao mesmo tempo.
+   *
+   * ⚠️ O teto é POR ARMA, porque o preço é por arma: o mesmo tesouro põe em campo quase o
+   * dobro de leves do que de hoplitas. A barra que oferece o número tem que oferecer o da
+   * arma escolhida, senão ela promete uma leva que a regra recusa.
+   */
+  maximoParaLevaEm(idProvincia: string, idPoder: string, arma: Arma = 'leve'): number {
     return maximoDaLeva(
       {
         populacao: populacaoDe(this.estado, idProvincia),
         tesouro: tesouroDe(this.estado, idPoder),
       },
       this.ajustes,
+      arma,
     );
   }
 
-  avaliarLevaEm(idProvincia: string, idPoder: string, homens: number): RecusaDeLeva {
+  /**
+   * ⚠️ `armas` e `arma` vêm de FORA: quem sabe que obras estão de pé numa província é a
+   * campanha, e a mobilização não conhece catálogo de construção nenhum.
+   */
+  avaliarLevaEm(
+    idProvincia: string,
+    idPoder: string,
+    homens: number,
+    armas: readonly Arma[],
+    arma: Arma,
+  ): RecusaDeLeva {
     return avaliarLeva(
       homens,
       {
+        armas,
         populacao: populacaoDe(this.estado, idProvincia),
         tesouro: tesouroDe(this.estado, idPoder),
       },
       this.ajustes,
+      arma,
     );
   }
 
@@ -142,8 +172,10 @@ export class Mobilizacao {
     poder: string,
     leva: { ouro: number; homens: number },
     turnoAtual: number,
+    arma: Arma = 'leve',
+    qualidade = 1,
   ): void {
-    recrutar(this.estado, idProvincia, poder, leva, turnoAtual);
+    recrutar(this.estado, idProvincia, poder, leva, turnoAtual, arma, qualidade);
   }
 
   concluirFormacoes(
@@ -158,8 +190,14 @@ export class Mobilizacao {
   }
 
   /** Põe uma hoste no mapa do nada. **Só desenvolvimento.** */
-  plantar(idProvincia: string, idPoder: string, homens: number): string {
-    return plantar(this.estado, idProvincia, idPoder, homens);
+  plantar(
+    idProvincia: string,
+    idPoder: string,
+    homens: number,
+    arma: Arma = 'leve',
+    qualidade = 1,
+  ): string {
+    return plantar(this.estado, idProvincia, idPoder, homens, arma, qualidade);
   }
 
   // ── Dispensa e baixas ───────────────────────────────────────────────────────────────

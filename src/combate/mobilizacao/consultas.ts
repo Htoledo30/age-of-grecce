@@ -6,8 +6,10 @@
  */
 
 import type { Ajustes } from '@/dados/esquema';
-import { forcaDe } from '../exercito';
+import { bocasDe } from '../composicao';
+import { forcaDe, porTerra } from '../exercito';
 import type { Exercito } from '../exercito';
+import { homensEmFormacao } from '../formacao-de-leva';
 import type { LevaEmFormacao } from '../formacao-de-leva';
 import { disponivelParaLeva } from '../recrutamento';
 import { taxaDe } from './folha';
@@ -119,9 +121,43 @@ export function homensDe(estado: EstadoDeMobilizacao, idPoder: string): number {
   let homens = 0;
   for (const h of doPoder(estado, idPoder)) homens += forcaDe(h);
   for (const { formacao } of formacoes(estado)) {
-    if (formacao.poder === idPoder) homens += formacao.homens;
+    if (formacao.poder === idPoder) homens += homensEmFormacao(formacao);
   }
   return homens;
+}
+
+/**
+ * Quantas BOCAS este poder tem em armas — e cavalo come por vários homens.
+ *
+ * ⚠️ **É esta a conta que a comida usa**, e não `homensDe`. Um cavaleiro é um homem na folha
+ * de pagamento e várias bocas na mesa: é assim que a cavalaria vira pressão sobre a TERRA em
+ * vez de mais uma linha do tesouro. Para exército só de leves os dois números são idênticos,
+ * porque o leve é a régua.
+ *
+ * A leva em formação conta pelo mesmo motivo que conta em `homensDe`: ela já saiu da
+ * população e já come.
+ */
+export function bocasEmArmasDe(
+  estado: EstadoDeMobilizacao,
+  ajustes: AjustesCombate,
+  idPoder: string,
+): number {
+  let bocas = 0;
+  for (const h of doPoder(estado, idPoder)) bocas += bocasDe(h.contingentes, ajustes.batalha);
+  for (const { formacao } of formacoes(estado)) {
+    if (formacao.poder === idPoder) bocas += bocasDe(formacao.contingentes, ajustes.batalha);
+  }
+  return bocas;
+}
+
+/** As bocas de uma hoste só — para descontar as que estão presas numa cidade sitiada. */
+export function bocasDaHoste(
+  estado: EstadoDeMobilizacao,
+  ajustes: AjustesCombate,
+  idHoste: string,
+): number {
+  const h = estado.hostes[idHoste];
+  return h ? bocasDe(h.contingentes, ajustes.batalha) : 0;
 }
 
 /** Quantos homens nascidos nesta província estão em armas em todo o mapa. */
@@ -131,10 +167,10 @@ export function homensEmArmasDe(
 ): number {
   let total = 0;
   for (const exercito of Object.values(estado.hostes)) {
-    total += exercito.origem[idProvincia] ?? 0;
+    total += porTerra(exercito)[idProvincia] ?? 0;
   }
   for (const formacao of Object.values(estado.formacoes)) {
-    if (formacao.origem === idProvincia) total += formacao.homens;
+    if (formacao.origem === idProvincia) total += homensEmFormacao(formacao);
   }
   return total;
 }
@@ -158,7 +194,7 @@ export function custoDaTropaDe(
 ): number {
   let devido = 0;
   for (const exercito of Object.values(estado.hostes)) {
-    const daqui = exercito.origem[idProvincia] ?? 0;
+    const daqui = porTerra(exercito)[idProvincia] ?? 0;
     if (daqui > 0) devido += daqui * taxaDe(exercito, ajustes, emCasa);
   }
   return Math.round(devido);

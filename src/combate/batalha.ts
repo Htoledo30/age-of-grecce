@@ -6,41 +6,46 @@
  * não há salvamento confiável nem teste de regressão. Quando entrar sorte, ela sai de uma
  * semente guardada no estado, nunca de `Math.random()`.
  *
- * ## Por que a interface mudou antes do cálculo
+ * ## As três partes de uma batalha
  *
- * O miolo continua sendo a lei quadrada — **este passo não muda uma única batalha.** O que
- * muda é o CONTRATO, e ele mudou por duas coisas que a conta velha não sabia dizer:
+ * **Choque**: as linhas se batem por até `rodadasDeChoque` rodadas, e cada rodada mata pouco.
+ * **Quebra**: quem passa de `limiarDeQuebra` em baixas cede — e cede o CHÃO, que é o que se
+ * disputa. **Perseguição**: um round só, muito letal, contra quem quebrou; é ele que separa
+ * "empurrei o inimigo" de "destruí o inimigo", e é o round que a cavalaria multiplica.
  *
- * 1. **O perdedor pode sobreviver.** `resolverChoque` devolvia um número só, o do vencedor,
- *    porque perder era ser aniquilado. Com choque e perseguição, quem quebra foge — e quanto
- *    dele escapa é a decisão mais interessante da batalha. Enquanto o cálculo for o antigo,
- *    `sobreviventesDoPerdedor` é zero, e isso é honesto: é o que a lei quadrada diz.
- * 2. **A janela não pode mentir.** A regra devolve a LISTA DE ROUNDS sempre, inclusive nas
- *    batalhas que ninguém assiste. A IA joga a lista fora e usa o resultado; o jogador vê a
- *    lista ser reproduzida. Assim não existe uma fórmula para decidir e outra para animar, e
- *    a tela mostra exatamente a matemática que decidiu.
+ * Entre a quebra e a perseguição existe a saída: quem recebeu ordem de recuar sai de campo
+ * antes de ceder, paga uma fatia pequena, e **continua sendo um exército**.
  *
- * O contrato foi fixado num passo separado, com o cálculo velho atrás dele, justamente para
- * esta troca ser pequena: se marcha, cerco, encontro na estrada ou surtida quebrarem agora,
- * foi o cálculo, não a costura.
+ * ⚠️ **Esta função não conhece hoplita nem arqueiro.** Cada lado chega com três números —
+ * ataque e aguento por homem, e o multiplicador da caçada —, todos medidos em leves e todos
+ * calculados por `composicao.ts`, que é quem lê as armas dos dois lados. A separação é o que
+ * permite mexer no triângulo de counters sem reler o laço de rounds.
+ *
+ * ⚠️ **A lista de rounds vem SEMPRE**, inclusive nas batalhas que ninguém assiste. A IA joga a
+ * lista fora e usa o resultado; o jogador vê a lista ser reproduzida. Assim não existe uma
+ * fórmula para decidir e outra para animar, e a tela mostra exatamente a matemática que
+ * decidiu.
  */
 
+import { leves } from './composicao';
+import type { ValorEmCampo } from './composicao';
 import type { Ajustes } from '@/dados/esquema';
 
 type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 
-/** Um lado da batalha ao entrar nela. */
-export interface LadoNaBatalha {
-  /** Homens em pé no começo. */
-  homens: number;
-  /**
-   * Multiplicador de resistência deste lado. 1 é nada.
-   *
-   * É por aqui que a muralha entra quando o cálculo novo chegar — e ela entra **visível**,
-   * aparecendo round a round na janela. Um multiplicador defensivo escondido já existiu e
-   * foi removido de propósito: o número que a ficha mostra tem que ser a força que luta.
-   */
-  aguento: number;
+/**
+ * Um lado da batalha ao entrar nela: o que ele vale, mais a ordem que recebeu.
+ *
+ * ⚠️ **O que ele vale já vem pronto** — `ataque`, `aguento` e `perseguicao` saem de
+ * `valorEmCampo`, que leu as armas dos dois lados. A batalha não conhece hoplita nem
+ * arqueiro: ela recebe números e os aplica. É essa fronteira que deixa o triângulo de
+ * counters mudar sem tocar no laço de rounds, e vice-versa.
+ *
+ * O `aguento` é também por onde a muralha entra, e ela entra **visível**: aparece round a
+ * round na janela em vez de virar um multiplicador escondido. O número que a ficha mostra
+ * tem que ser a força que luta.
+ */
+export interface LadoNaBatalha extends ValorEmCampo {
   /**
    * Em que fração de baixas este lado SAI DE CAMPO, ou `null` para lutar até quebrar.
    *
@@ -104,9 +109,9 @@ export interface ResultadoDaBatalha {
   desfecho: 'quebrou' | 'recuou';
 }
 
-/** Um lado sem modificador nenhum, lutando até quebrar. A maioria das chamadas é assim. */
+/** Um lado só de leves comuns, lutando até quebrar — a milícia, e o teste que só quer massa. */
 export function lado(homens: number): LadoNaBatalha {
-  return { homens, aguento: 1, recuaAos: null };
+  return { ...leves(homens), recuaAos: null };
 }
 
 /**
@@ -150,11 +155,12 @@ export function resolverBatalha(
   let recuou: 'a' | 'b' | null = null;
 
   for (let rodada = 0; rodada < ajustes.rodadasDeChoque; rodada++) {
-    // ⚠️ Os dois danos saem dos valores do COMEÇO da rodada. `aguento` divide o que se
-    // recebe: é por aqui que a muralha entra, e ela aparece round a round na janela em vez
-    // de virar um multiplicador escondido.
-    const perdeB = Math.ceil((vivosA * ajustes.letalidadeDoChoque) / b.aguento);
-    const perdeA = Math.ceil((vivosB * ajustes.letalidadeDoChoque) / a.aguento);
+    // ⚠️ Os dois danos saem dos valores do COMEÇO da rodada. `ataque` multiplica o que se
+    // entrega e `aguento` divide o que se recebe — os dois já medidos em leves, que é a
+    // régua do jogo inteiro. É por aqui que a muralha entra, e ela aparece round a round na
+    // janela em vez de virar um multiplicador escondido.
+    const perdeB = Math.ceil((vivosA * a.ataque * ajustes.letalidadeDoChoque) / b.aguento);
+    const perdeA = Math.ceil((vivosB * b.ataque * ajustes.letalidadeDoChoque) / a.aguento);
     vivosA = Math.max(0, vivosA - perdeA);
     vivosB = Math.max(0, vivosB - perdeB);
     rounds.push({ a: vivosA, b: vivosB, fase: 'choque' });
@@ -172,11 +178,19 @@ export function resolverBatalha(
     if (recuou) break;
   }
 
-  // Saiu de campo a tempo: paga uma fatia pequena e fixa, escapa da perseguição, e a hoste
-  // continua existindo. O outro lado fica com o chão, que é o que ele queria.
+  // Saiu de campo a tempo: paga uma fatia pequena, escapa da perseguição, e a hoste continua
+  // existindo. O outro lado fica com o chão, que é o que ele queria.
+  //
+  // ⚠️ **A cavalaria do outro lado encarece a saída**, pelo mesmo multiplicador da caçada:
+  // recuar diante de infantaria é sair andando, recuar diante de cavalo é sair correndo. Sem
+  // isto, quem tivesse ordem de recuo ficaria imune ao cavalo — e a arma que existe para
+  // impedir o inimigo de escapar não impediria nada.
   if (recuou) {
-    if (recuou === 'a') vivosA = Math.max(0, vivosA - Math.ceil(vivosA * ajustes.fracaoDoRecuo));
-    else vivosB = Math.max(0, vivosB - Math.ceil(vivosB * ajustes.fracaoDoRecuo));
+    const custoDaSaida =
+      ajustes.fracaoDoRecuo * (recuou === 'a' ? b.perseguicao : a.perseguicao);
+    const fatia = Math.min(1, custoDaSaida);
+    if (recuou === 'a') vivosA = Math.max(0, vivosA - Math.ceil(vivosA * fatia));
+    else vivosB = Math.max(0, vivosB - Math.ceil(vivosB * fatia));
     rounds.push({ a: vivosA, b: vivosB, fase: 'recuo' });
     return {
       vencedor: recuou === 'a' ? 'b' : 'a',
@@ -201,11 +215,16 @@ export function resolverBatalha(
 
   // A caçada. Só o lado que cedeu é perseguido, e só uma vez: a fuga não é uma segunda
   // batalha, é o preço de ter quebrado.
-  if (vencedor === 'a') {
-    vivosB = Math.max(0, vivosB - Math.ceil(vivosB * ajustes.letalidadeDaPerseguicao));
-  } else {
-    vivosA = Math.max(0, vivosA - Math.ceil(vivosA * ajustes.letalidadeDaPerseguicao));
-  }
+  //
+  // ⚠️ **Quem caça é a cavalaria do VENCEDOR**, e é aqui que ela paga o preço que cobrou:
+  // sem cavalo o inimigo escapa e volta no turno seguinte; com cavalo, a derrota dele vira
+  // aniquilação. Teto em 1 porque não se mata mais gente do que fugiu.
+  const cacada = Math.min(
+    1,
+    ajustes.letalidadeDaPerseguicao * (vencedor === 'a' ? a.perseguicao : b.perseguicao),
+  );
+  if (vencedor === 'a') vivosB = Math.max(0, vivosB - Math.ceil(vivosB * cacada));
+  else vivosA = Math.max(0, vivosA - Math.ceil(vivosA * cacada));
   rounds.push({ a: vivosA, b: vivosB, fase: 'perseguicao' });
 
   return { vencedor, sobreviventesA: vivosA, sobreviventesB: vivosB, rounds, desfecho: 'quebrou' };

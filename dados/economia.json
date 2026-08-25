@@ -14,6 +14,7 @@
       "alimento": true,
       "troca": 12
     },
+    "cavalos": { "nome": "Cavalos", "valor": 15, "alimento": false, "troca": 26 },
     "peixe": {
       "nome": "Peixe",
       "valor": 16,
@@ -306,10 +307,7 @@
       "nivel": 2,
       "comercioBase": 0.15,
       "motivo": "Beocia do sul, aos pes do Helicao - terra de lavoura comum, sem a planicie funda de Tebas nem o pasto do Copais. Interior sem saida propria: escoa pouco.",
-      "secundario": {
-        "produto": "gado",
-        "nivel": 1
-      },
+      "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
         "tespiense": 1.0
       },
@@ -324,10 +322,7 @@
       "nivel": 2,
       "comercioBase": 0.15,
       "motivo": "A pequena cidade entre o Citerao e o Asopo, na beira sul da Beocia. Lavoura comum de planicie alta; sem porto, sem estrada propria.",
-      "secundario": {
-        "produto": "gado",
-        "nivel": 1
-      },
+      "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
         "plateense": 0.9,
         "tebano": 0.1
@@ -343,10 +338,7 @@
       "nivel": 3,
       "comercioBase": 0.15,
       "motivo": "A bacia do Copais: o lago raso que seca em pasto e da o melhor rebanho da Grecia central. O Orcomeno minio era proverbio de riqueza ja em Homero. Interior profundo: a riqueza e real, o escoamento nao.",
-      "secundario": {
-        "produto": "graos",
-        "nivel": 2
-      },
+      "secundario": { "produto": "cavalos", "nivel": 2 },
       "nacionalidades": {
         "orcomenio": 1.0
       },
@@ -495,10 +487,7 @@
       "nivel": 3,
       "comercioBase": 0.25,
       "motivo": "'Argos criadora de cavalos', diz Homero - a planicie argiva e o melhor pasto do Peloponeso oriental. E 700 a.C. e o SECULO DE ARGOS: Fidon esta unificando a Argolida na ponta da lanca, e a falange argiva e a mais temida da Grecia. A renda e boa; o exercito e o argumento.",
-      "secundario": {
-        "produto": "graos",
-        "nivel": 2
-      },
+      "secundario": { "produto": "cavalos", "nivel": 2 },
       "nacionalidades": {
         "argivo": 1.0
       },
@@ -535,10 +524,7 @@
       "nivel": 2,
       "comercioBase": 0.15,
       "motivo": "A costa magra entre a Argolida e a Laconia: pesca na Tireatida e pouco mais. O valor dela nunca foi o que produz - e ONDE fica: a marca de fronteira entre Argos e Esparta, que vao brigar por ela durante trezentos anos.",
-      "secundario": {
-        "produto": "gado",
-        "nivel": 1
-      },
+      "secundario": { "produto": "madeira", "nivel": 1 },
       "nacionalidades": {
         "cinurio": 0.85,
         "argivo": 0.15

@@ -10,6 +10,7 @@
  * para a tela, como `trechosDaRodada` faz com a marcha.
  */
 
+import type { Arma } from '@/combate/exercito';
 import type { VistaDaBatalha } from '@/ui/batalha';
 import type { Jogo } from '../contexto';
 
@@ -37,7 +38,12 @@ export function batalhasDoJogador(jogo: Jogo): readonly VistaDaBatalha[] {
 
 function ladoNaTela(
   jogo: Jogo,
-  lado: { poder: string; homens: number; aguento: number },
+  lado: {
+    poder: string;
+    homens: number;
+    aguento: number;
+    composicao: Readonly<Record<Arma, number>>;
+  },
 ): VistaDaBatalha['lados'][number] {
   // `ninguem` aparece quando um lado entrou vazio — província tomada sem defensor. Ele não
   // é um poder do mapa, e pedir a cor dele estouraria.
@@ -48,5 +54,6 @@ function ladoNaTela(
     cor: poder?.cor ?? '#8a8f92',
     homens: lado.homens,
     aguento: lado.aguento,
+    composicao: lado.composicao,
   };
 }

@@ -118,7 +118,7 @@ describe('o salvamento vai e volta inteiro', () => {
       id: 'h999',
       poder: 'atenas',
       posicao: 'atenas',
-      origem: { atenas: 10 },
+      contingentes: [{ terra: 'atenas', arma: 'leve' as const, qualidade: 1, homens: 10 }],
     };
     expect(() => crua().restaurar(contadorAtrasado)).toThrow(/frente do contador/);
 

@@ -16,14 +16,16 @@ export function pousar(
   marchas: RelatorioEmConstrucao['marchas'],
 ): void {
   for (const forca of forcas) {
-    if (!forca.viva || soma(forca.origem) === 0) continue;
+    if (!forca.viva || soma(forca.contingentes) === 0) continue;
     const juntas = Object.keys(estado.hostes)
       .sort()
       .map((id) => estado.hostes[id])
       .find((h) => h !== undefined && h.posicao === forca.posicao && h.poder === forca.poder);
     const naChegada = juntas ?? exercitoVazio(forca.hoste, forca.poder, forca.posicao);
-    for (const [terra, homens] of Object.entries(forca.origem)) {
-      somarLeva(naChegada, terra, homens);
+    // Cada contingente entra com a arma e o treino que trouxe: fundir por terra só, como
+    // era antes, faria o hoplita chegar como leve do outro lado da marcha.
+    for (const c of forca.contingentes) {
+      somarLeva(naChegada, c.terra, c.homens, c.arma, c.qualidade);
     }
     estado.hostes[naChegada.id] = naChegada;
     if (forca.posicao !== forca.partiuDe) {
@@ -37,7 +39,7 @@ export function pousar(
         // passaram a poder parar no mesmo lugar.
         hoste: naChegada.id,
         trilha: [forca.partiuDe, ...forca.rota.slice(0, andados + 1)],
-        homens: soma(forca.origem),
+        homens: soma(forca.contingentes),
       });
     }
   }

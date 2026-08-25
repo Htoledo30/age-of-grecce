@@ -209,3 +209,37 @@
   color: var(--ui-fundo, #10181a);
   cursor: default;
 }
+
+/* As quatro armas da leva. As trancadas ficam na tela, apagadas: é assim que o painel
+   ensina que existe cavalaria e o que ela exige. */
+.recrutamento__armas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 6px;
+}
+.recrutamento__arma {
+  min-height: 26px;
+  padding: 4px 2px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.recrutamento__arma:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+.recrutamento__arma[data-escolhida='sim'] {
+  border-color: var(--ui-bronze);
+  background: var(--ui-bronze-fosco, var(--ui-fundo-suave));
+  color: var(--ui-bronze-claro);
+}
+.recrutamento__arma:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}

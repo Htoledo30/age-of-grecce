@@ -76,6 +76,9 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
 
   // De onde vieram: é o que torna dispensar uma decisão, e não um botão.
   await expect(page.locator('.exercito__origens')).toContainText('Atenas');
+  // Do que é feita: sem esta lista o jogador escolhe a arma na leva e nunca mais vê o que
+  // montou — e planejar composição contra o inimigo à frente vira adivinhação.
+  await expect(page.locator('.exercito__armas')).toContainText('Leves');
   // Em casa, sem aviso de terra alheia.
   await expect(page.locator('.exercito__aviso')).toBeHidden();
 

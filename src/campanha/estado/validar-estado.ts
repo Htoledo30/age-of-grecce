@@ -45,8 +45,10 @@ export function validarSalvamento(nucleo: NucleoDaCampanha, salvo: EstadoCampanh
     if (!Number.isInteger(numero) || numero >= salvo.proximaHoste) {
       falhar(`hoste ${id} à frente do contador ${salvo.proximaHoste}`);
     }
-    for (const origem of Object.keys(hoste.origem)) {
-      if (!atlas.existe(origem)) falhar(`hoste ${id} com origem inexistente: ${origem}`);
+    for (const contingente of hoste.contingentes) {
+      if (!atlas.existe(contingente.terra)) {
+        falhar(`hoste ${id} com origem inexistente: ${contingente.terra}`);
+      }
     }
   }
   for (const [id, formacao] of Object.entries(salvo.formacoes)) {

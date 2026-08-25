@@ -17,6 +17,7 @@
  * não só preço de entrada.
  */
 
+import type { Arma } from './exercito';
 import type { Ajustes } from '@/dados/esquema';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
@@ -27,14 +28,20 @@ export type RecusaDeLeva =
 
 /** O que fazer com a situação da província no momento da leva. */
 export interface SituacaoDaLeva {
+  /** As armas que esta terra levanta agora. `leve` está sempre nela. */
+  armas: readonly Arma[];
   /** Habitantes que ainda estão na província. */
   populacao: number;
   tesouro: number;
 }
 
 /** Ouro que uma leva deste tamanho custa. Inteiro: dinheiro não tem centavo. */
-export function custoDaLeva(homens: number, ajustes: AjustesCombate): number {
-  return Math.round(homens * ajustes.custoPorHomem);
+export function custoDaLeva(
+  homens: number,
+  ajustes: AjustesCombate,
+  arma: Arma = 'leve',
+): number {
+  return Math.round(homens * ajustes.custoPorHomem * ajustes.batalha.armas[arma].custo);
 }
 
 /**
@@ -58,16 +65,17 @@ export function disponivelParaLeva(populacao: number, ajustes: AjustesCombate): 
 export function maximoDaLeva(
   situacao: Pick<SituacaoDaLeva, 'populacao' | 'tesouro'>,
   ajustes: AjustesCombate,
+  arma: Arma = 'leve',
 ): number {
   const disponivel = disponivelParaLeva(situacao.populacao, ajustes);
-  if (disponivel === 0 || situacao.tesouro < custoDaLeva(1, ajustes)) return 0;
+  if (disponivel === 0 || situacao.tesouro < custoDaLeva(1, ajustes, arma)) return 0;
 
   let minimo = 1;
   let maximo = disponivel;
   let resposta = 0;
   while (minimo <= maximo) {
     const meio = Math.floor((minimo + maximo) / 2);
-    if (custoDaLeva(meio, ajustes) <= situacao.tesouro) {
+    if (custoDaLeva(meio, ajustes, arma) <= situacao.tesouro) {
       resposta = meio;
       minimo = meio + 1;
     } else {
@@ -90,6 +98,28 @@ export function manutencaoDe(homens: number, taxa: number): number {
 }
 
 /**
+ * Por que esta arma não se levanta aqui.
+ *
+ * Exportado porque o painel de recrutamento mostra as quatro armas SEMPRE, com as trancadas
+ * apagadas e o motivo no tooltip — é assim que o jogador descobre que existe cavalaria e o
+ * que ela exige, sem tutorial. Se a recusa e a tela escrevessem cada uma a sua frase, um dia
+ * elas discordariam sobre o que é preciso construir.
+ */
+export function motivoDaArmaTrancada(arma: Arma): string {
+  if (arma === 'hoplita') {
+    return 'esta terra não tem Armaria: sem ela só se levantam soldados leves';
+  }
+  if (arma === 'arqueiro') {
+    return 'esta terra não tem Acampamento de arqueiro — e ele só nasce onde há madeira';
+  }
+  if (arma === 'cavalaria') {
+    return 'esta terra não tem Treinamento de cavaleiros — e ele só nasce onde há cavalos';
+  }
+  // O leve nunca chega aqui: ele é a linha de base e toda província o levanta.
+  return 'esta terra não levanta esta arma';
+}
+
+/**
  * Pode levantar esta leva aqui?
  *
  * Devolve o MOTIVO da recusa, e não só `false`: é a regra da casa, e é o que deixa a
@@ -100,7 +130,13 @@ export function avaliarLeva(
   homens: number,
   situacao: SituacaoDaLeva,
   ajustes: AjustesCombate,
+  arma: Arma = 'leve',
 ): RecusaDeLeva {
+  // ⚠️ O portão da ARMA vem antes de qualquer conta: recusar por ouro numa arma que a
+  // província nem levanta seria mandar o jogador juntar dinheiro para nada.
+  if (!situacao.armas.includes(arma)) {
+    return { pode: false, motivo: motivoDaArmaTrancada(arma) };
+  }
   if (!Number.isInteger(homens) || homens <= 0) {
     return { pode: false, motivo: 'o número de homens precisa ser inteiro' };
   }
@@ -121,7 +157,7 @@ export function avaliarLeva(
     };
   }
 
-  const ouro = custoDaLeva(homens, ajustes);
+  const ouro = custoDaLeva(homens, ajustes, arma);
   if (ouro > situacao.tesouro) {
     return {
       pode: false,

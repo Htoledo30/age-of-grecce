@@ -171,8 +171,15 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   expect(erros, erros.join('\n')).toHaveLength(0);
 });
 
-/** O Quartel promete qualidade futura sem fingir que ainda entrega bônus de combate. */
-test('o Quartel não está à venda: prédio que só promete não aparece', async ({ page }) => {
+/**
+ * O Quartel VOLTOU ao catálogo, e desta vez ele entrega.
+ *
+ * Ele saiu daqui um dia por prometer "qualidade de tropa" que não existia em lugar nenhum:
+ * o jogador pagava 1.500 moedas, não via diferença nenhuma, e passava a duvidar do resto do
+ * catálogo. O teste que guardava isso guardava a ausência dele — e virou este, que guarda a
+ * presença: agora existem armas, existe treino, e o Quartel é quem multiplica o segundo.
+ */
+test('as quatro armas aparecem no painel, e as trancadas dizem o que falta', async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector('body[data-pronto="sim"]');
   await page.getByRole('button', { name: 'Iniciar jogo' }).click();
@@ -182,12 +189,25 @@ test('o Quartel não está à venda: prédio que só promete não aparece', asyn
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  // Ele explicava bem o próprio futuro e cobrava 1.500 moedas por ele. Explicar não é
-  // servir: o jogador pagava, não via diferença nenhuma, e passava a duvidar do resto do
-  // catálogo. Volta quando o combate existir e "qualidade de tropa" tiver onde morar.
-  await expect(page.locator('.acoes__construcao', { hasText: 'Quartel' })).toHaveCount(0);
-  // E o resto do catálogo continua lá — esconder um não escondeu tudo.
-  await expect(page.locator('.acoes__construcao', { hasText: 'Ágora' })).toHaveCount(1);
+  await page.getByRole('button', { name: 'Recrutar' }).click();
+  const armas = page.locator('.recrutamento__arma');
+  await expect(armas).toHaveCount(4);
+
+  // ⚠️ As trancadas ficam na tela, apagadas: é assim que o painel ensina que existe
+  // cavalaria e o que ela exige. Esconder o que ainda não dá para fazer esconderia
+  // justamente a decisão de construir.
+  await expect(page.getByRole('button', { name: 'Leves', exact: true })).toBeEnabled();
+  for (const nome of ['Hoplitas', 'Arqueiros', 'Cavalaria']) {
+    await expect(page.getByRole('button', { name: nome, exact: true })).toBeDisabled();
+  }
+  await expect(page.getByRole('button', { name: 'Leves', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
+  // E o Quartel está à venda de novo — ele não promete mais nada: ele carimba treino na leva.
+  await expect(page.locator('.acoes__construcao', { hasText: 'Quartel' })).toHaveCount(1);
+  await expect(page.locator('.acoes__construcao', { hasText: 'Armaria' })).toHaveCount(1);
 });
 
 /**

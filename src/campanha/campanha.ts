@@ -18,6 +18,7 @@
  * verdade — turno, renda e imposto ficam sob teste sem subir uma tela.
  */
 
+import type { Arma } from '@/combate/exercito';
 import type { Postura } from '@/combate/cerco';
 import type { NivelDeImposto } from './economia';
 import type { EstadoCampanha } from './estado-campanha';
@@ -86,8 +87,8 @@ export class Campanha extends ConsultasDeGuerra {
 
   // ── Guerra ──────────────────────────────────────────────────────────────────────────
   /** Põe gente em armas: cobra o ouro e tira os homens da população da província. */
-  recrutar(idProvincia: string, homens: number): void {
-    recrutar(this.nucleo, idProvincia, homens);
+  recrutar(idProvincia: string, homens: number, arma: Arma = 'leve'): void {
+    recrutar(this.nucleo, idProvincia, homens, arma);
     this.aoMudar();
   }
 
@@ -153,8 +154,14 @@ export class Campanha extends ConsultasDeGuerra {
   }
 
   /** Põe uma hoste de qualquer poder no mapa, pra montar um inimigo sem a IA existir. */
-  plantarHoste(idProvincia: string, idPoder: string, homens: number): string {
-    const id = this.nucleo.mobilizacao.plantar(idProvincia, idPoder, homens);
+  plantarHoste(
+    idProvincia: string,
+    idPoder: string,
+    homens: number,
+    arma: Arma = 'leve',
+    qualidade = 1,
+  ): string {
+    const id = this.nucleo.mobilizacao.plantar(idProvincia, idPoder, homens, arma, qualidade);
     this.aoMudar();
     return id;
   }

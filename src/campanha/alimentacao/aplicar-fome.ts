@@ -13,11 +13,12 @@
  * exército — já pagam o relógio da cidade, e ninguém paga a mesma fome duas vezes.
  */
 
+import { homensEmFormacao } from '@/combate/formacao-de-leva';
 import { mortosPelaFome } from '@/producao/alimentacao';
 import type { NucleoDaCampanha } from '../nucleo';
 import { populacaoDe, poderesEmOrdem, simuladasDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
-import { balancoAlimentarDe, homensSitiadosDe, sitiadasDe } from './balanco';
+import { balancoAlimentarDe, presosEmCercoDe, sitiadasDe } from './balanco';
 import { saldoAlimentarLocalEm } from './contribuicao';
 import { fomeDoCercoEm } from './mantimentos-de-cerco';
 
@@ -68,7 +69,7 @@ export function alimentar(nucleo: NucleoDaCampanha): RelatorioDaFome {
       // povo comeu (fome), seja porque só ele ficou sem (sem mantimentos). Morte não é
       // dispensa: ninguém volta para a população de origem.
       const alvo = mortosPelaFome(
-        homens - homensSitiadosDe(nucleo, poder),
+        homens - presosEmCercoDe(nucleo, poder).homens,
         nucleo.ajustes.alimento.mortePorFomeNaTropa,
       );
       mortosDeTropa += nucleo.mobilizacao.matarPorFome(poder, alvo, pouparSitiadas);
@@ -111,7 +112,7 @@ function matarTropaSitiada(
     }
     const formacao = nucleo.mobilizacao.formacaoEm(id);
     if (formacao?.poder === poder) {
-      mortos += nucleo.mobilizacao.matarDaFormacao(id, mortosPelaFome(formacao.homens, taxa));
+      mortos += nucleo.mobilizacao.matarDaFormacao(id, mortosPelaFome(homensEmFormacao(formacao), taxa));
     }
   }
   return mortos;

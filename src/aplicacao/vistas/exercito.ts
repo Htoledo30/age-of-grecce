@@ -5,7 +5,8 @@
  * que a tela nunca prometa uma decisão que a resolução vai converter noutra coisa.
  */
 
-import { forcaDe } from '@/combate/exercito';
+import { ARMAS, forcaDe, porTerra } from '@/combate/exercito';
+import { NOME_DA_ARMA } from '@/ui/armas';
 import type { Ajustes } from '@/dados/esquema';
 import type { VistaDoExercito } from '@/ui/exercito-ficha/exercito-ficha';
 import type { Jogo } from '../contexto';
@@ -65,7 +66,20 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
       ordem && destinoDaOrdem !== undefined
         ? { destino: atlas.nomeDe(destinoDaOrdem), homens: ordem.homens }
         : null,
-    origens: Object.entries(exercito.origem)
+    // ⚠️ Duas listas, e elas respondem perguntas diferentes: a ARMA decide a próxima
+    // batalha, a TERRA decide para quem a dispensa devolve os homens. Somar as duas numa
+    // linha só ("300 hoplitas de Atenas") multiplicaria as entradas sem responder nem uma
+    // nem outra.
+    armas: ARMAS.flatMap((arma) => {
+      const grupos = exercito.contingentes.filter((c) => c.arma === arma);
+      if (grupos.length === 0) return [];
+      const homens = grupos.reduce((s, c) => s + c.homens, 0);
+      // Média ponderada do treino: uma hoste pode juntar levas de antes e de depois do
+      // Quartel, e o que ela vale em campo é a média delas.
+      const treino = grupos.reduce((s, c) => s + c.qualidade * c.homens, 0) / homens;
+      return [{ nome: NOME_DA_ARMA[arma], homens, treino }];
+    }),
+    origens: Object.entries(porTerra(exercito))
       .map(([id, homens]) => {
         const donoAgora = campanha.donoDe(id);
         return {

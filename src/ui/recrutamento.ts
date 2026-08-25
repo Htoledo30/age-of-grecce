@@ -18,8 +18,31 @@
  * nem decisão a tomar.
  */
 
+import type { Arma } from '@/combate/exercito';
+import { NOME_DA_ARMA, PAPEL_DA_ARMA } from './armas';
 import { definirTooltip, removerTooltip } from './tooltip';
 import { rotularComIcone } from './icones-gregos';
+
+/**
+ * Uma arma como o painel a oferece.
+ *
+ * ⚠️ **As quatro aparecem sempre**, e as trancadas vêm apagadas com o motivo no tooltip. É
+ * assim que o jogador descobre que existe cavalaria e o que ela exige — esconder o que ainda
+ * não dá para fazer esconderia justamente a decisão de construir.
+ */
+export interface ArmaParaLeva {
+  arma: Arma;
+  liberada: boolean;
+  /** Por que ela está trancada aqui. Vazio quando liberada. */
+  motivo: string;
+  custoPorHomem: number;
+  /** Teto agora, já com o preço DESTA arma: o mesmo ouro põe mais leves que hoplitas. */
+  maximo: number;
+  /** Bocas por homem na mesa do reino. Cavalo come por vários. */
+  comida: number;
+  ataque: number;
+  aguento: number;
+}
 
 /** O que o bloco precisa saber pra oferecer — ou recusar com motivo — uma leva. */
 export type VistaDeRecrutamento =
@@ -30,17 +53,24 @@ export type VistaDeRecrutamento =
       populacao: number;
       /** Quantos habitantes ainda estão disponíveis para uma leva. */
       disponivel: number;
-      /** Teto real neste instante: população disponível limitada pelo tesouro. */
-      maximo: number;
       /** Homens pagos nesta província que ainda não podem marchar. */
       emFormacao: number;
-      custoPorHomem: number;
+      /** As quatro armas, liberadas ou não, na ordem fixa do jogo. */
+      armas: readonly ArmaParaLeva[];
+      /**
+       * O treino que esta terra carimba na leva. 1 é tropa comum.
+       *
+       * Mostrado ANTES do clique porque é carimbado no recrutamento e nunca mais muda: quem
+       * levanta hoje leva o treino de hoje para o resto da campanha.
+       */
+      treino: number;
       /** Por homem por turno com a tropa parada em casa. */
       manutencaoPorHomem: number;
       /** Por homem por turno com ela em terra alheia. É o preço de ir à guerra. */
       manutencaoEmCampanha: number;
       avaliar: (
         homens: number,
+        arma: Arma,
       ) => { pode: true; ouro: number; homens: number } | { pode: false; motivo: string };
     }
   | { pode: false; motivo: string };
@@ -52,6 +82,8 @@ export class Recrutamento {
   private readonly indicador = document.createElement('span');
   private readonly corpo = document.createElement('div');
   private readonly alvo = document.createElement('p');
+  private readonly seletor = document.createElement('div');
+  private readonly botoesDeArma = new Map<Arma, HTMLButtonElement>();
   private readonly campoHomens = document.createElement('input');
   private readonly quantidade = document.createElement('p');
   private readonly atalhos = document.createElement('div');
@@ -59,11 +91,13 @@ export class Recrutamento {
   private readonly previsao = document.createElement('p');
   private readonly botaoRecrutar = document.createElement('button');
   private vista: VistaDeRecrutamento | null = null;
+  /** A arma escolhida. Começa no leve, que toda província levanta. */
+  private arma: Arma = 'leve';
   private recolhido = true;
   /** Trocar de província reinicia a escolha; repintar a mesma preserva o arraste. */
   private provinciaDaQuantidade: string | null = null;
 
-  aoRecrutar: (idProvincia: string, homens: number) => void = () => {};
+  aoRecrutar: (idProvincia: string, homens: number, arma: Arma) => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'recrutamento';
@@ -88,6 +122,25 @@ export class Recrutamento {
     this.cabecalho.append(this.titulo, this.indicador);
 
     this.alvo.className = 'recrutamento__alvo';
+
+    this.seletor.className = 'recrutamento__armas';
+    this.seletor.setAttribute('role', 'group');
+    this.seletor.setAttribute('aria-label', 'Arma da leva');
+    for (const arma of ['leve', 'hoplita', 'arqueiro', 'cavalaria'] as const) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'recrutamento__arma';
+      botao.textContent = NOME_DA_ARMA[arma];
+      botao.addEventListener('click', () => {
+        this.arma = arma;
+        // Trocar de arma troca o preço, e com ele o teto: manter o número anterior ofereceria
+        // uma leva que a regra recusaria no clique seguinte.
+        this.mostrar(this.vista);
+        botao.blur();
+      });
+      this.botoesDeArma.set(arma, botao);
+      this.seletor.appendChild(botao);
+    }
 
     this.campoHomens.className = 'recrutamento__valor';
     this.campoHomens.type = 'range';
@@ -118,8 +171,10 @@ export class Recrutamento {
       botao.textContent = rotulo;
       botao.addEventListener('click', () => {
         const vista = this.vista;
-        if (!vista?.pode || vista.maximo === 0) return;
-        this.campoHomens.value = String(Math.max(1, Math.floor(vista.maximo * fracao)));
+        if (!vista?.pode) return;
+        const maximo = this.escolhida(vista).maximo;
+        if (maximo === 0) return;
+        this.campoHomens.value = String(Math.max(1, Math.floor(maximo * fracao)));
         this.avaliar();
         botao.blur();
       });
@@ -136,10 +191,10 @@ export class Recrutamento {
       const vista = this.vista;
       if (!vista?.pode) return;
       const homens = Number(this.campoHomens.value);
-      if (vista.avaliar(homens).pode) {
+      if (vista.avaliar(homens, this.arma).pode) {
         // Uma nova decisão começa do zero; evita recrutar duas levas enormes por engano.
         this.campoHomens.value = '0';
-        this.aoRecrutar(vista.provincia.id, homens);
+        this.aoRecrutar(vista.provincia.id, homens, this.arma);
       }
       // `blur` no fim do clique: sem isso o botão fica com foco e a barra de espaço,
       // que passa o turno, dispara um clique sintético nele.
@@ -148,6 +203,7 @@ export class Recrutamento {
 
     this.corpo.append(
       this.alvo,
+      this.seletor,
       this.quantidade,
       this.campoHomens,
       this.atalhos,
@@ -169,7 +225,13 @@ export class Recrutamento {
       return;
     }
 
-    for (const el of [this.quantidade, this.campoHomens, this.atalhos, this.botaoRecrutar])
+    for (const el of [
+      this.seletor,
+      this.quantidade,
+      this.campoHomens,
+      this.atalhos,
+      this.botaoRecrutar,
+    ])
       el.hidden = !vista.pode;
 
     if (!vista.pode) {
@@ -188,6 +250,7 @@ export class Recrutamento {
       corpo: `${numero(vista.disponivel)} habitantes podem ser recrutados.`,
     });
 
+    this.pintarArmas(vista);
     if (this.provinciaDaQuantidade !== vista.provincia.id) {
       const trocouDeProvincia = this.provinciaDaQuantidade !== null;
       this.provinciaDaQuantidade = vista.provincia.id;
@@ -197,12 +260,45 @@ export class Recrutamento {
         this.atualizarAbertura();
       }
     }
-    this.campoHomens.max = String(vista.maximo);
-    this.campoHomens.value = String(Math.min(Number(this.campoHomens.value), vista.maximo));
-    this.campoHomens.disabled = vista.maximo === 0;
-    for (const botao of this.botoesDeAtalho) botao.disabled = vista.maximo === 0;
+    const maximo = this.escolhida(vista).maximo;
+    this.campoHomens.max = String(maximo);
+    this.campoHomens.value = String(Math.min(Number(this.campoHomens.value), maximo));
+    this.campoHomens.disabled = maximo === 0;
+    for (const botao of this.botoesDeAtalho) botao.disabled = maximo === 0;
 
     this.avaliar();
+  }
+
+  /** A arma escolhida, e o leve se a escolhida não existir nesta terra. */
+  private escolhida(vista: Extract<VistaDeRecrutamento, { pode: true }>): ArmaParaLeva {
+    const atual = vista.armas.find((a) => a.arma === this.arma);
+    if (atual?.liberada) return atual;
+    // Cair no leve em vez de manter uma escolha impossível: deixar a seleção numa arma que
+    // esta terra não levanta faria a barra oferecer homens que o botão recusa.
+    this.arma = 'leve';
+    return vista.armas.find((a) => a.arma === 'leve') ?? atual ?? SEM_ARMA;
+  }
+
+  /** Acende a escolhida, apaga as trancadas, e diz no tooltip o que falta em cada uma. */
+  private pintarArmas(vista: Extract<VistaDeRecrutamento, { pode: true }>): void {
+    const escolhida = this.escolhida(vista).arma;
+    for (const dados of vista.armas) {
+      const botao = this.botoesDeArma.get(dados.arma);
+      if (!botao) continue;
+      botao.disabled = !dados.liberada;
+      botao.setAttribute('aria-pressed', String(dados.arma === escolhida));
+      botao.dataset['escolhida'] = dados.arma === escolhida ? 'sim' : 'nao';
+      definirTooltip(botao, {
+        titulo: NOME_DA_ARMA[dados.arma],
+        corpo: dados.liberada
+          ? `${PAPEL_DA_ARMA[dados.arma]}\n` +
+            `${numero(dados.custoPorHomem)} moedas por homem\n` +
+            `ataque ×${dados.ataque} · aguento ×${dados.aguento}` +
+            (dados.comida > 1 ? `\ncome por ${dados.comida} homens` : '')
+          : `${PAPEL_DA_ARMA[dados.arma]}\n\nTrancada: ${dados.motivo}.`,
+        tom: dados.liberada ? 'informacao' : 'bloqueio',
+      });
+    }
   }
 
   /** Uma linha fechada por padrão; os detalhes só ocupam espaço quando solicitados. */
@@ -224,16 +320,18 @@ export class Recrutamento {
     const vista = this.vista;
     if (!vista?.pode) return;
     const homens = Number(this.campoHomens.value);
+    const escolhida = this.escolhida(vista);
 
     this.quantidade.textContent =
-      `${numero(homens)} soldados` +
-      (vista.maximo > 0 ? ` · máximo agora: ${numero(vista.maximo)}` : '');
+      `${numero(homens)} ${NOME_DA_ARMA[escolhida.arma].toLowerCase()}` +
+      (vista.treino > 1 ? ` · treino ×${vista.treino.toFixed(2)}` : '') +
+      (escolhida.maximo > 0 ? ` · máximo agora: ${numero(escolhida.maximo)}` : '');
 
-    if (vista.maximo === 0) {
+    if (escolhida.maximo === 0) {
       this.previsao.textContent =
         vista.disponivel === 0
           ? 'A reserva civil mínima foi alcançada.'
-          : `O tesouro não paga nem 1 soldado (${numero(vista.custoPorHomem)} moedas).`;
+          : `O tesouro não paga nem 1 soldado (${numero(escolhida.custoPorHomem)} moedas).`;
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.textContent = 'Reunir leva';
       this.botaoRecrutar.disabled = true;
@@ -249,7 +347,7 @@ export class Recrutamento {
       removerTooltip(this.previsao);
       return;
     }
-    const r = vista.avaliar(homens);
+    const r = vista.avaliar(homens, escolhida.arma);
 
     if (!r.pode) {
       this.previsao.textContent = r.motivo;
@@ -274,7 +372,8 @@ export class Recrutamento {
         `−${numero(r.homens)} habitantes`,
       tom: 'custo',
     });
-    this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)}`;
+    this.botaoRecrutar.textContent =
+      `Reunir ${numero(r.homens)} ${NOME_DA_ARMA[escolhida.arma].toLowerCase()}`;
     this.botaoRecrutar.disabled = false;
   }
 }
@@ -282,3 +381,15 @@ export class Recrutamento {
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR');
 }
+
+/** Recorte de segurança: nenhuma vista real chega sem o leve na lista. */
+const SEM_ARMA: ArmaParaLeva = {
+  arma: 'leve',
+  liberada: false,
+  motivo: 'esta terra não levanta tropa',
+  custoPorHomem: 0,
+  maximo: 0,
+  comida: 1,
+  ataque: 1,
+  aguento: 1,
+};

@@ -123,7 +123,10 @@
     },
     "combate": {
       "custoPorHomem": 3,
-      "manutencaoPorHomem": { "emCasa": 0.1, "emCampanha": 0.3 },
+      "manutencaoPorHomem": {
+        "emCasa": 0.1,
+        "emCampanha": 0.3
+      },
       "saltosPorRodada": 1,
       "populacaoMinima": 2000,
       "cerco": {
@@ -133,9 +136,38 @@
         "rodadasDeChoque": 8,
         "letalidadeDoChoque": 0.15,
         "limiarDeQuebra": 0.6,
-        "letalidadeDaPerseguicao": 0.75,
+        "letalidadeDaPerseguicao": 0.6,
         "fracaoDoRecuo": 0.1,
-        "limiarDeRecuo": 0.3
+        "limiarDeRecuo": 0.3,
+        "armas": {
+          "leve": {
+            "ataque": 1,
+            "aguento": 1,
+            "custo": 1,
+            "comida": 1
+          },
+          "hoplita": {
+            "ataque": 1,
+            "aguento": 1.5,
+            "custo": 1.25,
+            "comida": 1
+          },
+          "arqueiro": {
+            "ataque": 1.9,
+            "aguento": 0.7,
+            "custo": 1.3,
+            "comida": 1
+          },
+          "cavalaria": {
+            "ataque": 1.55,
+            "aguento": 1,
+            "custo": 1.6,
+            "comida": 1.8
+          },
+          "counter": 1.4,
+          "perseguicaoPorCavalaria": 1.6,
+          "meiaCavalaria": 0.08
+        }
       },
       "milicia": {
         "fracao": 0.012,

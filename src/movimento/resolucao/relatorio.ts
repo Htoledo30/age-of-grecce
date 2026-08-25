@@ -8,7 +8,7 @@
  */
 
 import type { Cerco, Postura } from '@/combate/cerco';
-import type { Exercito } from '@/combate/exercito';
+import type { Arma, Exercito } from '@/combate/exercito';
 import type { Ajustes } from '@/dados/esquema';
 import type { OrdemDeMarcha } from '../ordens';
 
@@ -95,8 +95,22 @@ export interface MundoDaResolucao {
 interface LadoNoRelatorio {
   poder: string;
   homens: number;
-  /** Multiplicador de resistência — a muralha. 1 é campo aberto. */
+  /**
+   * Multiplicador de resistência — **a muralha, e só ela**. 1 é campo aberto.
+   *
+   * ⚠️ Não é o aguento das armas. O hoplita também divide o dano que recebe, mas isso já está
+   * dentro da conta da batalha; aqui fica o que a JANELA precisa desenhar como muro ao lado de
+   * quem o tem. Somar as duas coisas neste campo faria a tela anunciar muralha onde só havia
+   * escudo.
+   */
   aguento: number;
+  /**
+   * Quantos homens de cada arma entraram. É o que a janela desenha, uma barra por arma.
+   *
+   * As baixas são proporcionais entre os contingentes, então a composição não muda durante a
+   * batalha: a fatia de cada arma em qualquer round sai desta lista vezes a fração viva.
+   */
+  composicao: Readonly<Record<Arma, number>>;
 }
 
 /** O que aconteceu na rodada — pra crônica, pra interface e pros testes. */

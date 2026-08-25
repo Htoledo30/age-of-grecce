@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   concluirFormacoes,
+  homensEmFormacao,
   iniciarFormacao,
   type EstadoDasFormacoes,
 } from '../src/combate/formacao-de-leva';
@@ -30,7 +31,8 @@ describe('formação de leva', () => {
     const e = estado();
     iniciarFormacao(e.formacoes, 'atenas', 'atenas', 500, 4);
 
-    expect(e.formacoes['atenas']).toMatchObject({ homens: 500, prontaNoTurno: 5 });
+    expect(homensEmFormacao(e.formacoes['atenas'])).toBe(500);
+    expect(e.formacoes['atenas']).toMatchObject({ prontaNoTurno: 5 });
     expect(hosteEm(e, 'atenas')).toBeUndefined();
     expect(concluirFormacoes(e, 4, () => 'atenas').ativadas).toEqual([]);
 
@@ -49,7 +51,7 @@ describe('formação de leva', () => {
 
     iniciarFormacao(e.formacoes, 'atenas', 'atenas', 500, 2);
     expect(forcaDe(hosteEm(e, 'atenas'))).toBe(1000);
-    expect(e.formacoes['atenas']?.homens).toBe(500);
+    expect(homensEmFormacao(e.formacoes['atenas'])).toBe(500);
 
     concluirFormacoes(e, 3, () => 'atenas');
     expect(forcaDe(hosteEm(e, 'atenas'))).toBe(1500);
@@ -59,7 +61,8 @@ describe('formação de leva', () => {
     const e = estado();
     iniciarFormacao(e.formacoes, 'atenas', 'atenas', 200, 7);
     iniciarFormacao(e.formacoes, 'atenas', 'atenas', 300, 7);
-    expect(e.formacoes['atenas']).toMatchObject({ homens: 500, prontaNoTurno: 8 });
+    expect(homensEmFormacao(e.formacoes['atenas'])).toBe(500);
+    expect(e.formacoes['atenas']).toMatchObject({ prontaNoTurno: 8 });
   });
 
   it('interrompe a formação se a província cair e devolve os homens à terra', () => {

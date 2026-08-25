@@ -28,7 +28,7 @@ const regras = ajustes.combate.batalha;
  * é a vitória de quem segura o chão.
  */
 const batalha = (a: number, b: number, aguentoB = 1) =>
-  resolverBatalha(lado(a), { homens: b, aguento: aguentoB, recuaAos: null }, regras, 'b');
+  resolverBatalha(lado(a), { ...lado(b), aguento: aguentoB }, regras, 'b');
 
 describe('a batalha: choque, quebra e perseguição', () => {
   it('quem perde SOBREVIVE — e é a fuga que o mata, não o choque', () => {
@@ -140,13 +140,13 @@ describe('a batalha: choque, quebra e perseguição', () => {
     // rodada ou saio agora?" ser a pergunta central da batalha — se sair custasse quase o
     // mesmo que quebrar, ninguém sairia, e a batalha voltaria a não ter decisão dentro dela.
     const ateQuebrar = resolverBatalha(
-      { homens: 900, aguento: 1, recuaAos: null },
+      lado(900),
       lado(1000),
       regras,
       'b',
     );
     const saindoCedo = resolverBatalha(
-      { homens: 900, aguento: 1, recuaAos: 0.25 },
+      { ...lado(900), recuaAos: 0.25 },
       lado(1000),
       regras,
       'b',
@@ -170,7 +170,7 @@ describe('a batalha: choque, quebra e perseguição', () => {
     // O limiar de quebra é 0,6; pedir para sair aos 0,9 é pedir tarde. A linha quebra antes,
     // o inimigo está em cima, e sair deixou de ser uma opção — o recuo é decisão de HORA.
     const tarde = resolverBatalha(
-      { homens: 900, aguento: 1, recuaAos: 0.9 },
+      { ...lado(900), recuaAos: 0.9 },
       lado(1000),
       regras,
       'b',

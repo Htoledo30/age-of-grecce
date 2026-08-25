@@ -18,19 +18,67 @@ import type { EstadoCampanha } from './estado-campanha';
 
 const Postura = z.enum(['assaltar', 'sitiar']);
 
-const Exercito = z.object({
-  id: z.string().min(1),
-  posicao: z.string().min(1),
-  poder: z.string().min(1),
-  origem: z.record(z.string().min(1), z.number().int().positive()),
+const Arma = z.enum(['leve', 'hoplita', 'arqueiro', 'cavalaria']);
+
+const Contingente = z.object({
+  terra: z.string().min(1),
+  arma: Arma,
+  qualidade: z.number().positive(),
+  homens: z.number().int().positive(),
 });
 
-const Formacao = z.object({
-  poder: z.string().min(1),
-  origem: z.string().min(1),
-  homens: z.number().int().positive(),
-  prontaNoTurno: z.number().int(),
-});
+/**
+ * ⚠️ **Salvamento de antes das armas ainda carrega.**
+ *
+ * A hoste guardava `origem: { terra: homens }`, um número por terra natal. Cada entrada
+ * daquelas vira um contingente de LEVE com qualidade 1 — que é exatamente o que aqueles
+ * homens eram quando arma nenhuma existia: todo soldado do jogo valia um miliciano.
+ */
+const Exercito = z
+  .object({
+    id: z.string().min(1),
+    posicao: z.string().min(1),
+    poder: z.string().min(1),
+    origem: z.record(z.string().min(1), z.number().int().positive()).optional(),
+    contingentes: z.array(Contingente).optional(),
+  })
+  .transform(({ origem, contingentes, ...resto }) => ({
+    ...resto,
+    contingentes:
+      contingentes ??
+      Object.entries(origem ?? {}).map(([terra, homens]) => ({
+        terra,
+        arma: 'leve' as const,
+        qualidade: 1,
+        homens,
+      })),
+  }));
+
+/** ⚠️ Salvamento de antes das armas ainda carrega: a leva dele era toda de `leve`. */
+const Formacao = z
+  .object({
+    poder: z.string().min(1),
+    origem: z.string().min(1),
+    homens: z.number().int().positive().optional(),
+    contingentes: z
+      .array(
+        z.object({
+          arma: Arma,
+          qualidade: z.number().positive(),
+          homens: z.number().int().positive(),
+        }),
+      )
+      .optional(),
+    prontaNoTurno: z.number().int(),
+  })
+  .transform(({ homens, contingentes, ...resto }) => ({
+    ...resto,
+    contingentes:
+      contingentes ??
+      (homens === undefined
+        ? []
+        : [{ arma: 'leve' as const, qualidade: 1, homens }]),
+  }));
 
 const Ordem = z.object({
   origem: z.string().min(1),

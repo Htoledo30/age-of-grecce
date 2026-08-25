@@ -45,7 +45,7 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.acoes.aoDefinirImposto = (id, nivel) => campanha.definirImposto(id, nivel);
   tela.acoes.aoConstruir = (id, construcao) => campanha.construir(id, construcao);
   tela.acoes.aoTornarCapital = (id) => campanha.mudarCapital(id);
-  tela.recrutamento.aoRecrutar = (id, homens) => campanha.recrutar(id, homens);
+  tela.recrutamento.aoRecrutar = (id, homens, arma) => campanha.recrutar(id, homens, arma);
 
   // ── A ficha do exército ─────────────────────────────────────────────────────────────
   tela.exercitoFicha.aoDispensar = (idHoste, homens) => campanha.dispensarHoste(idHoste, homens);

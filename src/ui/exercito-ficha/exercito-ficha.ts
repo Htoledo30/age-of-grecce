@@ -29,6 +29,8 @@ export class ExercitoFicha {
   private readonly forca = document.createElement('p');
   private readonly custo = document.createElement('p');
   private readonly aviso = document.createElement('p');
+  private readonly tituloArmas = document.createElement('h3');
+  private readonly armas = document.createElement('dl');
   private readonly tituloOrigens = document.createElement('h3');
   private readonly origens = document.createElement('dl');
   private readonly botaoDispensar = document.createElement('button');
@@ -74,6 +76,9 @@ export class ExercitoFicha {
     this.tituloOrigens.className = 'exercito__grupo';
     this.tituloOrigens.textContent = 'De onde vieram';
     this.origens.className = 'exercito__origens';
+    this.tituloArmas.className = 'exercito__grupo';
+    this.tituloArmas.textContent = 'Do que é feita';
+    this.armas.className = 'exercito__armas';
 
     this.raiz.append(
       this.titulo,
@@ -81,6 +86,10 @@ export class ExercitoFicha {
       this.forca,
       this.custo,
       this.aviso,
+      // As armas antes das origens: é a composição que decide a próxima batalha, e a terra
+      // natal que decide o que a dispensa devolve.
+      this.tituloArmas,
+      this.armas,
       this.tituloOrigens,
       this.origens,
     );
@@ -134,6 +143,7 @@ export class ExercitoFicha {
     // parecer que não aconteceu.
     if (vista.emTerraAlheia) this.aviso.textContent = 'em território que não é seu';
 
+    this.desenharArmas(vista);
     this.desenharOrigens(vista);
     rotularComIcone(this.botaoDispensar, 'capacete', `Dispensar ${numero(vista.forca)}`);
 
@@ -156,6 +166,22 @@ export class ExercitoFicha {
     this.tituloOrigens.hidden = vista.marchando;
     this.origens.hidden = vista.marchando;
     this.botaoDispensar.hidden = vista.marchando || !vista.minha;
+  }
+
+  /** De que a hoste é feita. Uma linha por arma presente, com o treino quando há treino. */
+  private desenharArmas(vista: VistaDoExercito): void {
+    this.armas.replaceChildren(
+      ...vista.armas.flatMap((a) => {
+        const dt = document.createElement('dt');
+        dt.textContent = a.nome;
+        const dd = document.createElement('dd');
+        // O treino só aparece quando existe: escrever "×1,00" em toda linha seria ruído em
+        // toda hoste comum, que é a maioria delas.
+        dd.textContent =
+          a.treino > 1 ? `${numero(a.homens)} · treino ×${a.treino.toFixed(2)}` : numero(a.homens);
+        return [dt, dd];
+      }),
+    );
   }
 
   /**

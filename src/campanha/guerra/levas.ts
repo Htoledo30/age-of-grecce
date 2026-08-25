@@ -7,9 +7,11 @@
  * província que nem é do jogador.
  */
 
+import type { Arma } from '@/combate/exercito';
 import type { RecusaDeLeva } from '@/combate/recrutamento';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe } from '../provincia/consultas';
+import { armasEm, treinoEm } from '../provincia/armas-da-provincia';
 import { podeMobilizarEm } from '../provincia/permissoes';
 
 /** Pode levantar esta leva aqui, e por quanto? */
@@ -17,10 +19,17 @@ export function podeRecrutar(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   homens: number,
+  arma: Arma = 'leve',
 ): RecusaDeLeva {
   const naProvincia = podeMobilizarEm(nucleo, idProvincia);
   if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
-  return nucleo.mobilizacao.avaliarLevaEm(idProvincia, donoDe(nucleo, idProvincia), homens);
+  return nucleo.mobilizacao.avaliarLevaEm(
+    idProvincia,
+    donoDe(nucleo, idProvincia),
+    homens,
+    armasEm(nucleo, idProvincia),
+    arma,
+  );
 }
 
 /**
@@ -34,13 +43,18 @@ export function recrutar(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   homens: number,
+  arma: Arma = 'leve',
 ): void {
-  const r = podeRecrutar(nucleo, idProvincia, homens);
+  const r = podeRecrutar(nucleo, idProvincia, homens, arma);
   if (!r.pode) throw new Error(r.motivo);
+  // ⚠️ O treino é lido AGORA e carimbado na leva, e nunca mais consultado: perder a
+  // província depois não transforma veterano em recruta no meio da campanha.
   nucleo.mobilizacao.recrutar(
     idProvincia,
     donoDe(nucleo, idProvincia),
     r,
     nucleo.estado.turno,
+    arma,
+    treinoEm(nucleo, idProvincia),
   );
 }

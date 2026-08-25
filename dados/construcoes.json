@@ -20,14 +20,43 @@
       "promessa": "Multiplica a renda da rede de trocas do REINO inteiro. Vale uma vez só, e vale mais quanto mais bens distintos você alcança.",
       "motivo": "Nao cria produto: faz o reino tirar mais de cada bem distinto que ja alcanca. Por isso vale mais depois de conquistar, e nao antes."
     },
+    "armaria": {
+      "nome": "Armaria",
+      "custos": [1600, 3200, 5800],
+      "turnos": [2, 3, 4],
+      "manutencao": [5, 10, 16],
+      "efeito": { "tipo": "arma", "arma": "hoplita" },
+      "promessa": "Esta província passa a levantar HOPLITAS: a linha que aguenta, e que faz o inimigo quebrar primeiro. Sem ela a terra só levanta leves.",
+      "motivo": "A panóplia — escudo, elmo, greva — é cara, e é ela que separa o cidadão em armas do lavrador com uma lança. Qualquer terra pode erguer: o que custa não é o direito, é o slot."
+    },
+    "acampamento-de-arqueiro": {
+      "nome": "Acampamento de arqueiro",
+      "custos": [1400, 2800, 5000],
+      "turnos": [2, 3, 4],
+      "manutencao": [4, 8, 14],
+      "requisito": { "produtos": ["madeira"] },
+      "efeito": { "tipo": "arma", "arma": "arqueiro" },
+      "promessa": "Esta província passa a levantar ARQUEIROS: tiram muito e quebram rápido. Ganham cedo ou não ganham.",
+      "motivo": "Arco é madeira curada, e por isso ele só nasce onde a serra dá lenha. Toda a madeira do mapa está em terra pequena — Plateia, Téspias e Cinúria — e é o que elas têm que os grandes não têm."
+    },
+    "treinamento-de-cavaleiros": {
+      "nome": "Treinamento de cavaleiros",
+      "custos": [2200, 4400, 7500],
+      "turnos": [3, 4, 5],
+      "manutencao": [7, 14, 22],
+      "requisito": { "produtos": ["cavalos"] },
+      "efeito": { "tipo": "arma", "arma": "cavalaria" },
+      "promessa": "Esta província passa a levantar CAVALARIA: ela quase não muda o choque, ela muda o DEPOIS — multiplica a perseguição, e decide se você destruiu o exército inimigo ou só o empurrou.",
+      "motivo": "Cavalo se cria em pasto de planície, e o mapa tem dois: a planície argiva de Fídon e a bacia do Copais. Tomar uma delas não é renda a mais, é uma arma que você não tinha."
+    },
     "quartel": {
       "nome": "Quartel",
       "custos": [1500, 3000, 5500],
       "turnos": [1, 2, 3],
       "manutencao": [5, 10, 16],
-      "efeito": { "tipo": "futuro" },
-      "promessa": "Recrutamento já é básico. No futuro, tropas formadas aqui sairão com mais qualidade.",
-      "motivo": "Pátio de treino, arsenal e alojamento; melhora soldados, não concede o direito de recrutá-los."
+      "efeito": { "tipo": "qualidade", "fatores": [1.1, 1.2, 1.3] },
+      "promessa": "Toda tropa levantada NESTA província sai melhor treinada — as quatro armas, um pouco. O treino é carimbado no recrutamento: perder a província não piora quem já está em armas, piora os que virão.",
+      "motivo": "Pátio de treino, arsenal e alojamento. Ele MELHORA soldados; quem concede o direito de levantar cada arma são a Armaria, o Acampamento e o Treinamento."
     },
     "muralha": {
       "nome": "Muralha",

@@ -67,6 +67,9 @@
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
+/* Duas listas com o mesmo desenho e assuntos diferentes: do que a hoste é feita, e de onde
+   ela veio. Classes separadas porque só uma delas marca terra perdida. */
+.exercito__armas,
 .exercito__origens {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -74,6 +77,7 @@
   font-size: 11px;
   color: var(--ui-texto-fraco);
 }
+.exercito__armas dd,
 .exercito__origens dd {
   font-family: var(--fonte-numero);
   text-align: right;

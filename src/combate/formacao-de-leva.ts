@@ -7,15 +7,26 @@
  * congelar a hoste inteira nem deixar os recém-chegados participarem de uma batalha.
  */
 
-import { exercitoVazio, somarLeva } from './exercito';
-import type { Exercito } from './exercito';
+import { ARMAS, exercitoVazio, somarLeva } from './exercito';
+import type { Arma, Exercito } from './exercito';
 
 /** Uma leva paga, visível no mapa, que ficará pronta numa rodada futura. */
 export interface LevaEmFormacao {
   poder: string;
   /** Terra de onde estes homens saíram e para onde voltam se a formação for interrompida. */
   origem: string;
-  homens: number;
+  /**
+   * Os grupos em treino: arma e qualidade de cada um.
+   *
+   * ⚠️ **Uma lista, e não uma arma só**, para recrutar hoplitas e arqueiros na mesma terra no
+   * mesmo turno não se atropelar. E fica na FORMAÇÃO em vez de ser perguntado depois: a
+   * província pode perder a Armaria — ou o dono — entre o recrutamento e o dia em que a leva
+   * vira hoste, e esta tropa já foi equipada.
+   *
+   * ⚠️ **O total NÃO é guardado ao lado.** Guardar um total junto do detalhe é convidar os
+   * dois a discordarem, e é a mesma regra que a hoste já segue. Use `homensEmFormacao`.
+   */
+  contingentes: { arma: Arma; qualidade: number; homens: number }[];
   /** Primeiro turno em que a leva já pode receber ordens. */
   prontaNoTurno: number;
 }
@@ -38,6 +49,8 @@ export function iniciarFormacao(
   poder: string,
   homens: number,
   turnoAtual: number,
+  arma: Arma = 'leve',
+  qualidade = 1,
 ): void {
   const existente = formacoes[idProvincia];
   if (existente && existente.poder !== poder) {
@@ -45,7 +58,14 @@ export function iniciarFormacao(
   }
 
   if (existente) {
-    existente.homens += homens;
+    const igual = existente.contingentes.find(
+      (c) => c.arma === arma && c.qualidade === qualidade,
+    );
+    if (igual) igual.homens += homens;
+    else existente.contingentes.push({ arma, qualidade, homens });
+    ordenarContingentes(existente.contingentes);
+    // ⚠️ O prazo é o do ÚLTIMO que entrou: quem chega hoje não fica pronto com quem chegou
+    // ontem. Sem isto, recrutar todo turno manteria uma leva eternamente a um turno do fim.
     existente.prontaNoTurno = Math.max(existente.prontaNoTurno, turnoAtual + 1);
     return;
   }
@@ -53,9 +73,26 @@ export function iniciarFormacao(
   formacoes[idProvincia] = {
     poder,
     origem: idProvincia,
-    homens,
+    contingentes: [{ arma, qualidade, homens }],
     prontaNoTurno: turnoAtual + 1,
   };
+}
+
+/** Quantos homens esta leva tem ao todo. Derivado, nunca guardado. */
+export function homensEmFormacao(formacao: LevaEmFormacao | undefined): number {
+  if (!formacao) return 0;
+  let total = 0;
+  for (const c of formacao.contingentes) total += c.homens;
+  return total;
+}
+
+/** Ordem fixa: arma e depois qualidade. Determinismo antes de qualquer soma. */
+function ordenarContingentes(
+  contingentes: { arma: Arma; qualidade: number; homens: number }[],
+): void {
+  contingentes.sort(
+    (a, b) => ARMAS.indexOf(a.arma) - ARMAS.indexOf(b.arma) || a.qualidade - b.qualidade,
+  );
 }
 
 export interface ResultadoDasFormacoes {
@@ -99,9 +136,9 @@ export function concluirFormacoes(
     const perdeuAFormacao = donoDe(idProvincia) !== formacao.poder;
 
     if (perdeuAFormacao) {
-      estado.populacao[formacao.origem] =
-        (estado.populacao[formacao.origem] ?? 0) + formacao.homens;
-      interrompidas.push({ provincia: idProvincia, homens: formacao.homens });
+      const perdidos = homensEmFormacao(formacao);
+      estado.populacao[formacao.origem] = (estado.populacao[formacao.origem] ?? 0) + perdidos;
+      interrompidas.push({ provincia: idProvincia, homens: perdidos });
       delete estado.formacoes[idProvincia];
       continue;
     }
@@ -110,9 +147,12 @@ export function concluirFormacoes(
     // identidade propria. O contador vem do estado, e e o mesmo de todo mundo.
     const exercito =
       hoste ?? exercitoVazio(`h${estado.proximaHoste++}`, formacao.poder, idProvincia);
-    somarLeva(exercito, formacao.origem, formacao.homens);
+    // Cada grupo entra com a arma e o treino que recebeu ao ser levantado.
+    for (const c of formacao.contingentes) {
+      somarLeva(exercito, formacao.origem, c.homens, c.arma, c.qualidade);
+    }
     estado.hostes[exercito.id] = exercito;
-    ativadas.push({ provincia: idProvincia, homens: formacao.homens });
+    ativadas.push({ provincia: idProvincia, homens: homensEmFormacao(formacao) });
     delete estado.formacoes[idProvincia];
   }
 

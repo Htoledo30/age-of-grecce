@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { exercitoVazio, forcaDe, retirar, somarLeva } from '../../src/combate/exercito';
+import { exercitoVazio, forcaDe, retirar, somarLeva, porTerra, terrasDe } from '../../src/combate/exercito';
 
 describe('exército: a força é derivada da origem', () => {
   it('somar levas soma a força, e a origem lembra de onde cada um veio', () => {
@@ -10,7 +10,7 @@ describe('exército: a força é derivada da origem', () => {
     somarLeva(e, 'maratona', 400);
     somarLeva(e, 'atenas', 100);
     expect(forcaDe(e)).toBe(1100);
-    expect(e.origem).toEqual({ atenas: 700, maratona: 400 });
+    expect(porTerra(e)).toEqual({ atenas: 700, maratona: 400 });
   });
 
   it('retirar tira proporcionalmente de cada origem e a soma fecha exata', () => {
@@ -21,16 +21,16 @@ describe('exército: a força é derivada da origem', () => {
     const saiu = retirar(e, 500);
     // metade de cada, não 500 da primeira da lista: a ordem das levas não pode virar
     // uma regra escondida
-    expect(saiu).toEqual({ atenas: 350, maratona: 150 });
+    expect(terrasDe(saiu)).toEqual({ atenas: 350, maratona: 150 });
     expect(forcaDe(e)).toBe(500);
     // nenhum homem sumiu nem foi inventado no arredondamento
-    expect(Object.values(saiu).reduce((a, b) => a + b, 0)).toBe(500);
+    expect(saiu.reduce((a, c) => a + c.homens, 0)).toBe(500);
   });
 
   it('retirar mais do que existe leva só o que existe', () => {
     const e = exercitoVazio('h1', 'atenas', 'atenas');
     somarLeva(e, 'atenas', 100);
-    expect(retirar(e, 999)).toEqual({ atenas: 100 });
+    expect(terrasDe(retirar(e, 999))).toEqual({ atenas: 100 });
     expect(forcaDe(e)).toBe(0);
   });
 
@@ -40,7 +40,7 @@ describe('exército: a força é derivada da origem', () => {
     somarLeva(e, 'b', 33);
     somarLeva(e, 'c', 34);
     const saiu = retirar(e, 50);
-    expect(Object.values(saiu).reduce((a, b) => a + b, 0)).toBe(50);
+    expect(saiu.reduce((a, c) => a + c.homens, 0)).toBe(50);
     expect(forcaDe(e)).toBe(50);
   });
 });

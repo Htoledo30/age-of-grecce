@@ -13,7 +13,7 @@
  * a humanidade do mapa toda vez.
  */
 
-import { forcaDe, retirar } from '../exercito';
+import { forcaDe, retirar, terrasDe } from '../exercito';
 import type { Exercito } from '../exercito';
 import { hoste, unicaEm } from './consultas';
 import type { EstadoDeMobilizacao } from './estado';
@@ -29,9 +29,10 @@ export function devolver(
   exercito: Exercito,
   homens: number,
 ): void {
-  const devolvidos = retirar(exercito, homens);
-  for (const [origem, quantos] of Object.entries(devolvidos)) {
-    estado.populacao[origem] = (estado.populacao[origem] ?? 0) + quantos;
+  // ⚠️ Volta para a TERRA NATAL de cada contingente, não para onde a hoste está: sem isso,
+  // marchar de uma província pobre até uma rica e dispensar ali mudaria gente de lugar.
+  for (const [terra, quantos] of Object.entries(terrasDe(retirar(exercito, homens)))) {
+    estado.populacao[terra] = (estado.populacao[terra] ?? 0) + quantos;
   }
   if (forcaDe(exercito) === 0) delete estado.hostes[exercito.id];
 }

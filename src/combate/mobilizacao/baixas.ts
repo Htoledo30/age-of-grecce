@@ -7,6 +7,8 @@
  * devolvessem gente, uma seria redundante.
  */
 
+import { homensEmFormacao } from '../formacao-de-leva';
+import type { LevaEmFormacao } from '../formacao-de-leva';
 import { forcaDe, retirar } from '../exercito';
 import { doPoder, formacoes } from './consultas';
 import type { EstadoDeMobilizacao } from './estado';
@@ -55,11 +57,11 @@ export function matarPorFome(
   for (const { provincia, formacao } of formacoes(estado)) {
     if (mortos >= alvo) break;
     if (formacao.poder !== idPoder || pouparEm.has(provincia)) continue;
-    const tirar = Math.min(alvo - mortos, formacao.homens);
+    const tirar = Math.min(alvo - mortos, homensEmFormacao(formacao));
     if (tirar <= 0) continue;
-    formacao.homens -= tirar;
+    tirarDaFormacao(formacao, tirar);
     mortos += tirar;
-    if (formacao.homens <= 0) delete estado.formacoes[provincia];
+    if (homensEmFormacao(formacao) <= 0) delete estado.formacoes[provincia];
   }
   return mortos;
 }
@@ -92,9 +94,41 @@ export function matarDaFormacao(
 ): number {
   const formacao = estado.formacoes[idProvincia];
   if (!formacao) return 0;
-  const tirar = Math.min(Math.max(0, Math.floor(homens)), formacao.homens);
+  const tirar = Math.min(Math.max(0, Math.floor(homens)), homensEmFormacao(formacao));
   if (tirar <= 0) return 0;
-  formacao.homens -= tirar;
-  if (formacao.homens <= 0) delete estado.formacoes[idProvincia];
+  tirarDaFormacao(formacao, tirar);
+  if (homensEmFormacao(formacao) <= 0) delete estado.formacoes[idProvincia];
   return tirar;
+}
+
+/**
+ * Tira homens de uma leva em formação, **proporcionalmente entre os grupos**.
+ *
+ * Nunca do primeiro da lista: a fome não escolhe a cavalaria só porque ela foi levantada
+ * antes. O resto do arredondamento vai no maior, pra soma fechar exata.
+ */
+function tirarDaFormacao(formacao: LevaEmFormacao, homens: number): void {
+  const total = homensEmFormacao(formacao);
+  if (total <= 0 || homens <= 0) return;
+  const alvo = Math.min(homens, total);
+
+  const tirados = formacao.contingentes.map((c) => Math.floor((c.homens * alvo) / total));
+  let resto = alvo - tirados.reduce((s, x) => s + x, 0);
+  while (resto > 0) {
+    let escolhido = -1;
+    let maior = 0;
+    for (const [i, c] of formacao.contingentes.entries()) {
+      const sobra = c.homens - (tirados[i] ?? 0);
+      if (sobra > maior) {
+        maior = sobra;
+        escolhido = i;
+      }
+    }
+    if (escolhido < 0) break;
+    tirados[escolhido] = (tirados[escolhido] ?? 0) + 1;
+    resto -= 1;
+  }
+
+  for (const [i, c] of formacao.contingentes.entries()) c.homens -= tirados[i] ?? 0;
+  formacao.contingentes = formacao.contingentes.filter((c) => c.homens > 0);
 }

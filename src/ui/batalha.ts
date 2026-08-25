@@ -18,6 +18,9 @@
  * põe diante do jogador o que aconteceu. Nenhum clique aqui muda o mapa.
  */
 
+import type { Arma } from '@/combate/exercito';
+import { ARMAS } from '@/combate/exercito';
+import { COR_DA_ARMA, NOME_DA_ARMA } from './armas';
 import { definirTooltip } from './tooltip';
 
 /** Um lado como ele entrou na batalha. */
@@ -27,6 +30,14 @@ interface LadoNaTela {
   homens: number;
   /** Multiplicador de resistência: a muralha. 1 é campo aberto. */
   aguento: number;
+  /**
+   * Quantos homens de cada arma entraram.
+   *
+   * ⚠️ **Só a composição de PARTIDA**, e é o bastante: as baixas são proporcionais entre os
+   * contingentes, então a fatia de cada arma não muda durante a batalha. A barra encolhe
+   * inteira e as faixas encolhem com ela — que é exatamente o que a regra faz.
+   */
+  composicao: Readonly<Record<Arma, number>>;
 }
 
 /** Uma batalha inteira, pronta para ser reproduzida. */
@@ -178,7 +189,7 @@ export class JanelaDeBatalha {
   }
 }
 
-/** Uma barra que encolhe: o nome, o número em pé, e a fatia do que era. */
+/** Uma barra que encolhe: o nome, as armas, o número em pé, e a fatia do que era. */
 function barraDoLado(lado: LadoNaTela, vivos: number, fase: string | null): HTMLElement {
   const linha = document.createElement('div');
   linha.className = 'batalha__lado';
@@ -195,13 +206,40 @@ function barraDoLado(lado: LadoNaTela, vivos: number, fase: string | null): HTML
     nome.appendChild(muro);
   }
 
+  const presentes = ARMAS.filter((arma) => (lado.composicao[arma] ?? 0) > 0);
+  if (presentes.length > 0) {
+    const armas = document.createElement('span');
+    armas.className = 'batalha__armas';
+    // Uma linha só, e em ordem fixa: quem olha precisa reconhecer a mesma leitura em toda
+    // batalha, não descobrir a ordem de cada uma.
+    armas.textContent = presentes
+      .map((arma) => {
+        const quantos = lado.composicao[arma] ?? 0;
+        const vivosDaArma = lado.homens > 0 ? Math.round((quantos * vivos) / lado.homens) : 0;
+        return `${vivosDaArma.toLocaleString('pt-BR')} ${NOME_DA_ARMA[arma].toLowerCase()}`;
+      })
+      .join(' · ');
+    nome.appendChild(armas);
+  }
+
   const trilho = document.createElement('div');
   trilho.className = 'batalha__trilho';
   const cheio = document.createElement('div');
   cheio.className = 'batalha__cheio';
   cheio.style.width = `${lado.homens > 0 ? (vivos / lado.homens) * 100 : 0}%`;
+  // A cor do PODER pinta o fundo; as faixas das armas vão por cima. Um exército só de leves
+  // continua sendo uma barra lisa, como sempre foi — a divisão só aparece em quem misturou.
   cheio.style.background = lado.cor;
   if (fase === 'perseguicao') cheio.dataset['fase'] = 'perseguicao';
+  if (presentes.length > 1) {
+    for (const arma of presentes) {
+      const faixa = document.createElement('div');
+      faixa.className = 'batalha__faixa';
+      faixa.style.flex = String(lado.composicao[arma] ?? 0);
+      faixa.style.background = COR_DA_ARMA[arma];
+      cheio.appendChild(faixa);
+    }
+  }
   trilho.appendChild(cheio);
 
   const conta = document.createElement('span');

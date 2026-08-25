@@ -9,6 +9,14 @@
 
 import type { Postura } from '@/combate/cerco';
 
+/** Uma arma dentro da hoste, com o treino que ela carrega. */
+interface ArmaNaHoste {
+  nome: string;
+  homens: number;
+  /** 1 é tropa comum. Acima disso é Quartel, carimbado quando a leva foi levantada. */
+  treino: number;
+}
+
 /** De onde saiu um pedaço da hoste, e se aquela terra ainda é de quem a comanda. */
 interface OrigemDaHoste {
   provincia: string;
@@ -37,6 +45,13 @@ export interface VistaDoExercito {
   emTerraAlheia: boolean;
   /** É do jogador? Só a dele aceita comando. */
   minha: boolean;
+  /**
+   * De que armas esta hoste é feita, em ordem fixa e só as presentes.
+   *
+   * ⚠️ Sem isto o jogador escolhe a arma na leva e nunca mais vê o que montou — e planejar
+   * composição contra o inimigo à frente deixa de ser possível fora da janela de batalha.
+   */
+  armas: readonly ArmaNaHoste[];
   origens: readonly OrigemDaHoste[];
   /** Quantas províncias ela alcança daqui. Zero desabilita a marcha, dizendo por quê. */
   destinos: number;

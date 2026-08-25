@@ -18,6 +18,37 @@ const NivelDeImposto = z.object({
   humor: z.number().int(),
 });
 
+/**
+ * Uma arma: o que ela tira por rodada e o que ela suporta.
+ *
+ * ⚠️ Os dois números são RELATIVOS entre si, não absolutos: a letalidade do choque continua
+ * mandando na escala. Dobrar os dois em todas as armas não muda batalha nenhuma.
+ */
+const Arma = z.object({
+  /** Quanto este homem tira do inimigo por rodada, comparado a um hoplita. */
+  ataque: z.number().positive(),
+  /** Quanto ele suporta antes de virar baixa. Alto é linha que segura. */
+  aguento: z.number().positive(),
+  /** Ouro por homem no recrutamento, multiplicando `custoPorHomem`. */
+  custo: z.number().positive(),
+  /** Pontos de comida por homem, multiplicando o custo alimentar. Cavalo come. */
+  comida: z.number().positive(),
+});
+
+/**
+ * ⚠️ **Não existe teto de composição, e a ausência dele foi decidida com número na mão.**
+ *
+ * A primeira versão limitava cada arma a uma fração do exército. A medição mostrou que a
+ * regra quase nunca morderia: cavalaria custa 2,2× em ouro e come 2,5× para bater 1,5×, ou
+ * seja, **metade da eficiência do hoplita por ponto de comida**. Ninguém montaria exército de
+ * cavalaria mesmo sem teto — o preço já dizia não, e um teto que não morde é uma regra que se
+ * explica de graça.
+ *
+ * Quem raciona é o PREÇO e a CONSTRUÇÃO: o leve é livre, e as outras três exigem um prédio
+ * naquela província — a Armaria em qualquer terra, o acampamento só onde há madeira, o
+ * treinamento só onde há cavalos.
+ */
+
 export const Ajustes = z.object({
   versao: z.literal(1),
   jogo: z.object({
@@ -396,6 +427,57 @@ export const Ajustes = z.object({
          * chega a valer nada — recuar é decisão de hora.
          */
         limiarDeRecuo: z.number().gt(0).max(1),
+        /**
+         * As três armas, e o que separa uma da outra.
+         *
+         * **Hoplita compra tempo; arqueiro compra dano.** Um exército só de arqueiros mata
+         * muito e quebra na terceira rodada; um só de hoplitas aguenta o dia inteiro e não
+         * decide nada. A cavalaria quase não muda o choque — ela muda **o depois**: é ela que
+         * decide se você destruiu o exército inimigo ou só o empurrou.
+         *
+         * ⚠️ **O counter é SUAVE.** Ter a arma certa é vantagem, não dominância: cem
+         * arqueiros não destroem trezentos hoplitas. Se `counter` subir muito, composição
+         * vira tudo e o número deixa de importar; se descer, as armas viram enfeite.
+         */
+        armas: z.object({
+          /**
+           * A infantaria de vala: **toda província levanta, sempre, sem construir nada.**
+           *
+           * ⚠️ **Ela vale exatamente o que vale um miliciano**, e é isso que ancora a escala
+           * inteira: 1 leve = 1 miliciano num choque. As outras três são o que está ACIMA
+           * dessa linha de base, e por isso `ataque` e `aguento` do leve são 1.
+           *
+           * Fraca e barata: pelo mesmo ouro se põem quase dois leves onde caberia um hoplita.
+           * Ela aguenta por QUANTIDADE, não por qualidade — e ninguém no jogo fica sem
+           * exército por não ter erguido prédio nenhum.
+           */
+          leve: Arma,
+          hoplita: Arma,
+          arqueiro: Arma,
+          cavalaria: Arma,
+          /** Quanto a arma certa multiplica o próprio dano contra a que ela conta. */
+          counter: z.number().min(1),
+          /**
+           * Quanto a cavalaria do vencedor multiplica a perseguição, no máximo.
+           *
+           * É o papel dela, e é por isso que ela não é "o hoplita caro": sem cavalo o
+           * inimigo escapa e volta no turno seguinte; com cavalo, a derrota dele vira
+           * aniquilação. Dá à terra do cavalo um valor que não é renda.
+           */
+          perseguicaoPorCavalaria: z.number().min(1),
+          /**
+           * Que fatia de cavalaria já entrega METADE do bônus de perseguição.
+           *
+           * ⚠️ **Satura, e é o que salva a cavalaria de ser armadilha.** A força de um lado
+           * cresce com o QUADRADO do número de homens, então toda tropa cara perde a corrida
+           * de cabeças: 20% de cavalaria custa 20% do orçamento e devolve bem menos que 20%
+           * de vantagem no choque. Se o bônus fosse proporcional, esquadrão nenhum
+           * compensaria — e é falso, além de chato: não é preciso um cavalo por fugitivo para
+           * caçar fugitivos, basta ter cavalo. Com 0,08 aqui, um décimo do exército a cavalo
+           * já entrega a maior parte da caçada.
+           */
+          meiaCavalaria: z.number().gt(0).max(1),
+        }),
       }),
       milicia: z.object({
         /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */

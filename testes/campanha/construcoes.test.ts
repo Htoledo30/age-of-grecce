@@ -200,9 +200,17 @@ describe('construções', () => {
       ]),
     );
     expect(c.construcoesDisponiveisEm('atenas')).not.toHaveProperty('mina');
-    // O Quartel está ESCONDIDO: `efeito.tipo === 'futuro'` não entra em catálogo nenhum.
-    // Ele volta com o combate, quando qualidade de tropa tiver onde existir.
-    expect(c.construcoesDisponiveisEm('atenas')).not.toHaveProperty('quartel');
+    // ⚠️ **O Quartel VOLTOU**, e é a regra que o trouxe: prédio só fica escondido enquanto
+    // o efeito dele é `futuro`. Ele agora treina a tropa levantada na província, e por isso
+    // está à venda de novo.
+    expect(c.construcoesDisponiveisEm('atenas')).toHaveProperty('quartel');
+    // A Armaria também: hoplita é escolha de slot, não permissão do mapa.
+    expect(c.construcoesDisponiveisEm('atenas')).toHaveProperty('armaria');
+    // Já as duas regionais só aparecem onde a terra dá o bem.
+    expect(c.construcoesDisponiveisEm('atenas')).not.toHaveProperty('treinamento-de-cavaleiros');
+    expect(c.construcoesDisponiveisEm('argos')).toHaveProperty('treinamento-de-cavaleiros');
+    expect(c.construcoesDisponiveisEm('atenas')).not.toHaveProperty('acampamento-de-arqueiro');
+    expect(c.construcoesDisponiveisEm('plateia')).toHaveProperty('acampamento-de-arqueiro');
     expect(c.construcoesDisponiveisEm('maratona')).not.toHaveProperty('porto');
     expect(c.construcoesDisponiveisEm('sounion')).toHaveProperty('mina');
     expect(c.construcoesDisponiveisEm('sounion')).toHaveProperty('pedreira');

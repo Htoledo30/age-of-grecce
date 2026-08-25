@@ -5,6 +5,7 @@
  * Uma hoste que viesse de fora dele criaria gente ao ser dispensada.
  */
 
+import type { Arma } from '../exercito';
 import { exercitoVazio, somarLeva } from '../exercito';
 import { concluirFormacoes as concluir, iniciarFormacao } from '../formacao-de-leva';
 import type { ResultadoDasFormacoes } from '../formacao-de-leva';
@@ -27,10 +28,12 @@ export function recrutar(
   poder: string,
   leva: { ouro: number; homens: number },
   turnoAtual: number,
+  arma: Arma = 'leve',
+  qualidade = 1,
 ): void {
   estado.tesouros[poder] = tesouroDe(estado, poder) - leva.ouro;
   estado.populacao[idProvincia] = populacaoDe(estado, idProvincia) - leva.homens;
-  iniciarFormacao(estado.formacoes, idProvincia, poder, leva.homens, turnoAtual);
+  iniciarFormacao(estado.formacoes, idProvincia, poder, leva.homens, turnoAtual, arma, qualidade);
 }
 
 /** Torna ativas as levas cujo turno chegou, depois de resolver as marchas da rodada. */
@@ -78,6 +81,8 @@ export function plantar(
   idProvincia: string,
   idPoder: string,
   homens: number,
+  arma: Arma = 'leve',
+  qualidade = 1,
 ): string {
   // ⚠️ Substitui só o que é DESTE poder. Apagava tudo o que estivesse ali, e isso deixou de
   // servir quando duas forças inimigas passaram a caber no mesmo lugar: plantar uma guarnição
@@ -86,7 +91,7 @@ export function plantar(
     if (antiga.poder === idPoder) delete estado.hostes[antiga.id];
   }
   const exercito = exercitoVazio(proximoId(estado), idPoder, idProvincia);
-  somarLeva(exercito, idProvincia, homens);
+  somarLeva(exercito, idProvincia, homens, arma, qualidade);
   estado.hostes[exercito.id] = exercito;
   return exercito.id;
 }

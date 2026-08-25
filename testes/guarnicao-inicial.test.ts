@@ -32,7 +32,7 @@ describe('a guarnição de 700 a.C. sai da população da própria terra', () =>
       combate,
     );
     expect(populacao['eleusis']).toBe(11_500);
-    expect(Object.values(postos)[0]?.origem).toEqual({ eleusis: 500 });
+    expect(porTerraOuVazio(Object.values(postos)[0])).toEqual({ eleusis: 500 });
     expect(Object.values(postos)[0]?.posicao).toBe('eleusis');
     // Quem não tem guarnição não é tocado.
     expect(populacao['atenas']).toBe(35_000);
@@ -98,3 +98,10 @@ describe('o mapa abre EM PAZ: nenhuma província tem tropa', () => {
     expect(c.donoDe('eleusis')).toBe('atenas');
   });
 });
+
+/** `porTerra` tolerando hoste ausente: o teste falha na asserção, não num `undefined`. */
+function porTerraOuVazio(e: { contingentes: readonly { terra: string; homens: number }[] } | undefined) {
+  const conta: Record<string, number> = {};
+  for (const c of e?.contingentes ?? []) conta[c.terra] = (conta[c.terra] ?? 0) + c.homens;
+  return conta;
+}

@@ -29,7 +29,10 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   );
   estado.felicidade = { ...salvo.felicidade };
   estado.hostes = Object.fromEntries(
-    Object.entries(salvo.hostes).map(([id, h]) => [id, { ...h, origem: { ...h.origem } }]),
+    Object.entries(salvo.hostes).map(([id, h]) => [
+      id,
+      { ...h, contingentes: h.contingentes.map((c) => ({ ...c })) },
+    ]),
   );
   estado.proximaHoste = salvo.proximaHoste;
   estado.formacoes = Object.fromEntries(

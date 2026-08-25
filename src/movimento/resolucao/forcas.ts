@@ -7,6 +7,7 @@
  */
 
 import { forcaDe, retirar } from '@/combate/exercito';
+import type { Contingente } from '@/combate/exercito';
 import type { EstadoDaResolucao } from './relatorio';
 
 /**
@@ -25,8 +26,13 @@ export interface Forca {
    */
   hoste: string;
   poder: string;
-  /** Quantos homens de cada terra natal. Fatia proporcional da hoste de origem. */
-  origem: Record<string, number>;
+  /**
+   * Os contingentes que vieram: terra natal, arma e treino de cada grupo.
+   *
+   * Fatia proporcional da hoste de origem — `retirar` já reparte de cada contingente, e é
+   * isso que impede um destacamento de levar a cavalaria inteira por acidente de índice.
+   */
+  contingentes: Contingente[];
   /** Trechos que ainda vai andar. Vazio na guarnição parada. */
   rota: readonly string[];
   posicao: string;
@@ -37,9 +43,9 @@ export interface Forca {
   viva: boolean;
 }
 
-export function soma(origem: Record<string, number>): number {
+export function soma(contingentes: readonly Contingente[]): number {
   let total = 0;
-  for (const homens of Object.values(origem)) total += homens;
+  for (const c of contingentes) total += c.homens;
   return total;
 }
 
@@ -81,7 +87,7 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
           // passam a existir ao mesmo tempo.
           hoste: `h${estado.proximaHoste++}`,
           poder: hoste.poder,
-          origem: partem,
+          contingentes: partem,
           rota: ordem.rota,
           posicao: onde,
           partiuDe: onde,
@@ -95,7 +101,7 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
       forcas.push({
         hoste: id,
         poder: hoste.poder,
-        origem: { ...hoste.origem },
+        contingentes: hoste.contingentes.map((c) => ({ ...c })),
         rota: [],
         // ⚠️ Quem FICA não recua: o recuo é ordem dada com a marcha, e quem está parado em
         // casa não recebeu nenhuma. Um defensor que quisesse recuar teria de ter marchado.
