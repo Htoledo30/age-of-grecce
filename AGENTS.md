@@ -232,9 +232,11 @@ Henrique escolheu esta curva entre três, e por dois defeitos que ele apontou na
   opção certa — as duas ordens atacam, e o que muda é o que se leva se der errado.
 - **A janela de batalha** abre só nas do jogador, depois da rodada resolvida, e reproduz a
   lista de rounds que a regra produz SEMPRE. Ela não recalcula nada, e um teste de tela
-  confere que o último round bate com o que o mapa ficou. A muralha aparece nela como
-  modificador visível — o multiplicador escondido que o Codex removeu não voltou pela porta
-  dos fundos.
+  confere que o último round bate com o que o mapa ficou.
+- **A muralha NÃO endurece o defensor**, e Henrique decidiu assim olhando o número: ela põe
+  mais gente em pé e obriga o cerco antes do assalto. O campo `aguento` do relatório continua
+  valendo 1 e existe para um muro entrar VISÍVEL se um dia entrar — o multiplicador escondido
+  que o Codex removeu não voltou pela porta dos fundos.
 
 ⚠️ **A troca desenterrou três bugs, e nenhum era do cálculo novo.** Eram buracos que a
 aniquilação escondia, porque antes era impossível dois exércitos sobrarem de pé no mesmo

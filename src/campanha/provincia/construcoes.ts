@@ -29,7 +29,9 @@ export function obraEm(nucleo: NucleoDaCampanha, idProvincia: string): Obra | un
  *
  * ⚠️ **Prédio que não serve HOJE não aparece.** Regra de Henrique: todo prédio comprável
  * tem que fazer alguma coisa agora; o que só promete fica escondido até ter função. O
- * Quartel (`efeito.tipo === 'futuro'`) é o caso — ele volta com o combate, quando "qualidade
+ * Nenhum prédio está nessa situação hoje: o Quartel esteve e voltou ao catálogo quando passou
+ * a carimbar treino na leva. A regra fica de pé para o próximo que prometer antes de entregar
+ * — o campo `efeito.tipo === 'futuro'` continua no esquema exatamente para isso. ("qualidade
  * da tropa" tiver onde existir. Vender 1.500 moedas de promessa é pior que não vender nada:
  * o jogador paga, não vê diferença, e deixa de confiar no resto do catálogo.
  */
@@ -176,13 +178,27 @@ function corrupcaoComAObra(
 ): number {
   const efeito = nucleo.catalogo[idConstrucao]?.efeito;
   if (efeito?.tipo !== 'corrupcao') return base.corrupcao;
-  const nivelAlvo = Math.min(3, (base.construcoes[idConstrucao] ?? 0) + 1);
+  const nivelAtual = base.construcoes[idConstrucao] ?? 0;
+  const nivelAlvo = Math.min(3, nivelAtual + 1);
   const atual = corrupcaoEm(nucleo, idProvincia);
-  const alivio = alivioDasObras({ [idConstrucao]: nivelAlvo }, nucleo.catalogo);
-  // Aplica só o alívio NOVO sobre as fatias que já valem hoje: o que as outras obras já
-  // aliviaram está dentro de `atual`, e recontá-lo daria o desconto duas vezes.
-  const tamanho = atual.porTamanho * alivio.tamanho;
-  const distancia = atual.porDistancia * alivio.distancia;
+  const depois = alivioDasObras({ [idConstrucao]: nivelAlvo }, nucleo.catalogo);
+  // ⚠️ **Desconta o alívio que esta MESMA obra já dá antes de aplicar o do nível novo.**
+  // `atual` já está com o nível de hoje dentro dela; multiplicar o fator cheio do nível
+  // seguinte por cima cobrava o desconto duas vezes e a tooltip prometia o que a obra não
+  // entregava. Medido: Ágora I → II em Atenas anunciava +47 por turno e entregava +34.
+  //
+  // Dividir em vez de subtrair porque os fatores são MULTIPLICATIVOS: o que se quer é a
+  // razão entre o degrau novo e o velho, e ela é o quanto a fatia ainda vai encolher.
+  const antes =
+    nivelAtual > 0
+      ? alivioDasObras({ [idConstrucao]: nivelAtual }, nucleo.catalogo)
+      : { tamanho: 1, distancia: 1 };
+  const passo = {
+    tamanho: antes.tamanho > 0 ? depois.tamanho / antes.tamanho : depois.tamanho,
+    distancia: antes.distancia > 0 ? depois.distancia / antes.distancia : depois.distancia,
+  };
+  const tamanho = atual.porTamanho * passo.tamanho;
+  const distancia = atual.porDistancia * passo.distancia;
   return 1 - (1 - tamanho) * (1 - distancia);
 }
 

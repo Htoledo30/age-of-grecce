@@ -314,8 +314,13 @@ são preservadas na restauração.
 - **O treino é carimbado na leva** (`treinoEm` lido no recrutamento) e multiplica o ataque, e
   não o aguento. Perder a província depois não rebaixa quem já está em armas.
 - **Não existe empate**: quem chama passa o defensor como desempate, e barrar o invasor é a
-  vitória de quem segura o chão. A muralha entra por `aguento`, que divide o dano recebido e
-  aparece VISÍVEL na janela — o multiplicador escondido que foi removido não volta.
+  vitória de quem segura o chão.
+- **A Muralha faz DUAS coisas, e nenhuma é endurecer o defensor** (decisão de Henrique,
+  25/08/2026): ela multiplica a milícia (×1,25 / ×1,50 / ×1,75) e obriga o inimigo a sentar
+  duas rodadas antes de assaltar. Um terceiro bônus — `aguento` no assalto — foi medido e
+  recusado: no nível I mudava a conta de 250 para 260 atacantes, e no III de 340 para 410. O
+  campo `aguento` continua no relatório valendo 1, e é por ele que um muro entraria se um dia
+  entrar: multiplicador VISÍVEL, round a round, nunca escondido dentro da força da defesa.
 - **Recuar** (`recuaAos`) sai de campo antes da quebra por uma fração pequena e sem
   perseguição — a fração sobe se o vencedor tiver cavalaria. `refugio` é uma pergunta que a
   resolução faz e a campanha responde: vizinha própria por geografia e posse, ou `null` na
@@ -395,7 +400,9 @@ Comandos principais:
 - `npm run capturar`: captura 1920×1080 e erros de console;
 - `npm run gerar-mapa` e `npm run gerar-provincias`: ferramentas de autoria, não runtime.
 
-A suíte unitária tem 315 testes e todos passam.
+A suíte unitária passa inteira. ⚠️ **O número exato não fica escrito aqui de propósito**: ele
+muda a cada trabalho e este documento envelhecia sozinho. Quem quiser saber roda
+`npm run verificar`.
 
 ## Crédito de asset
 

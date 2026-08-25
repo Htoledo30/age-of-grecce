@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { exercitoVazio, forcaDe, somarLeva } from '../../src/combate/exercito';
 import { resolverRodada } from '../../src/movimento/resolucao/resolver-rodada';
 import type { EstadoDaResolucao } from '../../src/movimento/resolucao/relatorio';
-import { ajustes } from '../apoio/mundo';
+import { ajustes, novaCampanha } from '../apoio/mundo';
 import { combateComDoisSaltos, em, hoste, mundoDe, tabuleiro } from './apoio';
 
 describe('resolução: partida, chegada, choque', () => {
@@ -175,3 +175,59 @@ function porTerraOuVazio(e: { contingentes: readonly { terra: string; homens: nu
   for (const c of e?.contingentes ?? []) conta[c.terra] = (conta[c.terra] ?? 0) + c.homens;
   return conta;
 }
+
+describe('sair de campo acaba a batalha, não começa outra', () => {
+  it('quem recua sai do lugar e NÃO é emparelhado de novo na mesma rodada', () => {
+    // ⚠️ O defeito das onze batalhas numa província, pelo caminho do recuo. A lista de
+    // presentes é agrupada por província UMA vez, antes do laço; quem recua muda de posição
+    // mas continua nela. Sem reconferir a posição, 900 homens saíam de Elêusis e apanhavam
+    // três vezes seguidas — e a ordem "Poupar o exército" entregava ao inimigo três batalhas
+    // em vez de uma, que é o oposto do que ela promete.
+    const c = novaCampanha();
+    c.comecar('atenas');
+    c.darOuro(400_000);
+    c.plantarHoste('atenas', 'atenas', 900);
+    c.plantarHoste('eleusis', 'eleusis', 1400);
+    const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
+    expect(minha).toBeDefined();
+    c.ordenarMarcha(
+      minha!.id,
+      'eleusis',
+      900,
+      'atenas',
+      'assaltar',
+      ajustes.combate.batalha.limiarDeRecuo,
+    );
+    c.passarTurno();
+
+    const emEleusis = c.rodada.batalhas.filter((b) => b.provincia === 'eleusis');
+    expect(emEleusis).toHaveLength(1);
+    expect(emEleusis[0]?.desfecho).not.toBe('quebrou');
+    // E o exército continua existindo, que é a promessa inteira da ordem.
+    expect(c.forcaEm('atenas', 'atenas')).toBeGreaterThan(0);
+  });
+
+  it('o assalto rechaçado devolve os sobreviventes à terra natal', () => {
+    // ⚠️ A hoste acaba; os homens, não. Era a única regra do jogo que o assalto não seguia:
+    // quem sobrevivia à contra-investida não morria na conta e não voltava para a população.
+    const c = novaCampanha();
+    c.comecar('atenas');
+    c.darOuro(400_000);
+    c.plantarHoste('atenas', 'atenas', 150);
+    const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
+    c.ordenarMarcha(minha!.id, 'eleusis', 150, 'atenas', 'assaltar');
+
+    const semAssalto = novaCampanha();
+    semAssalto.comecar('atenas');
+    semAssalto.passarTurno();
+    const crescimentoLimpo = semAssalto.populacaoDe('atenas');
+
+    c.passarTurno();
+    const assalto = c.rodada.batalhas.find((b) => b.tipo === 'assalto');
+    expect(assalto?.vencedor).toBe('eleusis');
+    // A hoste se desfaz diante da muralha — isso continua valendo.
+    expect(c.hostesEm('atenas')).toHaveLength(0);
+    // Mas quem escapou voltou para casa: a população de Atenas passou do crescimento normal.
+    expect(c.populacaoDe('atenas')).toBeGreaterThan(crescimentoLimpo);
+  });
+});

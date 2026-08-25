@@ -140,8 +140,11 @@ export interface RelatorioDaRodada {
      */
     lados: readonly [LadoNoRelatorio, LadoNoRelatorio];
     rounds: readonly { a: number; b: number; fase: 'choque' | 'perseguicao' | 'recuo' }[];
-    /** Como terminou para o perdedor: a linha cedeu, ou ele saiu de campo a tempo. */
-    desfecho: 'quebrou' | 'recuou';
+    /**
+     * Como terminou para o perdedor: a linha cedeu (`quebrou`), ele saiu de campo por ordem
+     * (`recuou`), ou as rodadas acabaram sem ninguém ceder (`barrado`).
+     */
+    desfecho: 'quebrou' | 'recuou' | 'barrado';
     /**
      * Que tipo de choque foi.
      *

@@ -70,8 +70,10 @@ export function travarLados(
   // adiante, porque sair antes de quebrar preserva o exército, não só a gente.
   const sobreviventes = venceuA ? r.sobreviventesA : r.sobreviventesB;
   reduzirLado(perdedores, venceuA ? r.sobreviventesB : r.sobreviventesA);
-  if (r.desfecho === 'recuou') recolher(perdedores, provincia, refugio, dispersaram);
-  else dispersar(perdedores, dispersaram);
+  // Quem SAIU de campo — por ordem ou por ter sido barrado — continua sendo um exército e
+  // marcha para a terra vizinha. Só quem QUEBROU se desfaz.
+  if (r.desfecho === 'quebrou') dispersar(perdedores, dispersaram);
+  else recolher(perdedores, provincia, refugio, dispersaram);
   reduzirLado(vencedores, sobreviventes);
   if (cancelarRota) for (const f of vencedores) f.rota = [];
 

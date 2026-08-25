@@ -39,7 +39,13 @@ export function naProvincia(
     // o que obriga o choque é o estado da chegada, não o que sobrar dele.
     const obrigado = choqueObrigado(provincia, presentes);
     for (;;) {
-      const vivas = presentes.filter((f) => f.viva);
+      // ⚠️ **Reconfere a POSIÇÃO, e não só se a força está viva.** A lista foi agrupada por
+      // província uma vez, antes do laço; quem recua sai do lugar mas continua nela. Sem esta
+      // conferência o exército que recuou era emparelhado de novo, na mesma rodada, contra o
+      // mesmo inimigo — 900 homens saíam de Elêusis e apanhavam três vezes seguidas, e a
+      // ordem "Poupar o exército" acabava entregando ao inimigo três batalhas em vez de uma.
+      // É o mesmo defeito das onze batalhas numa província, pelo caminho do recuo.
+      const vivas = presentes.filter((f) => f.viva && f.posicao === provincia);
       // ⚠️ **Estar junto não é lutar.** Só entram no choque os poderes que QUEREM lutar; quem
       // está sitiando fica ao lado, e um poder sozinho a fim de briga não tem com quem brigar.
       // É isto que deixa sitiante e sitiado ocuparem a mesma província sem se aniquilarem — o

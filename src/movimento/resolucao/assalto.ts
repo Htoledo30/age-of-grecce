@@ -8,7 +8,7 @@
 import { resolverBatalha } from '@/combate/batalha';
 import { leves, porArma, valorEmCampo } from '@/combate/composicao';
 import { defesaNoAssalto, milicianosPerdidos } from '@/combate/cerco';
-import { forcaDe, retirar } from '@/combate/exercito';
+import { forcaDe, retirar, terrasDe } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import type { EstadoDaResolucao, MundoDaResolucao, RelatorioEmConstrucao } from './relatorio';
 
@@ -23,9 +23,16 @@ export function assaltar(
   levantar: (provincia: string) => void,
 ): void {
   const dono = mundo.donoDe(provincia);
-  // O assalto é contra a MURALHA, e por isso o defensor entra no relatório com o aguento
-  // dela: é assim que a janela mostra o muro como um modificador visível, round a round, em
-  // vez de um multiplicador escondido dentro do número da defesa.
+  // ⚠️ **A muralha NÃO endurece o defensor, e é decisão de Henrique (25/08/2026).** Ela faz
+  // duas coisas, as duas reais e visíveis: põe mais gente em pé (`efeito.milicia`, ×1,25 /
+  // ×1,50 / ×1,75) e obriga o inimigo a sentar antes de assaltar. Um terceiro bônus foi
+  // medido e recusado por ele: no nível I mudava a conta de 250 para 260 atacantes — ruído
+  // — e no III de 340 para 410, encarecendo a guerra numa hora em que a IA ainda não existe.
+  //
+  // O campo continua aqui, valendo 1, porque é por ele que um muro entraria se um dia
+  // entrar: multiplicador de resistência VISÍVEL, aparecendo round a round na janela, nunca
+  // um número escondido dentro da força da defesa. Enquanto valer 1, a janela não desenha
+  // muro nenhum — e é assim que ela para de prometer o que o jogo não faz.
   const aguentoDaMuralha = 1;
   const atacantes = forcaDe(hoste);
   const defesa = defesaNoAssalto(milicianos);
@@ -73,6 +80,14 @@ export function assaltar(
   }
 
   // Rechaçado: o exército de assalto se desfaz diante da muralha, e a cidade fica.
+  //
+  // ⚠️ **A hoste acaba; os homens, não.** É a mesma regra que a batalha de campo já segue —
+  // *quem quebra perde a hoste, não a geração* — e o assalto era o único lugar do jogo onde
+  // ela não valia: 150 homens iam contra Elêusis, 20 sobreviviam à contra-investida, e esses
+  // 20 sumiam do mundo. Não morriam na conta e não voltavam para a população: evaporavam.
+  // Agora dispersam para a terra natal, como qualquer derrotado.
+  retirar(hoste, atacantes - choque.sobreviventesA);
+  if (hoste.contingentes.length > 0) mundo.dispersaram(terrasDe(hoste.contingentes));
   delete estado.hostes[hoste.id];
   levantar(provincia);
   perder(

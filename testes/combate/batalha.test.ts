@@ -81,12 +81,30 @@ describe('a batalha: choque, quebra e perseguição', () => {
     expect(batalha(1000, 900, 2).vencedor).toBe('b');
 
     // Atrás de muro alto, 500 barram 1.000 — barrar É vencer, num jogo em que quem ataca
-    // precisa tomar a praça. E jogar o exército contra muralha e ser rechaçado **destrói o
-    // exército**: o atacante volta com um punhado. É o preço de subir a muralha cedo demais,
-    // e é o que faz o cerco existir como alternativa.
+    // precisa tomar a praça.
     const barrado = batalha(1000, 500, 6);
     expect(barrado.vencedor).toBe('b');
-    expect(barrado.sobreviventesA).toBeLessThan(1000 * 0.25);
+    // ⚠️ **E ele é BARRADO, não desfeito.** Ninguém cedeu: o atacante sangrou metade do
+    // exército no dia e sai de campo pagando a mesma fatia de quem recua por ordem. Ser
+    // caçado como fugitivo sem nunca ter fugido era o defeito — 1.000 hoplitas contra 1.000
+    // paravam em 429 × 429, com 57% de baixas cada e ninguém abaixo do limiar, e mesmo assim
+    // um deles caía para 171.
+    expect(barrado.desfecho).toBe('barrado');
+    expect(barrado.rounds.at(-1)?.fase).toBe('recuo');
+    expect(barrado.sobreviventesA).toBeGreaterThan(1000 * 0.25);
+    // Mas ele pagou caro pelo dia: mais da metade ficou no campo.
+    expect(barrado.sobreviventesA).toBeLessThan(500);
+  });
+
+  it('BARRADO não é empate: alguém perde o chão, e não é quem o tinha', () => {
+    // Regra de Henrique, e ela vale nas três saídas: *"não pode haver empate, ou eu perco ou
+    // o inimigo perde"*. O que muda no barrado é só o PREÇO de perder — quem aguentou o dia
+    // inteiro não é tratado como quem debandou.
+    const parelha = resolverBatalha(lado(1000), lado(1000), { ...regras, letalidadeDoChoque: 0.05 }, 'b');
+    expect(parelha.desfecho).toBe('barrado');
+    expect(parelha.vencedor).toBe('b');
+    expect(parelha.sobreviventesA).toBeGreaterThan(0);
+    expect(parelha.sobreviventesB).toBeGreaterThan(parelha.sobreviventesA);
   });
 
   it('NÃO EXISTE EMPATE: forças iguais, e quem segura o chão leva', () => {

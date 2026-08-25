@@ -344,8 +344,10 @@ já conseguem explicar o resultado.
 - **Não existe empate.** Quem ataca precisa vencer; barrar o invasor já é a vitória de quem
   segura o chão, e o desempate vai sempre para o defensor.
 - **O atacante também quebra**, e é isso que dá chance ao defensor menor: uma força maior que
-  sangra primeiro perde a batalha que a aritmética dizia ser dela. A Muralha entra como
-  resistência VISÍVEL, aparecendo round a round na janela.
+  sangra primeiro perde a batalha que a aritmética dizia ser dela.
+- **A Muralha não endurece o defensor.** Ela põe mais gente em pé e obriga o cerco antes do
+  assalto — e é só. O caminho para um bônus de resistência existe no relatório (`aguento`) e
+  está desligado por decisão: no nível I ele era ruído, e no III encarecia demais a guerra.
 - **Recuar é a terceira saída, e é decisão de HORA.** Antes de a linha ceder, um lado pode
   sair de campo: paga uma fração pequena e escapa da perseguição. Com uma terra vizinha
   própria, o exército sobrevive inteiro e marcha para lá; na última província não há para

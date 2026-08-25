@@ -109,3 +109,55 @@ describe('a corrupção dentro da campanha', () => {
     expect(c.corrupcaoEm('sounion').saltos).toBe(antes);
   });
 });
+
+describe('a previsão da obra que alivia corrupção', () => {
+  /** Sobe a obra até o nível pedido e devolve a campanha parada logo depois da obra. */
+  const comNivel = (obra: string, nivel: number): Campanha => {
+    const c = nova();
+    c.darOuro(900_000);
+    for (let n = 0; n < nivel; n++) {
+      c.construir('atenas', obra);
+      for (let i = 0; i < 8; i++) c.passarTurno();
+    }
+    return c;
+  };
+
+  it('o degrau do nível novo é a RAZÃO entre os fatores, não o fator cheio', () => {
+    // ⚠️ O que a previsão errava: `atual` já tem o nível de hoje dentro dela, e multiplicar o
+    // fator cheio do nível seguinte por cima cobra o desconto duas vezes.
+    const efeito = construcoes.construcoes['agora']?.efeito;
+    expect(efeito?.tipo).toBe('corrupcao');
+    if (efeito?.tipo !== 'corrupcao') throw new Error('a Ágora deixou de aliviar corrupção');
+
+    // ⚠️ A população cresce durante a obra, e a corrupção por tamanho cresce com ela — então
+    // a comparação desconta o bruto de cada momento. Sem isso o teste mediria crescimento
+    // populacional achando que mede alívio de obra.
+    const bruta = (c: Campanha): number =>
+      corrupcaoPorTamanho(c.populacaoDe('atenas'), ajustes.corrupcao.tamanho);
+    const um = comNivel('agora', 1);
+    const dois = comNivel('agora', 2);
+    const sobraEm = (c: Campanha): number => c.corrupcaoEm('atenas').porTamanho / bruta(c);
+    expect(sobraEm(um)).toBeCloseTo(efeito.fatores[0] ?? 1, 6);
+    expect(sobraEm(dois)).toBeCloseTo(efeito.fatores[1] ?? 1, 6);
+  });
+
+  it('a tooltip NUNCA promete mais do que a obra entrega', () => {
+    // ⚠️ Medido antes do conserto: Ágora I → II em Atenas anunciava +47 por turno e entregava
+    // +34. Errar para cima é o pior lado — é o que faz o jogador deixar de confiar no jogo.
+    //
+    // A comparação é frouxa de propósito: a população cresce durante a obra e só EMPURRA a
+    // renda para cima, então "previsto ≤ real" é uma desigualdade segura. O que ela pega é
+    // exatamente a promessa inflada.
+    for (const nivel of [1, 2, 3]) {
+      const c = comNivel('agora', nivel - 1);
+      const antes = c.economiaDe('atenas')?.total ?? 0;
+      const previsto = c.retornoDaConstrucaoEm('atenas', 'agora')?.ganhoPorTurno ?? 0;
+      c.construir('atenas', 'agora');
+      for (let i = 0; i < 8; i++) c.passarTurno();
+      const real = (c.economiaDe('atenas')?.total ?? 0) - antes;
+      expect(`nível ${nivel} previsto ${previsto} × real ${real}`).toBe(
+        `nível ${nivel} previsto ${previsto} × real ${Math.max(previsto, real)}`,
+      );
+    }
+  });
+});

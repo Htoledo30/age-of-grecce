@@ -99,14 +99,22 @@ export interface ResultadoDaBatalha {
    */
   rounds: readonly RoundDaBatalha[];
   /**
-   * Como a batalha terminou PARA O PERDEDOR.
+   * Como a batalha terminou PARA O PERDEDOR. Três saídas, três consequências no mapa.
    *
    * `quebrou`: a linha cedeu, veio a perseguição, e a hoste se desfaz — os sobreviventes
-   * voltam para a terra natal. `recuou`: saiu de campo antes disso, pagou pouco, e **continua
-   * sendo um exército**. Quem lê precisa saber qual dos dois foi: são consequências
-   * diferentes no mapa, não só números diferentes.
+   * voltam para a terra natal.
+   *
+   * `recuou`: saiu de campo antes disso por ORDEM, pagou pouco, e **continua sendo um
+   * exército**.
+   *
+   * `barrado`: as rodadas acabaram e **nenhuma das duas linhas cedeu**. Um dos lados perde o
+   * chão do mesmo jeito — não existe empate neste jogo —, mas ele não fugiu, e por isso não é
+   * caçado. ⚠️ Sem esta terceira saída, dois exércitos que se seguraram o dia inteiro
+   * terminavam com o perdedor sendo massacrado como se tivesse debandado: 1.000 hoplitas
+   * contra 1.000 hoplitas paravam em 429 × 429, com 57% de baixas cada, abaixo do limiar de
+   * quebra — e mesmo assim um deles caía para 171. O código dizia "quebrou" onde nada quebrou.
    */
-  desfecho: 'quebrou' | 'recuou';
+  desfecho: 'quebrou' | 'recuou' | 'barrado';
 }
 
 /** Um lado só de leves comuns, lutando até quebrar — a milícia, e o teste que só quer massa. */
@@ -211,6 +219,29 @@ export function resolverBatalha(
     vencedor = fracaoA < fracaoB ? 'a' : fracaoB < fracaoA ? 'b' : desempate;
   } else {
     vencedor = quebrouA ? 'b' : 'a';
+  }
+
+  // ⚠️ **Ninguém cedeu: há perdedor, mas não há debandada.** Regra de Henrique — *"não pode
+  // haver empate, ou eu perco ou o inimigo perde"* —, e ela continua valendo: um dos dois
+  // perde o chão. O que não vale é tratá-lo como fugitivo. Ele sai de campo pagando o mesmo
+  // que paga quem recua por ordem, e a cavalaria do vencedor encarece essa saída como
+  // encarece qualquer outra.
+  if (!quebrouA && !quebrouB) {
+    const perdedor = vencedor === 'a' ? 'b' : 'a';
+    const fatia = Math.min(
+      1,
+      ajustes.fracaoDoRecuo * (vencedor === 'a' ? a.perseguicao : b.perseguicao),
+    );
+    if (perdedor === 'a') vivosA = Math.max(0, vivosA - Math.ceil(vivosA * fatia));
+    else vivosB = Math.max(0, vivosB - Math.ceil(vivosB * fatia));
+    rounds.push({ a: vivosA, b: vivosB, fase: 'recuo' });
+    return {
+      vencedor,
+      sobreviventesA: vivosA,
+      sobreviventesB: vivosB,
+      rounds,
+      desfecho: 'barrado',
+    };
   }
 
   // A caçada. Só o lado que cedeu é perseguido, e só uma vez: a fuga não é uma segunda

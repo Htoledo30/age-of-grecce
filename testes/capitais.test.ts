@@ -187,3 +187,24 @@ describe('a mudança voluntária tem preço; a dos outros é derivada', () => {
     expect(c.quedasDeCapital).toEqual([]);
   });
 });
+
+describe('sede precisa de cidade', () => {
+  it('terra sem economia não vira capital, e a recusa diz por quê', () => {
+    // ⚠️ Das 196 províncias desenhadas, 171 não têm ficha nem população: existem no mapa e não
+    // são simuladas. Assentar a capital numa delas daria um reino governado do vazio — a
+    // corrupção por distância mediria caminhos até uma cidade fantasma e a rede de trocas
+    // nasceria numa terra que não produz nada.
+    const c = nova();
+    c.comecar('atenas');
+    // Egina é uma das 171 desenhadas e não simuladas.
+    const morta = 'egina';
+    expect(c.economiaDe(morta)).toBeNull();
+
+    c.trocarDono(morta, 'atenas');
+    expect(c.provinciasDe('atenas')).toContain(morta);
+    expect(c.podeMudarCapital(morta)).toMatchObject({ pode: false, motivo: /sede/ });
+
+    // E uma terra de verdade continua aceitando.
+    expect(c.podeMudarCapital('maratona')).toMatchObject({ pode: true });
+  });
+});

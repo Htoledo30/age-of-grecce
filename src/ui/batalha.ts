@@ -49,7 +49,7 @@ export interface VistaDaBatalha {
   rounds: readonly { a: number; b: number; fase: 'choque' | 'perseguicao' | 'recuo' }[];
   /** `null` só existe por segurança de tipo: a regra sempre elege um vencedor. */
   vencedor: 'a' | 'b' | null;
-  desfecho: 'quebrou' | 'recuou';
+  desfecho: 'quebrou' | 'recuou' | 'barrado';
 }
 
 /** Milissegundos entre um round e o seguinte quando o jogador manda deixar correr. */
@@ -266,7 +266,12 @@ function narrar(vista: VistaDaBatalha, round: number, vivosA: number, vivosB: nu
   const fase = vista.rounds[round - 1]?.fase;
   if (fase === 'recuo') {
     const quemSaiu = vista.vencedor === 'a' ? b.nome : a.nome;
-    return `${quemSaiu} sai de campo antes de a linha ceder: paga o preço da retirada e escapa da perseguição.`;
+    // Duas saídas usam a mesma fase e contam histórias diferentes: uma é ordem dada antes da
+    // marcha, a outra é o dia que acabou sem ninguém ceder. Dizer "recuou" nas duas faria a
+    // tela chamar de covardia uma linha que aguentou o dia inteiro.
+    return vista.desfecho === 'barrado'
+      ? `Ninguém cedeu, e o dia acabou. ${quemSaiu} gastou o dia e não passou: sai de campo sem ser caçado, mas o chão fica com o outro.`
+      : `${quemSaiu} sai de campo antes de a linha ceder: paga o preço da retirada e escapa da perseguição.`;
   }
   if (fase === 'perseguicao') {
     const perdedor = vista.vencedor === 'a' ? b.nome : a.nome;

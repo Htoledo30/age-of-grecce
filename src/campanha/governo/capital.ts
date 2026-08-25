@@ -8,7 +8,7 @@
 
 import { melhorCapitalEntre } from '../capitais';
 import type { NucleoDaCampanha, Recusa } from '../nucleo';
-import { donoDe } from '../provincia/consultas';
+import { donoDe, fichaDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 import { gastar, tesouroDe } from './tesouro';
 
@@ -56,6 +56,13 @@ export function podeMudarCapital(
   if (jogador === null) return { pode: false, motivo: 'a campanha ainda não começou' };
   if (donoDe(nucleo, idProvincia) !== jogador) {
     return { pode: false, motivo: 'esta província não é sua' };
+  }
+  // ⚠️ **Terra sem economia não vira sede.** Das 196 províncias desenhadas, 171 não têm ficha
+  // econômica nem população: elas existem no mapa e não são simuladas. Assentar a capital numa
+  // delas daria um reino governado do vazio — a corrupção por distância mediria caminhos até
+  // uma cidade fantasma, e a rede de trocas nasceria numa terra que não produz nada.
+  if (fichaDe(nucleo, idProvincia) === undefined) {
+    return { pode: false, motivo: 'esta terra não tem cidade que sirva de sede' };
   }
   if (capitalDe(nucleo, jogador) === idProvincia) {
     return { pode: false, motivo: 'já é a capital' };
