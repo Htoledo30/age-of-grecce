@@ -128,9 +128,13 @@ para não existir: **um arquivo-deus**. `campanha.ts` tinha chegado a 1.942 linh
   `hidrologia.ts`, `gerar-mapa.ts`, `gerar-provincias.ts` — e as cinco maiores suítes de
   teste, que agora compartilham `testes/apoio/mundo.ts` em vez de recarregar os dados cada
   uma.
-- **A trava é automática.** `npm run checar` reprova qualquer arquivo `.ts`/`.css` acima de
-  400 linhas e avisa a partir de 300; `campanha.ts` e `main.ts` têm teto próprio, mais
-  apertado. Nenhum comportamento mudou: os mesmos 301 testes unitários e 32 de tela.
+- **A trava é automática** — e foi corrigida depois de reprovar coisa boa. Ela nasceu
+  reprovando qualquer arquivo acima de 400 linhas, e chegou a exigir que `ficha-provincia.ts`
+  fosse dividido por ter passado de 400 com um campo novo. Henrique cortou a regra pela raiz:
+  o defeito é misturar assunto, não acumular linha, e um contador não distingue os dois.
+  Hoje `npm run checar` LISTA os arquivos acima de 300 linhas e não reprova nenhum por
+  tamanho; a única cerca dura é a das fachadas `main.ts` e `campanha.ts`. Nenhum
+  comportamento mudou: os mesmos 301 testes unitários e 32 de tela.
 - Único código removido: `Mobilizacao.mover()`, que nenhuma regra chamava — a classe o
   escondia do `knip`, que não olha membro de classe.
 
@@ -193,7 +197,7 @@ Falta Henrique jogar a regra nova.
 
 - as seis etapas da sequência estão CONCLUÍDAS e entregues na 0.0.4; a dívida arquitetural
   que elas acumularam foi paga logo depois, sem mudar comportamento nenhum;
-- o código está dividido: 251 arquivos, o maior com 387 linhas, nenhum arquivo-deus;
+- o código está dividido: 258 arquivos, o maior com 367 linhas, nenhum arquivo-deus;
 - pendências de Henrique: jogar a regra alimentar nova, o ritmo do cerco, o decreto de
   imposto e as colunas do Governo;
 - custos e efeitos das construções são números iniciais, não balanceamento definitivo;
@@ -207,10 +211,17 @@ nacionalidade funcional, migração, bônus real de qualidade do Quartel, IA ou 
 ## Como trabalhar
 
 - Faça a menor alteração que complete o objetivo atual.
-- **Um arquivo, um assunto.** Nenhum arquivo passa de 400 linhas — `npm run checar` reprova.
-  Arquivo com muitas utilidades vira uma PASTA com o nome dele, e cada função no seu
-  arquivo. `campanha.ts` e `main.ts` têm teto próprio e **não recebem regra nova**: mecânica
-  nova nasce em módulo próprio. Levantar o número não é a correção; mover a regra é.
+- **Um arquivo, um assunto — e assunto não se mede em linhas.** Arquivo-deus é MISTURA DE
+  RESPONSABILIDADES: um `comercio.ts` com comércio, IA, mapa e combate está errado com 200
+  linhas, enquanto `provincias.json` com 205 províncias está certo com milhares. Divida
+  quando o arquivo reunir assuntos independentes, ou quando um pedaço puder existir, ser
+  testado e evoluir sozinho. **Nunca divida para baixar um contador** — e nunca crie um
+  arquivo por província. Dados, catálogos, esquemas, suítes de teste e componentes coesos
+  podem ser grandes.
+- `npm run checar` lista os arquivos acima de 300 linhas como AVISO, para você olhar; ele não
+  reprova por tamanho. As duas exceções são `main.ts` e `campanha.ts`, que têm teto próprio e
+  **não recebem regra nova**: são fachadas, e ali crescer é o defeito. Mecânica nova nasce em
+  módulo próprio; levantar o teto deles não é a correção, mover a regra é.
 - Não implemente uma ideia futura só porque ela parece relacionada.
 - Preserve mudanças existentes no worktree.
 - Claude e Codex não editam simultaneamente os mesmos arquivos. Trabalho paralelo real

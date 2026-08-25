@@ -1,21 +1,27 @@
 /**
- * A trava contra o arquivo-deus.
+ * O alarme de tamanho — e por que ele NÃO reprova por linha.
  *
- * Duas vezes este projeto deixou um arquivo crescer até virar o lugar onde tudo mora —
- * `campanha.ts` chegou a 1.942 linhas e `main.ts` a 1.259 — e nas duas vezes o sintoma foi o
- * mesmo: regra nova entrava ali porque ali já tinha tudo à mão, e cada nova entrada tornava a
- * seguinte mais fácil. **Ninguém decidiu criar um arquivo-deus; ele se formou por comodidade,
- * uma função de cada vez.** Uma trava automática é o que troca essa comodidade por um empurrão
- * na direção certa: passou do teto, o arquivo pede uma pasta com um arquivo por assunto.
+ * Duas vezes este projeto deixou um arquivo virar o lugar onde tudo mora: `campanha.ts`
+ * chegou a 1.942 linhas e `main.ts` a 1.259. O sintoma foi o mesmo nas duas vezes — regra
+ * nova entrava ali porque ali já tinha tudo à mão, e cada entrada tornava a seguinte mais
+ * fácil. **Ninguém decidiu criar um arquivo-deus; ele se formou por comodidade.**
  *
- * Dois degraus, de propósito:
+ * A primeira versão desta trava reprovava qualquer arquivo acima de 400 linhas, e isso
+ * estava errado: **arquivo-deus se define por MISTURA DE ASSUNTOS, não por quantidade de
+ * linhas.** Um `comercio.ts` com comércio, IA, mapa e combate é um arquivo-deus com 200
+ * linhas; `provincias.json` com 205 províncias está certo com milhares; e um arquivo por
+ * província seria fragmentação inútil. A trava por número reprovou coisa boa — dados,
+ * catálogos, esquemas, suítes de teste e componentes coesos — e ia empurrar o projeto a
+ * separar cada campo do comentário que o explica só para agradar um contador.
  *
- * - **aviso** a partir de {@link AVISO} linhas: ainda passa, mas já é hora de olhar;
- * - **falha** a partir de {@link FALHA} linhas: `npm run verificar` reprova.
+ * Então o número virou o que ele sempre foi de verdade: **um pedido para olhar.** Passou de
+ * {@link AVISO}, o arquivo aparece na lista; quem lê decide. Divide-se quando o arquivo
+ * reúne assuntos independentes, ou quando um pedaço poderia existir, ser testado e evoluir
+ * sozinho. Não se divide para baixar linha.
  *
- * E um terceiro, mais apertado, para as FACHADAS: `main.ts` e `campanha.ts` já foram os dois
- * arquivos-deus, e a regra combinada com Henrique é que eles não voltam a receber regra
- * nenhuma. Teto próprio é a forma de escrever isso no código em vez de na memória.
+ * A única reprovação automática que sobrou é a das FACHADAS. Em `main.ts` e `campanha.ts`
+ * crescer É o defeito — eles são porta de entrada e lista de comandos, e a regra combinada
+ * com Henrique é que não voltam a receber regra nenhuma. Ali o teto é cerca, não alarme.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -25,16 +31,14 @@ import { reclamar } from './problemas';
 const PASTAS = ['src', 'ferramentas', 'gerador', 'testes'];
 const EXTENSOES = ['.ts', '.css'];
 
-/** A partir daqui o arquivo é grande o bastante para merecer uma olhada. */
+/** A partir daqui o arquivo entra na lista de "vale uma olhada". Não reprova nada. */
 const AVISO = 300;
-/** A partir daqui ele reprova a verificação. */
-const FALHA = 400;
 
 /**
- * Tetos próprios: são fachadas e índices, não lugares de regra.
+ * Tetos de fachada — as duas únicas reprovações por tamanho.
  *
- * Se um destes estourar, a resposta certa quase nunca é levantar o número — é levar a regra
- * nova para o módulo a que ela pertence.
+ * São arquivos cujo trabalho é APONTAR, não conter. Se um destes estourar, a resposta certa
+ * quase nunca é levantar o número: é levar a regra nova para o módulo a que ela pertence.
  */
 const TETOS_DE_FACHADA = new Map<string, number>([
   ['src/main.ts', 40],
@@ -58,22 +62,15 @@ export function checarTamanhoDosArquivos(): void {
       }
       continue;
     }
-    if (linhas > FALHA) {
-      reclamar(
-        `${caminho} tem ${linhas} linhas (limite ${FALHA}) — ` +
-          'divida em uma pasta com um arquivo por assunto',
-      );
-    } else if (linhas > AVISO) {
-      grandes.push(`${caminho} (${linhas})`);
-    }
+    if (linhas > AVISO) grandes.push(`${caminho} (${linhas})`);
   }
 
   const maior = arquivos[0];
-  console.log(
-    `tamanho: ${arquivos.length} arquivos, maior com ${maior?.linhas ?? 0} linhas ` +
-      `(aviso em ${AVISO}, falha em ${FALHA})`,
-  );
-  for (const grande of grandes) console.log(`  perto do limite: ${grande}`);
+  console.log(`tamanho: ${arquivos.length} arquivos, maior com ${maior?.linhas ?? 0} linhas`);
+  if (grandes.length > 0) {
+    console.log(`  ${grandes.length} acima de ${AVISO} linhas — confira se cada um é UM assunto:`);
+    for (const grande of grandes) console.log(`    ${grande}`);
+  }
 }
 
 function varrer(pasta: string): string[] {
