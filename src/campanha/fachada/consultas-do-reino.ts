@@ -208,8 +208,8 @@ export abstract class ConsultasDoReino {
     return nivelDeImpostoEm(this.nucleo, idProvincia);
   }
 
-  podeDefinirImposto(idProvincia: string): Recusa {
-    return podeDefinirImposto(this.nucleo, idProvincia);
+  podeDefinirImposto(idProvincia: string, porPoder?: string): Recusa {
+    return podeDefinirImposto(this.nucleo, idProvincia, porPoder ?? this.nucleo.estado.jogador);
   }
 
   capitalDe(idPoder: string): string | undefined {

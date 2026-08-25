@@ -7,20 +7,32 @@
  *
  * Ficar sem dinheiro **não** entra aqui — se entrasse, o jogador quebrado veria o painel de
  * ações inteiro sumir em vez de ver cada opção dizendo quanto falta.
+ *
+ * ⚠️ **Os dois perguntam POR QUEM, e o padrão é o jogador.** Enquanto só existia um jogador,
+ * "é minha?" queria dizer "é do jogador?" e as duas coisas coincidiam. Com IA elas deixam de
+ * coincidir — e a saída não é uma porta de serviço para ela: é esta, com o poder dito em voz
+ * alta. **A IA constrói pela mesma função que a tela chama**, passa pela mesma recusa e recebe
+ * o mesmo motivo. É a regra que impede a IA de jogar um jogo parecido em vez deste.
+ *
+ * A ordem de marcha já fazia assim (`porPoder`) desde que existiu inimigo no tabuleiro; isto
+ * aqui só terminou de aplicar o padrão às ações da província.
  */
 
 import type { NucleoDaCampanha, Recusa } from '../nucleo';
 import { donoDe, populacaoDe } from './consultas';
 import { economiaDe } from './renda';
 
-/** Esta província aceita ALGUMA ação minha? Campanha começou, é minha, e tem economia. */
-export function podeAgirEm(nucleo: NucleoDaCampanha, idProvincia: string): Recusa {
-  const jogador = nucleo.estado.jogador;
-  if (jogador === null) return { pode: false, motivo: 'a campanha ainda não começou' };
+/** Esta província aceita ALGUMA ação deste poder? Campanha começou, é dele, e tem economia. */
+export function podeAgirEm(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  porPoder: string | null = nucleo.estado.jogador,
+): Recusa {
+  if (porPoder === null) return { pode: false, motivo: 'a campanha ainda não começou' };
   if (economiaDe(nucleo, idProvincia) === null) {
     return { pode: false, motivo: 'esta província não tem economia configurada' };
   }
-  if (donoDe(nucleo, idProvincia) !== jogador) {
+  if (donoDe(nucleo, idProvincia) !== porPoder) {
     return { pode: false, motivo: 'esta província não é sua' };
   }
   return { pode: true, bonus: 0 };
@@ -33,18 +45,25 @@ export function podeAgirEm(nucleo: NucleoDaCampanha, idProvincia: string): Recus
  * sem ficha continua não cedendo ninguém — mas porque a população dela é zero, que é um
  * requisito real, e a recusa passa a dizer isso em vez de falar de dado que falta.
  */
-export function podeMobilizarEm(nucleo: NucleoDaCampanha, idProvincia: string): Recusa {
-  const jogador = nucleo.estado.jogador;
-  if (jogador === null) return { pode: false, motivo: 'a campanha ainda não começou' };
-  if (donoDe(nucleo, idProvincia) !== jogador) {
+export function podeMobilizarEm(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  porPoder: string | null = nucleo.estado.jogador,
+): Recusa {
+  if (porPoder === null) return { pode: false, motivo: 'a campanha ainda não começou' };
+  if (donoDe(nucleo, idProvincia) !== porPoder) {
     return { pode: false, motivo: 'esta província não é sua' };
   }
   return { pode: true, bonus: 0 };
 }
 
 /** Recrutamento é ação básica; Quartel melhorará a qualidade da leva no futuro. */
-export function podeRecrutarEm(nucleo: NucleoDaCampanha, idProvincia: string): boolean {
+export function podeRecrutarEm(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  porPoder: string | null = nucleo.estado.jogador,
+): boolean {
   return (
-    podeMobilizarEm(nucleo, idProvincia).pode && populacaoDe(nucleo, idProvincia) > 0
+    podeMobilizarEm(nucleo, idProvincia, porPoder).pode && populacaoDe(nucleo, idProvincia) > 0
   );
 }

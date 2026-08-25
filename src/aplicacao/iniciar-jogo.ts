@@ -14,6 +14,7 @@ import {
   carregarConstrucoes,
   carregarEconomia,
   carregarExercitos,
+  carregarIa,
   carregarMundo,
   carregarProvincias,
 } from '@/dados/carregar';
@@ -70,7 +71,15 @@ export async function iniciarJogo(): Promise<void> {
     carregarExercitos(),
   );
 
-  const jogo: Jogo = { atlas, campanha, ajustes, cena, tela, selecao: new SelecaoDaTela() };
+  const jogo: Jogo = {
+    atlas,
+    campanha,
+    ajustes,
+    ia: carregarIa(),
+    cena,
+    tela,
+    selecao: new SelecaoDaTela(),
+  };
   ligarAcoes(jogo);
 
   // O boot pergunta pelo salvamento UMA vez, depois de a interface estar ligada: retomar já

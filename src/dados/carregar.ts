@@ -4,8 +4,9 @@ import brutoAjustes from '../../dados/ajustes.json';
 import brutoConstrucoes from '../../dados/construcoes.json';
 import brutoEconomia from '../../dados/economia.json';
 import brutoExercitos from '../../dados/exercitos.json';
+import brutoIa from '../../dados/ia.json';
 import brutoMundo from '../../dados/mundo.json';
-import { Ajustes, Construcoes, Economia, Exercitos, Mundo, Provincias } from './esquema';
+import { Ajustes, Construcoes, Economia, Exercitos, Ia, Mundo, Provincias } from './esquema';
 
 export function carregarMundo(): Mundo {
   return validar(Mundo, brutoMundo, 'dados/mundo.json');
@@ -21,6 +22,11 @@ export function carregarEconomia(): Economia {
 
 export function carregarExercitos(): Exercitos {
   return validar(Exercitos, brutoExercitos, 'dados/exercitos.json');
+}
+
+/** QUEM é cada IA: os estilos e quem joga com qual. Ver `src/ia/estilo.ts`. */
+export function carregarIa(): Ia {
+  return validar(Ia, brutoIa, 'dados/ia.json');
 }
 
 export function carregarConstrucoes(): Construcoes {

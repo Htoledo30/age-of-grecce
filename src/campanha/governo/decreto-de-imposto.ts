@@ -14,8 +14,10 @@ import { podeAgirEm } from '../provincia/permissoes';
 export function podeDefinirImposto(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
+  /** Quem decreta. O padrão é o jogador; a IA diz o poder dela. */
+  porPoder: string | null = nucleo.estado.jogador,
 ): Recusa {
-  return podeAgirEm(nucleo, idProvincia);
+  return podeAgirEm(nucleo, idProvincia, porPoder);
 }
 
 /**
@@ -28,8 +30,9 @@ export function definirImposto(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   nivel: NivelDeImposto,
+  porPoder: string | null = nucleo.estado.jogador,
 ): void {
-  const r = podeDefinirImposto(nucleo, idProvincia);
+  const r = podeDefinirImposto(nucleo, idProvincia, porPoder);
   if (!r.pode) throw new Error(r.motivo);
   if (nivel === 'normal') delete nucleo.estado.nivelDeImposto[idProvincia];
   else nucleo.estado.nivelDeImposto[idProvincia] = nivel;

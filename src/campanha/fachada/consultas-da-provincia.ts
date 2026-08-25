@@ -12,7 +12,7 @@ import type { Corrupcao } from '../corrupcao';
 import type { RendaDaProvincia, RetornoDaConstrucao } from '../economia';
 import type { Obra } from '../estado-campanha';
 import type { ParcelaDoAlvo } from '../felicidade';
-import type { CatalogoDeConstrucoes, Recusa } from '../nucleo';
+import type { CatalogoDeConstrucoes, Recusa, TipoDeEfeito } from '../nucleo';
 import type { PerfilDaProvincia } from '../perfil-da-provincia';
 import {
   contribuicaoAlimentarEm,
@@ -77,6 +77,17 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
     return perfilDe(this.nucleo, idProvincia);
   }
 
+  /**
+   * O humor desta província agora, de 0 a 100.
+   *
+   * ⚠️ Existe porque a IA precisou dele para decidir imposto — e a regra da casa é que a
+   * pergunta ENTRA na fachada em vez de a IA abrir um caminho próprio pelo estado. O número
+   * já estava em `perfilDe`; aqui ele fica à mão de quem só quer o humor.
+   */
+  felicidadeEm(idProvincia: string): number {
+    return perfilDe(this.nucleo, idProvincia)?.felicidade.valor ?? 0;
+  }
+
   /** O humor desta província está na faixa revoltosa? É a que não paga imposto. */
   emRevoltaEm(idProvincia: string): boolean {
     return emRevoltaEm(this.nucleo, idProvincia);
@@ -125,18 +136,28 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
     return retornoDaConstrucaoEm(this.nucleo, idProvincia, idConstrucao);
   }
 
-  podeConstruir(idProvincia: string, idConstrucao: string): Recusa {
-    return podeConstruir(this.nucleo, idProvincia, idConstrucao);
+  /**
+   * ⚠️ `porPoder` existe para a IA erguer pela MESMA porta que a tela usa. Sem ele, ela
+   * precisaria de um caminho próprio — e um caminho próprio é como a IA acaba jogando um jogo
+   * parecido com este em vez deste.
+   */
+  podeConstruir(idProvincia: string, idConstrucao: string, porPoder?: string): Recusa {
+    return podeConstruir(
+      this.nucleo,
+      idProvincia,
+      idConstrucao,
+      porPoder ?? this.nucleo.estado.jogador,
+    );
   }
 
   // ── Portões ─────────────────────────────────────────────────────────────────────────
   /** Esta província aceita ALGUMA ação minha? É o portão, não uma ação específica. */
-  podeAgirEm(idProvincia: string): Recusa {
-    return podeAgirEm(this.nucleo, idProvincia);
+  podeAgirEm(idProvincia: string, porPoder?: string): Recusa {
+    return podeAgirEm(this.nucleo, idProvincia, porPoder ?? this.nucleo.estado.jogador);
   }
 
-  podeMobilizarEm(idProvincia: string): Recusa {
-    return podeMobilizarEm(this.nucleo, idProvincia);
+  podeMobilizarEm(idProvincia: string, porPoder?: string): Recusa {
+    return podeMobilizarEm(this.nucleo, idProvincia, porPoder ?? this.nucleo.estado.jogador);
   }
 
   podeRecrutarEm(idProvincia: string): boolean {
@@ -185,6 +206,16 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
 
   fomeDoCercoEm(idProvincia: string): RelogioDoCerco | null {
     return fomeDoCercoEm(this.nucleo, idProvincia);
+  }
+
+  /**
+   * Que TIPO de coisa esta obra faz, ou `null` se ela não existir no catálogo.
+   *
+   * ⚠️ A IA valoriza obra por tipo de efeito, e não por id de prédio: assim um prédio novo
+   * com efeito conhecido entra sozinho na conta dela, sem ninguém lembrar de atualizá-la.
+   */
+  efeitoDaObra(idConstrucao: string): TipoDeEfeito | null {
+    return this.nucleo.catalogo[idConstrucao]?.efeito.tipo ?? null;
   }
 
   /** O nome que a obra tem na tela, ou o próprio id se ela sumir do catálogo. */

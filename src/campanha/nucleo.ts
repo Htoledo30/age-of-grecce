@@ -20,6 +20,14 @@ import type { EstadoCampanha } from './estado-campanha';
 import type { Territorios } from './territorios';
 
 type AjustesDoJogo = Ajustes['jogo'];
+/**
+ * Que tipo de coisa uma obra faz. É o vocabulário do catálogo, num nome só.
+ *
+ * A IA valoriza obra por TIPO e não por id de prédio, e é isso que faz um prédio novo com
+ * efeito conhecido entrar sozinho na conta dela.
+ */
+export type TipoDeEfeito = Construcoes['construcoes'][string]['efeito']['tipo'];
+
 export type CatalogoDeConstrucoes = Construcoes['construcoes'];
 
 export interface NucleoDaCampanha {

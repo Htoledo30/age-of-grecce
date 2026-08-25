@@ -20,8 +20,10 @@ export function podeRecrutar(
   idProvincia: string,
   homens: number,
   arma: Arma = 'leve',
+  /** Quem levanta. O padrão é o jogador; a IA diz o poder dela. */
+  porPoder: string | null = nucleo.estado.jogador,
 ): RecusaDeLeva {
-  const naProvincia = podeMobilizarEm(nucleo, idProvincia);
+  const naProvincia = podeMobilizarEm(nucleo, idProvincia, porPoder);
   if (!naProvincia.pode) return { pode: false, motivo: naProvincia.motivo };
   return nucleo.mobilizacao.avaliarLevaEm(
     idProvincia,
@@ -44,8 +46,9 @@ export function recrutar(
   idProvincia: string,
   homens: number,
   arma: Arma = 'leve',
+  porPoder: string | null = nucleo.estado.jogador,
 ): void {
-  const r = podeRecrutar(nucleo, idProvincia, homens, arma);
+  const r = podeRecrutar(nucleo, idProvincia, homens, arma, porPoder);
   if (!r.pode) throw new Error(r.motivo);
   // ⚠️ O treino é lido AGORA e carimbado na leva, e nunca mais consultado: perder a
   // província depois não transforma veterano em recruta no meio da campanha.

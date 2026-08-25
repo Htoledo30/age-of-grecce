@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../../src/dados/esquema';
+import { Ajustes, Construcoes, Economia, Exercitos, Ia, Provincias } from '../../src/dados/esquema';
 import { Campanha } from '../../src/campanha/campanha';
 import { Atlas } from '../../src/mundo/atlas';
 
@@ -25,6 +25,8 @@ export const economia = ler(Economia, 'dados/economia.json');
 export const construcoes = ler(Construcoes, 'dados/construcoes.json');
 export const exercitos = ler(Exercitos, 'dados/exercitos.json');
 export const ajustes = ler(Ajustes, 'dados/ajustes.json').jogo;
+/** QUEM é cada IA: os estilos e quem joga com qual. */
+export const ia = ler(Ia, 'dados/ia.json');
 
 /** O atlas compartilhado, para quem só lê geografia. Campanha nenhuma o altera. */
 export const atlas = new Atlas(provincias);

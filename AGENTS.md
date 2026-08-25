@@ -40,7 +40,63 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: tomar à força quebra a cidade
+### Agora: a IA, etapa 1 — os vizinhos deixaram de ser estátuas
+
+Item 5, começado. A etapa 1 é a econômica: a IA constrói e decreta imposto. **Nenhum exército
+se move** — de propósito: um erro aqui aparece numa província só, e não numa guerra em
+cascata.
+
+**A fundação foi abrir a porta.** `podeAgirEm`, `construir`, `definirImposto` e `recrutar`
+perguntavam *"é do jogador?"*; agora perguntam **por quem** (`porPoder`, padrão o jogador),
+como a ordem de marcha já fazia. ⚠️ Não é conveniência: é a regra 1 da IA. **Ela ergue pela
+mesma função que a tela chama**, passa pela mesma recusa e recebe o mesmo motivo — e é isso
+que faz cada defeito que ela encontra ser um defeito do JOGO, não do caminho dela.
+
+**Ela escolhe obra pela conta do próprio jogo.** Pergunta `retornoDaConstrucaoEm`, que é a
+mesma função que escreve a tooltip do jogador. Duas consequências, e as duas são o ponto: se
+um prédio for armadilha ela não cai nela — e se cair, a armadilha é real; e a tooltip e a
+decisão da IA não podem divergir, porque são o mesmo número.
+
+**O que o ouro não mede vem do ESTILO.** Muralha, Armaria e Templo rendem zero moeda. O
+estilo (`dados/ia.json`) diz **quanto aquilo vale em moedas por turno** para ele — mesma
+unidade, soma direto, e dá para discutir olhando a renda de uma província. Nada de peso
+abstrato multiplicando número inventado.
+
+**E ela come primeiro.** Despensa apertada faz a obra de alimento valer `alimentoApertado` e
+atropelar qualquer Ágora. É a única regra DURA da etapa; o resto é comparação de números.
+
+#### `npm run partida` — 200 turnos, todo mundo na IA, Atenas parada como controle
+
+| poder | estilo | renda | o que ergueu |
+|---|---|---|---|
+| Cálcis | mercador | 377 → **1.090** | mercado×6 porto×6 agora×6 vinhedo×3 |
+| Corinto | mercador | 314 → **1.016** | lagar×3 agora×3 porto×3 mercado×2 |
+| Argos | guerreiro | 381 → **806** | armaria×9 mercado×6 muralha×5 acampamento×3 … |
+| **Atenas** | **— parada —** | 732 → **775** | **—** |
+| Mégara | guerreiro | 185 → 470 | armaria×6 muralha×5 mercado×3 porto×3 estrada×3 |
+| Plateia | cauteloso | 118 → 246 | mercado×3 serraria×3 muralha×3 agora×3 |
+
+- **Zero turnos com fome. Zero cofres negativos.**
+- **Atenas caiu de 1º para 4º sem levar um arranhão.** É o grupo de controle: parada, ela
+  acumulou 156 mil moedas e ficou para trás de três vizinhos que jogaram. É a medida mais
+  honesta de que a IA está valendo alguma coisa.
+- **Os estilos aparecem no que cada um ergue.** Guerreiro faz Armaria e Muralha, mercador faz
+  Mercado e Porto, cauteloso faz muro e guarda dinheiro. Se todos erguessem a mesma coisa, o
+  arquivo de estilos seria enfeite.
+- **A desigualdade DIMINUIU**: 6,2× no turno 1 para 4,4× no turno 200.
+
+⚠️ **A ferramenta pegou um defeito meu na primeira rodada.** A IA escolhia a obra de maior
+`ganhoPorTurno`, ignorando o preço — uma de +30 que custa 3.000 é pior que uma de +20 que
+custa 800. Ela passou a escolher **por moeda gasta**, e Cálcis saltou de 651 para 762 em
+sessenta turnos com a mesma personalidade. É o mesmo serviço que `economia` e `armas` já
+prestaram.
+
+⚠️ **Os cofres incham** (Cálcis com 108 mil no turno 200) e isso é esperado: sem recrutar,
+não há ralo. A etapa 2 resolve sozinha.
+
+Falta Henrique jogar e dizer se o mapa parece vivo.
+
+### O que veio antes: tomar à força quebra a cidade
 
 Henrique (25/08/2026), corrigindo uma pergunta minha que estava mal feita: *"se eu conquisto
 uma província eu pego tudo que tem nela; a única mudança é que quando conquisto tem batalhas,

@@ -68,8 +68,8 @@ export class Campanha extends ConsultasDeGuerra {
   }
 
   /** Decreta o nível de imposto: efeito imediato na renda, gradual no humor. */
-  definirImposto(idProvincia: string, nivel: NivelDeImposto): void {
-    definirImposto(this.nucleo, idProvincia, nivel);
+  definirImposto(idProvincia: string, nivel: NivelDeImposto, porPoder?: string): void {
+    definirImposto(this.nucleo, idProvincia, nivel, porPoder ?? this.nucleo.estado.jogador);
     this.aoMudar();
   }
 
@@ -80,15 +80,15 @@ export class Campanha extends ConsultasDeGuerra {
   }
 
   /** Ergue uma construção. Paga à vista e entrega depois; não existe cancelar. */
-  construir(idProvincia: string, idConstrucao: string): void {
-    construir(this.nucleo, idProvincia, idConstrucao);
+  construir(idProvincia: string, idConstrucao: string, porPoder?: string): void {
+    construir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador);
     this.aoMudar();
   }
 
   // ── Guerra ──────────────────────────────────────────────────────────────────────────
   /** Põe gente em armas: cobra o ouro e tira os homens da população da província. */
-  recrutar(idProvincia: string, homens: number, arma: Arma = 'leve'): void {
-    recrutar(this.nucleo, idProvincia, homens, arma);
+  recrutar(idProvincia: string, homens: number, arma: Arma = 'leve', porPoder?: string): void {
+    recrutar(this.nucleo, idProvincia, homens, arma, porPoder ?? this.nucleo.estado.jogador);
     this.aoMudar();
   }
 

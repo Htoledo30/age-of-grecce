@@ -13,5 +13,6 @@ export { Ajustes } from './esquemas/ajustes';
 export { Construcoes } from './esquemas/construcoes';
 export { Economia } from './esquemas/economia';
 export { Exercitos } from './esquemas/exercitos';
+export { Ia, type EstiloDeIa } from './esquemas/ia';
 export { Mundo } from './esquemas/mundo';
 export { Provincias } from './esquemas/provincias';

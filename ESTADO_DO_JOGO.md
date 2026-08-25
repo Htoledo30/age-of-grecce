@@ -23,7 +23,11 @@ Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos e 
 Ocidentais (Melos, Sifnos e Tera). As ilhas continuam desenhadas e clicáveis; qualquer
 pedaço seleciona a província do arquipélago. A costa e o terreno não foram alterados.
 
-Ainda não existem IA, diplomacia nem naval. Save/load existe (a campanha salva sozinha a
+**A IA existe, na primeira etapa: ela cuida da economia.** Os 17 poderes jogáveis que não são
+o jogador constroem e decretam imposto todo turno, cada um com o estilo escrito em
+`dados/ia.json` (guerreiro, mercador, cauteloso, equilibrado). Nenhum deles levanta tropa nem
+marcha ainda. `npm run partida` roda a coisa toda e conta o que aconteceu. Diplomacia e naval
+continuam ausentes. Save/load existe (a campanha salva sozinha a
 cada mudança e o menu oferece continuar), e a campanha tem começo e fim: vitória ao
 dominar a Grécia central alcançável por terra, derrota ao deixar de existir. O que falta
 para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
@@ -397,6 +401,7 @@ Comandos principais:
 - `npm run teste-tela`: Playwright, limitado a dois workers;
 - `npm run simular`: cenários longos de paz, construção e pressão militar no terminal;
 - `npm run economia`: banco de provas da economia, do poder mais pobre ao mais rico;
+- `npm run partida`: uma partida inteira com todo mundo na IA, e o que sobrou dela;
 - `npm run armas`: banco de provas das armas — por gente, por moeda, por boca, o triângulo e
   o que sobra do derrotado;
 - `npm run entregar`: verificação, testes de tela e build numa única chamada;

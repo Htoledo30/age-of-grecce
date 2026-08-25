@@ -112,10 +112,12 @@ export function podeConstruir(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   idConstrucao: string,
+  /** Quem quer erguer. O padrão é o jogador; a IA diz o poder dela. */
+  porPoder: string | null = nucleo.estado.jogador,
 ): Recusa {
   const construcao = nucleo.catalogo[idConstrucao];
   if (!construcao) return { pode: false, motivo: `construção inexistente: ${idConstrucao}` };
-  const naProvincia = podeAgirEm(nucleo, idProvincia);
+  const naProvincia = podeAgirEm(nucleo, idProvincia, porPoder);
   if (!naProvincia.pode) return naProvincia;
   if (!cumpreRequisito(nucleo, idProvincia, idConstrucao)) {
     return { pode: false, motivo: 'esta terra não cumpre os requisitos' };
@@ -153,8 +155,9 @@ export function construir(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   idConstrucao: string,
+  porPoder: string | null = nucleo.estado.jogador,
 ): void {
-  const r = podeConstruir(nucleo, idProvincia, idConstrucao);
+  const r = podeConstruir(nucleo, idProvincia, idConstrucao, porPoder);
   if (!r.pode) throw new Error(r.motivo);
   const construcao = nucleo.catalogo[idConstrucao];
   if (!construcao) throw new Error(`construção inexistente: ${idConstrucao}`);

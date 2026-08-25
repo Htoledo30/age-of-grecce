@@ -1,0 +1,90 @@
+{
+  "versao": 1,
+  "comentario": "QUEM é cada IA. Os números são iniciais, não definitivos — medidos com `npm run partida`. `valorDaObra` está em MOEDAS POR TURNO e soma ao retorno que o próprio jogo calcula: é assim que Muralha e Armaria, que rendem zero em ouro, entram na conta sem um peso abstrato no meio.",
+  "padrao": "equilibrado",
+  "estilos": {
+    "equilibrado": {
+      "valorDaObra": {
+        "renda": 0,
+        "corrupcao": 0,
+        "troca": 0,
+        "alimento": 4,
+        "milicia": 6,
+        "felicidade": 3,
+        "arma": 4,
+        "qualidade": 3
+      },
+      "alimentoApertado": 40,
+      "limiarDeAperto": 1,
+      "guardaDoTesouro": 0.2,
+      "imposto": "normal",
+      "humorParaAliviar": 40
+    },
+    "guerreiro": {
+      "valorDaObra": {
+        "renda": 0,
+        "corrupcao": 0,
+        "troca": 0,
+        "alimento": 5,
+        "milicia": 14,
+        "felicidade": 1,
+        "arma": 12,
+        "qualidade": 9
+      },
+      "alimentoApertado": 45,
+      "limiarDeAperto": 1,
+      "guardaDoTesouro": 0.1,
+      "imposto": "alto",
+      "humorParaAliviar": 30
+    },
+    "mercador": {
+      "valorDaObra": {
+        "renda": 0,
+        "corrupcao": 0,
+        "troca": 0,
+        "alimento": 4,
+        "milicia": 3,
+        "felicidade": 5,
+        "arma": 1,
+        "qualidade": 1
+      },
+      "alimentoApertado": 40,
+      "limiarDeAperto": 1,
+      "guardaDoTesouro": 0.3,
+      "imposto": "normal",
+      "humorParaAliviar": 45
+    },
+    "cauteloso": {
+      "valorDaObra": {
+        "renda": 0,
+        "corrupcao": 0,
+        "troca": 0,
+        "alimento": 6,
+        "milicia": 12,
+        "felicidade": 4,
+        "arma": 3,
+        "qualidade": 2
+      },
+      "alimentoApertado": 50,
+      "limiarDeAperto": 2,
+      "guardaDoTesouro": 0.35,
+      "imposto": "baixo",
+      "humorParaAliviar": 50
+    }
+  },
+  "porPoder": {
+    "atenas": "mercador",
+    "corinto": "mercador",
+    "calcis": "mercador",
+    "eretria": "mercador",
+    "argos": "guerreiro",
+    "tebas": "guerreiro",
+    "megara": "guerreiro",
+    "orcomeno": "guerreiro",
+    "plateia": "cauteloso",
+    "tespias": "cauteloso",
+    "hermione": "cauteloso",
+    "trezena": "cauteloso",
+    "caristo": "cauteloso"
+  }
+}

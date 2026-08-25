@@ -11,7 +11,7 @@
  * salvamento não deve reabrir a ficha que estava aberta antes.
  */
 
-import type { Ajustes } from '@/dados/esquema';
+import type { Ajustes, Ia } from '@/dados/esquema';
 import type { Atlas } from '@/mundo/atlas';
 import type { Campanha } from '@/campanha/campanha';
 import type { CenaMapa } from '@/mapa/cena-mapa';
@@ -122,6 +122,8 @@ export interface Jogo {
   readonly atlas: Atlas;
   readonly campanha: Campanha;
   readonly ajustes: Ajustes;
+  /** QUEM é cada IA. Lido uma vez no boot, como o resto dos dados. */
+  readonly ia: Ia;
   readonly cena: CenaMapa;
   readonly tela: Tela;
   readonly selecao: SelecaoDaTela;

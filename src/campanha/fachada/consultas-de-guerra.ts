@@ -126,8 +126,19 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
     );
   }
 
-  podeRecrutar(idProvincia: string, homens: number, arma: Arma = 'leve'): RecusaDeLeva {
-    return podeRecrutar(this.nucleo, idProvincia, homens, arma);
+  podeRecrutar(
+    idProvincia: string,
+    homens: number,
+    arma: Arma = 'leve',
+    porPoder?: string,
+  ): RecusaDeLeva {
+    return podeRecrutar(
+      this.nucleo,
+      idProvincia,
+      homens,
+      arma,
+      porPoder ?? this.nucleo.estado.jogador,
+    );
   }
 
   // ── Marchas e surtidas ──────────────────────────────────────────────────────────────
