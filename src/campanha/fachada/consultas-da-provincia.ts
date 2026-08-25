@@ -187,6 +187,11 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
     return fomeDoCercoEm(this.nucleo, idProvincia);
   }
 
+  /** O nome que a obra tem na tela, ou o próprio id se ela sumir do catálogo. */
+  nomeDaObra(idConstrucao: string): string {
+    return this.nucleo.catalogo[idConstrucao]?.nome ?? idConstrucao;
+  }
+
   /** O que esta obra custa à vista NESTA terra: o catálogo vezes a escala da província. */
   custoDaObraEm(idProvincia: string, idConstrucao: string, nivel: number): number {
     const construcao = this.nucleo.catalogo[idConstrucao];

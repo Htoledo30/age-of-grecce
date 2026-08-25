@@ -25,6 +25,7 @@ export function efemerosVazios(): EfemerosDaCampanha {
       marchas: [],
       batalhas: [],
       conquistas: [],
+    saques: [],
       milicianosMortos: [],
       cercos: [],
       cercosLevantados: [],

@@ -337,7 +337,11 @@ são preservadas na restauração.
   sitiante.
 - O sitiado pode fazer surtida e reforços externos atacam o sitiante ao chegar.
 - Cidade murada exige cerco antes do assalto; cidade aberta pode ser assaltada de imediato.
-- A crônica distingue batalha de campo, estrada e assalto.
+- A crônica distingue batalha de campo, estrada e assalto, e conta o SAQUE em linha própria.
+- **Tomar à força quebra a cidade** (`campanha/guerra/saque.ts`): morre `conquista.mortosNoSaque`
+  da população civil e uma obra perde `conquista.niveisPerdidos` níveis — a Muralha primeiro,
+  a mais cara de pé quando não há muralha. Só o ASSALTO saqueia; entrar numa província sem
+  defensor continua custando zero.
 - A janela de batalha desenha **uma faixa por arma** dentro da barra de cada lado e escreve a
   composição ao lado do nome; o painel de recrutamento mostra as quatro armas sempre, com as
   trancadas apagadas e o motivo no tooltip.

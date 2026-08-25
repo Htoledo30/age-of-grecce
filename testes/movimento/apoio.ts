@@ -58,6 +58,9 @@ export function mundoDe(
     trocarDono: (id: string, poder: string) => {
       donos[id] = poder;
     },
+    // O mundo mínimo não tem população nem catálogo: quem testa saque é a campanha inteira,
+    // em `testes/combate/conquista.test.ts`.
+    saquear: (id: string) => ({ provincia: id, mortos: 0, obra: null, nivel: 0 }),
     miliciaDe: (id: string) => milicias[id] ?? 0,
     // Nenhuma província do mundo mínimo é fortificada: quem testa muralha é
     // `testes/cerco/`, contra os dados de verdade.

@@ -14,6 +14,7 @@ import { donoDe, populacaoDe } from '../provincia/consultas';
 import { conquistar } from '../provincia/posse';
 import { impedeAssaltoImediatoEm } from '../guerra/cercos';
 import { miliciaEm } from '../guerra/defesa-local';
+import { saquearProvincia } from '../guerra/saque';
 
 export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
@@ -49,5 +50,8 @@ export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
     // A conquista passa pela MESMA primitiva de sempre: índice reverso e tabela de donos
     // consertados juntos, sem um segundo caminho que possa discordar.
     trocarDono: (id, poder) => conquistar(nucleo, id, poder),
+    // ⚠️ Só o ASSALTO chega aqui. Entrar numa cidade vazia não mata civil nem derruba obra:
+    // não houve luta. Ver `guerra/saque.ts` para o que se perde e por quê.
+    saquear: (id) => saquearProvincia(nucleo, id),
   });
 }

@@ -173,6 +173,10 @@
         "fracao": 0.012,
         "fracaoMorta": 0.5
       }
+    },
+    "conquista": {
+      "mortosNoSaque": 0.03,
+      "niveisPerdidos": 1
     }
   },
   "camera": {

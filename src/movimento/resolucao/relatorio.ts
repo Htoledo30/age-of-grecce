@@ -44,6 +44,19 @@ export interface MundoDaResolucao {
   batalha: AjustesDaBatalha;
   donoDe: (idProvincia: string) => string;
   trocarDono: (idProvincia: string, idPoder: string) => void;
+  /**
+   * Cobra da cidade o preço de ter sido tomada à força, e conta o que ela perdeu.
+   *
+   * A resolução não conhece população nem catálogo de obras — ela avisa que a praça caiu na
+   * porrada e recebe de volta o estrago. Chamado só no assalto: entrar numa cidade vazia não
+   * destrói nada.
+   */
+  saquear: (idProvincia: string) => {
+    provincia: string;
+    mortos: number;
+    obra: string | null;
+    nivel: number;
+  };
   /** Quantos milicianos esta província põe em pé. Zero onde não há população. */
   miliciaDe: (idProvincia: string) => number;
   /**
@@ -157,6 +170,13 @@ export interface RelatorioDaRodada {
   }[];
   conquistas: readonly { provincia: string; de: string; para: string }[];
   /**
+   * O que cada cidade tomada À FORÇA perdeu no dia: civis mortos e a obra que caiu um nível.
+   *
+   * Lista separada das conquistas porque nem toda conquista saqueia — cidade vazia cai sem
+   * luta e sem estrago, e juntar as duas faria a crônica anunciar destruição onde não houve.
+   */
+  saques: readonly { provincia: string; mortos: number; obra: string | null; nivel: number }[];
+  /**
    * Milicianos que a província PERDEU defendendo, por província.
    *
    * Perdidos, não mortos: parte dispersa e volta pra casa. Quem aplica a fração é a campanha.
@@ -190,6 +210,7 @@ export function relatorioVazio(): RelatorioEmConstrucao {
     marchas: [],
     batalhas: [],
     conquistas: [],
+    saques: [],
     milicianosMortos: [],
     cercos: [],
     cercosLevantados: [],

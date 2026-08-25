@@ -74,6 +74,27 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     });
   }
 
+  // ⚠️ **O saque é notícia SEPARADA da conquista**, e não um adendo dela: nem toda cidade
+  // tomada é saqueada — quem marcha para uma província vazia não quebra nada. Juntar as duas
+  // linhas faria a crônica anunciar destruição onde não houve luta.
+  //
+  // O tom é `perda` mesmo para quem tomou a cidade: ela é sua a partir de agora, e o estrago
+  // também. É a conta do assalto, e é ela que dá ao cerco um motivo que não é paciência.
+  for (const saque of relatorio.saques) {
+    if (saque.mortos <= 0 && saque.obra === null) continue;
+    const partes: string[] = [];
+    if (saque.mortos > 0) partes.push(`${numero(saque.mortos)} moradores morreram`);
+    if (saque.obra !== null) {
+      const nome = campanha.nomeDaObra(saque.obra);
+      partes.push(saque.nivel === 0 ? `${nome} foi ao chão` : `${nome} caiu para o nível ${saque.nivel}`);
+    }
+    linhas.push({
+      tom: 'perda',
+      icone: 'territorio',
+      texto: `${atlas.nomeDe(saque.provincia)} foi tomada à força: ${partes.join(' e ')}.`,
+    });
+  }
+
   // A queda de capital é notícia própria: pro jogador ela também diz o que o jogo está
   // esperando dele — sem esta linha, o botão de turno travado pareceria defeito.
   for (const queda of campanha.quedasDeCapital) {

@@ -215,7 +215,8 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
 - Receita considera população, atividade e **corrupção**.
 - Atividade econômica pode gerar dinheiro automaticamente; não exigir venda manual de toda
   colheita.
-- Batalha por si só não gera saque. Conquista poderá dar dinheiro com perdas quando o
+- Batalha por si só não gera saque; **tomar a cidade à força, sim** — e o saque é destruição,
+  não lucro: o vencedor herda menos gente e uma obra quebrada, não um baú. Conquista poderá dar dinheiro com perdas quando o
   saque existir; não há estoque de produtos para capturar.
 
 ### Corrupção
@@ -360,6 +361,12 @@ já conseguem explicar o resultado.
   não existe uma fórmula para decidir e outra para animar.
 - **Não se assalta a muralha com exército inimigo intacto nas costas.** Se o campo não foi
   decidido, senta-se e tenta-se na rodada seguinte.
+- **Tomar à força QUEBRA a cidade.** Morre uma fatia dos civis — não só soldado e milícia
+  morre em invasão — e uma obra perde um nível: a Muralha, quando há uma, porque foi ela que
+  se quebrou para entrar; a mais cara de pé, quando não há. **Cidade que cai sem luta não
+  perde nada**, e é essa diferença que dá dois preços à pergunta *sitiar ou assaltar?*:
+  sentar demora e entrega a praça inteira, assaltar entrega hoje uma praça ferida. Nada de
+  sorteio — a obra que cai sai de uma regra que o jogador consegue prever antes de clicar.
 - Recrutamento custa ouro e população e leva tempo de formação. A ARMA é escolhida na leva,
   e o preço é dela: o mesmo tesouro põe em campo mais leves do que hoplitas.
 

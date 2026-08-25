@@ -19,7 +19,7 @@ export function assaltar(
   milicianos: number,
   mundo: MundoDaResolucao,
   relatorio: RelatorioEmConstrucao,
-  tomar: (provincia: string, poder: string) => void,
+  tomar: (provincia: string, poder: string, aForca?: boolean) => void,
   levantar: (provincia: string) => void,
 ): void {
   const dono = mundo.donoDe(provincia);
@@ -75,7 +75,7 @@ export function assaltar(
       desfecho: choque.desfecho,
       tipo: 'assalto',
     });
-    tomar(provincia, hoste.poder);
+    tomar(provincia, hoste.poder, true);
     return;
   }
 

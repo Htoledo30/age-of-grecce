@@ -40,7 +40,82 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: o comércio que não precisa de parceiro
+### Agora: tomar à força quebra a cidade
+
+Henrique (25/08/2026), corrigindo uma pergunta minha que estava mal feita: *"se eu conquisto
+uma província eu pego tudo que tem nela; a única mudança é que quando conquisto tem batalhas,
+e batalhas destroem e matam coisas — algumas construções devem se perder, população deve cair
+um pouco, porque não é só soldado e milícia que morre em invasões"*.
+
+Até aqui uma cidade trocava de mão sem um arranhão: o vencedor herdava a população inteira e o
+catálogo de obras intacto, como se conquistar fosse assinar um papel.
+
+- **Morre 3% dos civis** (`conquista.mortosNoSaque`), além dos milicianos que já morreram na
+  batalha.
+- **Uma obra perde um nível** (`conquista.niveisPerdidos`): **a Muralha**, quando há uma —
+  foi ela que se quebrou para entrar —, e a mais cara de pé quando não há.
+- ⚠️ **Cidade que cai SEM luta não perde nada.** É a metade que dá sentido à outra: não houve
+  batalha, não há o que destruir. Sem ela, "conquistar" viraria sinônimo de "destruir" e o
+  mapa vazio ficaria em ruínas.
+- ⚠️ **Nada de sorteio.** A rodada é determinística de ponta a ponta; a obra que cai sai de uma
+  regra que o jogador prevê antes de clicar, com desempate por id.
+
+O que isso compra: **"sitiar ou assaltar?" passou a ter dois preços em vez de ser uma questão
+de paciência.** Sentar demora e entrega a praça inteira; assaltar entrega hoje uma praça
+ferida, sem muro, que o vencedor precisa reerguer antes de o próximo vizinho aparecer.
+
+Falta Henrique jogar e dizer se 3% dói pouco ou demais.
+
+### A próxima etapa: a IA — e ela vem em pasta própria
+
+Henrique fixou a ordem final: **IA e, por último, diplomacia.** Ele pediu a estrutura pronta
+antes de começar, e ela está desenhada aqui.
+
+⚠️ **A pasta nasce com o primeiro arquivo de verdade.** Criar `src/ia/` com arquivos vazios
+agora reprovaria no `npm run codigo-morto` — o projeto não aceita export que ninguém importa,
+e é uma regra que já pagou por si. O desenho fica escrito; os arquivos entram com código.
+
+```
+src/ia/
+  ia.ts                  a fachada: "jogue o turno deste poder". Único ponto que o turno chama.
+  estilo.ts              QUEM é esta IA — pesos lidos de dados/ia.json, nenhum número no código.
+  percepcao/             o que ela VÊ. Só leitura, nunca escreve.
+    vizinhanca.ts        quem faz fronteira comigo, com quanto, a que distância.
+    ameaca.ts            quem pode me atacar nesta rodada, e com o quê.
+    oportunidade.ts      que terra vale tomar — bem novo na rede? fraca? capital?
+  decisao/               o que ela QUER. Pontua opções; não executa nenhuma.
+    plano.ts             o plano do turno: intenções em ordem de valor.
+    orcamento.ts         reparte o tesouro entre construir, recrutar e guardar.
+  economia/
+    construir.ts         que obra, em que terra, nesta ordem.
+    imposto.ts           o decreto de imposto de cada província.
+  guerra/
+    recrutar.ts          quanto, de que arma, na terra que a levanta.
+    marchar.ts           para onde as hostes vão, e com que postura.
+    defender.ts          o que fica em casa; socorro e surtida.
+  diplomacia/            vazia até o item 6.
+```
+
+**Seis regras que a IA vai seguir, e cada uma tem motivo:**
+
+1. **A IA não tem acesso privilegiado.** Ela chama a mesma fachada `Campanha` que a tela
+   chama. Se precisar de uma pergunta que a fachada não responde, a pergunta ENTRA na fachada
+   — nunca um atalho pelo estado. É o que garante que ela jogue o jogo que existe, e não um
+   parecido.
+2. **Três camadas, e a de cima nunca escreve.** Percepção lê, decisão pontua, execução chama
+   comando. Misturar as três é como a IA vira o arquivo-deus que o projeto proíbe.
+3. **Determinismo.** Ordem por id, nada de `Math.random()`. Se entrar sorte, sai de semente
+   guardada no estado — a mesma regra que a batalha já carrega escrita.
+4. **Estilo em DADOS.** Agressivo, mercador, defensivo: pesos em `dados/ia.json`, do mesmo
+   jeito que balanço vive em `dados/ajustes.json`. Trocar a personalidade de um poder não pode
+   exigir recompilar nada.
+5. **Testável sem tela.** Cada decisão é função pura sobre uma leitura — dá para montar um
+   tabuleiro no vitest e afirmar o que ela decidiu, e por quê.
+6. **Ela erra como o jogador erra.** Sem enxergar exército escondido, sem tesouro infinito,
+   sem prever a rodada seguinte. A dificuldade sobe pelo ESTILO e pela escala do poder, nunca
+   por trapaça — é a mesma regra do GDD, e é ela que mantém a partida legível.
+
+### O que veio antes: o comércio que não precisa de parceiro
 
 Item 4 da sequência de Henrique, **partido em dois como o item 3 foi** — e a razão apareceu
 ao olhar de perto: comércio são duas coisas, e só uma podia ser construída.
@@ -321,6 +396,11 @@ Henrique fixou (25/08/2026) a ordem até a **0.1.0**: (1) equilibrar os poderes 
 (2) fechar as construções — todo prédio comprável tem que servir AGORA, e o que não tem
 função fica escondido até ter, (3) revisar a guerra básica sem inventar vinte tipos de
 tropa, (4) comércio, (5) diplomacia, (6) IA. Este é o trabalho (1).
+
+⚠️ **Os dois últimos trocaram de lugar** no mesmo dia, depois que ficou claro que a
+diplomacia precisa de alguém do outro lado: a ordem final é **(5) IA e (6) diplomacia**. Foi
+a mesma descoberta que partiu o item 4 em dois — a cadeia real é IA → diplomacia → comércio
+externo.
 
 O desequilíbrio não era o que se supunha. Medido: **três poderes abriam em déficit
 permanente** — Tebas −42 por turno, Erétria −16, Tanagra −9 — sangrando até o cofre zerar e

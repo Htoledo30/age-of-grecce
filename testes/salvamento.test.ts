@@ -86,6 +86,7 @@ describe('o salvamento vai e volta inteiro', () => {
       marchas: [],
       batalhas: [],
       conquistas: [],
+      saques: [],
       milicianosMortos: [],
       cercos: [],
       cercosLevantados: [],

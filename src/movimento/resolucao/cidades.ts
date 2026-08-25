@@ -67,10 +67,19 @@ export function resolverCidades(
     relatorio.cercosLevantados.push({ provincia, sitiante: cerco.sitiante });
   };
 
-  const tomar = (provincia: string, poder: string): void => {
+  /**
+   * A praça muda de mão. `aForca` diz se houve assalto — e é só ele que saqueia.
+   *
+   * ⚠️ Cidade que cai sem ninguém em pé não perde nada: não houve luta, não há o que
+   * destruir. É essa diferença que dá dois preços a "sitiar ou assaltar?".
+   */
+  const tomar = (provincia: string, poder: string, aForca = false): void => {
     const de = mundo.donoDe(provincia);
     mundo.trocarDono(provincia, poder);
     relatorio.conquistas.push({ provincia, de, para: poder });
+    // Depois da troca de dono, e de propósito: os mortos e o entulho ficam onde estão, e quem
+    // herda a cidade herda o estrago.
+    if (aForca) relatorio.saques.push(mundo.saquear(provincia));
     delete estado.cercos[provincia];
   };
 

@@ -504,6 +504,31 @@ export const Ajustes = z.object({
        */
       saltosPorRodada: z.number().int().positive(),
     }),
+    /**
+     * O preço que a cidade paga por ser tomada À FORÇA.
+     *
+     * ⚠️ **Só o assalto cobra isto.** Marchar para uma província sem ninguém em pé continua
+     * custando zero: não houve luta, não há o que destruir. É o que dá dois preços à
+     * pergunta "sitiar ou assaltar?" — sentar demora e entrega a cidade inteira, assaltar
+     * entrega hoje uma cidade quebrada.
+     */
+    conquista: z.object({
+      /**
+       * Fatia da população CIVIL que morre na tomada. 0,03 é 3%.
+       *
+       * Civis, e não milicianos: aqueles já morreram na batalha, pela fração da milícia. Isto
+       * é o resto da cidade — *"não é só soldado e milícia que morre em invasão"*.
+       */
+      mortosNoSaque: z.number().min(0).max(1),
+      /**
+       * Quantos níveis a obra atingida perde. 1 deixa a cidade ferida, não arrasada.
+       *
+       * A obra é a MURALHA quando há uma — foi ela que se quebrou para entrar —, e a mais
+       * cara de pé quando não há. Nada de sorteio: a rodada é determinística de ponta a
+       * ponta, e o jogador tem que conseguir prever o estrago antes de clicar.
+       */
+      niveisPerdidos: z.number().int().min(0),
+    }),
   }),
   camera: z.object({
     /** Teto de aproximação. O piso não se ajusta: é o zoom em que o mapa inteiro cabe. */
