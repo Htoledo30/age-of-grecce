@@ -199,17 +199,25 @@ são preservadas na restauração.
 ## Estrutura técnica
 
 - TypeScript, Pixi.js/WebGL, HTML/CSS, Vite, Electron e Zod.
-- `src/main.ts` monta o jogo; regras vivem nos módulos de campanha, combate, movimento,
-  população e produção.
-- Conteúdo e balanceamento ficam em `dados/*.json`, validados por
-  `src/dados/esquema.ts`.
+- **Um arquivo, um assunto.** Nenhum arquivo do projeto passa de 400 linhas, e a verificação
+  reprova quem passar (`ferramentas/checar/tamanho-dos-arquivos.ts`). O maior arquivo hoje
+  tem 387 linhas.
+- `src/main.ts` é só o ponto de entrada; o boot vive em `src/aplicacao/`, com um arquivo por
+  etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
+- `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
+  `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/` e
+  `estado/`; as perguntas ficam nas camadas de `campanha/fachada/`.
+- **Só a fachada chama `aoMudar`.** Nenhum módulo de regra notifica a interface, e por isso
+  existe um lugar só que sabe quando a tela se redesenha.
+- Conteúdo e balanceamento ficam em `dados/*.json`, validados pelos esquemas de
+  `src/dados/esquemas/`, cuja porta única é `src/dados/esquema.ts`.
 - Assets assados do mapa ficam em `assets/mundo/` e são carregados em runtime.
 - Estado mutável fica na campanha; dados autorais e geografia ficam nos JSON e no Atlas.
 - Pastas, arquivos, funções e variáveis usam português.
 
-`src/campanha/campanha.ts` ainda coordena muitos domínios e `src/main.ts` concentra a
-montagem da interface. Extrair responsabilidades quando uma tarefa real exigir, sem
-fragmentar apenas para reduzir linhas.
+⚠️ **`campanha.ts` e `main.ts` têm teto próprio, mais apertado que o geral**, e não recebem
+regra nova: mecânica nova nasce em módulo próprio. Os dois já foram arquivos-deus (1.942 e
+1.259 linhas), e a trava existe para que não voltem a ser.
 
 ## Regras técnicas que evitam regressões
 

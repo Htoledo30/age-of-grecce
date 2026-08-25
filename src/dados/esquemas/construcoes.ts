@@ -1,0 +1,131 @@
+/**
+ * Construções permanentes em quatro slots, com níveis I–III.
+ *
+ * O efeito mora no catálogo e não se repete nas províncias — balancear todas as Ágoras do
+ * mapa é mudar um número só, exatamente como acontece com o valor dos produtos.
+ *
+ * **Por que uma parcela cada, e não um bônus genérico:** como impostos, produção e comércio
+ * pesam diferente em cada província, a melhor construção muda de lugar pra lugar. Atenas tem
+ * muita gente e quer Ágora; Sunião tem minério e pode erguer Mina.
+ */
+
+import { z } from 'zod';
+
+const TresNiveisPositivos = z.tuple([
+  z.number().positive(),
+  z.number().positive(),
+  z.number().positive(),
+]);
+const TresPrazosPositivos = z.tuple([
+  z.number().int().positive(),
+  z.number().int().positive(),
+  z.number().int().positive(),
+]);
+const TresCustosInteiros = z.tuple([
+  z.number().int().positive(),
+  z.number().int().positive(),
+  z.number().int().positive(),
+]);
+
+export const Construcoes = z.object({
+  versao: z.literal(1),
+  comentario: z.string().min(1),
+  construcoes: z.record(
+    z.string().min(1),
+    z.object({
+      nome: z.string().min(1),
+      /** Custo e prazo explícitos de I, II e III. Upgrade paga somente o nível novo. */
+      custos: TresNiveisPositivos,
+      turnos: TresPrazosPositivos,
+      /**
+       * Ouro por turno para manter cada nível de pé, para sempre.
+       *
+       * É o custo próprio que faz a renda provincial ser LÍQUIDA e permite província no
+       * vermelho (ver GDD): um Mercado numa terra pobre pode custar mais do que rende, e
+       * "não construir" vira decisão. Também é o ralo contínuo que faltava ao tesouro —
+       * quem enche os doze slots do reino assume uma folha permanente.
+       */
+      manutencao: TresCustosInteiros,
+      requisito: z
+        .object({
+          /** Basta possuir um destes produtos, principal ou secundário. */
+          produtos: z.array(z.string().min(1)).min(1).optional(),
+          ancoradouro: z.literal(true).optional(),
+        })
+        .optional(),
+      /**
+       * Em que moeda esta construção paga.
+       *
+       * **Nem toda construção paga em ouro, e é isso que faz a lista ser uma escolha.**
+       * Se todas rendessem moeda, escolher seria aritmética: bastaria pegar a de maior
+       * retorno. O Quartel não rende nada hoje: reserva um slot para qualidade militar
+       * futura, enquanto Fazenda compra alimento e Ágora compra arrecadação.
+       *
+       * União discriminada e não campos opcionais: assim o compilador obriga quem lê a
+       * decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined`
+       * atravessar a fórmula da renda em silêncio.
+       */
+      efeito: z.discriminatedUnion('tipo', [
+        z.object({
+          tipo: z.literal('renda'),
+          /**
+           * Qual das três parcelas da renda esta construção melhora.
+           *
+           * É `enum` e não `string` de propósito: aponta pra uma parcela que não existe e
+           * o carregamento falha com o caminho do campo, em vez de a construção
+           * silenciosamente não fazer nada.
+           */
+          parcela: z.enum(['impostos', 'producao', 'comercio']),
+          /** Fator total no nível I, II e III. */
+          fatores: TresNiveisPositivos,
+        }),
+        z.object({
+          tipo: z.literal('alimento'),
+          /** Pontos acrescentados pela construção no nível I, II e III. */
+          pontos: z.tuple([
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+          ]),
+        }),
+        z.object({
+          tipo: z.literal('milicia'),
+          /**
+           * Multiplica a milícia da província. 2 é o dobro de defensores.
+           *
+           * Multiplica a DERIVAÇÃO. Não existe número de guarnição guardado em lugar
+           * nenhum para isto somar.
+           */
+          fatores: TresNiveisPositivos,
+        }),
+        z.object({
+          tipo: z.literal('felicidade'),
+          /** Pontos somados ao ALVO de felicidade da província no nível I, II e III. */
+          pontos: z.tuple([
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+            z.number().int().nonnegative(),
+          ]),
+        }),
+        z.object({
+          tipo: z.literal('futuro'),
+        }),
+      ]),
+      /** Benefício atual e, quando houver, papel futuro escrito para o jogador. */
+      promessa: z.string().min(1),
+      /**
+       * Esta obra obriga o inimigo a sitiar antes de poder assaltar.
+       *
+       * ⚠️ **Fora do `efeito`, e de propósito.** Impedir o assalto imediato não é o mesmo
+       * que multiplicar a milícia: a Muralha faz as duas coisas hoje, mas uma torre, um
+       * fosso ou uma cidadela futura podem fazer só uma. Ler a regra pelo id `muralha`
+       * amarraria o combate a um id de conteúdo, e o `0.0.10` vai refazer o catálogo.
+       */
+      impedeAssaltoImediato: z.boolean().optional(),
+      /** Por que ela existe e onde ela vale. Documentação junto do dado. */
+      motivo: z.string().min(1),
+    }),
+  ),
+});
+
+export type Construcoes = z.infer<typeof Construcoes>;

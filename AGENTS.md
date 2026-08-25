@@ -40,7 +40,35 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Objetivo da etapa atual
+### Objetivo da etapa atual: a dívida arquitetural, paga
+
+Henrique cobrou (24/08, depois do 0.0.4) a única coisa que ele pediu desde o primeiro dia
+para não existir: **um arquivo-deus**. `campanha.ts` tinha chegado a 1.942 linhas e
+`main.ts` a 1.259. Está feito, com `npm run entregar` verde:
+
+- **`campanha.ts` virou fachada.** Cada regra mora no módulo que a escreve —
+  `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/`,
+  `estado/` — e recebe um `NucleoDaCampanha` (atlas, economia, catálogo, ajustes, estado,
+  territórios, mobilização). As PERGUNTAS ficam em três camadas de `campanha/fachada/`
+  (reino, província, guerra) e os COMANDOS em `campanha.ts`. **Só a fachada chama
+  `aoMudar`.**
+- **`main.ts` virou o ponto de entrada e nada mais** (16 linhas). O boot está em
+  `src/aplicacao/`: `iniciar-jogo`, `montar-tela`, `ligar-acoes`, `atualizar-interface`,
+  `vistas/`, `cronica-da-rodada`, `salvamento-local`, `inspecao-de-desenvolvimento`.
+  O estado de tela (fase, seleção, marcha em composição) virou `SelecaoDaTela`, em vez de
+  variáveis livres compartilhadas por acidente de escopo.
+- **Mais nove arquivos grandes divididos**: `resolucao.ts`, `esquema.ts`, `mobilizacao.ts`,
+  `exercito-ficha.ts`, `provincias-mapa.ts`, `checar.ts`, `pintar-terreno.ts`,
+  `hidrologia.ts`, `gerar-mapa.ts`, `gerar-provincias.ts` — e as cinco maiores suítes de
+  teste, que agora compartilham `testes/apoio/mundo.ts` em vez de recarregar os dados cada
+  uma.
+- **A trava é automática.** `npm run checar` reprova qualquer arquivo `.ts`/`.css` acima de
+  400 linhas e avisa a partir de 300; `campanha.ts` e `main.ts` têm teto próprio, mais
+  apertado. Nenhum comportamento mudou: os mesmos 301 testes unitários e 32 de tela.
+- Único código removido: `Mobilizacao.mover()`, que nenhuma regra chamava — a classe o
+  escondia do `knip`, que não olha membro de classe.
+
+### O que veio antes
 
 As três frentes do teste manual de Henrique (24/08) estão CONCLUÍDAS e verdes:
 
@@ -97,13 +125,13 @@ Falta Henrique jogar a regra nova.
 
 ### Estado do trabalho
 
-- alimentação e construções estão implementadas, auditadas e verdes (260 testes unitários,
-  29 de tela); a fome tem dois regimes (a do cerco mata dentro da cidade sitiada; a
-  estrutural cobra o reino inteiro) e a cidade sitiada recruta normalmente;
-- a sequência acima está começando pela etapa 1;
-- pendências de Henrique acumuladas para quando acordar: retestar o ritmo novo do cerco e
-  revisar o que as etapas produzirem;
-- custos e efeitos das construções são números iniciais, não balanceamento definitivo.
+- as seis etapas da sequência estão CONCLUÍDAS e entregues na 0.0.4; a dívida arquitetural
+  que elas acumularam foi paga logo depois, sem mudar comportamento nenhum;
+- o código está dividido: 251 arquivos, o maior com 387 linhas, nenhum arquivo-deus;
+- pendências de Henrique: jogar a regra alimentar nova, o ritmo do cerco, o decreto de
+  imposto e as colunas do Governo;
+- custos e efeitos das construções são números iniciais, não balanceamento definitivo;
+- a revisão das tooltips do jogo inteiro continua pendente, anunciada por Henrique.
 
 ### Fora deste trabalho
 
@@ -113,6 +141,10 @@ nacionalidade funcional, migração, bônus real de qualidade do Quartel, IA ou 
 ## Como trabalhar
 
 - Faça a menor alteração que complete o objetivo atual.
+- **Um arquivo, um assunto.** Nenhum arquivo passa de 400 linhas — `npm run checar` reprova.
+  Arquivo com muitas utilidades vira uma PASTA com o nome dele, e cada função no seu
+  arquivo. `campanha.ts` e `main.ts` têm teto próprio e **não recebem regra nova**: mecânica
+  nova nasce em módulo próprio. Levantar o número não é a correção; mover a regra é.
 - Não implemente uma ideia futura só porque ela parece relacionada.
 - Preserve mudanças existentes no worktree.
 - Claude e Codex não editam simultaneamente os mesmos arquivos. Trabalho paralelo real
@@ -121,7 +153,8 @@ nacionalidade funcional, migração, bônus real de qualidade do Quartel, IA ou 
   balanceamento que podem mudar legitimamente.
 - Testes de tela são para UI, DOM, CSS e interação. Ao falharem, leia a lista completa
   antes de corrigir.
-- Refatore apenas quando a tarefa exigir ou quando houver risco concreto.
+- Refatore apenas quando a tarefa exigir, quando houver risco concreto, ou quando a trava de
+  tamanho apontar um arquivo crescendo demais.
 - Chame revisor somente leitura apenas quando Henrique pedir uma revisão sob demanda;
   implementação e correções continuam com o agente principal.
 - Pesquise referências externas somente quando Henrique pedir ou quando faltar confiança

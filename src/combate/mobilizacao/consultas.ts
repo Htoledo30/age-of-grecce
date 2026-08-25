@@ -1,0 +1,166 @@
+/**
+ * As perguntas sobre quem está em armas — nenhuma delas muda nada.
+ *
+ * ⚠️ **Tudo ordenado por id.** `Object.keys` devolve a ordem de criação, e percorrer isso cru
+ * faria o desenho e a folha de pagamento dependerem de quem foi recrutado primeiro.
+ */
+
+import type { Ajustes } from '@/dados/esquema';
+import { forcaDe } from '../exercito';
+import type { Exercito } from '../exercito';
+import type { LevaEmFormacao } from '../formacao-de-leva';
+import { disponivelParaLeva, manutencaoDe as folhaDe } from '../recrutamento';
+import { populacaoDe } from './estado';
+import type { EstadoDeMobilizacao } from './estado';
+
+type AjustesCombate = Ajustes['jogo']['combate'];
+
+/** Toda hoste em pé no mundo, em ordem de id. É o que o mapa desenha. */
+export function todas(estado: EstadoDeMobilizacao): Exercito[] {
+  return Object.keys(estado.hostes)
+    .sort()
+    .flatMap((id) => {
+      const h = estado.hostes[id];
+      return h ? [h] : [];
+    });
+}
+
+/** A hoste com este id, onde quer que esteja. */
+export function hoste(estado: EstadoDeMobilizacao, idHoste: string): Exercito | undefined {
+  return estado.hostes[idHoste];
+}
+
+/** Toda hoste parada nesta provincia, em ordem estavel de id. */
+export function hostesEm(
+  estado: EstadoDeMobilizacao,
+  idProvincia: string,
+): readonly Exercito[] {
+  return todas(estado).filter((h) => h.posicao === idProvincia);
+}
+
+/**
+ * A ÚNICA hoste parada aqui, ou `undefined`.
+ *
+ * ⚠️ **Devolve `undefined` quando há mais de uma**, de propósito. Antes devolvia "a primeira
+ * por id", e isso virou mentira no dia em que sitiar deixou de engajar: com o sitiante
+ * acampado ao lado da guarnição, "a primeira" é quem foi recrutado antes — o defensor — e a
+ * interface inteira passou a falar do exército errado.
+ *
+ * Continua servindo às regras que são mesmo da PROVÍNCIA e onde duas seriam um erro.
+ */
+export function unicaEm(
+  estado: EstadoDeMobilizacao,
+  idProvincia: string,
+): Exercito | undefined {
+  const aqui = hostesEm(estado, idProvincia);
+  return aqui.length === 1 ? aqui[0] : undefined;
+}
+
+/** Quantos homens tem ESTA hoste. Não é o total do lugar. */
+export function forcaDaHoste(estado: EstadoDeMobilizacao, idHoste: string): number {
+  return forcaDe(hoste(estado, idHoste));
+}
+
+/** Homens de um PODER parados nesta província. Zero quando ele não está aqui. */
+export function forcaEm(
+  estado: EstadoDeMobilizacao,
+  idProvincia: string,
+  idPoder: string,
+): number {
+  return hostesEm(estado, idProvincia)
+    .filter((h) => h.poder === idPoder)
+    .reduce((total, h) => total + forcaDe(h), 0);
+}
+
+export function formacaoEm(
+  estado: EstadoDeMobilizacao,
+  idProvincia: string,
+): LevaEmFormacao | undefined {
+  return estado.formacoes[idProvincia];
+}
+
+/** Todas as levas que já aparecem no mundo, mas ainda não aceitam ordens. */
+export function formacoes(
+  estado: EstadoDeMobilizacao,
+): readonly { provincia: string; formacao: LevaEmFormacao }[] {
+  return Object.entries(estado.formacoes).map(([provincia, formacao]) => ({
+    provincia,
+    formacao,
+  }));
+}
+
+/** As hostes deste poder, onde quer que estejam — inclusive em terra alheia. */
+export function doPoder(estado: EstadoDeMobilizacao, idPoder: string): readonly Exercito[] {
+  return todas(estado).filter((h) => h.poder === idPoder);
+}
+
+/**
+ * Este poder ainda tem alguém em armas?
+ *
+ * É a metade da pergunta "está vivo?" que o território não responde: um poder que perdeu o
+ * último chão mas mantém uma hoste continua no jogo, no exílio.
+ */
+export function temTropa(estado: EstadoDeMobilizacao, idPoder: string): boolean {
+  return (
+    doPoder(estado, idPoder).length > 0 ||
+    formacoes(estado).some(({ formacao }) => formacao.poder === idPoder)
+  );
+}
+
+/**
+ * Quantos homens em armas este poder sustenta, contando as levas em formação.
+ *
+ * ⚠️ **A leva conta.** Ela já saiu da população e já come — só não marcha nem luta. Não
+ * contá-la abriria uma brecha em que recrutar na véspera da fome sairia de graça.
+ */
+export function homensDe(estado: EstadoDeMobilizacao, idPoder: string): number {
+  let homens = 0;
+  for (const h of doPoder(estado, idPoder)) homens += forcaDe(h);
+  for (const { formacao } of formacoes(estado)) {
+    if (formacao.poder === idPoder) homens += formacao.homens;
+  }
+  return homens;
+}
+
+/** Quantos homens nascidos nesta província estão em armas em todo o mapa. */
+export function homensEmArmasDe(
+  estado: EstadoDeMobilizacao,
+  idProvincia: string,
+): number {
+  let total = 0;
+  for (const exercito of Object.values(estado.hostes)) {
+    total += exercito.origem[idProvincia] ?? 0;
+  }
+  for (const formacao of Object.values(estado.formacoes)) {
+    if (formacao.origem === idProvincia) total += formacao.homens;
+  }
+  return total;
+}
+
+/**
+ * O que a tropa NASCIDA nesta província custa por turno, onde quer que esteja.
+ *
+ * É a resposta de "esta terra me puxa pra baixo?": a origem de cada soldado já é rastreada,
+ * então a folha militar pode ser lida terra a terra. Só hostes ativas — a leva em formação
+ * ainda não recebe soldo.
+ */
+export function custoDaTropaDe(
+  estado: EstadoDeMobilizacao,
+  ajustes: AjustesCombate,
+  idProvincia: string,
+): number {
+  let homens = 0;
+  for (const exercito of Object.values(estado.hostes)) {
+    homens += exercito.origem[idProvincia] ?? 0;
+  }
+  return folhaDe(homens, ajustes);
+}
+
+/** Quantos habitantes esta província ainda cede a uma leva. */
+export function disponivelParaLevaEm(
+  estado: EstadoDeMobilizacao,
+  ajustes: AjustesCombate,
+  idProvincia: string,
+): number {
+  return disponivelParaLeva(populacaoDe(estado, idProvincia), ajustes);
+}

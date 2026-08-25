@@ -1,0 +1,325 @@
+/**
+ * Ajustes de jogo — números que se calibram jogando, não algoritmo.
+ *
+ * A fronteira é essa: o que um designer mexe pra o jogo ficar bom mora aqui e em
+ * `dados/ajustes.json`; matemática de algoritmo (pesos de suavização, transformada de
+ * distância, conversão de coordenada) fica no código, porque mexer nela quebra a lógica em
+ * vez de calibrar o jogo.
+ *
+ * Este esquema é a documentação do arquivo, e é o que um editor futuro vai ler pra saber
+ * quais campos existem e que valores aceitam.
+ */
+
+import { z } from 'zod';
+
+/** Um nível de imposto: quanto multiplica a receita e quanto pesa no humor. */
+const NivelDeImposto = z.object({
+  fator: z.number().gt(0),
+  humor: z.number().int(),
+});
+
+export const Ajustes = z.object({
+  versao: z.literal(1),
+  jogo: z.object({
+    /** Ano em que a campanha abre. Negativo é a.C.: 700 a.C. é -700. */
+    anoInicial: z.number().int(),
+    /**
+     * Quantos anos um turno faz passar.
+     *
+     * **Decisão em aberto, de propósito exposta aqui.** Um turno por ano funciona no
+     * protótipo, mas é a escolha que decide o ritmo da campanha inteira — 700 turnos pra
+     * atravessar a era arcaica é muito ou é pouco? Enquanto o número mora neste arquivo,
+     * mudar de ideia custa uma linha; escondido no código, custaria uma refatoração.
+     */
+    anosPorTurno: z.number().int().positive(),
+    tesouroInicial: z.number().nonnegative(),
+    economia: z.object({
+      /**
+       * Moedas por habitante, por turno. População é estado e cresce; por isso os
+       * impostos acompanham nascimentos, recrutamento, deserção e desmobilização.
+       */
+      impostoPorHabitante: z.number().positive(),
+      /**
+       * Os níveis de imposto por província: receita trocada por pressão social.
+       *
+       * É o desenho do GDD, com a régua de Rome: Total War como referência (Low ×0,8
+       * comprando ordem pública; High/Very High ×1,2–1,5 pagando em revolta). O `fator`
+       * multiplica o imposto DEPOIS da corrupção; o `humor` entra no ALVO de felicidade
+       * da província. Substituiu o decreto de investimento, que era redundante com as
+       * construções e de retorno ilegível.
+       */
+      imposto: z.object({
+        niveis: z.object({
+          baixo: NivelDeImposto,
+          normal: NivelDeImposto,
+          alto: NivelDeImposto,
+        }),
+      }),
+    }),
+    /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
+    populacao: z.object({
+      /**
+       * Crescimento por turno, antes das construções.
+       *
+       * ⚠️ **Não existe capacidade máxima artificial:** esta taxa é aplicada diretamente,
+       * e a disponibilidade de alimento funciona como freio.
+       */
+      taxaNatural: z.number().gt(0).max(1),
+    }),
+    construcoes: z.object({
+      slotsPorProvincia: z.number().int().positive(),
+      nivelMaximo: z.literal(3),
+    }),
+    /**
+     * A corrupção: o freio do imposto, por tamanho e por distância da capital.
+     *
+     * Cada fatia é uma hipérbole saturante `teto × x / (x + meio)`; as duas se compõem
+     * por `1 − (1−a)(1−b)` e nunca chegam a 100%. Fórmula e tabela de calibração no GDD.
+     */
+    corrupcao: z.object({
+      tamanho: z.object({
+        /** Habitantes que uma administração arcaica cobre sem perder nada. */
+        limiar: z.number().int().nonnegative(),
+        /** Fração máxima que o tamanho pode comer, no infinito. */
+        teto: z.number().min(0).max(1),
+        /** Excesso de habitantes que compra METADE do teto. Controla a inclinação. */
+        meiaPopulacao: z.number().int().positive(),
+      }),
+      distancia: z.object({
+        /** Fração máxima que a distância pode comer, no infinito. */
+        teto: z.number().min(0).max(1),
+        /** Saltos que compram metade do teto. 6 reproduz a tabela do GDD. */
+        meioCaminho: z.number().int().positive(),
+        /** Saltos atribuídos a quem NÃO tem caminho até a capital (ilha, sem capital). */
+        semCaminho: z.number().int().positive(),
+      }),
+    }),
+    capital: z.object({
+      /**
+       * O que custa mudar a capital por vontade própria.
+       *
+       * Zero quando a atual caiu em mãos alheias — a escolha forçada não é castigo. O
+       * custo existe para a mudança voluntária não virar um interruptor grátis quando a
+       * corrupção por distância passar a ler a capital.
+       */
+      custoDeMudanca: z.number().int().nonnegative(),
+    }),
+    /** Balanço alimentar anual em pontos inteiros: capacidade, não inventário. */
+    alimento: z.object({
+      /** Ponto básico dado uma vez a cada poder com território simulado. */
+      subsistenciaPorReino: z.number().int().nonnegative(),
+      /** Cada crescimento desta fração sobre a população inicial aumenta o custo em um. */
+      fracaoPopulacionalPorNivel: z.number().gt(0).max(1),
+      /** Quantos homens mobilizados, ou fração, custam um ponto. */
+      soldadosPorPonto: z.number().int().positive(),
+      /** Fatia fixa da população perdida quando o saldo civil é negativo. */
+      mortePorFome: z.number().min(0).max(1),
+      /** Fatia fixa dos homens mobilizados perdida quando o saldo final é negativo. */
+      mortePorFomeNaTropa: z.number().min(0).max(1),
+      /**
+       * A despensa de uma cidade cercada — o relógio de Bannerlord, num contador só.
+       *
+       * A cidade aguenta `mantimentos + comida da própria terra` turnos de cerco (a
+       * Fazenda é resistência de cerco). Enquanto a despensa dura, ninguém morre; quando
+       * vence, povo (−1%) e guarnição (−5%) caem juntos, todo turno.
+       */
+      cerco: z.object({
+        mantimentos: z.number().int().nonnegative(),
+      }),
+    }),
+    /**
+     * Como o número de felicidade vira palavra na tela.
+     *
+     * Internamente é 0–100; o jogador nunca vê o número cru. As
+     * cinco faixas são a interface oficial, e ficam nos dados porque são conteúdo: mexer
+     * no ponto em que uma província passa a "Revoltosa" é balanço, não código.
+     */
+    felicidade: z.object({
+      /**
+       * Da mais infeliz para a mais feliz. `ate` é o último valor que ainda pertence à
+       * faixa, e a última tem que fechar em 100 — senão existe felicidade sem nome.
+       *
+       * A PRIMEIRA faixa é a revoltosa: é nela que o imposto para de ser pago e que a
+       * contagem de revolta corre. O limiar sai da própria faixa, não de outro número.
+       */
+      faixas: z
+        .array(z.object({ ate: z.number().int().min(0).max(100), nome: z.string().min(1) }))
+        .min(2)
+        .superRefine((faixas, ctx) => {
+          for (let i = 1; i < faixas.length; i++) {
+            if ((faixas[i]?.ate ?? 0) <= (faixas[i - 1]?.ate ?? 0)) {
+              ctx.addIssue({ code: 'custom', message: 'as faixas têm que subir' });
+            }
+          }
+          if (faixas[faixas.length - 1]?.ate !== 100) {
+            ctx.addIssue({ code: 'custom', message: 'a última faixa tem que terminar em 100' });
+          }
+        }),
+      /** Para onde o humor caminha quando nada o empurra. */
+      alvoBase: z.number().int().min(0).max(100),
+      /** Quanto o humor anda por turno em direção ao alvo. Gradual, nunca salto. */
+      passoPorTurno: z.number().int().positive(),
+      /** Queda imediata quando a cidade é tomada. É o único movimento não gradual. */
+      choqueDaConquista: z.number().int().nonnegative(),
+      /**
+       * O que empurra o alvo, somado sobre a base — tudo pela situação da PRÓPRIA
+       * província: só quem passa fome recebe o peso da fome, sem parcela nacional.
+       */
+      alvo: z.object({
+        /** A própria província passando fome: dependente num reino de saldo civil
+         *  negativo, ou sitiada com a despensa vencida. */
+        fome: z.number().int(),
+        sitiada: z.number().int(),
+        /** Dono atual diferente do dono de 700 a.C.: o povo vive sob bandeira alheia. */
+        dominioEstrangeiro: z.number().int(),
+      }),
+      revolta: z.object({
+        /** Turnos consecutivos na faixa revoltosa até o levante armado. */
+        turnos: z.number().int().positive(),
+        /** Fração da população que pega em armas no levante. */
+        fracaoRebelde: z.number().gt(0).max(1),
+      }),
+    }),
+    /**
+     * O que custa pôr e manter gente em armas.
+     *
+     * **Soldado sai da população da província**, não do nada: recrutar tira habitante de
+     * onde se recruta, e por isso encolhe o imposto dali e aperta o próprio teto de
+     * recrutamento. É o que impede exército de brotar de um tesouro grande.
+     */
+    combate: z.object({
+      /** Ouro por homem, pago à vista no recrutamento. */
+      custoPorHomem: z.number().positive(),
+      /**
+       * Ouro por homem por turno, enquanto ele estiver em armas.
+       *
+       * É o ralo que a economia não tinha: incentivo e construção não absorvem tesouro
+       * grande, exército sim, porque cobra todo turno e não expira.
+       */
+      manutencaoPorHomem: z.number().positive(),
+      /**
+       * Habitantes que uma província **nunca** cede. Abaixo disso ela não levanta leva.
+       *
+       * A mesma ideia do mínimo de população de _Rome: Total War_: existe um resto de
+       * gente — mulheres, crianças, velhos, quem lavra — que não vira soldado por mais
+       * dinheiro que haja.
+       *
+       * ⚠️ **É piso no que SOBRA, não porteiro na entrada.** "Recusar quando a população
+       * está abaixo do mínimo" deixaria uma cidade de 2.001 habitantes ceder os 2.001 de
+       * uma vez. A conta é `população − mínimo`.
+       *
+       * ⚠️ **O que ele protege de verdade é a província pequena, e a razão está no
+       * crescimento.** `calcularCrescimentoPopulacional` faz `Math.floor(bruto)`, e com
+       * `taxaNatural` de 1% isso significa que **abaixo de ~100 habitantes o crescimento
+       * arredonda para zero e a província morre para sempre.** Sem o piso, um império rico
+       * paga para raspar uma vila até esse ponto e ela nunca mais volta.
+       *
+       * Em Atenas ele nem chega a agir: o custo da tropa trava a mobilização muito antes.
+       */
+      populacaoMinima: z.number().int().nonnegative(),
+      /**
+       * Quem defende a província sem ter sido recrutado.
+       *
+       * ⚠️ **Fraca de propósito.** 120 dos 148 poderes começam com uma província só, e uma
+       * milícia forte tornaria a primeira conquista impossível pra 81% do mapa. Ela existe
+       * pra não ser ignorada e pra que o CERCO possa existir — sem defensor, província
+       * alheia cai no instante em que alguém pisa nela.
+       */
+      /**
+       * O cerco.
+       *
+       * ⚠️ **Nenhum destes é velocidade de cerco.** Sitiar continua não tomando a cidade e
+       * não andando em direção a nada; quem toma é o assalto, e o que decide o assalto é a
+       * muralha. O segundo número diz há quanto tempo é preciso estar sentado para poder
+       * ir para cima, não o quanto falta para a cidade cair sozinha.
+       */
+      cerco: z.object({
+        /**
+         * Quanto a milícia vale atrás da muralha, no assalto.
+         *
+         * É bônus de POSIÇÃO, de toda cidade. A construção Muralha dobra a milícia antes
+         * disto, e os dois se multiplicam.
+         */
+        bonusDeMuralha: z.number().min(1),
+        /**
+         * Quantas rodadas de cerco uma cidade fortificada exige antes de poder ser
+         * assaltada.
+         *
+         * Vale só para as construções marcadas com `impedeAssaltoImediato`; cidade aberta
+         * cai no primeiro assalto. Valor inicial de teste, não de balanceamento final.
+         */
+        rodadasParaAssaltarMuralha: z.number().int().min(0),
+      }),
+      milicia: z.object({
+        /** Fatia da população que pega em armas na defesa. 0,012 é 1,2%. */
+        fracao: z.number().gt(0).max(1),
+        /**
+         * Fatia da milícia que MORRE quando a defesa é derrotada; o resto dispersa.
+         *
+         * Aniquilar a milícia inteira arruinaria a província pro resto da campanha — são
+         * os mesmos lavradores que pagam tributo e que fornecem recruta.
+         */
+        fracaoMorta: z.number().gt(0).max(1),
+      }),
+      /**
+       * Fronteiras que uma hoste atravessa por rodada. A regra-base é uma.
+       *
+       * A estrutura continua aceitando mais trechos para uma futura estrada ou marcha
+       * forçada, mas isso precisa ser um bônus explícito — nunca a velocidade escondida
+       * de toda hoste. Assim Atenas → Elêusis → Mégara exige duas rodadas.
+       */
+      saltosPorRodada: z.number().int().positive(),
+    }),
+  }),
+  camera: z.object({
+    /** Teto de aproximação. O piso não se ajusta: é o zoom em que o mapa inteiro cabe. */
+    zoomMaximo: z.number().positive(),
+    /** Velocidade da câmera pelo teclado, em pixels do palco por segundo. */
+    velocidadeLivre: z.number().positive(),
+    /** Fator de zoom por entalhe da roda do mouse. */
+    passoDaRoda: z.number().gt(1),
+  }),
+  provincias: z.object({
+    /** Quanto o preenchimento político cobre o terreno. 1 apaga o mapa físico. */
+    opacidade: z.number().min(0).max(1),
+    corFronteira: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'cor deve ser #rrggbb'),
+    /** 0 some com a fronteira, 1 desenha linha cheia. */
+    forcaFronteira: z.number().min(0).max(1),
+    /**
+     * Espessura da linha de fronteira, em pixels do palco. Vale em qualquer zoom: o
+     * shader mede a distância até a fronteira em pixels de tela, não em texels.
+     */
+    larguraDaLinha: z.number().positive(),
+    corSelecao: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'cor deve ser #rrggbb'),
+    /** Cobertura que o destaque garante sozinho, mesmo com as cores dos reinos desligadas. */
+    forcaSelecao: z.number().min(0).max(1),
+  }),
+  /**
+   * Ritmo do que o mapa mostra ao virar o turno. **É ilustração, nunca regra** — mudar
+   * estes números não muda resultado de partida nenhum.
+   */
+  animacao: z.object({
+    /**
+     * Quanto uma hoste leva pra andar UM trecho da rota.
+     *
+     * Por salto, e não por marcha: uma marcha de dois saltos leva o dobro, e é assim que
+     * a distância percorrida se lê na tela. Curto demais e a peça pisca de um lado pro
+     * outro; longo demais e passar o turno vira espera.
+     */
+    segundosPorSaltoDeMarcha: z.number().positive(),
+    /** Quanto o pulso de chegada dura depois que a peça assenta no destino. */
+    segundosDoPulsoDeChegada: z.number().positive(),
+  }),
+  detalhes: z.object({
+    alturaArvore: z.number().positive(),
+    /** Faixa de zoom em que a camada de objetos entra. */
+    zoomInicio: z.number().positive(),
+    zoomCheio: z.number().positive(),
+    /** Faixa de zoom em que o grão de chão entra. */
+    graoInicio: z.number().positive(),
+    graoFim: z.number().positive(),
+    graoOpacidade: z.number().min(0).max(1),
+  }),
+});
+
+export type Ajustes = z.infer<typeof Ajustes>;

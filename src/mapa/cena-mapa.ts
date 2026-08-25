@@ -18,7 +18,7 @@ import type { Relogio } from '@/nucleo/tempo';
 import { ALTURA_BASE, LARGURA_BASE, aoMudarEscala, densidadeEfetiva } from '@/estilo/escala';
 import type { Ajustes, Mundo, Provincias } from '@/dados/esquema';
 import { Detalhes } from './detalhes';
-import { ProvinciasMapa } from './provincias-mapa';
+import { ProvinciasMapa } from './provincias-mapa/provincias-mapa';
 
 /** Quanto o ponteiro pode andar entre apertar e soltar e a coisa ainda ser um clique. */
 const FOLGA_DO_CLIQUE = 5;
