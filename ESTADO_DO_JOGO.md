@@ -139,8 +139,9 @@ mar. Nenhum é o outro com números trocados.
 ⚠️ As duas pernas do Mercado existem porque cada uma sozinha era armadilha, e as duas
 medições estão registradas: só local, ele não pagava onde `transitoBase` é pequeno; só
 nacional, o preço escalava pelo peso da terra e Corinto ia a 1.729 turnos de retorno, com
-"nunca" em metade do mapa. Juntas, o retorno caiu para 41–153 turnos do poder mais pobre ao
-mais rico.
+"nunca" em metade do mapa. Juntas, o retorno do nível I caiu para **41 a 101 turnos** do poder
+mais pobre ao mais rico. Corinto abre com Mercado I erguido pela autoria: lá o que se mede é o
+nível II, que foi de 1.729 para 149 turnos.
 
 Não existe teto populacional artificial. Crescimento, recrutamento, baixas e desmobilização
 usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito para

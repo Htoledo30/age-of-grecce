@@ -85,14 +85,15 @@ for (const id of ['eleusis','megara','corinto','sicion']) cm.trocarDono(id, 'ate
 cm.darOuro(50_000);
 const antesM = cm.tesouro; cm.passarTurno();
 console.log(`  renda do império: ${cm.tesouro - antesM} /turno com ${cm.provinciasDe('atenas').length} províncias`);
-console.log('  predio     provincia    payback');
+console.log('  predio     provincia nivel  payback');
 for (const prov of ['atenas','corinto','sicion','megara']) {
   for (const p of ['agora','estrada','mercado','porto','lagar','pedreira']) {
     const disp = cm.construcoesDisponiveisEm(prov);
     if (!disp[p]) continue;
     const r = cm.retornoDaConstrucaoEm(prov, p);
     const g = r?.ganhoPorTurno ?? 0;
-    console.log(`  ${p.padEnd(11)}${prov.padEnd(12)}${(g>0?Math.ceil((r?.custo??0)/g)+' turnos':'nunca').padStart(12)}  (corrupção ${((cm.economiaDe(prov)?.corrupcao??0)*100).toFixed(0)}%)`);
+    const grau = ['0','I','II','III'][cm.nivelDaConstrucaoEm(prov, p) + 1] ?? '?';
+    console.log(`  ${p.padEnd(11)}${prov.padEnd(10)}${grau.padEnd(4)}${(g>0?Math.ceil((r?.custo??0)/g)+' turnos':'nunca').padStart(10)}  (corrupção ${((cm.economiaDe(prov)?.corrupcao??0)*100).toFixed(0)}%)`);
   }
 }
 
@@ -114,14 +115,20 @@ for (const poder of ['hermione', 'plateia', 'caristo', 'tanagra', 'tebas', 'cori
   const antes = c.tesouro; c.passarTurno();
   const liq = c.tesouro - antes;
   const disp = c.construcoesDisponiveisEm(casa);
+  // ⚠️ O NÍVEL medido vai junto, e o custo é o DAQUELE nível. A tabela já mentiu por não
+  // fazer isso: Corinto abre com Mercado I na autoria, então a linha dela media o preço do
+  // nível II ao lado do custo do nível I — e o Mercado parecia armadilha só ali, quando o
+  // que havia era uma comparação entre degraus diferentes.
   const linhas = Object.keys(disp).map((p) => {
     const r = c.retornoDaConstrucaoEm(casa, p);
     const g = r?.ganhoPorTurno ?? 0;
-    return { p, custo: c.custoDaObraEm(casa, p, 1), pagar: g > 0 ? Math.ceil((r?.custo ?? 0) / g) : Infinity };
+    const proximo = c.nivelDaConstrucaoEm(casa, p) + 1;
+    return { p, nivel: proximo, custo: r?.custo ?? 0, pagar: g > 0 ? Math.ceil((r?.custo ?? 0) / g) : Infinity };
   }).sort((a, b) => a.pagar - b.pagar);
   const uteis = linhas.filter((l) => Number.isFinite(l.pagar));
   console.log(`\n  ${poder.toUpperCase()} — ${liq}/turno, ${Object.keys(disp).length} prédios no catálogo, ${uteis.length} se pagam`);
   for (const l of linhas) {
-    console.log(`    ${l.p.padEnd(16)}custa ${String(l.custo).padStart(5)}   ${Number.isFinite(l.pagar) ? l.pagar + ' turnos' : 'nunca (paga em outra moeda)'}`);
+    const grau = ['0', 'I', 'II', 'III'][l.nivel] ?? String(l.nivel);
+    console.log(`    ${l.p.padEnd(16)}${grau.padEnd(4)}custa ${String(l.custo).padStart(5)}   ${Number.isFinite(l.pagar) ? l.pagar + ' turnos' : 'nunca (paga em outra moeda)'}`);
   }
 }

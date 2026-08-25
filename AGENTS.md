@@ -81,16 +81,31 @@ turno 1, e foi conferida uma a uma nos 18 poderes.
 de quem passa por AQUI e distribui o que o reino inteiro alcança. O mesmo número move as duas
 pernas.
 
-| Mercado — retorno | antes | agora |
+| Mercado — retorno do nível I | antes | agora |
 |---|---:|---:|
 | Hermíone | 157 turnos | **41** |
 | Plateia | 100 | **50** |
 | Caristo | 122 | **54** |
+| Atenas | 106 | **59** |
 | Tanagra | 130 | **65** |
 | Tebas | 301 | **101** |
-| Corinto | **1.729** | **153** |
-| Atenas | 106 | **59** |
 | Sicion, Mégara (império esticado) | **nunca** | 150 · 93 |
+
+⚠️ **Corinto não cabe nesta tabela, e por isso ela quase mentiu.** Ela abre com **Mercado I
+erguido pela autoria**, então o que se mede lá é o nível II: 1.729 → **149 turnos**, por
+5.185 moedas. A primeira versão desta seção pôs a linha dela ao lado das outras e o Mercado
+pareceu armadilha só em Corinto — não era, eram degraus diferentes. Na mesma régua, o nível I
+de Corinto pagaria em **77 turnos**, e o nível II de todo mundo vai de 86 (Hermíone) a 215
+(Tebas). `npm run economia` agora imprime o NÍVEL medido ao lado do custo daquele nível, para
+a comparação não poder voltar a ser entre degraus diferentes.
+
+⚠️ **E a pergunta que ficou de pé (de Henrique): se Corinto é a maior potência comercial, por
+que o prédio de comércio não é melhor lá?** Porque a identidade dela já está paga em outro
+lugar: o **trânsito** de Corinto é 118/turno, o maior do mapa e 1,5× o de Atenas, e ela é a 2ª
+província mais rica das 25 — com uma só. O Mercado é meio prédio de trânsito e meio prédio de
+IMPÉRIO, e a perna nacional pertence a quem tem muitas terras. Corinto começa rica e com a
+praça já de pé; para melhorar, ela precisa conquistar — que é o que o `motivo` do prédio
+sempre disse.
 
 ⚠️ **Cada perna sozinha já foi armadilha, e as duas medições estão registradas.** Só LOCAL:
 `transitoBase` é 0,18 em Tanagra contra 0,60 em Corinto, e multiplicador em cima de quase nada
