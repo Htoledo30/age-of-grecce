@@ -38,6 +38,8 @@ para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
   aos produtos locais;
 - abrir o Governo e ver, na aba de Alimentação, quais províncias sustentam o reino e quais
   dependem dele;
+- ver na aba Mercado quais bens distintos o reino alcança, de onde vêm e quais faltam —
+  e escolher a conquista pelo que ela acrescenta, não só pelo que ela rende;
 - fechar o jogo a qualquer momento e retomar depois: todo clique já está salvo;
 - ver o humor das províncias reagir a comida, cerco, conquista e Templo — e pagar o preço
   da revolta quando ele desaba;
@@ -72,11 +74,22 @@ gradual no humor; a conquista devolve a terra ao normal. É a alavanca do GDD (r
 trocada por pressão social, referência Rome: Total War) e substituiu o antigo decreto de
 investimento, removido por ser redundante com as construções e de retorno ilegível.
 
+A **rede de trocas** é a outra metade da renda, e ela é NACIONAL: cada bem distinto ao
+alcance do reino rende um valor por turno, **uma vez só** — duas províncias de azeite não
+rendem duas vezes. Um bem circula quando a terra que o dá é sua, não está sitiada e chega à
+capital por terra própria (o mesmo `alcanceDe` da hoste); reino partido não faz um mercado
+só, ilha sem ligação terrestre fica de fora, e sem capital a rede para. É por aqui que o
+produto **secundário** da província passou a servir para alguma coisa. A aba **Mercado** do
+Governo lista o que circula, de onde vem, e — o mais útil — o que está FORA do alcance, que
+é o mapa do que há para conquistar. Valores de `troca` em `economia.json` são iniciais.
+
 O Governo mostra o **saldo completo por província**: renda líquida da terra E o custo da
 tropa NASCIDA nela (a origem de cada soldado é rastreada), com o veredito — sustenta ou
 puxa para baixo — em coluna própria; a linha no vermelho é marcada. A ficha soma a linha
 "tropa nascida aqui" no tooltip da renda. A atribuição por origem pode divergir do total
-do poder em uma moeda por arredondamento; a barra usa a conta do poder.
+do poder em uma moeda por arredondamento; a barra usa a conta do poder. ⚠️ O rodapé dessa
+tabela é o **total das terras**, não a renda do reino: a rede não cabe em província nenhuma,
+e quem soma as duas é o resumo em cima.
 
 O imposto passa pela **corrupção**: `população × taxa × (1 − corrupção)`, com
 `corrupção = 1 − (1 − por tamanho) × (1 − por distância da capital)`. Cada fatia é uma

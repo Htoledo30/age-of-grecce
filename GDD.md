@@ -88,6 +88,16 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
 ### Circulação e comércio
 
 - O mercado interno é abstrato e automático; não existe transporte manual de unidades.
+- **Bem comercial é ACESSO, não estoque.** O reino alcança o mármore ou não alcança: não há
+  inventário, caravana nem rota a administrar. Cada bem DISTINTO ao alcance rende um valor
+  por turno, **uma vez só** — duas províncias de azeite não rendem duas vezes. É isso que dá
+  à conquista um valor não-linear: tomar a única terra de vinho vale mais que tomar a segunda
+  terra de grão, e é aí que a variedade do mapa vira decisão.
+- Um bem circula quando a província que o dá é sua, **não está sitiada** e **chega à capital
+  por terra própria**. Reino partido em dois não faz um mercado só, e ilha sem ligação
+  terrestre fica de fora enquanto Porto e mar não existirem. Sem capital não há rede.
+- O produto SECUNDÁRIO da província entra por aqui — é o que ele sempre esperou para servir
+  a alguma coisa. Ele continua fora da renda da terra, que é do principal.
 - Escassez é distribuída de forma compreensível, com prioridade limitada da capital.
 - Recursos só devem circular por conexões válidas; conexão marítima completa exige Porto.
 - Comércio internacional depende de tratado e transforma capacidade produtiva em renda,

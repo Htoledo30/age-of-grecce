@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 interface Ganchos {
   campanha: () => { tesouro: number; renda: number };
   economiaDe: (idProvincia: string) => { total: number } | null;
+  rendaDeTrocas: (idPoder: string) => number;
 }
 
 /**
@@ -156,11 +157,21 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
 
   // uma linha por província do jogador, mais o rodapé de totais
   await expect(page.locator('[data-aba="balanco"] .balanco__tabela tbody tr')).toHaveCount(3);
-  const total = await page.evaluate(
-    () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().renda,
+  const conta = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return { reino: i.campanha().renda, trocas: i.rendaDeTrocas('atenas') };
+  });
+  // ⚠️ **O rodapé soma as TERRAS; o resumo soma o REINO.** A rede de trocas é nacional e não
+  // cabe numa tabela província a província — se o rodapé a incluísse, a coluna deixaria de
+  // fechar com as linhas de cima.
+  expect(conta.trocas).toBeGreaterThan(0);
+  await expect(page.locator('[data-aba="balanco"] .balanco__tabela tfoot')).toContainText(
+    String(conta.reino - conta.trocas),
   );
-  await expect(page.locator('[data-aba="balanco"] .balanco__tabela tfoot')).toContainText(String(total));
-  await expect(page.locator('[data-aba="balanco"] .balanco__resumo')).toContainText('3.000 moedas');
+  const resumo = page.locator('[data-aba="balanco"] .balanco__resumo');
+  await expect(resumo).toContainText('3.000 moedas');
+  await expect(resumo).toContainText(`rede +${conta.trocas}`);
+  await expect(resumo).toContainText(`+${conta.reino} por turno`);
 
   // Esc fecha
   await page.keyboard.press('Escape');

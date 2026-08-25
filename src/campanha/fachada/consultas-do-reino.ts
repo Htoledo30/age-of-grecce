@@ -23,6 +23,8 @@ import { serializarCampanha } from '../salvamento';
 import { Territorios } from '../territorios';
 import type { RelatorioDaFome } from '../alimentacao/aplicar-fome';
 import { balancoAlimentarDe } from '../alimentacao/balanco';
+import { bensAusentes, bensEmCirculacao, rendaDeTrocas } from '../comercio/rede-de-trocas';
+import type { BemEmCirculacao } from '../comercio/rede-de-trocas';
 import { conferirCatalogos, criarEstadoInicial } from '../estado/criar-estado';
 import { efemerosVazios } from '../estado/efemeros';
 import type { EfemerosDaCampanha } from '../estado/efemeros';
@@ -183,6 +185,22 @@ export abstract class ConsultasDoReino {
   /** Quantas províncias do poder ainda estão sem economia configurada. */
   semEconomia(idPoder: string): number {
     return semEconomia(this.nucleo, idPoder);
+  }
+
+  // ── A rede de trocas ────────────────────────────────────────────────────────────────
+  /** Os bens DISTINTOS que chegam ao reino. Cada um paga uma vez, por mais terras que dê. */
+  bensEmCirculacao(idPoder: string): readonly BemEmCirculacao[] {
+    return bensEmCirculacao(this.nucleo, idPoder);
+  }
+
+  /** O que a variedade acrescenta à renda por turno. Já está dentro de `rendaDe`. */
+  rendaDeTrocas(idPoder: string): number {
+    return rendaDeTrocas(this.nucleo, idPoder);
+  }
+
+  /** O que o reino ainda não alcança — a lista do que há para conquistar. */
+  bensAusentes(idPoder: string): readonly { id: string; nome: string; troca: number }[] {
+    return bensAusentes(this.nucleo, idPoder);
   }
 
   // ── Governo: imposto e capital ──────────────────────────────────────────────────────

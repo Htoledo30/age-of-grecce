@@ -87,6 +87,8 @@ export function instalarInspecao(jogo: Jogo): void {
     disponivelParaLevaEm: (idProvincia: string) => campanha.disponivelParaLevaEm(idProvincia),
     economiaDe: (idProvincia: string) => campanha.economiaDe(idProvincia),
     alimentacao: () => campanha.alimentacao,
+    rendaDeTrocas: (idPoder: string) => campanha.rendaDeTrocas(idPoder),
+    bensEmCirculacao: (idPoder: string) => campanha.bensEmCirculacao(idPoder).map((b) => b.id),
     balancoAlimentarDe: (idPoder: string) => campanha.balancoAlimentarDe(idPoder),
     contribuicaoAlimentarEm: (idProvincia: string) =>
       campanha.contribuicaoAlimentarEm(idProvincia),

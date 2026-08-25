@@ -46,6 +46,15 @@ export interface VistaDoBalanco {
   turno: number;
   tesouro: number;
   linhas: readonly LinhaDoBalanco[];
+  /**
+   * O que a rede de trocas acrescenta por turno.
+   *
+   * ⚠️ **Não cabe em linha nenhuma da tabela**, e é por isso que ela nunca fecha sozinha
+   * com a renda do reino: a rede existe porque o reino alcança bens DISTINTOS, não porque
+   * alguma terra os produziu. O rodapé soma as terras; o resumo soma o reino. Detalhe na
+   * aba Mercado.
+   */
+  trocas: number;
 }
 
 const COLUNAS = [
@@ -97,15 +106,18 @@ export class Balanco implements AbaDoGoverno {
     }
 
     const semEconomia = vista.linhas.filter((l) => l.economia === null).length;
+    const doReino = somas.total + vista.trocas;
     const resumo = [
       trecho('balanco__poder', vista.poder.nome),
       trecho('balanco__dado', formatarAno(vista.ano)),
       trecho('balanco__dado', `turno ${vista.turno}`),
       trecho('balanco__ouro', `${moeda(vista.tesouro)} moedas`),
+      trecho('balanco__dado', `terras ${comSinal(somas.total)}`),
+      trecho('balanco__dado', `rede +${moeda(vista.trocas)}`),
       // A renda pode ser negativa desde a manutenção de construção — o sinal é honesto.
       trecho(
-        somas.total < 0 ? 'balanco__aviso' : 'balanco__ouro',
-        `${somas.total < 0 ? '−' : '+'}${moeda(Math.abs(somas.total))} por turno`,
+        doReino < 0 ? 'balanco__aviso' : 'balanco__ouro',
+        `${comSinal(doReino)} por turno`,
       ),
       trecho('balanco__dado', `${vista.linhas.length} províncias`),
     ];
@@ -132,10 +144,12 @@ export class Balanco implements AbaDoGoverno {
     const corpo = document.createElement('tbody');
     for (const linha of vista.linhas) corpo.appendChild(this.linha(linha));
 
+    // ⚠️ O rodapé diz "total das TERRAS", não "renda do reino": a rede de trocas não cabe
+    // numa tabela província a província. Chamá-lo de total faria a soma parecer errada.
     const rodape = document.createElement('tfoot');
     rodape.appendChild(
       celulas([
-        'total',
+        'total das terras',
         '',
         moeda(somas.impostos),
         moeda(somas.producao),

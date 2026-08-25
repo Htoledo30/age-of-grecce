@@ -10,6 +10,7 @@
 import { rendaDaProvincia } from '../economia';
 import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
+import { rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
 import { estaSitiada } from '../guerra/cercos';
@@ -50,13 +51,20 @@ export function economiaDe(
   );
 }
 
-/** Soma só o que está configurado. O resto do mapa não arrecada nada. */
+/**
+ * A renda do reino: o que as terras rendem MAIS o que a variedade delas rende.
+ *
+ * ⚠️ A rede de trocas é uma parcela NACIONAL e não cabe em província nenhuma — ela existe
+ * porque o reino alcança bens distintos, não porque alguma terra os produziu. Por isso a
+ * tabela do Governo, que é província a província, nunca vai fechar sozinha com este número:
+ * o resumo é que mostra os dois.
+ */
 export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
   let total = 0;
   for (const id of nucleo.territorios.provinciasDe(idPoder)) {
     total += economiaDe(nucleo, id)?.total ?? 0;
   }
-  return total;
+  return total + rendaDeTrocas(nucleo, idPoder);
 }
 
 /** Quantas províncias do poder ainda estão sem economia configurada. */

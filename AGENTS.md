@@ -40,7 +40,35 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Objetivo da etapa atual: a dívida arquitetural, paga
+### Agora: a rede de trocas — bem comercial é ACESSO, não estoque
+
+Henrique trouxe um GDD de outro jogo (*Hegemonia* v0.3) e perguntou o que valia. Vale uma
+coisa, e ela foi implementada: **você alcança o mármore ou não alcança**. Sem inventário,
+sem caravana, sem preço.
+
+- **Um bem DISTINTO rende uma vez**, por mais terras que o deem. Duas províncias de azeite
+  não dobram nada. É o que faz tomar a terra do vinho valer mais do que tomar a segunda
+  terra de grão — conquista com valor não-linear, que o jogo não tinha.
+- **Circula quem é seu, não está sitiado e chega à capital por terra própria** (mesmo
+  `alcanceDe` que a hoste usa). Reino partido não faz um mercado só; Salamina fica de fora
+  até existir Porto e mar; sem capital, a rede inteira para.
+- O **produto secundário** finalmente serve para alguma coisa — era dado escrito desde
+  sempre, esperando a regra de circulação. Continua fora da renda da terra.
+- A renda do reino passou a ser `terras + rede`. ⚠️ A tabela do Governo é província a
+  província e **não fecha** com esse total: o rodapé soma as terras, o resumo soma o reino,
+  e a aba **Mercado** mostra o detalhe — inclusive a lista do que está FORA do alcance, que
+  é o mapa do que há para conquistar.
+- Valores de `troca` em `dados/economia.json` são iniciais, não definitivos.
+
+Falta Henrique jogar com isso e dizer se o peso da rede está certo.
+
+Guardado do mesmo documento, para quando houver IA e diplomacia: **acordo de grãos** (romper
+o acordo é arma de guerra sem disparar flecha). Recusado por ora, com motivo: **estações**
+(o próprio documento mostra que elas criaram um bug crítico de colheita), **importação a
+preço global** (exige 148 poderes com economia), **famílias e combate em quatro fases**
+(desenhados para 15–25 províncias; o nosso mapa tem 205).
+
+### O que veio antes: a dívida arquitetural, paga
 
 Henrique cobrou (24/08, depois do 0.0.4) a única coisa que ele pediu desde o primeiro dia
 para não existir: **um arquivo-deus**. `campanha.ts` tinha chegado a 1.942 linhas e

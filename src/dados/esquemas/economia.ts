@@ -29,6 +29,17 @@ export const Economia = z
          * Mármore e prata nunca entram nessa conta por mais valiosos que sejam.
          */
         alimento: z.boolean(),
+        /**
+         * O que este bem rende por turno à REDE DE TROCAS do reino, **uma vez só**.
+         *
+         * ⚠️ Não é o `valor`, e a diferença é o ponto: `valor` é o que a terra produz e se
+         * multiplica pelo nível dela; `troca` é o que a variedade acrescenta. Duas
+         * províncias de azeite não rendem troca duas vezes — quem paga é o bem DISTINTO
+         * que circula, não a quantidade. Ver `campanha/comercio/rede-de-trocas.ts`.
+         *
+         * Básico circula barato e luxo circula caro: o grão sustenta, a prata enriquece.
+         */
+        troca: z.number().int().nonnegative(),
       }),
     ),
     /**

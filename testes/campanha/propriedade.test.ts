@@ -89,9 +89,16 @@ describe('propriedade: de quem é a província agora', () => {
     const sobMegara = c.economiaDe('maratona')?.total ?? 0;
     expect(sobAtenas).toBeGreaterThan(0);
     expect(sobMegara).toBeGreaterThan(0);
-    expect(c.rendaDe('atenas')).toBe(nova().rendaDe('atenas') - sobAtenas);
+    // ⚠️ Medido sobre a soma das TERRAS, não sobre `rendaDe`: a renda do reino traz também
+    // a rede de trocas, que é nacional e muda por outro motivo — perder Maratona pode ser
+    // perder o único gado ao alcance. Quem guarda essa parte é `testes/comercio/`.
+    const daTerra = (campanha: ReturnType<typeof nova>, poder: string): number =>
+      campanha
+        .provinciasDe(poder)
+        .reduce((soma, id) => soma + (campanha.economiaDe(id)?.total ?? 0), 0);
+    expect(daTerra(c, 'atenas')).toBe(daTerra(nova(), 'atenas') - sobAtenas);
     // Mégara agora tem renda própria: o ganho dela é exatamente a Maratona SOB Mégara.
-    expect(c.rendaDe('megara')).toBe(nova().rendaDe('megara') + sobMegara);
+    expect(daTerra(c, 'megara')).toBe(daTerra(nova(), 'megara') + sobMegara);
   });
 
   it('o decreto de imposto e a obra morrem com a posse; a construção fica', () => {

@@ -1,5 +1,5 @@
 /**
- * As duas abas do Governo: o balanço em moedas e a conta da comida.
+ * As três abas do Governo: o balanço em moedas, a conta da comida e o mercado.
  *
  * ⚠️ Derivadas na hora, como todas as vistas: guardar isto seria criar uma segunda verdade
  * sobre os mesmos saldos.
@@ -7,6 +7,7 @@
 
 import type { VistaDoAlimento } from '@/ui/balanco-alimentar';
 import type { VistaDoBalanco } from '@/ui/balanco';
+import type { VistaDoMercado } from '@/ui/mercado';
 import type { Jogo } from '../contexto';
 
 const ALGARISMOS = ['0', 'I', 'II', 'III'];
@@ -27,6 +28,7 @@ export function vistaDoBalanco(jogo: Jogo): VistaDoBalanco | null {
     ano: campanha.ano,
     turno: campanha.turno,
     tesouro: campanha.tesouro,
+    trocas: campanha.rendaDeTrocas(jogador.id),
     linhas: campanha.provinciasDe(jogador.id).map((id) => {
       const e = campanha.economiaDe(id);
       const obra = campanha.obraEm(id);
@@ -102,5 +104,31 @@ export function vistaDoAlimento(jogo: Jogo): VistaDoAlimento {
     saldoCivil: balanco.saldoCivil,
     saldo: balanco.saldo,
     categoria: balanco.categoria,
+  };
+}
+
+/**
+ * O mercado: o que o reino ALCANÇA, e o que ele não alcança.
+ *
+ * As duas listas juntas dão o catálogo inteiro — é isso que faz a segunda ser útil, e não
+ * só a ausência da primeira.
+ */
+export function vistaDoMercado(jogo: Jogo): VistaDoMercado {
+  const { campanha } = jogo;
+  const jogador = campanha.jogador;
+  if (!jogador) return { circulando: [], ausentes: [], total: 0, semCapital: false };
+
+  const circulando = campanha.bensEmCirculacao(jogador.id).map((bem) => ({
+    id: bem.id,
+    nome: bem.nome,
+    troca: bem.troca,
+    provincias: bem.provincias.map((id) => campanha.nomeDe(id)),
+  }));
+  return {
+    circulando,
+    ausentes: campanha.bensAusentes(jogador.id).map((bem) => ({ ...bem, provincias: [] })),
+    total: campanha.rendaDeTrocas(jogador.id),
+    // Sem sede não há rede. É consequência da capital caída, não tabela vazia por acaso.
+    semCapital: campanha.capitalDe(jogador.id) === undefined,
   };
 }

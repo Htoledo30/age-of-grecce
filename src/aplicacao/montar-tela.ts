@@ -23,6 +23,7 @@ import { Governo } from '@/ui/governo';
 import { HostesMapa } from '@/ui/hostes-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { MarchasMapa } from '@/ui/marchas-mapa';
+import { Mercado } from '@/ui/mercado';
 import { PainelFps } from '@/ui/painel-fps';
 import { PainelLateral } from '@/ui/painel-lateral';
 import { Recrutamento } from '@/ui/recrutamento';
@@ -82,7 +83,10 @@ export function montarTela(
   // responde metade da conta da comida e a barra a outra metade, e as duas metades não
   // fecham entre si: falta no meio o que a tropa come, que não pertence a província nenhuma.
   const balancoAlimentar = new BalancoAlimentar();
-  const governo = new Governo(ui, [balanco, balancoAlimentar]);
+  // A terceira aba: os bens DISTINTOS que o reino alcança. Ela não cabia em lugar nenhum —
+  // não é de província (é nacional) nem da barra (é uma lista, não um número).
+  const mercado = new Mercado();
+  const governo = new Governo(ui, [balanco, balancoAlimentar, mercado]);
 
   return {
     ficha,
@@ -93,6 +97,7 @@ export function montarTela(
     governo,
     balanco,
     balancoAlimentar,
+    mercado,
     cronica,
     inicio,
     fimDeJogo,

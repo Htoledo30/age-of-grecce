@@ -66,7 +66,11 @@ describe('dispensar homem de terra perdida', () => {
     c.passarTurno();
     const populacao = c.populacaoDe('atenas');
 
-    const rendaPropriaDeMegara = c.rendaDe('megara');
+    // ⚠️ Medido sobre a soma das TERRAS: `rendaDe` traz também a rede de trocas, que é
+    // nacional e muda por outro motivo quando um reino ganha uma província nova.
+    const daTerra = (poder: string): number =>
+      c.provinciasDe(poder).reduce((soma, id) => soma + (c.economiaDe(id)?.total ?? 0), 0);
+    const rendaPropriaDeMegara = daTerra('megara');
     c.trocarDono('atenas', 'megara');
     // Uma regra só, sem exceção: gente pertence ao chão, não a quem manda no chão.
     c.dispensar('atenas', 1000);
@@ -75,8 +79,8 @@ describe('dispensar homem de terra perdida', () => {
     expect(c.donoDe('atenas')).toBe('megara');
     // E a consequência dura, de propósito: os habitantes rendem pro conquistador —
     // somados ao que Mégara já arrecadava das terras dela.
-    expect(c.rendaDe('megara')).toBe(rendaPropriaDeMegara + (c.economiaDe('atenas')?.total ?? 0));
-    expect(c.rendaDe('atenas')).toBe(
+    expect(daTerra('megara')).toBe(rendaPropriaDeMegara + (c.economiaDe('atenas')?.total ?? 0));
+    expect(daTerra('atenas')).toBe(
       (c.economiaDe('maratona')?.total ?? 0) + (c.economiaDe('sounion')?.total ?? 0),
     );
   });

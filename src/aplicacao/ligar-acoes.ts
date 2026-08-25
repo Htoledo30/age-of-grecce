@@ -11,7 +11,7 @@ import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { esquecerCampanha, salvarCampanha } from './salvamento-local';
 import { virarTurno } from './virar-turno';
-import { vistaDoAlimento, vistaDoBalanco } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 
 export function ligarAcoes(jogo: Jogo): void {
   const { campanha, atlas, ajustes, cena, tela, selecao } = jogo;
@@ -37,6 +37,7 @@ export function ligarAcoes(jogo: Jogo): void {
     if (!vista) return;
     tela.balanco.desenhar(vista);
     tela.balancoAlimentar.desenhar(vistaDoAlimento(jogo));
+    tela.mercado.desenhar(vistaDoMercado(jogo));
     tela.governo.alternar();
   };
 

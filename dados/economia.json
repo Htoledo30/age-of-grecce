@@ -5,47 +5,56 @@
     "graos": {
       "nome": "Grãos",
       "valor": 15,
-      "alimento": true
+      "alimento": true,
+      "troca": 12
     },
     "gado": {
       "nome": "Gado",
       "valor": 16,
-      "alimento": true
+      "alimento": true,
+      "troca": 12
     },
     "peixe": {
       "nome": "Peixe",
       "valor": 16,
-      "alimento": true
+      "alimento": true,
+      "troca": 12
     },
     "madeira": {
       "nome": "Madeira",
       "valor": 18,
-      "alimento": false
+      "alimento": false,
+      "troca": 18
     },
     "ferro": {
       "nome": "Ferro",
       "valor": 22,
-      "alimento": false
+      "alimento": false,
+      "troca": 22
     },
     "vinho": {
       "nome": "Vinho",
       "valor": 24,
-      "alimento": false
+      "alimento": false,
+      "troca": 24
     },
     "azeite": {
       "nome": "Azeite",
       "valor": 25,
-      "alimento": false
+      "alimento": false,
+      "troca": 25
     },
     "marmore": {
       "nome": "Mármore",
       "valor": 27,
-      "alimento": false
+      "alimento": false,
+      "troca": 30
     },
     "metais-preciosos": {
       "nome": "Metais preciosos",
       "valor": 28,
-      "alimento": false
+      "alimento": false,
+      "troca": 35
     }
   },
   "nacionalidades": {

@@ -167,3 +167,28 @@
 .balanco__tabela tfoot td.balanco__numero:last-child {
   color: var(--ui-bronze-claro);
 }
+
+/* A lista do que o reino NÃO alcança. Fica embaixo da tabela e em tom apagado de
+   propósito: é possibilidade, não posse — o mapa do que ainda há para conquistar. */
+.mercado__ausentes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-borda-fraca);
+}
+.mercado__rotulo {
+  color: var(--ui-texto-fraco);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+}
+.mercado__ausente {
+  padding: 2px 8px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 3px;
+  color: var(--ui-texto-tenue);
+  font-family: var(--fonte-numero);
+  font-variant-numeric: tabular-nums;
+}

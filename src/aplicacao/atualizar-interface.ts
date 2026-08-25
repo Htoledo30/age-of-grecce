@@ -7,7 +7,7 @@
  */
 
 import type { Jogo } from './contexto';
-import { vistaDoBalanco } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 import {
   destinosDaMarcha,
   marcadoresDasHostes,
@@ -74,9 +74,16 @@ export function atualizarInterface(jogo: Jogo): void {
   tela.exercitoFicha.mostrar(vistaDoExercito(jogo));
 
   // A janela de governo se redesenha junto com o resto, mas só quando está aberta: fechada,
-  // montar a tabela seria trabalho jogado fora a cada turno.
+  // montar as tabelas seria trabalho jogado fora a cada turno.
+  //
+  // ⚠️ **As TRÊS abas, não só a primeira.** Só o Balanço se redesenhava, e as outras duas
+  // ficavam paradas no que era verdade quando a janela abriu — conquistar uma província com
+  // a janela aberta mudava a tabela de moedas e deixava a comida e o mercado mentindo.
+  if (!tela.governo.visivel) return;
   const doBalanco = vistaDoBalanco(jogo);
-  if (tela.governo.visivel && doBalanco) tela.balanco.desenhar(doBalanco);
+  if (doBalanco) tela.balanco.desenhar(doBalanco);
+  tela.balancoAlimentar.desenhar(vistaDoAlimento(jogo));
+  tela.mercado.desenhar(vistaDoMercado(jogo));
 }
 
 /**

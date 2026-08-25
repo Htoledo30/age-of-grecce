@@ -32,13 +32,16 @@ describe('economia da Ática', () => {
     }
   });
 
-  it('a renda de um poder é a soma das províncias dele', () => {
+  it('a renda de um poder é a soma das províncias MAIS a rede de trocas', () => {
     const c = nova();
     const soma = c
       .provinciasDe('atenas')
       .reduce((total, id) => total + (c.economiaDe(id)?.total ?? 0), 0);
-    expect(c.rendaDe('atenas')).toBe(soma);
+    // ⚠️ A rede é uma parcela NACIONAL: ela existe porque o reino alcança bens distintos,
+    // não porque alguma terra os produziu. Nenhuma província a contém.
+    expect(c.rendaDe('atenas')).toBe(soma + c.rendaDeTrocas('atenas'));
     expect(soma).toBeGreaterThan(0);
+    expect(c.rendaDeTrocas('atenas')).toBeGreaterThan(0);
   });
 
   it('os produtos não valem o mesmo por nível', () => {
