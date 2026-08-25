@@ -477,6 +477,15 @@ novos sistemas podem ser julgados jogando, não apenas imaginando.
 - Batalhas e acontecimentos importantes precisam ser legíveis mesmo sem grande quantidade
   de assets.
 
+⚠️ **As tooltips estão longas demais, e isso é dívida assumida.** Henrique (25/08/2026):
+*"nunca vi em jogo nenhum tooltip explicar tudo, HAHAHA — vamos ter que ver isso em algum
+patch, mas por enquanto deixa como ajuda para entender."* Elas cresceram porque o jogo não
+tem tutorial e cada regra nova precisava caber em algum lugar; enquanto os sistemas ainda
+estão sendo desenhados, ensinar vale mais que enxugar. **A limpeza é um patch próprio**, e o
+alvo é o padrão do gênero: uma linha do que o número É, e no máximo uma do que ele custa. O
+porquê da regra migra para a crônica, para o painel de Governo ou some — não é a tooltip que
+tem de carregar o manual.
+
 ## Questões abertas
 
 Estas ideias não têm ordem nem garantia de implementação:
