@@ -35,7 +35,10 @@ export type VistaDeRecrutamento =
       /** Homens pagos nesta província que ainda não podem marchar. */
       emFormacao: number;
       custoPorHomem: number;
+      /** Por homem por turno com a tropa parada em casa. */
       manutencaoPorHomem: number;
+      /** Por homem por turno com ela em terra alheia. É o preço de ir à guerra. */
+      manutencaoEmCampanha: number;
       avaliar: (
         homens: number,
       ) => { pode: true; ouro: number; homens: number } | { pode: false; motivo: string };
@@ -261,11 +264,13 @@ export class Recrutamento {
       `${numero(r.homens)} homens · ${numero(r.ouro)} moedas agora · ` +
       `${numero(manutencao)} por turno · prontos no próximo turno`;
     this.previsao.dataset['pode'] = 'sim';
+    const emCampanha = Math.round(r.homens * vista.manutencaoEmCampanha);
     definirTooltip(this.previsao, {
       titulo: 'Custo da mobilização',
       corpo:
         `−${numero(r.ouro)} moedas agora\n` +
-        `−${numero(manutencao)} por turno\n` +
+        `−${numero(manutencao)} por turno em casa\n` +
+        `−${numero(emCampanha)} por turno em terra alheia\n` +
         `−${numero(r.homens)} habitantes`,
       tom: 'custo',
     });

@@ -15,8 +15,8 @@
  *    instante em que alguém pisa nela e não existe estado intermediário. Com milícia, a
  *    cidade resiste enquanto o invasor fica com o campo — e isso é o cerco.
  *
- * ⚠️ **Ela é fraca de propósito.** 120 dos 148 poderes começam com uma província só, e
- * uma milícia forte tornaria a primeira conquista impossível para 81% do mapa. Ela existe
+ * ⚠️ **Ela é fraca de propósito.** 111 dos 139 poderes começam com uma província só, e
+ * uma milícia forte tornaria a primeira conquista impossível para 80% do mapa. Ela existe
  * para não ser ignorada, não para segurar invasão de verdade.
  */
 

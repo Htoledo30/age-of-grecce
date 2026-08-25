@@ -22,7 +22,7 @@ describe('perder o chão não é o mesmo que morrer', () => {
   it('um poder sem território mas com hoste continua vivo, no exílio', () => {
     const c = comQuartel();
     c.recrutar('atenas', 1000);
-    expect(c.poderesVivos()).toHaveLength(148);
+    expect(c.poderesVivos()).toHaveLength(139);
 
     // Atenas perde as três províncias, mas a hoste continua de pé.
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');

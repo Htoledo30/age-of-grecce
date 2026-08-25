@@ -8,7 +8,7 @@ import {
   maximoDaLeva,
 } from '../../src/combate/recrutamento';
 import { unicaEm } from '../apoio/hostes';
-import { ajustes, construcoes, novaCampanha as nova } from '../apoio/mundo';
+import { ajustes, novaCampanha as nova } from '../apoio/mundo';
 import { comQuartel } from './apoio';
 
 const combate = ajustes.combate;
@@ -16,9 +16,13 @@ const combate = ajustes.combate;
 describe('recrutamento: as contas', () => {
   it('o custo e a manutenção saem dos ajustes, em inteiros', () => {
     expect(custoDaLeva(1000, combate)).toBe(1000 * combate.custoPorHomem);
-    expect(manutencaoDe(1000, combate)).toBe(Math.round(1000 * combate.manutencaoPorHomem));
+    expect(manutencaoDe(1000, combate.manutencaoPorHomem.emCasa)).toBe(
+      Math.round(1000 * combate.manutencaoPorHomem.emCasa),
+    );
     expect(Number.isInteger(custoDaLeva(777, combate))).toBe(true);
-    expect(Number.isInteger(manutencaoDe(777, combate))).toBe(true);
+    expect(Number.isInteger(manutencaoDe(777, combate.manutencaoPorHomem.emCampanha))).toBe(
+      true,
+    );
   });
 
   it('não impõe fração nem lote mínimo: o limite é a população MENOS o piso', () => {
@@ -67,8 +71,10 @@ describe('o Quartel é o portão', () => {
   it('o Quartel não rende moeda e não é requisito para recrutar', () => {
     const c = comQuartel();
     // Não rende NADA: o ganho é exatamente a manutenção negativa, sem renda escondida.
+    // `comQuartel` já ergueu o nível I, então a conta cotada é a do nível II: o ganho é a
+    // folha NOVA menos a que já se paga, e não a folha inteira do nível II.
     expect(c.retornoDaConstrucaoEm('atenas', 'quartel')?.ganhoPorTurno).toBe(
-      -construcoes.construcoes['quartel']!.manutencao[0],
+      -(c.manutencaoDaObraEm('atenas', 'quartel', 2) - c.manutencaoDaObraEm('atenas', 'quartel', 1)),
     );
     expect(c.podeRecrutarEm('atenas')).toBe(true);
     expect(c.podeRecrutarEm('maratona')).toBe(true);

@@ -155,7 +155,7 @@ export class Atlas {
     return this.provincia(a).vizinhas.includes(b);
   }
 
-  /** Nenhuma vizinha por terra: só se chega aqui pelo mar. São 35 das 205. */
+  /** Nenhuma vizinha por terra: só se chega aqui pelo mar. São 26 das 196. */
   semVizinhaPorTerra(idProvincia: string): boolean {
     return this.provincia(idProvincia).vizinhas.length === 0;
   }

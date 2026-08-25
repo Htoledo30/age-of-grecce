@@ -48,11 +48,11 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
 
   await campanhaComTropa(page, 1500);
 
-  // Por província: Elêusis e Tanagra já abrem armadas, então há três peças no mapa.
+  // O mapa abre em paz: a única peça no mapa é a do jogador.
   const marca = page.locator('.hostes__marca[data-provincia="atenas"]');
   await expect(marca).toHaveCount(1);
   await expect(marca).toHaveText('1.500');
-  // Traço grosso é como o jogador acha a tropa dele num mapa de 148 poderes.
+  // Traço grosso é como o jogador acha a tropa dele num mapa de 139 poderes.
   await expect(marca).toHaveAttribute('data-minha', 'sim');
   await expect(marca).toHaveAttribute('data-selecionada', 'nao');
   // Enquanto ninguém a escolheu, a ficha do exército não existe na tela.
@@ -64,7 +64,9 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
   await expect(page.locator('.exercito')).toBeVisible();
   await expect(page.locator('.exercito__titulo')).toHaveText('Exército em Atenas');
   await expect(page.locator('.exercito__forca')).toHaveText('1.500 homens');
-  await expect(page.locator('.exercito__custo')).toHaveText('custa 450 por turno');
+  // 1.500 × 0,1: a taxa de CASA. Os mesmos homens em terra alheia custariam 450 — a ficha
+  // mostra a taxa do chão em que a hoste está, e o número sobe quando ela cruza a fronteira.
+  await expect(page.locator('.exercito__custo')).toHaveText('custa 150 por turno');
 
   // A ficha mora no mesmo canto do controle de rodada, mas nunca pode ficar atrás dele.
   const ficha = await page.locator('.exercito').boundingBox();

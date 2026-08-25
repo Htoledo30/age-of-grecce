@@ -12,11 +12,17 @@ import { novaCampanha as nova } from '../apoio/mundo';
  * ficaria olhando o de fora até a cidade morrer de outra coisa.
  */
 describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
-  /** Atenas senta na frente de Elêusis, com a guarnição eleusina de pé lá dentro. */
-  function sitiada(homensDeAtenas: number): Campanha {
+  /**
+   * Atenas senta na frente de Elêusis, com uma guarnição eleusina de pé lá dentro.
+   *
+   * A guarnição é PLANTADA aqui: o mapa abre em paz, e um teste sobre surtida tem que pôr
+   * de pé o defensor de que ele fala em vez de herdá-lo de um arquivo de dados.
+   */
+  function sitiada(homensDeAtenas: number, guarnicao = 500): Campanha {
     const c = nova();
     c.comecar('atenas');
     c.darOuro(200_000);
+    c.plantarHoste('eleusis', 'eleusis', guarnicao);
     c.plantarHoste('atenas', 'atenas', homensDeAtenas);
     ordenar(c, 'atenas', 'eleusis', homensDeAtenas, 'atenas', 'sitiar');
     c.passarTurno();
@@ -99,8 +105,11 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
       motivo: 'esta hoste não é sua',
     });
 
+    // Uma hoste de pé e nenhum sitiante: a recusa tem que ser "não está sitiada", e não
+    // "não existe hoste" — são motivos diferentes e o jogador precisa saber qual.
     const semCerco = nova();
     semCerco.comecar('atenas');
+    semCerco.plantarHoste('tanagra', 'tanagra', 500);
     expect(podeSurtir(semCerco, 'tanagra', 'tanagra')).toMatchObject({
       motivo: 'Tanagra não está sitiada',
     });

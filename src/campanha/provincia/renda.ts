@@ -7,6 +7,7 @@
  * porque nada disto é guardado.
  */
 
+import { escalaDeObra, pesoEconomicoDe } from '../custo-de-obra';
 import { rendaDaProvincia } from '../economia';
 import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
@@ -21,6 +22,7 @@ import { fichaDe, populacaoDe } from './consultas';
 export function baseDe(nucleo: NucleoDaCampanha, idProvincia: string): BaseDaProvincia {
   return {
     construcoes: nucleo.estado.construcoes[idProvincia] ?? {},
+    escalaDeObra: escalaDeObraEm(nucleo, idProvincia),
     populacao: populacaoDe(nucleo, idProvincia),
     corrupcao: corrupcaoEm(nucleo, idProvincia).total,
     fatorDeImposto: fatorDeImpostoEm(nucleo, idProvincia),
@@ -89,4 +91,12 @@ export function saldoDaProvincia(
   const renda = economiaDe(nucleo, idProvincia);
   if (!renda) return null;
   return renda.total - nucleo.mobilizacao.custoDaTropaDe(idProvincia);
+}
+
+/** O multiplicador de preço das obras desta terra, pela população que os dados escrevem. */
+export function escalaDeObraEm(nucleo: NucleoDaCampanha, idProvincia: string): number {
+  const ficha = nucleo.economia.provincias[idProvincia];
+  if (!ficha) return 1;
+  const peso = pesoEconomicoDe(ficha, nucleo.economia.produtos, nucleo.ajustes.economia);
+  return escalaDeObra(peso, nucleo.ajustes.construcoes);
 }

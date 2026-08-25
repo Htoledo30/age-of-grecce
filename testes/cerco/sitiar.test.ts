@@ -15,10 +15,12 @@ describe('SITIAR NÃO É LUTAR: o sitiante acampa ao lado da guarnição', () =>
    * sobrar um poder só — então escolher sitiar queria dizer "lute com o exército deles e
    * DEPOIS sente", que é o assalto com um passo a mais.
    */
-  function comGuarnicaoDePe(homens: number): Campanha {
+  function comGuarnicaoDePe(homens: number, guarnicao = 500): Campanha {
     const c = nova();
     c.comecar('atenas');
     c.darOuro(200_000);
+    // O mapa abre em paz: a guarnição de que este teste fala é plantada por ele.
+    c.plantarHoste('eleusis', 'eleusis', guarnicao);
     c.plantarHoste('atenas', 'atenas', homens);
     return c;
   }
@@ -86,7 +88,6 @@ describe('SITIAR NÃO É LUTAR: o sitiante acampa ao lado da guarnição', () =>
     // Sem gente não há milícia, e província vazia cai ao primeiro ingresso. Mas exército
     // do dono acampado ali É quem fecha o portão: sentar não pode tomar por cima dele.
     const c = comGuarnicaoDePe(3000);
-    c.dispensar('eleusis', c.forcaEm('eleusis')); // a guarnição vira população de novo
     c.plantarHoste('eleusis', 'eleusis', 200); // e volta como hoste, sem mexer na milícia
     ordenar(c, 'atenas', 'eleusis', 3000, 'atenas', 'sitiar');
     c.passarTurno();
@@ -169,7 +170,7 @@ describe('a cidade sitiada perde o campo e a estrada, nunca o imposto', () => {
     expect(durante?.producao).toBe(0);
     expect(durante?.comercio).toBe(0);
     // O imposto FICA. Cortá-lo deixaria sem saída quem tem uma província só — que é a
-    // situação de 120 dos 148 poderes. Sitiado e sem dinheiro é derrota anunciada, não
+    // situação de 111 dos 139 poderes. Sitiado e sem dinheiro é derrota anunciada, não
     // decisão.
     expect(durante?.impostos).toBeGreaterThan(0);
     expect(durante?.total).toBeLessThan(antes?.total ?? 0);

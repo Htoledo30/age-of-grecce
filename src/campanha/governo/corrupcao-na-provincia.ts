@@ -7,10 +7,10 @@
  * governo ausente cobra como o canto mais distante do mapa.
  */
 
-import { corrupcaoDe, saltosDesde } from '../corrupcao';
+import { alivioDasObras, corrupcaoDe, saltosDesde } from '../corrupcao';
 import type { Corrupcao } from '../corrupcao';
 import type { NucleoDaCampanha } from '../nucleo';
-import { donoDe, populacaoDe } from '../provincia/consultas';
+import { construcoesEm, donoDe, nivelDaConstrucaoEm, populacaoDe } from '../provincia/consultas';
 
 /** A corrupção desta província, decomposta: tamanho, distância da capital e o total. */
 export function corrupcaoEm(nucleo: NucleoDaCampanha, idProvincia: string): Corrupcao {
@@ -20,7 +20,18 @@ export function corrupcaoEm(nucleo: NucleoDaCampanha, idProvincia: string): Corr
       ? nucleo.ajustes.corrupcao.distancia.semCaminho
       : (saltosDesdeACapital(nucleo, capital).get(idProvincia) ??
         nucleo.ajustes.corrupcao.distancia.semCaminho);
-  return corrupcaoDe(populacaoDe(nucleo, idProvincia), saltos, nucleo.ajustes.corrupcao);
+  const erguidas = Object.fromEntries(
+    construcoesEm(nucleo, idProvincia).map((id) => [
+      id,
+      nivelDaConstrucaoEm(nucleo, idProvincia, id),
+    ]),
+  );
+  return corrupcaoDe(
+    populacaoDe(nucleo, idProvincia),
+    saltos,
+    nucleo.ajustes.corrupcao,
+    alivioDasObras(erguidas, nucleo.catalogo),
+  );
 }
 
 function saltosDesdeACapital(

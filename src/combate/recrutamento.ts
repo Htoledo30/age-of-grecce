@@ -77,9 +77,16 @@ export function maximoDaLeva(
   return resposta;
 }
 
-/** Manutenção por turno de um contingente. Inteiro, pelo mesmo motivo. */
-export function manutencaoDe(homens: number, ajustes: AjustesCombate): number {
-  return Math.round(homens * ajustes.manutencaoPorHomem);
+/**
+ * Manutenção por turno de um contingente, à taxa que quem chama escolher. Inteiro, pelo
+ * mesmo motivo.
+ *
+ * Recebe a TAXA e não o pacote de ajustes porque ela deixou de ser única: o mesmo homem
+ * custa uma coisa parado em casa e outra pisando em terra alheia, e quem sabe onde ele
+ * está é quem chama.
+ */
+export function manutencaoDe(homens: number, taxa: number): number {
+  return Math.round(homens * taxa);
 }
 
 /**

@@ -22,37 +22,37 @@
     },
     "madeira": {
       "nome": "Madeira",
-      "valor": 18,
+      "valor": 20,
       "alimento": false,
       "troca": 18
     },
     "ferro": {
       "nome": "Ferro",
-      "valor": 22,
+      "valor": 26,
       "alimento": false,
       "troca": 22
     },
     "vinho": {
       "nome": "Vinho",
-      "valor": 24,
+      "valor": 28,
       "alimento": false,
       "troca": 24
     },
     "azeite": {
       "nome": "Azeite",
-      "valor": 25,
+      "valor": 32,
       "alimento": false,
       "troca": 25
     },
     "marmore": {
       "nome": "Mármore",
-      "valor": 27,
+      "valor": 45,
       "alimento": false,
       "troca": 30
     },
     "metais-preciosos": {
       "nome": "Metais preciosos",
-      "valor": 28,
+      "valor": 60,
       "alimento": false,
       "troca": 35
     }

@@ -14,12 +14,12 @@ const atlas = new Atlas(provincias);
 
 describe('atlas: o mundo assado e indexado', () => {
   it('conhece o recorte inteiro', () => {
-    expect(atlas.provincias).toHaveLength(205);
-    expect(atlas.poderes).toHaveLength(148);
+    expect(atlas.provincias).toHaveLength(196);
+    expect(atlas.poderes).toHaveLength(139);
     expect(atlas.impressaoDigital).toEqual({
       epoca: provincias.epoca,
-      provincias: 205,
-      poderes: 148,
+      provincias: 196,
+      poderes: 139,
     });
   });
 
@@ -50,19 +50,43 @@ describe('atlas: o mundo assado e indexado', () => {
     expect(torto).toEqual([]);
   });
 
-  it('35 províncias não têm nenhuma vizinha por terra', () => {
+  it('26 províncias não têm nenhuma vizinha por terra', () => {
     const ilhadas = atlas.provincias.filter((p) => atlas.semVizinhaPorTerra(p.id));
-    expect(ilhadas).toHaveLength(35);
+    expect(ilhadas).toHaveLength(26);
     // Egina é o caso que importa: uma potência naval arcaica que, sem mar, não tem jogada
     // legal nenhuma.
     expect(ilhadas.map((p) => p.id)).toContain('egina');
   });
 
-  it('o mapa tem 38 pedaços de terra desconexos', () => {
-    expect(atlas.componentes).toBe(38);
+  it('o mapa tem 29 pedaços políticos desconexos', () => {
+    expect(atlas.componentes).toBe(29);
     // Dentro de Creta se anda por terra; de Atenas pra Creta, não.
     expect(atlas.mesmoContinente('atenas', 'eleusis')).toBe(true);
     expect(atlas.mesmoContinente('atenas', 'egina')).toBe(false);
+  });
+
+  it('as Cíclades pequenas formam três arquipélagos legíveis', () => {
+    expect(atlas.provincia('andros')).toMatchObject({
+      nome: 'Cíclades do Norte',
+      dono: 'andros',
+    });
+    expect(atlas.provincia('naxos')).toMatchObject({
+      nome: 'Cíclades Centrais',
+      dono: 'naxos',
+    });
+    expect(atlas.provincia('melos')).toMatchObject({
+      nome: 'Cíclades Ocidentais',
+      dono: 'melos',
+    });
+    // A área somada prova que as outras massas continuam no mapa como partes clicáveis do
+    // arquipélago, mesmo sem fingirem ser nove reinos separados.
+    expect(atlas.provincia('andros').areaKm2).toBeGreaterThan(900);
+    expect(atlas.provincia('naxos').areaKm2).toBeGreaterThan(900);
+    expect(atlas.provincia('melos').areaKm2).toBeGreaterThan(400);
+    for (const antiga of ['miconos', 'tinos', 'keos', 'citnos', 'paros', 'ios', 'amorgos', 'sifnos', 'tera']) {
+      expect(atlas.existe(antiga)).toBe(false);
+      expect(atlas.existePoder(antiga)).toBe(false);
+    }
   });
 
   it('o dono do arquivo assado é o dono INICIAL, de 700 a.C.', () => {

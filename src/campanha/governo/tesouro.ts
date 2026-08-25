@@ -1,7 +1,7 @@
 /**
  * O cofre de cada poder.
  *
- * ⚠️ **Não existe "o tesouro"; existe o tesouro de alguém.** Todos os 148 poderes têm
+ * ⚠️ **Não existe "o tesouro"; existe o tesouro de alguém.** Todos os 139 poderes têm
  * caixa desde o primeiro turno — sem cofre próprio a IA recrutaria de graça, contrariando
  * a regra de que todos jogam com as mesmas condições.
  */

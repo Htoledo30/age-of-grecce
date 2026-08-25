@@ -5,6 +5,8 @@
  * `consultas-do-reino.ts` para o porquê de a fachada ser montada em camadas.
  */
 
+import { custoDaObra, manutencaoDaObra } from '../custo-de-obra';
+import { escalaDeObraEm } from '../provincia/renda';
 import type { EstadoAlimentarLocal } from '@/producao/alimentacao';
 import type { Corrupcao } from '../corrupcao';
 import type { RendaDaProvincia, RetornoDaConstrucao } from '../economia';
@@ -183,5 +185,19 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
 
   fomeDoCercoEm(idProvincia: string): RelogioDoCerco | null {
     return fomeDoCercoEm(this.nucleo, idProvincia);
+  }
+
+  /** O que esta obra custa à vista NESTA terra: o catálogo vezes a escala da província. */
+  custoDaObraEm(idProvincia: string, idConstrucao: string, nivel: number): number {
+    const construcao = this.nucleo.catalogo[idConstrucao];
+    if (!construcao) return 0;
+    return custoDaObra(construcao, nivel, escalaDeObraEm(this.nucleo, idProvincia));
+  }
+
+  /** O que ela cobra por turno nesta terra, na mesma escala. */
+  manutencaoDaObraEm(idProvincia: string, idConstrucao: string, nivel: number): number {
+    const construcao = this.nucleo.catalogo[idConstrucao];
+    if (!construcao) return 0;
+    return manutencaoDaObra(construcao, nivel, escalaDeObraEm(this.nucleo, idProvincia));
   }
 }

@@ -37,8 +37,37 @@ export const Ajustes = z.object({
       /**
        * Moedas por habitante, por turno. População é estado e cresce; por isso os
        * impostos acompanham nascimentos, recrutamento, deserção e desmobilização.
+       *
+       * ⚠️ **Este número decide se a economia é sobre TERRA ou sobre CABEÇAS.** Ele já
+       * esteve em 0,005, e nessa altura o imposto sozinho variava 15,8× no mapa (8 a 126)
+       * enquanto a produção variava 3,3× — população era o único dial com faixa larga, e
+       * por isso mandava em tudo. Uma província pequena e rica não conseguia existir.
        */
       impostoPorHabitante: z.number().positive(),
+      /**
+       * Quanto do SEGUNDO produto da terra entra na produção. 0,5 é metade.
+       *
+       * Toda província tem dois produtos autorais, com nível escrito, e por muito tempo o
+       * segundo não rendia um centavo — metade da autoria econômica estava desligada da
+       * economia. O esquema de `economia.json` dizia que era de propósito, "sem a regra de
+       * circulação pronta seria balancear duas vezes": a rede de trocas é essa regra, e ela
+       * existe desde a 0.0.5. A condição do adiamento foi cumprida.
+       *
+       * Entra com peso menor que 1 porque o principal continua sendo o principal — a
+       * validação cruzada de `economia.json` garante que ele rende mais.
+       */
+      pesoDoSecundario: z.number().nonnegative().max(1),
+      /**
+       * O que `comercioBase` vale em moedas quando cheio.
+       *
+       * ⚠️ **O comércio deixou de ser filho da produção.** Era `produção × comercioBase`,
+       * e por isso Corinto — a potência comercial grega, com o maior `comercioBase` do mapa
+       * — tirava 21% da renda do comércio: um entreposto cujo comércio é um quinto da renda
+       * não é entreposto. Comércio é POSIÇÃO, porto e rota; ele não pode depender do
+       * tamanho da própria lavoura. Agora `comercioBase` multiplica esta escala e nada
+       * mais, e uma cidadezinha de porto pode viver do mar sem plantar nada.
+       */
+      escalaDeComercio: z.number().positive(),
       /**
        * Os níveis de imposto por província: receita trocada por pressão social.
        *
@@ -112,6 +141,18 @@ export const Ajustes = z.object({
     }),
     construcoes: z.object({
       slotsPorProvincia: z.number().int().positive(),
+      /**
+       * O peso econômico cujo preço de obra é o do catálogo. Acima custa mais, abaixo menos.
+       *
+       * Ver `campanha/custo-de-obra.ts`: preço fixo contra renda variável deixava a terra
+       * pequena sem decisão nenhuma por quinze turnos, e escalar por população punia a
+       * grande, cuja produção não cresce com o número de habitantes.
+       */
+      pesoDeReferencia: z.number().positive(),
+      /** Piso do multiplicador de preço, para a vila de 3.000 não construir de graça. */
+      escalaMinima: z.number().positive(),
+      /** Teto do multiplicador, para a metrópole futura não ficar sem construir nunca. */
+      escalaMaxima: z.number().positive(),
       nivelMaximo: z.literal(3),
     }),
     /**
@@ -233,12 +274,28 @@ export const Ajustes = z.object({
       /** Ouro por homem, pago à vista no recrutamento. */
       custoPorHomem: z.number().positive(),
       /**
-       * Ouro por homem por turno, enquanto ele estiver em armas.
+       * Ouro por homem por turno — e **o preço muda com onde o homem está pisando.**
        *
        * É o ralo que a economia não tinha: incentivo e construção não absorvem tesouro
-       * grande, exército sim, porque cobra todo turno e não expira.
+       * grande, exército sim, porque cobra todo turno e não expira. Mas cobrar soldo de
+       * mercenário por uma falange parada em casa quebrava justamente as cidades que a
+       * autoria fez fortes e pobres — Tebas abria em −42 por turno.
+       *
+       * Em casa (qualquer província SUA) o homem é cidadão-lavrador: come da própria
+       * terra, e a comida já o cobra no balanço alimentar. Em terra alheia ele é campanha:
+       * comboio, forragem e soldo, e o cofre sente. **É sair de casa que custa.**
+       *
+       * A consequência de desenho: sitiar drena, e TOMAR a província faz a tropa virar
+       * guarnição e o custo despencar no mesmo turno — cerco longo pesa, conquista
+       * decisiva alivia. E a divisão de trabalho fica limpa: a COMIDA diz quantos homens
+       * você pode ter, o OURO diz por quanto tempo pode mantê-los fora.
        */
-      manutencaoPorHomem: z.number().positive(),
+      manutencaoPorHomem: z.object({
+        /** Em província do próprio poder. */
+        emCasa: z.number().positive(),
+        /** Em terra de outro — inclusive sitiando. */
+        emCampanha: z.number().positive(),
+      }),
       /**
        * Habitantes que uma província **nunca** cede. Abaixo disso ela não levanta leva.
        *
@@ -262,8 +319,8 @@ export const Ajustes = z.object({
       /**
        * Quem defende a província sem ter sido recrutado.
        *
-       * ⚠️ **Fraca de propósito.** 120 dos 148 poderes começam com uma província só, e uma
-       * milícia forte tornaria a primeira conquista impossível pra 81% do mapa. Ela existe
+       * ⚠️ **Fraca de propósito.** 111 dos 139 poderes começam com uma província só, e uma
+       * milícia forte tornaria a primeira conquista impossível pra 80% do mapa. Ela existe
        * pra não ser ignorada e pra que o CERCO possa existir — sem defensor, província
        * alheia cai no instante em que alguém pisa nela.
        */
@@ -276,13 +333,6 @@ export const Ajustes = z.object({
        * ir para cima, não o quanto falta para a cidade cair sozinha.
        */
       cerco: z.object({
-        /**
-         * Quanto a milícia vale atrás da muralha, no assalto.
-         *
-         * É bônus de POSIÇÃO, de toda cidade. A construção Muralha dobra a milícia antes
-         * disto, e os dois se multiplicam.
-         */
-        bonusDeMuralha: z.number().min(1),
         /**
          * Quantas rodadas de cerco uma cidade fortificada exige antes de poder ser
          * assaltada.

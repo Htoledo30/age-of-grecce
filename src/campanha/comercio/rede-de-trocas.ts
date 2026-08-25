@@ -22,7 +22,7 @@
 
 import { alcanceDe } from '@/movimento/alcance';
 import type { NucleoDaCampanha } from '../nucleo';
-import { donoDe, fichaDe } from '../provincia/consultas';
+import { construcoesEm, donoDe, fichaDe, nivelDaConstrucaoEm } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 
 export interface BemEmCirculacao {
@@ -80,7 +80,34 @@ export function bensEmCirculacao(
 
 /** O que a rede acrescenta à renda do reino por turno. */
 export function rendaDeTrocas(nucleo: NucleoDaCampanha, idPoder: string): number {
-  return bensEmCirculacao(nucleo, idPoder).reduce((soma, bem) => soma + bem.troca, 0);
+  const bruto = bensEmCirculacao(nucleo, idPoder).reduce((soma, bem) => soma + bem.troca, 0);
+  return Math.round(bruto * fatorDeMercadoAtual(nucleo, idPoder));
+}
+
+/**
+ * O que os Mercados do reino multiplicam na rede — **uma vez só, pelo melhor deles.**
+ *
+ * Vale por REINO e não por província porque a rede é uma coisa nacional: dois Mercados não
+ * fazem o mesmo bem circular duas vezes. O que eles fazem é o reino tirar mais de cada bem
+ * distinto que alcança — e por isso o Mercado vale mais quanto mais se conquistou, o que
+ * liga construção a conquista em vez de deixar as duas em trilhos separados.
+ *
+ * ⚠️ Antes o Mercado multiplicava a parcela de comércio da PRÓPRIA província, e isso o
+ * tornava uma armadilha: `comercioBase` é 0,18 em Tanagra contra 0,60 em Corinto, e
+ * multiplicador em cima de quase nada não paga 2.000 moedas nem a manutenção.
+ */
+export function fatorDeMercadoAtual(nucleo: NucleoDaCampanha, idPoder: string): number {
+  let melhor = 1;
+  for (const idProvincia of nucleo.territorios.provinciasDe(idPoder)) {
+    for (const id of construcoesEm(nucleo, idProvincia)) {
+      const efeito = nucleo.catalogo[id]?.efeito;
+      if (efeito?.tipo !== 'troca') continue;
+      const nivel = nivelDaConstrucaoEm(nucleo, idProvincia, id);
+      const fator = efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] ?? 1;
+      if (fator > melhor) melhor = fator;
+    }
+  }
+  return melhor;
 }
 
 /** Os bens do catálogo que o reino NÃO alcança — a lista do que ainda há para conquistar. */

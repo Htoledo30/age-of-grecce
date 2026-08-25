@@ -6,19 +6,19 @@
       "nome": "Ágora",
       "custos": [2000, 4000, 7000],
       "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "efeito": { "tipo": "renda", "parcela": "impostos", "fatores": [1.2, 1.4, 1.65] },
-      "promessa": "Melhora a arrecadação local; no futuro também reduzirá corrupção.",
-      "motivo": "Administração, cobrança e vida cívica onde há gente para organizar."
+      "manutencao": [3, 6, 10],
+      "efeito": { "tipo": "corrupcao", "alvo": "tamanho", "fatores": [0.6, 0.35, 0.15] },
+      "promessa": "Corta a corrupção que vem de haver gente demais para administrar. Vale mais onde há mais gente.",
+      "motivo": "Administração, cobrança e vida cívica onde há gente para organizar. Quanto maior a cidade, mais se perde no caminho — e mais ela devolve."
     },
     "mercado": {
       "nome": "Mercado",
       "custos": [2000, 4000, 7000],
       "turnos": [2, 3, 4],
-      "manutencao": [6, 12, 20],
-      "efeito": { "tipo": "renda", "parcela": "comercio", "fatores": [1.25, 1.55, 1.9] },
-      "promessa": "Aumenta a renda comercial desta província.",
-      "motivo": "Não cria produto: faz circular melhor o que a terra já oferece."
+      "manutencao": [3, 6, 10],
+      "efeito": { "tipo": "troca", "fatores": [1.3, 1.6, 2.0] },
+      "promessa": "Multiplica a renda da rede de trocas do REINO inteiro. Vale uma vez só, e vale mais quanto mais bens distintos você alcança.",
+      "motivo": "Nao cria produto: faz o reino tirar mais de cada bem distinto que ja alcanca. Por isso vale mais depois de conquistar, e nao antes."
     },
     "quartel": {
       "nome": "Quartel",
@@ -34,8 +34,8 @@
       "custos": [2000, 4000, 7000],
       "turnos": [2, 3, 4],
       "manutencao": [8, 16, 26],
-      "efeito": { "tipo": "milicia", "fatores": [2, 3, 4] },
-      "promessa": "Multiplica a milícia local e impede assalto imediato.",
+      "efeito": { "tipo": "milicia", "fatores": [1.25, 1.5, 1.75] },
+      "promessa": "Melhora a milícia local e impede assalto imediato.",
       "impedeAssaltoImediato": true,
       "motivo": "Defesa permanente que ocupa um slot mesmo nos anos de paz."
     },
@@ -54,7 +54,7 @@
       "turnos": [3, 4, 5],
       "manutencao": [8, 16, 26],
       "requisito": { "ancoradouro": true },
-      "efeito": { "tipo": "renda", "parcela": "comercio", "fatores": [1.25, 1.55, 1.9] },
+      "efeito": { "tipo": "renda", "parcela": "comercio", "fatores": [1.5, 1.9, 2.4] },
       "promessa": "Aumenta o comércio; será a base da conexão marítima e do sistema naval.",
       "motivo": "Só cabe onde a costa oferece ancoradouro real."
     },
@@ -62,10 +62,10 @@
       "nome": "Estrada",
       "custos": [1500, 3000, 5000],
       "turnos": [2, 3, 4],
-      "manutencao": [4, 8, 14],
-      "efeito": { "tipo": "renda", "parcela": "comercio", "fatores": [1.15, 1.3, 1.5] },
-      "promessa": "Aumenta o comércio; futuramente ajudará movimento e administração.",
-      "motivo": "Liga o interior sem transformar madeira ou pedra em pedágio obrigatório para construir."
+      "manutencao": [2, 4, 7],
+      "efeito": { "tipo": "corrupcao", "alvo": "distancia", "fatores": [0.6, 0.35, 0.15] },
+      "promessa": "Corta a corrupção da DISTÂNCIA até a capital. Não rende nada na própria capital: ela existe para a terra conquistada longe.",
+      "motivo": "Liga o interior: encurta a terra distante para quem governa. Prédio de imperio, nao de cidade-estado — na capital ela nao tem o que encurtar."
     },
     "fazenda": {
       "nome": "Fazenda",
@@ -103,7 +103,7 @@
       "turnos": [2, 3, 4],
       "manutencao": [6, 12, 20],
       "requisito": { "produtos": ["azeite"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.2, 1.4, 1.65] },
+      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Prensas e armazenamento para terras de oliveiras."
     },
@@ -113,7 +113,7 @@
       "turnos": [2, 3, 4],
       "manutencao": [6, 12, 20],
       "requisito": { "produtos": ["vinho"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.2, 1.4, 1.65] },
+      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Cultivo e prensagem especializados para terras de vinho."
     },
@@ -123,7 +123,7 @@
       "turnos": [2, 3, 4],
       "manutencao": [6, 12, 20],
       "requisito": { "produtos": ["madeira"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.2, 1.4, 1.65] },
+      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Exploração local de madeira; não torna madeira requisito para todas as obras."
     },
@@ -133,7 +133,7 @@
       "turnos": [3, 4, 5],
       "manutencao": [8, 16, 26],
       "requisito": { "produtos": ["ferro", "metais-preciosos"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.2, 1.4, 1.65] },
+      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Poços, galerias e beneficiamento somente onde há minério."
     },
@@ -143,7 +143,7 @@
       "turnos": [2, 3, 4],
       "manutencao": [6, 12, 20],
       "requisito": { "produtos": ["marmore"] },
-      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.2, 1.4, 1.65] },
+      "efeito": { "tipo": "renda", "parcela": "producao", "fatores": [1.4, 1.75, 2.2] },
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Extrai pedra onde o mármore existe; não é uma Oficina genérica disfarçada."
     }

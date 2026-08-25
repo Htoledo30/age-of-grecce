@@ -17,6 +17,7 @@
     "teste": "vitest run",
     "teste-tela": "playwright test",
     "simular": "tsx ferramentas/simular.ts",
+    "economia": "tsx ferramentas/economia.ts",
     "verificar": "npm run tipos && npm run lint && npm run codigo-morto && npm run teste && npm run checar",
     "entregar": "npm run verificar && npm run teste-tela && npm run build",
     "sitios": "tsx ferramentas/sitios.ts",

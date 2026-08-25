@@ -101,7 +101,9 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
     barra.dispatchEvent(new Event('input', { bubbles: true }));
   });
   await expect(page.locator('.recrutamento__previsao')).toContainText('3.000 moedas agora');
-  await expect(page.locator('.recrutamento__previsao')).toContainText('300 por turno');
+  // 1.000 × 0,1: a leva nasce e fica EM CASA. O tooltip mostra ao lado o que os mesmos
+  // homens custariam em terra alheia, que é o preço de ir à guerra.
+  await expect(page.locator('.recrutamento__previsao')).toContainText('100 por turno');
   await expect(page.getByRole('button', { name: 'Reunir 1.000' })).toBeEnabled();
 
   await page.getByRole('button', { name: 'Reunir 1.000' }).click();
@@ -153,7 +155,9 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   });
   expect(pronta).toEqual({ forca: 1000, formacao: undefined });
   await expect(formacao).toHaveAttribute('data-somente-formacao', 'nao');
-  await expect(page.locator('.barra-turno__ouro')).toContainText('−300');
+  // A barra cobra a folha da tropa em pé: 1.000 homens à taxa de CASA, porque eles
+  // continuam em Atenas. Marchá-los para fora do reino triplicaria esta linha.
+  await expect(page.locator('.barra-turno__ouro')).toContainText('−100');
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
   // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.
@@ -168,7 +172,7 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
 });
 
 /** O Quartel promete qualidade futura sem fingir que ainda entrega bônus de combate. */
-test('o Quartel explica seu papel futuro, não um requisito removido', async ({ page }) => {
+test('o Quartel não está à venda: prédio que só promete não aparece', async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector('body[data-pronto="sim"]');
   await page.getByRole('button', { name: 'Iniciar jogo' }).click();
@@ -178,13 +182,12 @@ test('o Quartel explica seu papel futuro, não um requisito removido', async ({ 
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  const quartel = page.locator('.acoes__construcao', { hasText: 'Quartel' });
-  const dica = await quartel.getAttribute('data-tooltip-corpo');
-  expect(dica).toContain('Recrutamento já é básico');
-  expect(dica).toContain('mais qualidade');
-  // "nunca se paga" seria verdade aritmética e mentira sobre o que ele é
-  expect(dica).not.toContain('paga-se em');
-  expect(dica).not.toContain('por turno,');
+  // Ele explicava bem o próprio futuro e cobrava 1.500 moedas por ele. Explicar não é
+  // servir: o jogador pagava, não via diferença nenhuma, e passava a duvidar do resto do
+  // catálogo. Volta quando o combate existir e "qualidade de tropa" tiver onde morar.
+  await expect(page.locator('.acoes__construcao', { hasText: 'Quartel' })).toHaveCount(0);
+  // E o resto do catálogo continua lá — esconder um não escondeu tudo.
+  await expect(page.locator('.acoes__construcao', { hasText: 'Ágora' })).toHaveCount(1);
 });
 
 /**

@@ -7,16 +7,21 @@ sendo a prova final. A visão desejada, inclusive sistemas ainda ausentes, fica 
 ## Visão rápida
 
 Age of Grecce é um grand strategy por províncias no mundo grego de 700 a.C. A versão
-declarada pelo projeto é `0.0.3`. O worktree atual substitui a antiga economia física por
-alimentação em pontos e refaz as construções em slots e níveis, ainda sem commit.
+declarada pelo projeto é `0.0.4`.
 
-O mapa possui 205 províncias, 53 regiões e 148 poderes. A fatia autoral cobre a Grécia
+O mapa possui 196 províncias, 53 regiões e 139 poderes. A fatia autoral cobre a Grécia
 central: 25 províncias com economia completa (Ática, Megáris, Coríntia, Beócia, Eubeia,
 Opunte, Siciônia e Argólida), 18 poderes inteiramente configurados — e todos eles são
 jogáveis (a regra é derivada: poder com todas as províncias configuradas aparece
-disponível na escolha). Onze cidades começam com guarnição em pé (`exercitos.json`);
-Salamina é ilha sem vizinhança terrestre e espera o sistema naval. As outras 180
+disponível na escolha). **Nenhuma cidade começa com tropa**: o mapa abre em paz e
+`exercitos.json` está deliberadamente vazio — o mecanismo continua de pé para cenários
+futuros. Salamina é ilha sem vizinhança terrestre e espera o sistema naval. As outras 171
 províncias seguem sem economia e sem simulação.
+
+As 12 antigas províncias microscópicas das Cíclades foram agrupadas em três arquipélagos:
+Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos e Amorgos) e
+Ocidentais (Melos, Sifnos e Tera). As ilhas continuam desenhadas e clicáveis; qualquer
+pedaço seleciona a província do arquipélago. A costa e o terreno não foram alterados.
 
 Ainda não existem IA, diplomacia nem naval. Save/load existe (a campanha salva sozinha a
 cada mudança e o menu oferece continuar), e a campanha tem começo e fim: vitória ao
@@ -65,8 +70,25 @@ para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
 ### Economia e população
 
 A economia monetária calcula impostos, produção abstrata e comércio; ela paga tropas e
-construções. Produtos são capacidade anual e identidade da terra, não unidades
-acumuladas. Principal e secundário podem liberar construções locais.
+construções. Produtos são capacidade anual e identidade da terra, não unidades acumuladas.
+
+**A renda é sobre a TERRA, não sobre cabeças** — 71% dela vem do que a província é, e não de
+quanta gente mora nela. Por isso Sunião (10.000 habitantes, metais preciosos) rende mais que
+Tebas (22.000, grão), e uma inversão dessas acontece em 26% dos pares de províncias. As três
+parcelas, todas mordidas pela corrupção antes de chegar ao tesouro:
+
+```
+imposto  = população × impostoPorHabitante × nível de imposto × construções
+produção = (valor_principal × nível + valor_secundário × nível × pesoDoSecundario) × construções
+comércio = comercioBase × escalaDeComercio × construções
+```
+
+⚠️ Três coisas mudaram de forma, não de número, e desfazer qualquer uma volta a achatar tudo:
+o **comércio deixou de ser uma fatia da produção** (era `produção × comercioBase`, e por isso
+Corinto tirava um quinto da renda do comércio); o **produto secundário passou a render** (ele
+estava escrito com nível em toda província e valia zero); e a **corrupção passou a comer as
+três parcelas**, não só o imposto. `npm run economia` mede tudo isso do poder mais pobre ao
+mais rico, cedo, meio e fim de jogo.
 
 Cada província tem um **nível de imposto** decretável — baixo (×0,8, humor +6), normal e
 alto (×1,35, humor −8), números em `ajustes.json` — com efeito imediato na renda e
@@ -91,7 +113,7 @@ do poder em uma moeda por arredondamento; a barra usa a conta do poder. ⚠️ O
 tabela é o **total das terras**, não a renda do reino: a rede não cabe em província nenhuma,
 e quem soma as duas é o resumo em cima.
 
-O imposto passa pela **corrupção**: `população × taxa × (1 − corrupção)`, com
+A renda inteira passa pela **corrupção** — as três parcelas, não só o imposto:
 `corrupção = 1 − (1 − por tamanho) × (1 − por distância da capital)`. Cada fatia é uma
 hipérbole saturante calibrada em `ajustes.json` (a distância reproduz a tabela do GDD:
 0,8× a 3 saltos, 0,6× a 12). A distância é medida em saltos pelo grafo de vizinhança —
@@ -99,8 +121,17 @@ geografia, não política: inimigo no caminho não alonga a estrada. Conquistar 
 muda a distância dela para a capital do novo dono na hora, e mudar a capital muda a renda
 do reino inteiro — é o que dá função real à escolha (e ao custo) da capital. A ficha
 mostra a fração descontada no tooltip da renda; a tabela do `checar.ts` imprime a terra
-sem corrupção (retrato autoral). Ágora e Estrada ainda NÃO reduzem corrupção — é papel
-futuro prometido nas fichas delas.
+sem corrupção (retrato autoral).
+
+⚠️ **Não existe mais província sem corrupção.** Havia um limiar de 10.000 habitantes e abaixo
+dele ela era exatamente zero: sete províncias caíam fora da conta, e a Ágora — que existe para
+aliviá-la — virava armadilha em metade do mapa.
+
+**Ágora e Estrada reduzem corrupção, e cada uma ataca uma metade:** a Ágora a de TAMANHO
+(gente demais para administrar), a Estrada a de DISTÂNCIA (por isso ela não rende nada na
+própria capital — é prédio de império, não de cidade-estado). O **Mercado** não mexe em
+corrupção: ele multiplica a renda da rede de trocas do REINO, uma vez só, e vale mais quanto
+mais bens distintos se alcança. Os três pararam de ser o mesmo prédio com números diferentes.
 
 Não existe teto populacional artificial. Crescimento, recrutamento, baixas e desmobilização
 usam a população atual. Recrutar reduz população e imposto; Quartel não é requisito.
@@ -159,14 +190,28 @@ obra em andamento ainda não cobra. O tesouro não desce de zero pela arrecadaç
 acontece com construção sem manutenção paga é a questão aberta "danos a construções" do
 GDD. A ficha, o Governo (coluna própria) e a tabela do `checar.ts` mostram a folha.
 
-Universais: Ágora, Mercado, Quartel, Muralha, Templo, Porto e Estrada. Porto exige
-ancoradouro. Explorações aparecem conforme produto principal ou secundário: Fazenda,
-Pastagem, Porto pesqueiro, Lagar, Vinhedo, Serraria, Mina e Pedreira. Fazenda, Pastagem e
-Porto pesqueiro dão `+1/+2/+3` comida; as demais explorações funcionais melhoram renda.
+**O preço de uma obra acompanha a riqueza da terra que a ergue**, e a folha dela junto
+(`campanha/custo-de-obra.ts`). A escala sai do peso econômico AUTORAL da província — nunca do
+estado vivo, senão recrutar 3.000 homens baratearia as obras dali. ⚠️ Escalar por POPULAÇÃO
+parecia óbvio e estava errado: a produção não cresce com o número de habitantes, então cobrar
+o dobro de quem tem o dobro de gente mandava o Lagar de Atenas a 700 turnos de retorno.
+Consequência medida: os 18 poderes jogáveis juntam a obra mais barata em **4 a 8 turnos**
+(era 3 a 17), e todos têm pelo menos duas obras que se pagam — um teste guarda isso.
 
-Quartel já não bloqueia recrutamento e informa honestamente que seu bônus de qualidade é
-futuro. Templo soma pontos ao ALVO de felicidade da província (+5/+8/+12). Muralha
-multiplica a milícia conforme o nível e impede assalto imediato.
+Universais: Ágora, Mercado, Muralha, Templo, Porto e Estrada. Porto exige ancoradouro.
+Explorações aparecem conforme produto principal ou secundário: Fazenda, Pastagem, Porto
+pesqueiro, Lagar, Vinhedo, Serraria, Mina e Pedreira. Fazenda, Pastagem e Porto pesqueiro dão
+`+1/+2/+3` comida; as demais explorações multiplicam a produção.
+
+**O Quartel está ESCONDIDO do catálogo.** Todo prédio comprável tem que servir agora, e o
+efeito dele é `futuro`: ele explicava bem o próprio papel futuro e cobrava 1.500 moedas por
+ele — o jogador pagava, não via diferença e passava a duvidar do resto do catálogo. Qualquer
+prédio com `efeito.tipo === 'futuro'` fica fora de todo catálogo; o Quartel volta com o
+combate, quando "qualidade de tropa" tiver onde existir (ver `PLANO_DE_COMBATE.md`).
+
+Templo soma pontos ao ALVO de felicidade da província (+5/+8/+12). Muralha melhora a milícia
+e impede assalto imediato. O número de milicianos mostrado na ficha é exatamente a força
+enfrentada no assalto; não existe outro multiplicador escondido.
 
 ### Felicidade, revoltas e fim de campanha
 
@@ -203,6 +248,26 @@ são preservadas na restauração.
 
 ### Guerra terrestre
 
+- **O mapa abre em paz.** `dados/exercitos.json` tem `guarnicoes` vazio de propósito e o
+  comentário do arquivo guarda o motivo: aquilo nasceu como andaime para a ausência de IA
+  (duas cidades, 1.000 homens), cresceu sozinho para onze cidades e 6.300 homens dentro da
+  autoria da 0.0.4, e passou a cobrar folha — Tebas abria em −42 por turno, Erétria em −16 e
+  Tanagra em −9, sangrando até desertar, enquanto Atenas, sem guarnição nenhuma, abria em
+  +702. O mecanismo de levantar guarnição por dados continua funcionando para cenários; o
+  arquivo é que está vazio. **Não repovoar sem Henrique pedir.**
+- **A folha militar tem duas taxas: casa e campanha** (`combate.manutencaoPorHomem.emCasa`
+  e `.emCampanha`). Vale a de casa quando a hoste está em província do próprio poder;
+  a de campanha em terra alheia, inclusive sitiando. O predicado vive na `Mobilizacao`,
+  que recebe um `donoDe` no construtor — a folha não conhece `Territorios`.
+- Consequência: sitiar drena, e conquistar a província derruba o custo da mesma tropa no
+  mesmo turno. A ficha da hoste mostra o valor da taxa vigente, e o painel de recrutamento
+  mostra os dois números lado a lado.
+- Com isso nenhum dos 18 poderes jogáveis abre em déficit. A razão de renda entre o maior
+  (Atenas, 702) e o menor (Hermíone, 91) continua em 7,7×, e isso é POPULAÇÃO, não
+  privilégio: por habitante Atenas é a 9ª de 18 e Tebas é a última. O que ainda separa os
+  poderes na prática é o RITMO de decisão — turnos para juntar a construção mais barata vai
+  de 3 (Atenas) a 17 (Hermíone), sem relação com tamanho, e isso é assunto do trabalho de
+  fechar as construções.
 - Hostes têm identidade própria e preservam a origem provincial de cada soldado.
 - Ordens usam o id da hoste; mais de uma força pode ocupar a mesma província.
 - Movimento é simultâneo, determinístico e limitado inicialmente a uma fronteira por
@@ -222,9 +287,9 @@ são preservadas na restauração.
 ## Estrutura técnica
 
 - TypeScript, Pixi.js/WebGL, HTML/CSS, Vite, Electron e Zod.
-- **Um arquivo, um assunto.** Nenhum arquivo do projeto passa de 400 linhas, e a verificação
-  reprova quem passar (`ferramentas/checar/tamanho-dos-arquivos.ts`). O maior arquivo hoje
-  tem 387 linhas.
+- **Um arquivo, um assunto.** Tamanho gera aviso para revisão, não reprovação automática;
+  coesão, e não contagem de linhas, decide quando dividir. Apenas as fachadas `main.ts` e
+  `campanha.ts` mantêm tetos rígidos.
 - `src/main.ts` é só o ponto de entrada; o boot vive em `src/aplicacao/`, com um arquivo por
   etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
 - `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
@@ -274,9 +339,7 @@ Comandos principais:
 - `npm run capturar`: captura 1920×1080 e erros de console;
 - `npm run gerar-mapa` e `npm run gerar-provincias`: ferramentas de autoria, não runtime.
 
-No worktree atual, `npm run verificar` passa com tipos, lint, código morto, 299 testes
-unitários e validação dos dados. A suíte de tela possui 32 testes e também passa, e o
-`npm run build` de produção compila limpo.
+A suíte unitária tem 315 testes e todos passam.
 
 ## Crédito de asset
 

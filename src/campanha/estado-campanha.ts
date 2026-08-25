@@ -30,7 +30,7 @@ export interface EstadoCampanha {
   turno: number;
   /** Tesouro do jogador. Vira uma tabela por poder quando a IA entrar. */
   /**
-   * Moedas de cada poder, por id. **Todos os 148, não só o jogador.**
+   * Moedas de cada poder, por id. **Todos os 139, não só o jogador.**
    *
    * ⚠️ Era um número só, e isso teria dado à IA um exército de graça: sem cofre próprio,
    * ela recrutaria e manteria tropa sem nada sair de lugar nenhum. A IA joga pelas mesmas
@@ -41,7 +41,7 @@ export interface EstadoCampanha {
    */
   tesouros: Record<string, number>;
   /**
-   * Dono ATUAL de cada província, por id. **Sempre completo: as 205 entradas.**
+   * Dono ATUAL de cada província, por id. **Sempre completo: as 196 entradas.**
    *
    * O `dono` do arquivo assado passa a significar dono INICIAL — a condição de 700 a.C. —
    * e esta tabela é a verdade corrente. Quem pergunta "de quem é isto?" pergunta aqui.

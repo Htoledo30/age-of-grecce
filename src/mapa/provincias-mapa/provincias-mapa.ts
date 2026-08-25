@@ -132,7 +132,7 @@ export class ProvinciasMapa {
   /**
    * Repinta o mapa político inteiro a partir de quem manda em cada província agora.
    *
-   * **Idempotente de propósito.** Repintar as 205 custa menos que descobrir quais mudaram, e é
+   * **Idempotente de propósito.** Repintar as 196 custa menos que descobrir quais mudaram, e é
    * isso que faz retomar um salvamento produzir exatamente a mesma tela que jogar até ali
    * produziria. Quando a IA entrar e vinte províncias trocarem de dono numa virada de turno,
    * isto continua sendo uma passada e um envio.

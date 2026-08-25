@@ -44,23 +44,47 @@ describe('o decreto de imposto: receita trocada por pressão social', () => {
     expect(c.alvoDeFelicidadeEm('atenas')).toBeGreaterThan(alvoNormal);
   });
 
-  it('imposto e construção se compõem: a Ágora multiplica o que o decreto rende', () => {
+  it('imposto e Ágora se compõem: ela corta a corrupção, o decreto multiplica o resto', () => {
     const c = nova();
     c.comecar('atenas');
-    c.construir('atenas', 'agora');
-    const agora = construcoes.construcoes['agora']!;
-    for (let i = 0; i < agora.turnos[0]; i++) c.passarTurno();
-    c.definirImposto('atenas', 'alto');
+    const semObra = nova();
+    semObra.comecar('atenas');
 
-    if (agora.efeito.tipo !== 'renda') throw new Error('Ágora deveria render moeda');
+    const agora = construcoes.construcoes['agora']!;
+    if (agora.efeito.tipo !== 'corrupcao') throw new Error('Ágora deveria aliviar corrupção');
+    // A obra custa mais do que o tesouro inicial em Atenas: o preço acompanha a riqueza da
+    // terra, e a de Atenas é grande. O teste é sobre a composição, não sobre juntar moeda.
+    c.darOuro(20_000);
+    c.construir('atenas', 'agora');
+    for (let i = 0; i < agora.turnos[0]; i++) {
+      c.passarTurno();
+      semObra.passarTurno();
+    }
+    c.definirImposto('atenas', 'alto');
+    semObra.definirImposto('atenas', 'alto');
+
+    // A Ágora ataca a metade da conta que vem de haver gente demais para a administração.
+    expect(c.corrupcaoEm('atenas').porTamanho).toBeCloseTo(
+      semObra.corrupcaoEm('atenas').porTamanho * agora.efeito.fatores[0],
+      6,
+    );
+    // A outra metade, a distância da capital, ela não toca — é trabalho da Estrada.
+    expect(c.corrupcaoEm('atenas').porDistancia).toBe(
+      semObra.corrupcaoEm('atenas').porDistancia,
+    );
+
+    // E a fórmula do imposto continua a mesma: menos corrupção, mais imposto. As duas
+    // decisões se compõem em vez de uma anular a outra.
     expect(c.economiaDe('atenas')?.impostos).toBe(
       Math.round(
         c.populacaoDe('atenas') *
           ajustes.economia.impostoPorHabitante *
           (1 - c.corrupcaoEm('atenas').total) *
-          ajustes.economia.imposto.niveis.alto.fator *
-          agora.efeito.fatores[0],
+          ajustes.economia.imposto.niveis.alto.fator,
       ),
+    );
+    expect(c.economiaDe('atenas')!.impostos).toBeGreaterThan(
+      semObra.economiaDe('atenas')!.impostos,
     );
   });
 

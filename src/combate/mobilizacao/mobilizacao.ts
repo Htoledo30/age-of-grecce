@@ -37,6 +37,7 @@ import { dispensar, dispensarDe } from './dispensa';
 import { populacaoDe, proximoId, tesouroDe } from './estado';
 import type { EstadoDeMobilizacao } from './estado';
 import { manutencaoDe, pagarManutencao } from './folha';
+import type { EmCasa } from './folha';
 import { concluirFormacoes, levantarRebeldes, plantar, recrutar } from './levas';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
@@ -45,7 +46,19 @@ export class Mobilizacao {
   constructor(
     private readonly estado: EstadoDeMobilizacao,
     private readonly ajustes: AjustesCombate,
+    /**
+     * De quem é cada província AGORA.
+     *
+     * Recebe a consulta e não o `Territorios` inteiro porque a folha militar só precisa de
+     * uma resposta — de quem é este chão — e depender do objeto de propriedade inteiro
+     * amarraria mobilização a mapa político por um número.
+     */
+    private readonly donoDe: (idProvincia: string) => string,
   ) {}
+
+  /** A hoste pisa em terra do próprio poder? É isto que decide a taxa da folha. */
+  private readonly emCasa: EmCasa = (exercito) =>
+    this.donoDe(exercito.posicao) === exercito.poder;
 
   /** Gera a identidade da proxima hoste. Publico porque a guarnicao inicial tambem cria. */
   proximoId(): string {
@@ -94,7 +107,7 @@ export class Mobilizacao {
   }
 
   custoDaTropaDe(idProvincia: string): number {
-    return custoDaTropaDe(this.estado, this.ajustes, idProvincia);
+    return custoDaTropaDe(this.estado, this.ajustes, idProvincia, this.emCasa);
   }
 
   disponivelParaLevaEm(idProvincia: string): number {
@@ -176,11 +189,11 @@ export class Mobilizacao {
 
   // ── Folha ───────────────────────────────────────────────────────────────────────────
   manutencaoDe(idPoder: string): number {
-    return manutencaoDe(this.estado, this.ajustes, idPoder);
+    return manutencaoDe(this.estado, this.ajustes, idPoder, this.emCasa);
   }
 
   /** Paga a folha de um poder e devolve quantos desertaram. */
   pagarManutencao(idPoder: string): number {
-    return pagarManutencao(this.estado, this.ajustes, idPoder);
+    return pagarManutencao(this.estado, this.ajustes, idPoder, this.emCasa);
   }
 }

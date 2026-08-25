@@ -46,12 +46,6 @@
       "cor": "#ab659b"
     },
     {
-      "id": "amorgos",
-      "nome": "Amorgos",
-      "povo": "jonio",
-      "cor": "#5c6f8f"
-    },
-    {
       "id": "andros",
       "nome": "Andros",
       "povo": "jonio",
@@ -194,12 +188,6 @@
       "nome": "Citera",
       "povo": "dorio",
       "cor": "#ab6d65"
-    },
-    {
-      "id": "citnos",
-      "nome": "Citnos",
-      "povo": "jonio",
-      "cor": "#5c6f8f"
     },
     {
       "id": "cizico",
@@ -466,22 +454,10 @@
       "cor": "#65abab"
     },
     {
-      "id": "ios",
-      "nome": "Ios",
-      "povo": "jonio",
-      "cor": "#5c6f8f"
-    },
-    {
       "id": "itaca",
       "nome": "Itaca",
       "povo": "aqueu",
       "cor": "#9d8365"
-    },
-    {
-      "id": "keos",
-      "nome": "Keos",
-      "povo": "jonio",
-      "cor": "#819ab9"
     },
     {
       "id": "lampsaco",
@@ -598,12 +574,6 @@
       "cor": "#73659d"
     },
     {
-      "id": "miconos",
-      "nome": "Miconos",
-      "povo": "jonio",
-      "cor": "#819ab9"
-    },
-    {
       "id": "migdones",
       "nome": "Migdones",
       "povo": "trace",
@@ -674,12 +644,6 @@
       "nome": "Panfilios",
       "povo": "panfilio",
       "cor": "#aba865"
-    },
-    {
-      "id": "paros",
-      "nome": "Paros",
-      "povo": "jonio",
-      "cor": "#5c6f8f"
     },
     {
       "id": "partinos",
@@ -778,12 +742,6 @@
       "cor": "#9d6865"
     },
     {
-      "id": "sifnos",
-      "nome": "Sifnos",
-      "povo": "jonio",
-      "cor": "#819ab9"
-    },
-    {
       "id": "sinti",
       "nome": "Sinti",
       "povo": "trace",
@@ -838,12 +796,6 @@
       "cor": "#65869d"
     },
     {
-      "id": "tera",
-      "nome": "Tera",
-      "povo": "dorio",
-      "cor": "#b98c81"
-    },
-    {
       "id": "tespias",
       "nome": "Tespias",
       "povo": "beocio",
@@ -854,12 +806,6 @@
       "nome": "Tesprotos",
       "povo": "epirota",
       "cor": "#9d65ab"
-    },
-    {
-      "id": "tinos",
-      "nome": "Tinos",
-      "povo": "jonio",
-      "cor": "#5c6f8f"
     },
     {
       "id": "tinos-tracios",
@@ -1974,8 +1920,42 @@
       "dono": "praisos"
     },
     {
+      "id": "andros",
+      "nome": "Cíclades do Norte",
+      "regiao": "cicladas",
+      "lon": 24.93,
+      "lat": 37.83,
+      "dono": "andros",
+      "anexos": [
+        {
+          "lon": 24.713,
+          "lat": 37.613
+        },
+        {
+          "lon": 25.16,
+          "lat": 37.56
+        },
+        {
+          "lon": 24.917,
+          "lat": 37.436
+        },
+        {
+          "lon": 25.35,
+          "lat": 37.45
+        },
+        {
+          "lon": 24.34,
+          "lat": 37.62
+        },
+        {
+          "lon": 24.42,
+          "lat": 37.41
+        }
+      ]
+    },
+    {
       "id": "naxos",
-      "nome": "Naxos",
+      "nome": "Cíclades Centrais",
       "regiao": "cicladas",
       "lon": 25.53,
       "lat": 37.1,
@@ -1992,92 +1972,36 @@
         {
           "lon": 25.647,
           "lat": 36.894
-        }
-      ]
-    },
-    {
-      "id": "paros",
-      "nome": "Paros",
-      "regiao": "cicladas",
-      "lon": 25.15,
-      "lat": 37.08,
-      "dono": "paros",
-      "anexos": [
+        },
+        {
+          "lon": 25.15,
+          "lat": 37.08
+        },
         {
           "lon": 25.054,
           "lat": 37.007
-        }
-      ]
-    },
-    {
-      "id": "andros",
-      "nome": "Andros",
-      "regiao": "cicladas",
-      "lon": 24.93,
-      "lat": 37.83,
-      "dono": "andros",
-      "anexos": [
+        },
         {
-          "lon": 24.713,
-          "lat": 37.613
-        }
-      ]
-    },
-    {
-      "id": "tinos",
-      "nome": "Tinos",
-      "regiao": "cicladas",
-      "lon": 25.16,
-      "lat": 37.56,
-      "dono": "tinos",
-      "anexos": [
+          "lon": 25.29,
+          "lat": 36.72
+        },
         {
-          "lon": 24.917,
-          "lat": 37.436
-        }
-      ]
-    },
-    {
-      "id": "miconos",
-      "nome": "Míconos",
-      "regiao": "cicladas",
-      "lon": 25.35,
-      "lat": 37.45,
-      "dono": "miconos"
-    },
-    {
-      "id": "keos",
-      "nome": "Ceos",
-      "regiao": "cicladas",
-      "lon": 24.34,
-      "lat": 37.62,
-      "dono": "keos"
-    },
-    {
-      "id": "citnos",
-      "nome": "Cítnos",
-      "regiao": "cicladas",
-      "lon": 24.42,
-      "lat": 37.41,
-      "dono": "citnos"
-    },
-    {
-      "id": "sifnos",
-      "nome": "Sifnos",
-      "regiao": "cicladas",
-      "lon": 24.71,
-      "lat": 36.98,
-      "dono": "sifnos",
-      "anexos": [
+          "lon": 25.125,
+          "lat": 36.684
+        },
         {
-          "lon": 24.49,
-          "lat": 37.15
+          "lon": 24.901,
+          "lat": 36.633
+        },
+        {
+          "lon": 25.9,
+          "lat": 36.83
         }
       ]
     },
     {
       "id": "melos",
-      "nome": "Melos",
+      "nome": "Cíclades Ocidentais",
       "regiao": "cicladas",
       "lon": 24.42,
       "lat": 36.72,
@@ -2090,48 +2014,24 @@
         {
           "lon": 24.64,
           "lat": 36.773
-        }
-      ]
-    },
-    {
-      "id": "tera",
-      "nome": "Tera",
-      "regiao": "cicladas",
-      "lon": 25.43,
-      "lat": 36.42,
-      "dono": "tera",
-      "anexos": [
+        },
+        {
+          "lon": 24.71,
+          "lat": 36.98
+        },
+        {
+          "lon": 24.49,
+          "lat": 37.15
+        },
+        {
+          "lon": 25.43,
+          "lat": 36.42
+        },
         {
           "lon": 25.782,
           "lat": 36.375
         }
       ]
-    },
-    {
-      "id": "ios",
-      "nome": "Íos",
-      "regiao": "cicladas",
-      "lon": 25.29,
-      "lat": 36.72,
-      "dono": "ios",
-      "anexos": [
-        {
-          "lon": 25.125,
-          "lat": 36.684
-        },
-        {
-          "lon": 24.901,
-          "lat": 36.633
-        }
-      ]
-    },
-    {
-      "id": "amorgos",
-      "nome": "Amorgos",
-      "regiao": "cicladas",
-      "lon": 25.9,
-      "lat": 36.83,
-      "dono": "amorgos"
     },
     {
       "id": "rodes",

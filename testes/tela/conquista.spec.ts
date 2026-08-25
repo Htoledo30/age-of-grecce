@@ -102,7 +102,7 @@ test('tomar tudo de um poder o elimina da contagem', async ({ page }) => {
         ).inspecao.campanha().poderesVivos,
     );
 
-  expect(await vivos()).toBe(148);
+  expect(await vivos()).toBe(139);
 
   // Caristo: uma província só e nenhuma guarnição em pé — a eliminação é limpa. Mégara
   // deixou de servir aqui: ela tem tropa, e perder o chão a deixaria no exílio, viva.
@@ -112,5 +112,5 @@ test('tomar tudo de um poder o elimina da contagem', async ({ page }) => {
     i.conquistar('caristo', 'atenas');
   });
 
-  expect(await vivos()).toBe(147);
+  expect(await vivos()).toBe(138);
 });

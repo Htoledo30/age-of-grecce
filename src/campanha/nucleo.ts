@@ -36,7 +36,7 @@ export interface NucleoDaCampanha {
    * Cache que nunca expira DE PROPÓSITO: o grafo de vizinhança é geografia assada e não
    * muda durante a partida. Trocar a capital só troca a CHAVE consultada; a política —
    * quem é dono do meio do caminho — não entra na conta, e é por isso que o cache é
-   * seguro. Uma busca em largura de 205 províncias por capital, uma vez cada.
+   * seguro. Uma busca em largura de 196 províncias por capital, uma vez cada.
    */
   readonly saltosPorCapital: Map<string, ReadonlyMap<string, number>>;
 }

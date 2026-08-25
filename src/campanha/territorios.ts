@@ -3,7 +3,7 @@
  *
  * A tabela completa de donos continua morando no estado da campanha — é ela que vai pro
  * disco. Este módulo mantém só o **índice derivado** (quais províncias são de cada poder),
- * que existe pra que "quais são as províncias de Atenas?" não custe uma varredura das 205
+ * que existe pra que "quais são as províncias de Atenas?" não custe uma varredura das 196
  * a cada redesenho.
  *
  * **Toda troca passa por aqui**, e é isso que impede as duas visões de discordarem: quem
@@ -32,7 +32,7 @@ export class Territorios {
    * Remonta o índice inteiro a partir da tabela de donos.
    *
    * Idempotente de propósito, e é o que faz retomar um salvamento produzir exatamente o
-   * mesmo índice que jogar até ali produziria. Custa 205 iterações.
+   * mesmo índice que jogar até ali produziria. Custa 196 iterações.
    */
   reindexar(): void {
     this.provinciasPorPoder.clear();

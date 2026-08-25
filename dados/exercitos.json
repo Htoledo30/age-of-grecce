@@ -1,17 +1,5 @@
 {
   "versao": 1,
-  "comentario": "A tropa que ja estava EM PE em 700 a.C., provincia por provincia. Chave e a provincia; a hoste e do dono dela no comeco da partida, e os homens sao daquela terra. IMPORTANTE: eles SAEM da populacao escrita em economia.json - o manancial humano e um so, e sem isso dispensar uma guarnicao inicial criaria gente do nada. Provincia que nao esta aqui comeca sem tropa nenhuma e confia na milicia. A regua: potencias militares (Argos de Fidon) e cidades em guerra aberta (a Lelantina) mantem tropa de pe; cidades prosperas mantem o minimo; aldeias, nada.",
-  "guarnicoes": {
-    "eleusis": 500,
-    "tanagra": 500,
-    "megara": 500,
-    "corinto": 800,
-    "tebas": 700,
-    "orcomeno": 400,
-    "tespias": 300,
-    "calcis": 600,
-    "eretria": 600,
-    "argos": 1000,
-    "sicion": 400
-  }
+  "comentario": "A tropa EM PE quando a partida abre - e hoje, de proposito, NENHUMA. Este arquivo nasceu como andaime: sem IA, a milicia era a unica coisa entre o jogador e o mapa inteiro, entao Eleusis e Tanagra ganharam 500 homens para haver contra quem marchar. Depois ele cresceu sozinho para 11 provincias e 6.300 homens, porque o arquivo ja estava aqui e cada provincia nova ganhou a sua linha - e o andaime passou a ter FOLHA DE PAGAMENTO. O efeito medido: Tebas abria em -42 por turno, Eretria em -16, Tanagra em -9, sangrando ate o cofre zerar e o exercito desertar, enquanto Atenas, sem guarnicao nenhuma, abria em +702. Os tres que sangravam eram justamente os que a autoria fez fortes militarmente e pobres comercialmente de proposito. Henrique cortou pela raiz: o mapa abre EM PAZ. A economia se pensa primeiro em paz - quanto rendo, que construcao escolho, vale ir atras de comercio - e so depois em guerra, quando a pergunta vira quanta tropa consigo sustentar e se ainda tenho ouro para a proxima leva. Tropa inicial embutida respondia essas perguntas antes de o jogador fazer qualquer escolha. A defesa de uma cidade sem tropa NAO e zero: a milicia continua de pe, de graca, e a Muralha a dobra. O mapa vazio de exercitos e um passeio ate existir IA - e isso e aceito, porque a correcao disso e a IA (etapa 6), nao andaime distorcendo a economia. O mecanismo continua aqui e funcionando para cenarios futuros: chave e a provincia, e os homens SAEM da populacao escrita em economia.json - o manancial humano e um so, e sem isso dispensar uma guarnicao criaria gente do nada. NAO REPOVOE ISTO sem Henrique pedir.",
+  "guarnicoes": {}
 }

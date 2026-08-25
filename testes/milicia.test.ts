@@ -36,8 +36,8 @@ function comQuartel(): Campanha {
 
 describe('a milícia é derivada da população, nunca guardada', () => {
   it('é uma fatia da população, e é FRACA de propósito', () => {
-    // 1,2% — 120 dos 148 poderes começam com uma província só, e milícia forte tornaria a
-    // primeira conquista impossível para 81% do mapa.
+    // 1,2% — 111 dos 139 poderes começam com uma província só, e milícia forte tornaria a
+    // primeira conquista impossível para 80% do mapa.
     expect(miliciaDe(35_000, {}, catalogo, combate)).toBe(420);
     expect(miliciaDe(18_000, {}, catalogo, combate)).toBe(216);
     expect(miliciaDe(10_000, {}, catalogo, combate)).toBe(120);
@@ -50,8 +50,11 @@ describe('a milícia é derivada da população, nunca guardada', () => {
     expect(nova().miliciaEm('esparta')).toBe(0);
   });
 
-  it('a Muralha dobra a milícia, multiplicando a DERIVAÇÃO', () => {
-    expect(miliciaDe(35_000, { muralha: 1 }, catalogo, combate)).toBe(840);
+  it('a Muralha melhora a DERIVAÇÃO sem dobrar gente', () => {
+    const semMuralha = miliciaDe(35_000, {}, catalogo, combate);
+    const comMuralha = miliciaDe(35_000, { muralha: 1 }, catalogo, combate);
+    expect(comMuralha).toBeGreaterThan(semMuralha);
+    expect(comMuralha).toBeLessThan(semMuralha * 1.5);
     // Não existe número de guarnição guardado pra isto somar: é o mesmo desenho do
     // Celeiro sobre o crescimento.
     expect(catalogo['muralha']?.efeito.tipo).toBe('milicia');
@@ -62,15 +65,18 @@ describe('a milícia é derivada da população, nunca guardada', () => {
     // A conta do retorno é imune ao crescimento populacional, ao contrário de comparar a
     // renda antes e depois de três turnos de obra. Não rende NADA: o ganho é exatamente a
     // manutenção negativa, sem renda escondida.
+    // A folha vem ESCALADA pela terra: o catálogo é o preço da província de referência,
+    // e Atenas não é ela. Cravar o número do catálogo aqui mediria a escala, não a regra.
     expect(c.retornoDaConstrucaoEm('atenas', 'muralha')?.ganhoPorTurno).toBe(
-      -construcoes.construcoes['muralha']!.manutencao[0],
+      -c.manutencaoDaObraEm('atenas', 'muralha', 1),
     );
 
     const antes = c.miliciaEm('atenas');
     c.construir('atenas', 'muralha');
     for (let i = 0; i < 3; i++) c.passarTurno();
     expect(c.construcoesEm('atenas')).toContain('muralha');
-    expect(c.miliciaEm('atenas')).toBeGreaterThan(antes * 1.9);
+    expect(c.miliciaEm('atenas')).toBeGreaterThan(antes);
+    expect(c.miliciaEm('atenas')).toBeLessThan(antes * 1.5);
   });
 
   it('MOBILIZAR ESVAZIA A MURALHA — e ninguém precisou escrever essa regra', () => {
@@ -117,11 +123,11 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     expect(c.cercoEm('delfos')).toBeUndefined();
   });
 
-  it('assalto menor que a muralha é rechaçado, e o exército se desfaz nela', () => {
+  it('assalto menor que a milícia é rechaçado, e o exército se desfaz nela', () => {
     const c = comQuartel();
     const milicia = c.miliciaEm('atenas');
-    const invasor = Math.floor(milicia * 1.5); // maior que a milícia, menor que a muralha
-    expect(invasor).toBeLessThan(milicia * combate.cerco.bonusDeMuralha);
+    const invasor = Math.floor(milicia * 0.75);
+    expect(invasor).toBeLessThan(milicia);
     c.plantarHoste('tanagra', 'tanagra', invasor);
     ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
@@ -132,11 +138,11 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     expect(c.rodada.batalhas[0]).toMatchObject({ provincia: 'atenas', vencedor: 'atenas' });
   });
 
-  it('assalto maior que a muralha entra, mas paga caro', () => {
+  it('assalto maior que a milícia entra, mas paga caro', () => {
     const c = comQuartel();
     const milicia = c.miliciaEm('atenas');
     const invasor = milicia * 3;
-    expect(invasor).toBeGreaterThan(milicia * combate.cerco.bonusDeMuralha);
+    expect(invasor).toBeGreaterThan(milicia);
     c.plantarHoste('tanagra', 'tanagra', invasor);
     ordenar(c, 'tanagra', 'atenas', invasor, 'tanagra', 'assaltar');
 
@@ -156,7 +162,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
     expect(c.forcaEm('atenas')).toBe(600);
     const milicia = c.miliciaEm('atenas');
     // O invasor é maior que o exército de campo e — depois de pagar por essa vitória —
-    // menor que a muralha. Ganha o campo e perde a cidade, que é a faixa nova que o cerco
+    // menor que a milícia. Ganha o campo e perde a cidade, que é a faixa nova que o cerco
     // criou e que antes não existia.
     const invasor = 700;
     c.plantarHoste('tanagra', 'tanagra', invasor);
@@ -166,7 +172,7 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
 
     const sobrouDoCampo = Math.round(Math.sqrt(invasor * invasor - 600 * 600));
     expect(sobrouDoCampo).toBeGreaterThan(0);
-    expect(sobrouDoCampo).toBeLessThan(milicia * combate.cerco.bonusDeMuralha);
+    expect(sobrouDoCampo).toBeLessThan(milicia);
     expect(c.donoDe('atenas')).toBe('atenas');
     // Duas batalhas na mesma província e no mesmo turno: o campo e a muralha.
     expect(c.rodada.batalhas).toHaveLength(2);

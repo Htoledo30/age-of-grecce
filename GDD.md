@@ -39,6 +39,8 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
 ## Mundo e tempo
 
 - Mapa fixo por províncias, com dados autorais e relações plausíveis entre regiões.
+- Ilhas pequenas próximas podem formar uma única província de arquipélago: continuam
+  desenhadas e clicáveis, mas não fingem ser vários reinos microscópicos ilegíveis.
 - Um turno/rodada representa aproximadamente um ano.
 - A validação começa em Atenas, Maratona, Sunião, Elêusis e Tanagra; o restante do mundo é
   preenchido gradualmente depois que as regras provarem seu valor.
@@ -46,6 +48,62 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
 - Poder sem território pode sobreviver no exílio enquanto possuir hostes.
 
 ## Economia e recursos
+
+**A renda é sobre a TERRA, não sobre o número de cabeças.** Uma província pequena pode ser
+mais rica que uma grande, e uma grande pode ser pobre — é a diferença entre um mapa com
+lugares e um mapa com um censo. As três parcelas:
+
+```
+imposto  = população × taxa × nível de imposto × construções
+produção = (valor_principal × nível + valor_secundário × nível × peso) × construções
+comércio = comercioBase × escala × construções
+renda    = (imposto + produção + comércio) × (1 − corrupção) − folha das construções
+```
+
+- **O comércio não é uma fatia da produção.** Ele é POSIÇÃO, porto e rota: uma vila de porto
+  pode viver do mar sem plantar nada. ⚠️ Ele já foi `produção × comercioBase`, e por isso
+  Corinto — a potência comercial grega, com o maior `comercioBase` do mapa — tirava um quinto
+  da renda do comércio.
+- **Os DOIS produtos da terra rendem**, o segundo com peso menor. Toda província tem os dois
+  escritos com nível, e por muito tempo o segundo não valia um centavo.
+- **A corrupção come as três parcelas**, não só o imposto: é o que se perde entre a província
+  e o tesouro, e o que se perde no caminho não pergunta de onde veio a moeda. Ela é o freio
+  de tamanho e de distância, e é o que Ágora e Estrada existem para aliviar.
+- ⚠️ **Não existe província sem corrupção.** Havia um limiar de população abaixo do qual ela
+  era exatamente zero, e isso tirava sete províncias da conta e tornava a Ágora armadilha em
+  metade do mapa.
+- **A largura dos números é o que faz a terra importar.** Se o `valor` dos produtos variar
+  menos que a população, a população manda — e foi o que aconteceu: `valor` ia de 15 a 28
+  (1,87×) enquanto a população ia de 3.000 a 35.000 (11,7×). Ao mexer em qualquer dial,
+  conferir isso com `npm run economia`.
+### Comércio interno e externo
+
+São **duas coisas**, e hoje só uma existe de verdade. Escrito aqui para entrar em patches
+pequenos no futuro, não agora.
+
+**Interno — construído.** A rede de trocas: cada bem DISTINTO que o reino alcança rende uma
+vez por turno. Ele circula se a terra é sua, não está sitiada e chega à capital por terra
+própria. Tem risco de verdade — sitiar a terra que dá o bem, partir o reino ao meio ou tomar
+a capital cortam a rede.
+
+**Externo — hoje é só um número.** A parcela `comercio` da renda nasceu pensando em comércio
+externo: `comercioBase` é o pedágio da posição, e a ficha de Corinto diz isso na cara ("tudo
+que cruza da Itália ao Egeu paga passagem aqui"). Mas ela virou `comercioBase × escala`, um
+valor fixo **sem contraparte e sem risco**: a única coisa no jogo que o reduz é o cerco
+daquela província. Corinto rende o mesmo em paz com toda a Grécia ou em guerra com toda ela.
+
+⚠️ **O que o faz parecer de mentira não é o nome — é a falta de parceiro e a falta de risco.**
+O interno pode ser cortado de três jeitos; o externo, de nenhum.
+
+**O que ele precisa para existir, e por que os três vêm juntos:**
+
+- **Diplomacia** dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que a
+  guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
+  sem disparar flecha.
+- **Mar e zonas marítimas** dão o bloqueio, que é o risco: fechar o Euripo e Cálcis sente.
+- **Renomear** a parcela atual (posição, trânsito, pedágio) libera a palavra "comércio" para
+  significar comércio de verdade quando ele chegar. Enquanto não chegar, a tela não deve
+  insinuar que existe alguém do outro lado.
 
 - Produtos representam a capacidade anual e a identidade econômica da terra, não um
   inventário de unidades acumuladas.
@@ -192,15 +250,32 @@ todo turno, e valer assim mesmo por outro motivo — o grão que ela planta, a p
 tem, o caminho que ela abre, o inimigo que ela nega.
 
 Para existir de verdade, a província precisa ter **custos próprios** e não só receita:
-corrupção sozinha apenas empurra o imposto na direção de zero, nunca abaixo dele. Os
-candidatos naturais são guarnição, manutenção de construção e abastecimento — e cada um
-entra no seu patch, não neste.
+corrupção sozinha apenas empurra o imposto na direção de zero, nunca abaixo dele. A
+manutenção de construção já entrou; o abastecimento é o balanço alimentar. A guarnição
+entrou pela taxa de casa da folha militar — e a lição do caminho fica escrita: enquanto ela
+foi tropa embutida nos dados e cobrada à taxa cheia, ela não criou decisão, criou falência
+em três dos dezoito poderes jogáveis.
 
 ## Construções
 
 A base usa quatro slots por província e níveis I, II e III, forçando especialização.
 Upgrades não consomem outro slot, pagam somente o nível novo e levam prazo próprio.
 Construções normalmente sobrevivem à conquista.
+
+**Todo prédio comprável tem que servir AGORA.** O que só promete fica escondido do catálogo
+até ter função — é o caso do Quartel, que volta com o combate. Vender promessa é pior que não
+vender nada: o jogador paga, não vê diferença, e passa a duvidar do resto do catálogo.
+
+**O preço de uma obra acompanha a riqueza da terra que a ergue**, e a folha dela junto. Preço
+fixo contra renda variável nunca serve província pequena: com o preço igual para todos, a
+maior potência juntava a obra mais barata em 3 turnos e a menor em 17 — não é assimetria
+interessante, é a terra pequena ficando sem decisão nenhuma. A escala sai do dado AUTORAL,
+nunca do estado vivo, senão mobilizar baratearia as obras.
+
+Cada prédio ataca uma pergunta diferente, e nenhum é o outro com números trocados: a Ágora
+corta a corrupção de TAMANHO (engolir população), a Estrada corta a de DISTÂNCIA (espalhar o
+império, e por isso ela não rende nada na própria capital), o Mercado multiplica a rede de
+trocas do REINO (ampliar a rede, e vale uma vez só).
 
 - Ágora: economia, administração e futura redução de corrupção;
 - Mercado: circulação e comércio;
@@ -227,6 +302,18 @@ já conseguem explicar o resultado.
 
 - Hostes têm identidade própria e podem dividir parte de seus homens.
 - Recrutamento custa ouro e população e leva tempo de formação.
+- **O mapa abre em paz: nenhuma província começa com tropa.** Milícia é a única defesa
+  inicial, e o exército de cada poder é escolha do jogador desde o primeiro turno. Tropa
+  inicial embutida respondia "quanto exército eu aguento?" antes de o jogador decidir
+  qualquer coisa, e cobrava folha das cidades que a autoria fez fortes e pobres.
+- **A folha militar depende de onde o homem pisa.** Em província do próprio poder ele é
+  cidadão-lavrador e paga a taxa de CASA; em terra alheia — inclusive sitiando — paga a de
+  CAMPANHA, várias vezes maior. É sair de casa que custa, e é isso que dá à economia duas
+  perguntas em vez de uma: em paz, qual construção e se vale ir atrás de comércio; em
+  guerra, quanta tropa se sustenta e se sobra ouro para a próxima leva.
+- Consequência: cerco longo drena o cofre, e TOMAR a província faz a mesma tropa virar
+  guarnição e o custo cair no mesmo turno. A comida diz quantos homens você pode ter; o
+  ouro diz por quanto tempo pode mantê-los fora.
 - Ordens são planejadas sobre o mesmo mundo e resolvidas simultaneamente.
 - Movimento pode gerar encontros na estrada e múltiplas batalhas na mesma rodada.
 - Milícia é defesa automática derivada da população.
@@ -272,6 +359,28 @@ da base terrestre e da IA mínima estarem estáveis.
   primeira versão.
 - Diplomacia começa depois da IA mínima e contém apenas o necessário para a campanha
   funcionar; sistemas diplomáticos profundos são evolução posterior.
+
+### Espionagem futura: sabotagem sem personagem no mapa
+
+Espionagem será uma ação abstrata da diplomacia contra um reino, não uma unidade de espião
+movida pelo mapa. O jogador escolhe o reino, uma província alcançável e uma construção para
+tentar sabotar. O custo em ouro é pago mesmo quando a tentativa falha, e a chance deve ser
+mostrada antes da confirmação.
+
+- Sucesso reduz a construção em um nível; uma construção de nível I é destruída. Não se
+  apaga uma construção avançada inteira com uma única jogada de sorte.
+- A felicidade da província é o primeiro modificador: povo insatisfeito facilita a ação e
+  povo feliz dificulta. Outros modificadores só entram se os testes provarem necessidade.
+- Se a operação for descoberta, as relações pioram e o alvo pode ganhar justificativa para
+  guerra. Tentar repetidamente contra o mesmo reino exige um intervalo entre operações.
+- A aleatoriedade usa semente salva no estado da campanha, impedindo que recarregar o jogo
+  permita repetir a tentativa até conseguir.
+- Sabotar Fazenda, Muralha, Mercado, Porto ou outra construção deve preparar decisões de
+  comida, cerco e economia; não cria agentes, experiência, equipamentos ou contraespiões.
+
+Essa camada entra somente depois da diplomacia básica — relações, acordos, comércio, guerra
+e paz — estar funcionando. Custos, intervalo e probabilidades ficam para balanceamento
+quando a mecânica for implementada.
 
 ## Campanha completa
 

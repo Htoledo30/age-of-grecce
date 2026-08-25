@@ -147,18 +147,12 @@ P = [
  ('praisos','Praisos','creta',26.10,35.13,'praisos'),
  ('ierapitna','Ierápitna','creta',25.74,35.01,'praisos'),
  # ---- Cíclades -------------------------------------------------------------
- ('naxos','Naxos','cicladas',25.53,37.10,'naxos'),
- ('paros','Paros','cicladas',25.15,37.08,'paros'),
- ('andros','Andros','cicladas',24.93,37.83,'andros'),
- ('tinos','Tinos','cicladas',25.16,37.56,'tinos'),
- ('miconos','Míconos','cicladas',25.35,37.45,'miconos'),
- ('keos','Ceos','cicladas',24.34,37.62,'keos'),
- ('citnos','Cítnos','cicladas',24.42,37.41,'citnos'),
- ('sifnos','Sifnos','cicladas',24.71,36.98,'sifnos'),
- ('melos','Melos','cicladas',24.42,36.72,'melos'),
- ('tera','Tera','cicladas',25.43,36.42,'tera'),
- ('ios','Íos','cicladas',25.29,36.72,'ios'),
- ('amorgos','Amorgos','cicladas',25.90,36.83,'amorgos'),
+ # Doze ilhas minúsculas como doze províncias e doze poderes eram ilegíveis no mapa e
+ # inviáveis como campanha. As ilhas continuam desenhadas, mas formam três arquipélagos:
+ # Andros, Naxos e Melos são as sementes; as demais massas entram em ANEXOS abaixo.
+ ('andros','Cíclades do Norte','cicladas',24.93,37.83,'andros'),
+ ('naxos','Cíclades Centrais','cicladas',25.53,37.10,'naxos'),
+ ('melos','Cíclades Ocidentais','cicladas',24.42,36.72,'melos'),
  # ---- Rodes e Dodecaneso ---------------------------------------------------
  # Rodes era tres cidades-estado ate 408 a.C. — Lindos, Ialiso e Camiro — e o recorte
  # historico existia. Vira uma provincia so mesmo assim: 1.384 km² partidos em tres
@@ -260,15 +254,24 @@ P = [
 # proximidade tambem nao e pertencimento. Cada linha abaixo passou por decisao.
 
 ANEXOS = {
- # Ciclades
- 'naxos': [(25.453, 36.846), (25.813, 37.115), (25.647, 36.894)],
- 'paros': [(25.054, 37.007)],
- 'melos': [(24.562, 36.817), (24.640, 36.773)],
- 'tinos': [(24.917, 37.436)],
- 'andros': [(24.713, 37.613)],
- 'ios': [(25.125, 36.684), (24.901, 36.633)],          # a segunda e Folegandros
- 'tera': [(25.782, 36.375)],                            # Anafi
- 'sifnos': [(24.49, 37.15)],                            # Serifos, que deixou de ser provincia
+ # Ciclades: cada marcador toma a ilha inteira para o arquipelago da semente.
+ 'andros': [
+     (24.713, 37.613),                                  # ilha menor já ligada a Andros
+     (25.16, 37.56), (24.917, 37.436),                  # Tinos e seu antigo anexo
+     (25.35, 37.45),                                    # Miconos
+     (24.34, 37.62), (24.42, 37.41),                    # Ceos e Citnos
+ ],
+ 'naxos': [
+     (25.453, 36.846), (25.813, 37.115), (25.647, 36.894),
+     (25.15, 37.08), (25.054, 37.007),                  # Paros e seu antigo anexo
+     (25.29, 36.72), (25.125, 36.684), (24.901, 36.633), # Ios e Folegandros
+     (25.90, 36.83),                                    # Amorgos
+ ],
+ 'melos': [
+     (24.562, 36.817), (24.640, 36.773),
+     (24.71, 36.98), (24.49, 37.15),                    # Sifnos e Serifos
+     (25.43, 36.42), (25.782, 36.375),                  # Tera e Anafi
+ ],
  # Esporades e norte do Egeu
  'esporades': [(23.49, 39.16), (23.910, 39.215), (24.067, 39.332), (24.164, 39.394)],
  'lemnos': [(25.008, 39.526)],                          # Agios Efstratios
@@ -330,6 +333,9 @@ POVO = {
  'esparta':'dorio','messenia':'dorio','citera':'dorio',
  'cnossos':'cretense','lito':'cretense','gortina':'cretense','festo':'cretense',
  'eleuterna':'cretense','cidonia':'cretense','praisos':'eteocretense',
+ # Os antigos poderes insulares continuam nesta régua mesmo depois de agrupados. A posição
+ # alfabética é o slot da cor: removê-los daqui repintaria todos os poderes seguintes sem
+ # nenhuma razão de jogo.
  'naxos':'jonio','paros':'jonio','andros':'jonio','tinos':'jonio','miconos':'jonio','keos':'jonio',
  'citnos':'jonio','sifnos':'jonio','melos':'dorio','tera':'dorio',
  'ios':'jonio','amorgos':'jonio',
@@ -363,7 +369,9 @@ if faltando:
     raise SystemExit(f'poder sem povo: {faltando}')
 
 poderes = []
-for i, dono in enumerate(sorted(contagem)):
+for i, dono in enumerate(sorted(POVO)):
+    if dono not in contagem:
+        continue
     povo = POVO[dono]
     passo = (i * 7) % 5
     h = (MATIZ[povo] + (passo - 2) * 0.012) % 1.0

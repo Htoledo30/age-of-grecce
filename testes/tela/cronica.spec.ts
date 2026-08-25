@@ -17,6 +17,7 @@ interface Ganchos {
   recrutar: (idProvincia: string, homens: number) => void;
   donoDe: (idProvincia: string) => string;
   hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
+  plantarHoste: (idProvincia: string, idPoder: string, homens: number) => void;
   ordenarMarcha: (
     idHoste: string,
     destino: string,
@@ -50,6 +51,8 @@ test('a rodada sem notícia não escreve nada; a com batalha conta o que houve',
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -96,6 +99,8 @@ test('a surtida perdida é contada: a hoste não some mais em silêncio', async 
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();

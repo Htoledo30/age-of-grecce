@@ -22,7 +22,7 @@ export function donoDe(nucleo: NucleoDaCampanha, idProvincia: string): string {
 /**
  * A ficha autoral desta terra, ou `undefined`.
  *
- * `undefined` é resposta legítima: 180 das 205 províncias não são simuladas, e o jogo
+ * `undefined` é resposta legítima: 171 das 196 províncias não são simuladas, e o jogo
  * admite isso com todas as letras em vez de inventar número.
  */
 export function fichaDe(

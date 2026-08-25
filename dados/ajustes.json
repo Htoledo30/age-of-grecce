@@ -3,9 +3,11 @@
   "jogo": {
     "anoInicial": -700,
     "anosPorTurno": 1,
-    "tesouroInicial": 3000,
+    "tesouroInicial": 3500,
     "economia": {
-      "impostoPorHabitante": 0.005,
+      "impostoPorHabitante": 0.004,
+      "pesoDoSecundario": 0.5,
+      "escalaDeComercio": 210,
       "imposto": {
         "niveis": {
           "baixo": {
@@ -54,13 +56,16 @@
     },
     "construcoes": {
       "slotsPorProvincia": 4,
+      "pesoDeReferencia": 260,
+      "escalaMinima": 0.35,
+      "escalaMaxima": 3,
       "nivelMaximo": 3
     },
     "corrupcao": {
       "tamanho": {
-        "limiar": 10000,
+        "limiar": 0,
         "teto": 0.5,
-        "meiaPopulacao": 120000
+        "meiaPopulacao": 20000
       },
       "distancia": {
         "teto": 0.6,
@@ -118,11 +123,10 @@
     },
     "combate": {
       "custoPorHomem": 3,
-      "manutencaoPorHomem": 0.3,
+      "manutencaoPorHomem": { "emCasa": 0.1, "emCampanha": 0.3 },
       "saltosPorRodada": 1,
       "populacaoMinima": 2000,
       "cerco": {
-        "bonusDeMuralha": 2,
         "rodadasParaAssaltarMuralha": 2
       },
       "milicia": {

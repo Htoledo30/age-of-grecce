@@ -40,7 +40,131 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a faixa de população — o tamanho da província passou a pesar
+### Agora: a economia é sobre a TERRA, não sobre cabeças
+
+Henrique: *"tem algo muito errado em como estamos fazendo o sistema de receber dinheiro. Em
+Age of History 2 e Rome Total War 1 tem local que rende muito mais dinheiro e com menos
+população, e o mesmo ao contrário. Tem números e matemáticas tudo torta."* Ele estava certo, e
+a causa foi medida: **a largura dos dials, não a fórmula.**
+
+| dial | faixa que ele tinha |
+|---|---|
+| população | 3.000 a 35.000 = 11,7× |
+| imposto gerado | 8 a 126 = 15,8× |
+| produção | 30 a 100 = 3,3× |
+| `valor` do produto | 15 a 28 = **1,87×** |
+
+O número que devia carregar a identidade da terra era o mais curto de todos. **População era
+o único dial com faixa larga, então ela mandava em tudo** — sem ninguém ter decidido isso.
+
+Quatro defeitos, todos consertados:
+
+1. **O comércio era filho da produção** (`produção × comercioBase`). Corinto, a potência
+   comercial grega com o maior `comercioBase` do mapa, tirava **21% da renda do comércio**.
+   Agora comércio é POSIÇÃO: `comercioBase × escala`, e uma vila de porto vive do mar.
+2. **O produto secundário não rendia nada.** Toda província tem dois produtos autorais com
+   nível, e metade da autoria econômica estava desligada da economia.
+3. **A faixa de `valor` era 1,87×.** Alargada para 4× — pelo TOPO, não comprimindo a base,
+   porque a validação cruzada exige que o principal renda mais que o secundário.
+4. **A corrupção só comia o imposto** e tinha um limiar de 10.000 habitantes. Agora come as
+   três parcelas e não existe província com corrupção zero — as duas coisas que Henrique
+   pediu explicitamente.
+
+E um quinto, que veio de outra correção dele (*"tem que fazer no lugar mais pobre e no mais
+rico, não só em Atenas"*): **o preço da obra passou a acompanhar a riqueza da terra.** Preço
+fixo contra renda variável deixava a menor potência esperando 17 turnos por uma decisão que a
+maior tomava em 3.
+
+Resultado medido, do pobre ao rico e do começo ao fim (`npm run economia`):
+
+- renda vinda da terra: **49% → 71%**
+- província menor rendendo mais que uma maior: **11% → 26% dos pares** (Sunião, com 10.000
+  habitantes, rende mais que Tebas com 22.000)
+- ritmo de decisão dos 18 jogáveis: **3–17 turnos → 4–8 turnos**
+- poderes em déficit: **0**; províncias sem corrupção: **0**
+- todo poder jogável tem **pelo menos duas obras que se pagam** — antes o mais pobre tinha uma,
+  em 500 turnos
+
+⚠️ **Uma tentativa intermediária escalou o preço da obra por POPULAÇÃO e estava errada:** a
+produção de uma terra não cresce com o número de habitantes, então cobrar o dobro de quem tem
+o dobro de gente mandou o Lagar de Atenas a 700 turnos de retorno. A escala certa é o peso
+econômico autoral.
+
+⚠️ **Outra tentativa baixou `impostoPorHabitante` sem mexer na corrupção**, e isso matou a
+Ágora: ela alivia uma fração do que se perde, e com o imposto pequeno não sobrava o que
+aliviar. Foi o que forçou a corrupção a morder as três parcelas — e foi a melhor consequência
+do erro.
+
+Falta Henrique jogar. Ver "O que depende de Henrique" no fim deste arquivo.
+
+### O que veio antes: o mapa abre em paz, e é sair de casa que custa
+
+Henrique fixou (25/08/2026) a ordem até a **0.1.0**: (1) equilibrar os poderes iniciais,
+(2) fechar as construções — todo prédio comprável tem que servir AGORA, e o que não tem
+função fica escondido até ter, (3) revisar a guerra básica sem inventar vinte tipos de
+tropa, (4) comércio, (5) diplomacia, (6) IA. Este é o trabalho (1).
+
+O desequilíbrio não era o que se supunha. Medido: **três poderes abriam em déficit
+permanente** — Tebas −42 por turno, Erétria −16, Tanagra −9 — sangrando até o cofre zerar e
+o exército desertar, enquanto **Atenas, sem guarnição nenhuma, abria em +702**, 3,4× o
+segundo colocado. E os três que sangravam eram justamente os que a autoria fez fortes
+militarmente e pobres comercialmente de propósito ("Tebas começa forte e fechada").
+
+A causa era um andaime com folha de pagamento. `exercitos.json` nasceu em 21/08 para haver
+contra quem marchar sem IA (duas cidades, 1.000 homens), e cresceu sozinho para onze
+cidades e 6.300 homens dentro da autoria da 0.0.4 — porque o arquivo já estava lá e cada
+província nova ganhou a sua linha, exatamente como um arquivo-deus se forma.
+
+- **`guarnicoes` está vazio.** O mapa abre em paz, por decisão de Henrique: a economia se
+  pensa primeiro em paz (quanto rendo, que construção, vale ir atrás de comércio) e só
+  depois em guerra. Tropa embutida respondia isso antes de o jogador escolher. O mecanismo
+  continua de pé para cenários; **não repovoar sem ele pedir.** O mapa vira um passeio até
+  existir IA, e isso é aceito — a correção disso é a etapa 6, não andaime nos dados.
+- **`manutencaoPorHomem` virou duas taxas: `emCasa` (0,1) e `emCampanha` (0,3).** Vale a de
+  casa em província do próprio poder, a de campanha em terra alheia, inclusive sitiando.
+  Sitiar drena; tomar a província faz a mesma tropa virar guarnição e o custo cair no mesmo
+  turno. A comida diz quantos homens você pode ter, o ouro diz por quanto tempo mantê-los
+  fora.
+- Resultado: **zero poderes em déficit**, e Tebas saiu de último (sangrando) para 7º com
+  +171. Os testes de cerco passaram a PLANTAR o defensor de que falam, em vez de herdá-lo
+  de um arquivo de dados — o cenário do teste passou a estar inteiro escrito no teste.
+- **Milícia deixou de esconder multiplicadores absurdos.** Continua sendo 1,2% da
+  população viva, mas Muralha I/II/III agora melhora em +25%/+50%/+75% (antes ×2/×3/×4).
+  O ×2 automático de todo assalto foi apagado: o número da ficha é a força realmente
+  combatida. Muralha ainda impede assalto imediato e exige dois turnos de preparação.
+
+⚠️ Uma tentativa anterior baixou `manutencaoPorHomem` para 0,1 sem separar casa de campanha.
+Os testes pegaram o erro: o teto alimentar de Atenas é 3.000 soldados, e a 0,1 isso custa
+300 contra 702 de renda — **o ouro deixaria de ser restrição de exército para sempre.**
+Revertido.
+
+O que NÃO se resolve por economia: a razão de renda entre Atenas (702) e Hermíone (91)
+continua em 7,7×, e ela é população — por habitante Atenas é a 9ª de 18 e Tebas é a última,
+então não há bônus para tirar de Atenas. O que ainda separa os poderes na prática é o RITMO
+de decisão: turnos para juntar a construção mais barata vai de 3 a 17, **sem relação com
+tamanho**. Isso é trabalho (2), não (1).
+
+Falta Henrique jogar com Atenas, um poder médio e o menor jogável e dizer se cada um tem
+decisão de verdade.
+
+### O que veio antes: as Cíclades deixaram de ser nove reinos microscópicos
+
+Henrique escolheu (25/08/2026) corrigir as ilhas antes do equilíbrio político. A costa não
+foi redesenhada: o gerador já permite que uma província tenha várias massas de terra.
+
+- As 12 antigas províncias das Cíclades viraram três arquipélagos: **Cíclades do Norte**
+  (Andros, Tinos, Míconos, Ceos e Cítnos), **Cíclades Centrais** (Naxos, Paros, Íos e
+  Amorgos) e **Cíclades Ocidentais** (Melos, Sifnos e Tera).
+- Todas as ilhas continuam desenhadas e clicáveis; clicar em qualquer parte seleciona o
+  arquipélago. Não houve pintura manual nem alteração na costa.
+- O mapa passou de 205 províncias/148 poderes para **196 províncias/139 poderes**; as
+  províncias sem vizinhança terrestre caíram de 35 para 26.
+- A paleta dos 139 poderes sobreviventes foi preservada: os antigos ids insulares continuam
+  ocupando seus slots de cor na fonte, sem virarem poderes fantasmas.
+
+Falta Henrique olhar o mapa e aprovar visualmente.
+
+### O que veio antes: a faixa de população — o tamanho da província passou a pesar
 
 Henrique reclamou que as populações pareciam número solto ("10.000, 35.000, 20.000, fica
 meio no foda-se"). Não eram — cada uma das 25 tem motivo histórico escrito ao lado. O
@@ -103,8 +227,8 @@ Falta Henrique jogar com isso e dizer se o peso da rede está certo.
 Guardado do mesmo documento, para quando houver IA e diplomacia: **acordo de grãos** (romper
 o acordo é arma de guerra sem disparar flecha). Recusado por ora, com motivo: **estações**
 (o próprio documento mostra que elas criaram um bug crítico de colheita), **importação a
-preço global** (exige 148 poderes com economia), **famílias e combate em quatro fases**
-(desenhados para 15–25 províncias; o nosso mapa tem 205).
+preço global** (exige 139 poderes com economia), **famílias e combate em quatro fases**
+(desenhados para 15–25 províncias; o nosso mapa tem 196).
 
 ### O que veio antes: a dívida arquitetural, paga
 
@@ -197,7 +321,7 @@ Falta Henrique jogar a regra nova.
 
 - as seis etapas da sequência estão CONCLUÍDAS e entregues na 0.0.4; a dívida arquitetural
   que elas acumularam foi paga logo depois, sem mudar comportamento nenhum;
-- o código está dividido: 258 arquivos, o maior com 367 linhas, nenhum arquivo-deus;
+- o código está dividido: 259 arquivos, o maior com 367 linhas, nenhum arquivo-deus;
 - pendências de Henrique: jogar a regra alimentar nova, o ritmo do cerco, o decreto de
   imposto e as colunas do Governo;
 - custos e efeitos das construções são números iniciais, não balanceamento definitivo;
@@ -208,12 +332,30 @@ Falta Henrique jogar a regra nova.
 Não implementar agora mercado por conexões, comércio internacional, preços regionais,
 nacionalidade funcional, migração, bônus real de qualidade do Quartel, IA ou naval.
 
+## O que depende de Henrique testar
+
+Nenhum número abaixo foi jogado — todos foram medidos por simulação, e simulação não sente.
+
+1. **A economia nova, com três poderes de tamanhos diferentes.** Atenas (732/turno, 3
+   províncias), Tanagra (144, média e pobre de comércio) e Hermíone (135, a menor). A pergunta
+   é se cada uma tem decisão de verdade nos primeiros vinte turnos, não se o número fecha.
+2. **Se a corrupção morde forte demais.** Ela passou a comer as três parcelas, e Atenas perde
+   32% de tudo. É freio de império, mas pode estar apertado.
+3. **Se o ritmo de 4 a 8 turnos por decisão é bom de jogar.** Pode estar rápido demais para o
+   rico ou lento demais para todos.
+4. **O tesouro inicial em 3.500.** Ele subiu de 3.000 porque Atenas não conseguia erguer a
+   própria Ágora no turno 1 e o jogo abria com uma espera. Para os pequenos, 3.500 são três
+   obras de uma vez — pode ser cedo demais.
+5. **O Quartel escondido.** Ele volta com o combate; até lá o catálogo tem um prédio a menos.
+6. **A folha militar casa/campanha** e o mapa que abre em paz — pendências da sessão anterior
+   que continuam de pé.
+
 ## Como trabalhar
 
 - Faça a menor alteração que complete o objetivo atual.
 - **Um arquivo, um assunto — e assunto não se mede em linhas.** Arquivo-deus é MISTURA DE
   RESPONSABILIDADES: um `comercio.ts` com comércio, IA, mapa e combate está errado com 200
-  linhas, enquanto `provincias.json` com 205 províncias está certo com milhares. Divida
+  linhas, enquanto `provincias.json` com 196 províncias está certo com milhares. Divida
   quando o arquivo reunir assuntos independentes, ou quando um pedaço puder existir, ser
   testado e evoluir sozinho. **Nunca divida para baixar um contador** — e nunca crie um
   arquivo por província. Dados, catálogos, esquemas, suítes de teste e componentes coesos
@@ -228,6 +370,13 @@ nacionalidade funcional, migração, bônus real de qualidade do Quartel, IA ou 
   exige áreas separadas ou worktrees.
 - Números ajustáveis ficam nos JSON; testes protegem relações e fórmulas, não valores de
   balanceamento que podem mudar legitimamente.
+- **Meça no lugar mais pobre E no mais rico, nunca só em Atenas.** Regra de Henrique, e ela
+  nasceu de um erro real: a Ágora foi consertada medindo em Atenas e continuava armadilha em
+  metade do mapa. `npm run economia` faz esse corte sozinho — do poder mais pobre ao mais
+  rico, cedo, meio e fim de jogo. Rode depois de mexer em QUALQUER número de economia.
+- **Ao mexer num dial, confira a largura dele contra os outros.** Um número que varia 1,87×
+  no mapa não decide nada quando outro varia 11,7× — foi assim que população passou a mandar
+  na economia inteira sem ninguém escolher isso.
 - Testes de tela são para UI, DOM, CSS e interação. Ao falharem, leia a lista completa
   antes de corrigir.
 - Refatore apenas quando a tarefa exigir, quando houver risco concreto, ou quando a trava de

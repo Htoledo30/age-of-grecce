@@ -22,7 +22,7 @@
  * estrada. Cada sistema novo entra NESTA conta em vez de inventar o próprio modificador.
  */
 
-import type { Ajustes } from '@/dados/esquema';
+import type { Ajustes, Construcoes } from '@/dados/esquema';
 
 export type AjustesCorrupcao = Ajustes['jogo']['corrupcao'];
 
@@ -57,20 +57,49 @@ export function corrupcaoPorDistancia(
   return ajustes.teto * (saltos / (saltos + ajustes.meioCaminho));
 }
 
+/**
+ * O que as obras da província deixam DE PÉ de cada fatia. 1 é obra nenhuma.
+ *
+ * Fração do que resta, e não pontos subtraídos: a obra vale mais onde a corrupção dói
+ * mais, e nunca produz corrupção negativa por mais níveis que se empilhem.
+ */
+export interface AlivioDeCorrupcao {
+  tamanho: number;
+  distancia: number;
+}
+
+const SEM_ALIVIO: AlivioDeCorrupcao = { tamanho: 1, distancia: 1 };
+
 /** A conta composta do GDD: cada fatia come uma parte do que a outra deixou. */
 export function corrupcaoDe(
   populacao: number,
   saltos: number,
   ajustes: AjustesCorrupcao,
+  alivio: AlivioDeCorrupcao = SEM_ALIVIO,
 ): Corrupcao {
-  const porTamanho = corrupcaoPorTamanho(populacao, ajustes.tamanho);
-  const porDistancia = corrupcaoPorDistancia(saltos, ajustes.distancia);
+  const porTamanho = corrupcaoPorTamanho(populacao, ajustes.tamanho) * alivio.tamanho;
+  const porDistancia = corrupcaoPorDistancia(saltos, ajustes.distancia) * alivio.distancia;
   return {
     porTamanho,
     porDistancia,
     total: 1 - (1 - porTamanho) * (1 - porDistancia),
     saltos,
   };
+}
+
+/** O alívio que as obras erguidas nesta terra dão a cada metade da conta. */
+export function alivioDasObras(
+  construcoes: Readonly<Record<string, number>>,
+  catalogo: Construcoes['construcoes'],
+): AlivioDeCorrupcao {
+  const alivio = { tamanho: 1, distancia: 1 };
+  for (const [id, nivel] of Object.entries(construcoes)) {
+    const efeito = catalogo[id]?.efeito;
+    if (efeito?.tipo !== 'corrupcao') continue;
+    const fator = efeito.fatores[Math.max(0, Math.min(2, nivel - 1))] ?? 1;
+    alivio[efeito.alvo] *= fator;
+  }
+  return alivio;
 }
 
 /**

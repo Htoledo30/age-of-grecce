@@ -138,7 +138,6 @@ describe('o humor dentro da campanha', () => {
   it('a conquista dá o choque na hora, e o humor segue dali gradualmente', () => {
     const c = nova();
     c.darOuro(100_000);
-    c.dispensar('eleusis', 500); // cidade aberta e sem guarnição cai no assalto
     const antes = c.perfilDe('eleusis')?.felicidade.valor ?? 0;
     c.plantarHoste('atenas', 'atenas', 500);
     ordenar(c, 'atenas', 'eleusis', 500, 'atenas', 'assaltar');
@@ -166,7 +165,6 @@ describe('o humor dentro da campanha', () => {
 
   it('sob bandeira alheia, a revolta arma um levante depois do pavio queimar', () => {
     const c = nova();
-    c.dispensar('eleusis', 500);
     c.trocarDono('eleusis', 'atenas');
     comHumor(c, 'eleusis', 5);
     const populacaoAntes = c.populacaoDe('eleusis');
@@ -239,7 +237,6 @@ describe('vitória e derrota mínimas', () => {
 describe('as revoltas viajam no salvamento', () => {
   it('o pavio aceso vai e volta; salvamento antigo sem o campo ainda carrega', () => {
     const c = nova();
-    c.dispensar('eleusis', 500);
     c.trocarDono('eleusis', 'atenas');
     comHumor(c, 'eleusis', 5);
     c.passarTurno(); // pavio 1

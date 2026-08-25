@@ -19,10 +19,8 @@ describe('o socorro que chega de fora já chega lutando', () => {
     c.comecar('atenas');
     c.darOuro(200_000);
     c.trocarDono('eleusis', 'atenas');
-    // ⚠️ Trocar o dono da terra NÃO troca o poder da hoste: a guarnição continua sendo
-    // eleusina dentro de uma cidade ateniense. Dispensá-la deixa o teste falar só do
-    // socorro que vem de fora.
-    c.dispensar('eleusis', c.forcaEm('eleusis', 'eleusis'));
+    // Elêusis é de Atenas e está vazia de tropa: assim o teste fala só do socorro que vem
+    // de fora, sem um defensor de dentro somando ao choque.
     c.plantarHoste('tanagra', 'tanagra', homensDeTanagra);
     ordenar(c, 'tanagra', 'eleusis', homensDeTanagra, 'tanagra', 'sitiar');
     c.passarTurno();

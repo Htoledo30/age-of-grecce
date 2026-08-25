@@ -102,6 +102,7 @@ describe('a rede depende da GEOGRAFIA, não só da posse', () => {
     const c = nova();
     const antes = bens(c);
     // Elêusis marcha sobre Atenas e senta: a capital fica cercada.
+    c.plantarHoste('eleusis', 'eleusis', 500);
     ordenar(c, 'eleusis', 'atenas', 500, 'eleusis', 'sitiar');
     c.passarTurno();
     expect(c.cercoEm('atenas')).toBeDefined();

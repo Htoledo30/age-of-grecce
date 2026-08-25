@@ -39,14 +39,14 @@ export function melhorCapitalEntre(
 /**
  * De onde sai a capital inicial de cada poder.
  *
- * ⚠️ **É DERIVADA, não autoral**, e é assim de propósito: escrever 148 capitais à mão é
+ * ⚠️ **É DERIVADA, não autoral**, e é assim de propósito: escrever 139 capitais à mão é
  * conteúdo, não estrutura, e a preparação da região de teste é que faz isso para a região de
- * teste. Até lá, uma regra escrita e determinística vale mais que um arquivo com 148
+ * teste. Até lá, uma regra escrita e determinística vale mais que um arquivo com 139
  * palpites.
  *
  * A regra, em ordem:
  *
- * 1. **A província homônima**, quando o poder tem uma e ela é dele. Cobre 115 dos 148 —
+ * 1. **A província homônima**, quando o poder tem uma e ela é dele. Cobre 106 dos 139 —
  *    Atenas governa Atenas, Elêusis governa Elêusis. É o caso comum porque a maior parte
  *    dos poderes de 700 a.C. É uma cidade só.
  * 2. **A maior por área**, para os 33 restantes — tribos como os Acarnânios e os Bisaltas,

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 interface Ganchos {
   campanha: () => { tesouro: number; renda: number };
+  custoDaObraEm: (idProvincia: string, idConstrucao: string, nivel: number) => number;
   economiaDe: (idProvincia: string) => { total: number } | null;
   rendaDeTrocas: (idPoder: string) => number;
 }
@@ -86,10 +87,11 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
 
-  const renda = await page.evaluate(
-    () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().renda,
+  const { renda, tesouro } = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha(),
   );
-  await expect(page.locator('.barra-turno__saldo')).toHaveText('3000');
+  // Pergunta às regras em vez de cravar: tesouro inicial é balanço e já mudou uma vez.
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
   // o detalhe agora vive no tooltip, pra lista dar pra varrer com o olho
   await expect(page.getByRole('button', { name: /^Ágora/ })).toHaveAttribute(
@@ -104,7 +106,12 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await page.getByRole('button', { name: /^Ágora/ }).click();
 
   // paga à vista e ENTREGA DEPOIS: sobram 1.000 moedas, mas a renda ainda não subiu
-  await expect(page.locator('.barra-turno__saldo')).toHaveText('1000');
+  // Deriva do custo real: o preço da obra acompanha a riqueza da terra e não é mais um
+  // número fixo do catálogo.
+  const custoDaAgora = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.custoDaObraEm('atenas', 'agora', 1),
+  );
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro - custoDaAgora));
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
   await expect(page.locator('.ficha__obra')).toContainText('Ágora I em obra · 2 turnos');
   await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 2 turnos');
@@ -151,6 +158,11 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
   await page.getByRole('button', { name: 'Começar campanha' }).click();
   await page.waitForSelector('.barra-turno');
 
+  // Pergunta às regras: tesouro inicial é balanço.
+  const tesouroDoReino = await page.evaluate(
+    () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().tesouro,
+  );
+
   await expect(page.locator('.governo')).toBeHidden();
   await page.getByRole('button', { name: 'Governo' }).click();
   await expect(page.locator('.governo')).toBeVisible();
@@ -169,7 +181,7 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
     String(conta.reino - conta.trocas),
   );
   const resumo = page.locator('[data-aba="balanco"] .balanco__resumo');
-  await expect(resumo).toContainText('3.000 moedas');
+  await expect(resumo).toContainText(`${tesouroDoReino.toLocaleString('pt-BR')} moedas`);
   await expect(resumo).toContainText(`rede +${conta.trocas}`);
   await expect(resumo).toContainText(`+${conta.reino} por turno`);
 

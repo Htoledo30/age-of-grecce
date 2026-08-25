@@ -9,7 +9,9 @@ import type { Ajustes } from '@/dados/esquema';
 import { forcaDe } from '../exercito';
 import type { Exercito } from '../exercito';
 import type { LevaEmFormacao } from '../formacao-de-leva';
-import { disponivelParaLeva, manutencaoDe as folhaDe } from '../recrutamento';
+import { disponivelParaLeva } from '../recrutamento';
+import { taxaDe } from './folha';
+import type { EmCasa } from './folha';
 import { populacaoDe } from './estado';
 import type { EstadoDeMobilizacao } from './estado';
 
@@ -143,17 +145,23 @@ export function homensEmArmasDe(
  * É a resposta de "esta terra me puxa pra baixo?": a origem de cada soldado já é rastreada,
  * então a folha militar pode ser lida terra a terra. Só hostes ativas — a leva em formação
  * ainda não recebe soldo.
+ *
+ * ⚠️ A taxa sai de ONDE A HOSTE ESTÁ, não de onde o homem nasceu. Os filhos de Tanagra
+ * sitiando Tebas custam campanha; parados em Tanagra, custam casa. Por isso a conta é por
+ * hoste e não uma soma de homens vezes um número só.
  */
 export function custoDaTropaDe(
   estado: EstadoDeMobilizacao,
   ajustes: AjustesCombate,
   idProvincia: string,
+  emCasa: EmCasa,
 ): number {
-  let homens = 0;
+  let devido = 0;
   for (const exercito of Object.values(estado.hostes)) {
-    homens += exercito.origem[idProvincia] ?? 0;
+    const daqui = exercito.origem[idProvincia] ?? 0;
+    if (daqui > 0) devido += daqui * taxaDe(exercito, ajustes, emCasa);
   }
-  return folhaDe(homens, ajustes);
+  return Math.round(devido);
 }
 
 /** Quantos habitantes esta província ainda cede a uma leva. */

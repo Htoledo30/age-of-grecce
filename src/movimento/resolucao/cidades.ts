@@ -110,7 +110,7 @@ export function resolverCidades(
     const postura: Postura = pedida === 'assaltar' && faltam > 0 ? 'sitiar' : pedida;
 
     if (postura === 'assaltar') {
-      assaltar(estado, provincia, hoste, milicianos, ajustes, mundo, relatorio, tomar, levantar);
+      assaltar(estado, provincia, hoste, milicianos, mundo, relatorio, tomar, levantar);
       continue;
     }
 

@@ -27,7 +27,7 @@ export function noExilio(nucleo: NucleoDaCampanha, idPoder: string): boolean {
   );
 }
 
-/** Quem ainda está no jogo, por chão ou por tropa. Começa com 148 e só encolhe. */
+/** Quem ainda está no jogo, por chão ou por tropa. Começa com 139 e só encolhe. */
 export function poderesVivos(nucleo: NucleoDaCampanha): readonly string[] {
   return nucleo.atlas.poderes.filter((p) => vivo(nucleo, p.id)).map((p) => p.id);
 }

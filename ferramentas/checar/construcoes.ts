@@ -72,6 +72,7 @@ function imprimirRetorno(catalogo: Catalogo, economia: Economia, ajustes: Ajuste
         ajustes.jogo.economia,
         {
           construcoes: {},
+          escalaDeObra: 1,
           populacao: ficha.populacao,
           corrupcao: 0,
           fatorDeImposto: 1,

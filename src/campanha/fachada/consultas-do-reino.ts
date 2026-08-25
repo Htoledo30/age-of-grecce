@@ -75,7 +75,7 @@ export abstract class ConsultasDoReino {
       ajustes,
       estado,
       territorios,
-      mobilizacao: new Mobilizacao(estado, ajustes.combate),
+      mobilizacao: new Mobilizacao(estado, ajustes.combate, (id) => territorios.donoDe(id)),
       saltosPorCapital: new Map(),
     };
   }

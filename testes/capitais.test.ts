@@ -40,7 +40,7 @@ describe('todo poder com província tem capital', () => {
     expect(c.capitalDe('acaia')).toBe('egio');
   });
 
-  it('todos os 148 recebem uma, e sempre uma província que é deles', () => {
+  it('todos os 139 recebem uma, e sempre uma província que é deles', () => {
     const c = nova();
     const atlas = new Atlas(provincias);
     for (const poder of atlas.poderes) {
@@ -137,7 +137,9 @@ describe('a mudança voluntária tem preço; a dos outros é derivada', () => {
 
     const pobre = nova();
     pobre.comecar('atenas');
-    pobre.construir('maratona', 'agora'); // sobra menos que o custo da mudança
+    // Zera o cofre em vez de gastar numa obra: o preço das obras acompanha a riqueza da
+    // terra, e "quanto sobra depois de construir" virou balanço que muda sozinho.
+    pobre.darOuro(-pobre.tesouro);
     expect(pobre.podeMudarCapital('sounion')).toMatchObject({ motivo: /faltam/ });
   });
 
@@ -171,7 +173,6 @@ describe('a mudança voluntária tem preço; a dos outros é derivada', () => {
     const c = nova();
     c.comecar('atenas');
     c.darOuro(100_000);
-    c.dispensar('eleusis', 500); // sem guarnição, a cidade aberta cai ao primeiro pisão
     c.plantarHoste('atenas', 'atenas', 500);
     ordenar(c, 'atenas', 'eleusis', 500, 'atenas', 'assaltar');
     c.passarTurno();

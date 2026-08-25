@@ -35,7 +35,7 @@ function emCampanha(): Campanha {
  */
 
 describe('todo poder tem cofre, não só o jogador', () => {
-  it('os 148 começam com o tesouro inicial', () => {
+  it('os 139 começam com o tesouro inicial', () => {
     const c = nova();
     for (const id of ['atenas', 'eleusis', 'tanagra', 'esparta', 'tebas']) {
       expect(c.tesouroDe(id)).toBe(ajustes.tesouroInicial);
@@ -89,7 +89,8 @@ describe('a renda entra no cofre de cada poder', () => {
 describe('a manutenção é cobrada de todos, pela mesma regra', () => {
   it('a guarnição de Elêusis sai do cofre de Elêusis', () => {
     const c = emCampanha();
-    // Elêusis abre com 500 homens de guarnição: 500 × 0,3 por turno.
+    // O mapa abre em paz: quem quer uma guarnição na conta põe uma de pé.
+    c.plantarHoste('eleusis', 'eleusis', 500);
     expect(c.forcaEm('eleusis')).toBe(500);
     const devido = manutencao(c, 'eleusis');
     expect(devido).toBeGreaterThan(0);
@@ -103,7 +104,12 @@ describe('a manutenção é cobrada de todos, pela mesma regra', () => {
 
   it('quem fica sem caixa vê a tropa desertar — e não precisa ser o jogador', () => {
     const c = emCampanha();
-    // Zera o cofre de Tanagra: a renda dela não cobre a folha dos 500 homens.
+    // Uma hoste grande o bastante para a folha passar da renda — DERIVADA das duas, e não
+    // cravada: o número que quebrava Tanagra ontem não é o que a quebra amanhã.
+    const homens = Math.ceil(
+      (c.rendaDe('tanagra') + 1) / ajustes.combate.manutencaoPorHomem.emCasa,
+    );
+    c.plantarHoste('tanagra', 'tanagra', homens);
     c.darOuro(-c.tesouroDe('tanagra'), 'tanagra');
     expect(c.tesouroDe('tanagra')).toBe(0);
     expect(c.rendaDe('tanagra')).toBeLessThan(manutencao(c, 'tanagra'));
@@ -112,7 +118,7 @@ describe('a manutenção é cobrada de todos, pela mesma regra', () => {
 
     // A mesma regra do jogador: o cofre nunca fica negativo e o exército encolhe.
     expect(c.tesouroDe('tanagra')).toBe(0);
-    expect(c.forcaEm('tanagra')).toBeLessThan(500);
+    expect(c.forcaEm('tanagra')).toBeLessThan(homens);
     expect(c.forcaEm('tanagra')).toBeGreaterThan(0); // encolhe aos poucos, não colapsa
   });
 
@@ -148,9 +154,9 @@ describe('gastar cobra o cofre do DONO da província', () => {
     const antes = c.tesouro;
     const deEleusis = c.tesouroDe('eleusis');
 
+    const custo = c.custoDaObraEm('atenas', 'agora', 1);
     c.construir('atenas', 'agora');
 
-    const custo = construcoes.construcoes['agora']?.custos[0] ?? 0;
     expect(c.tesouro).toBe(antes - custo);
     expect(c.tesouroDe('eleusis')).toBe(deEleusis);
   });

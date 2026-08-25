@@ -9,7 +9,7 @@ const cercoAjustes = ajustes.combate.cerco;
 /**
  * A MURALHA — o que separa uma província fortificada de uma que não é.
  *
- * Duas funções, e as duas importam no mesmo dia: ela **dobra a milícia** e **proíbe o
+ * Duas funções, e as duas importam no mesmo dia: ela **melhora a milícia** e **proíbe o
  * assalto imediato**. Sem a segunda, erguer Muralha era só um número maior de defensores,
  * e a decisão de sitiar continuava valendo o mesmo contra qualquer cidade.
  *
@@ -19,18 +19,16 @@ const cercoAjustes = ajustes.combate.cerco;
 describe('A MURALHA: cidade aberta cai hoje, cidade murada faz esperar', () => {
   const rodadasExigidas = cercoAjustes.rodadasParaAssaltarMuralha;
 
-  /** Atenas com ouro e uma hoste plantada, e a guarnição do alvo dispensada. */
-  function contra(alvo: string, homens: number): Campanha {
+  /** Atenas com ouro e uma hoste plantada. O alvo não tem tropa: o mapa abre em paz. */
+  function contra(_alvo: string, homens: number): Campanha {
     const c = nova();
     c.comecar('atenas');
     c.darOuro(200_000);
     c.plantarHoste('atenas', 'atenas', homens);
-    // Sem a guarnição do alvo, o teste fala só da muralha — sem o choque de campo na frente.
-    c.dispensar(alvo, c.forcaEm(alvo));
     return c;
   }
 
-  it('a Muralha continua dobrando a milícia — a primeira função não mudou', () => {
+  it('a Muralha melhora a milícia — sem transformar defesa em multiplicador absurdo', () => {
     const c = nova();
     c.comecar('atenas');
     const fator = construcoes.construcoes['muralha']?.efeito;

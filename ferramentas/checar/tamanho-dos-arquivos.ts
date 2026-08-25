@@ -9,7 +9,7 @@
  * A primeira versão desta trava reprovava qualquer arquivo acima de 400 linhas, e isso
  * estava errado: **arquivo-deus se define por MISTURA DE ASSUNTOS, não por quantidade de
  * linhas.** Um `comercio.ts` com comércio, IA, mapa e combate é um arquivo-deus com 200
- * linhas; `provincias.json` com 205 províncias está certo com milhares; e um arquivo por
+ * linhas; `provincias.json` com 196 províncias está certo com milhares; e um arquivo por
  * província seria fragmentação inútil. A trava por número reprovou coisa boa — dados,
  * catálogos, esquemas, suítes de teste e componentes coesos — e ia empurrar o projeto a
  * separar cada campo do comentário que o explica só para agradar um contador.

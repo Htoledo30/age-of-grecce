@@ -112,29 +112,26 @@ export function rodadasAteOAssalto(
 }
 
 /**
- * Quanto vale a milícia atrás da muralha.
+ * Quanto vale a milícia no assalto.
  *
- * ⚠️ **O bônus é da POSIÇÃO, não da construção.** Toda cidade tem alguma coisa entre ela e
- * o campo — um muro de pedra seca, um acrópole, uma encosta. A Muralha construída dobra a
- * milícia lá atrás, em `milicia.ts`, e os dois efeitos se multiplicam de propósito: quem
- * ergueu Muralha numa cidade grande tem as duas vantagens, e assaltá-la é caro mesmo.
+ * A ficha mostra a força real: não existe um segundo multiplicador escondido por toda
+ * cidade ocupar uma posição defensiva. A construção Muralha já melhora a milícia antes
+ * daqui e ainda compra tempo de cerco.
  */
-export function defesaNoAssalto(milicianos: number, ajustes: AjustesCerco): number {
-  return milicianos * ajustes.bonusDeMuralha;
+export function defesaNoAssalto(milicianos: number): number {
+  return milicianos;
 }
 
 /**
  * Quantos milicianos se perderam, sabendo quanto da DEFESA sobrou.
  *
- * A defesa é gente multiplicada pela muralha; desfazer a multiplicação é o que devolve o
- * número em homens. Sem isto, um assalto rechaçado contaria as perdas em unidades de
- * defesa e a população encolheria pelo dobro.
+ * Como a força mostrada e a força combatida são a mesma, defesa restante já está em
+ * homens. Não há multiplicador escondido para desfazer.
  */
 export function milicianosPerdidos(
   milicianos: number,
   defesaRestante: number,
-  ajustes: AjustesCerco,
 ): number {
-  const vivos = Math.min(milicianos, Math.floor(defesaRestante / ajustes.bonusDeMuralha));
+  const vivos = Math.min(milicianos, Math.floor(defesaRestante));
   return Math.max(0, milicianos - vivos);
 }

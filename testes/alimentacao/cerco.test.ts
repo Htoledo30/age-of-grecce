@@ -16,6 +16,7 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
     expect(comFazenda).toBeGreaterThan(0);
 
     // A guarnição de Tanagra senta diante de Atenas.
+    campanha.plantarHoste('tanagra', 'tanagra', 500);
     ordenar(campanha, 'tanagra', 'atenas', 500, 'tanagra', 'sitiar');
     campanha.passarTurno();
 
@@ -25,6 +26,9 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
 
   it('a terra alimenta o dono ATUAL: a conquista move produção e custo de reino', () => {
     const campanha = nova();
+    // A tropa exilada de que este teste fala: sem ela, o poder sem chão fica com saldo
+    // zero e não há fome nenhuma para medir.
+    campanha.plantarHoste('eleusis', 'eleusis', 500);
     const antes = campanha.alimentacao;
     const producaoDeEleusis = campanha.contribuicaoAlimentarEm('eleusis');
     const custoDeEleusis = campanha.nivelPopulacionalEm('eleusis');
@@ -95,6 +99,7 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
     // mesmo turno, todo turno.
     const campanha = nova();
     campanha.darOuro(100_000);
+    campanha.plantarHoste('megara', 'megara', 500); // a defensora de que este teste fala
     campanha.plantarHoste('eleusis', 'atenas', 800);
     campanha.trocarDono('eleusis', 'atenas'); // base vizinha para alcançar Mégara
     ordenar(campanha, 'eleusis', 'megara', 800, 'atenas', 'sitiar');
@@ -149,6 +154,7 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
   it('a guarnição sitiada definha no fim do relógio, e o sitiante não perde nada nunca', () => {
     const campanha = nova();
     campanha.darOuro(100_000);
+    campanha.plantarHoste('eleusis', 'eleusis', 500); // a guarnição que vai definhar
     campanha.plantarHoste('atenas', 'atenas', 1000);
     ordenar(campanha, 'atenas', 'eleusis', 1000, 'atenas', 'sitiar');
     campanha.passarTurno(); // Atenas senta diante de Elêusis
@@ -193,7 +199,6 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
   it('o cerco tira a cidade da circulação: nem contribui, nem pesa, nem come da mesa', () => {
     const campanha = nova();
     campanha.darOuro(200_000);
-    campanha.dispensar('eleusis', 500);
     campanha.plantarHoste('atenas', 'atenas', 100);
     ordenar(campanha, 'atenas', 'eleusis', 100, 'atenas', 'sitiar');
     campanha.passarTurno();

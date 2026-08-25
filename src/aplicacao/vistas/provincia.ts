@@ -72,7 +72,7 @@ export function vistaDeAcoes(jogo: Jogo): VistaDeAcoes | null {
       return {
         id,
         nome: c.nome,
-        custo: c.custos[nivelAlvo - 1] ?? c.custos[2],
+        custo: campanha.custoDaObraEm(alvo, id, nivelAlvo),
         turnos: c.turnos[nivelAlvo - 1] ?? c.turnos[2],
         nivelAtual,
         nivelAlvo,
@@ -82,8 +82,8 @@ export function vistaDeAcoes(jogo: Jogo): VistaDeAcoes | null {
         motivo: c.motivo,
         ganhoPorTurno: conta?.ganhoPorTurno ?? 0,
         turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
-        manutencao: c.manutencao[nivelAlvo - 1] ?? c.manutencao[2],
-        rendeMoeda: c.efeito.tipo === 'renda',
+        manutencao: campanha.manutencaoDaObraEm(alvo, id, nivelAlvo),
+        rendeMoeda: c.efeito.tipo === 'renda' || c.efeito.tipo === 'corrupcao' || c.efeito.tipo === 'troca',
         promessa: c.promessa,
       };
     }),
@@ -124,7 +124,10 @@ export function vistaDeRecrutamento(jogo: Jogo): VistaDeRecrutamento | null {
     maximo: campanha.maximoParaLevaEm(alvo),
     emFormacao: campanha.formacaoEm(alvo)?.homens ?? 0,
     custoPorHomem: ajustes.jogo.combate.custoPorHomem,
-    manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem,
+    // A leva nasce e fica EM CASA: a previsão mostra o que ela vai custar de verdade no
+    // próximo turno. O preço de marchar é outro, e o painel diz qual.
+    manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem.emCasa,
+    manutencaoEmCampanha: ajustes.jogo.combate.manutencaoPorHomem.emCampanha,
     avaliar: (homens) => campanha.podeRecrutar(alvo, homens),
   };
 }

@@ -102,7 +102,7 @@ export class HostesMapa {
    * Redesenha a camada inteira a partir da lista de hostes.
    *
    * Reaproveita os elementos que continuam existindo em vez de recriar tudo: recriar
-   * perderia o foco de teclado no meio de uma interação, e com 148 poderes um dia isso
+   * perderia o foco de teclado no meio de uma interação, e com 139 poderes um dia isso
    * seria muitos nós por turno.
    */
   mostrar(hostes: readonly MarcadorDeHoste[]): void {

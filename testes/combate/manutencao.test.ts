@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Campanha } from '../../src/campanha/campanha';
+
 import { ajustes } from '../apoio/mundo';
+import { ordenar } from '../apoio/hostes';
 import { comQuartel } from './apoio';
 
 const combate = ajustes.combate;
@@ -17,7 +20,8 @@ describe('manter tropa é o ralo de dinheiro', () => {
     const renda = c.renda;
     const manutencao = c.manutencao;
 
-    expect(manutencao).toBe(Math.round(1000 * combate.manutencaoPorHomem));
+    // A leva ficou em Atenas, que é de Atenas: taxa de casa.
+    expect(manutencao).toBe(Math.round(1000 * combate.manutencaoPorHomem.emCasa));
     expect(c.saldoPorTurno).toBe(renda - manutencao);
 
     c.passarTurno();
@@ -30,14 +34,42 @@ describe('manter tropa é o ralo de dinheiro', () => {
     expect(c.saldoPorTurno).toBe(c.renda);
   });
 
-  it('uma mobilização grande pode custar mais que a renda de Atenas', () => {
-    // A leva põe o reino em fome; antes da folha seguinte, 5% dos homens são perdidos.
+  it('em casa a tropa cabe na renda; é cruzar a fronteira que quebra o reino', () => {
     const c = comQuartel();
-    c.recrutar('atenas', 3500);
+    c.recrutar('atenas', 3000);
     c.passarTurno();
-    const sobreviventes = 3500 - Math.floor(3500 * ajustes.alimento.mortePorFomeNaTropa);
-    expect(c.manutencao).toBe(Math.round(sobreviventes * combate.manutencaoPorHomem));
+
+    // Parada em casa, a mesma tropa é falange de cidadão-lavrador: paga a taxa de casa e
+    // o reino continua no azul. Em paz a pergunta é qual construção, não quanto aguento.
+    const emCasa = c.forcaEm('atenas');
+    expect(c.manutencao).toBe(Math.round(emCasa * combate.manutencaoPorHomem.emCasa));
+    expect(c.saldoPorTurno).toBeGreaterThan(0);
+
+    // Os MESMOS homens em terra alheia custam a taxa de campanha, e o saldo vira no
+    // turno em que eles pisam lá. É sair de casa que custa.
+    ordenar(c, 'atenas', 'eleusis', emCasa, 'atenas', 'sitiar');
+    c.passarTurno();
+
+    const fora = c.forcaEm('eleusis', 'atenas');
+    expect(fora).toBeGreaterThan(0); // se ninguém chegou, o teste não testa nada
+    expect(c.manutencao).toBe(Math.round(fora * combate.manutencaoPorHomem.emCampanha));
     expect(c.saldoPorTurno).toBeLessThan(0);
+  });
+
+  it('tomar a província faz a campanha virar guarnição, e o custo cai no mesmo turno', () => {
+    const c = comQuartel();
+    c.recrutar('atenas', 3000);
+    c.passarTurno();
+    ordenar(c, 'atenas', 'eleusis', c.forcaEm('atenas'), 'atenas', 'sitiar');
+    c.passarTurno();
+
+    const sitiando = c.manutencao;
+    c.trocarDono('eleusis', 'atenas'); // a terra passou a ser de quem está em cima dela
+    expect(c.manutencao).toBeLessThan(sitiando);
+
+    // A razão entre as duas folhas é a razão entre as duas taxas: nada além do chão mudou.
+    const taxas = combate.manutencaoPorHomem;
+    expect(c.manutencao).toBe(Math.round((sitiando * taxas.emCasa) / taxas.emCampanha));
   });
 
   it('o aperto drena o tesouro e a tropa deserta aos poucos, sem colapso', () => {
@@ -59,29 +91,38 @@ describe('manter tropa é o ralo de dinheiro', () => {
   });
 
   it('quem deserta volta pra casa em vez de sumir do mundo', () => {
-    const c = comQuartel();
-    // Leva pequena de propósito: o reino continua alimentando todo mundo, e o único
-    // aperto em cima da tropa é o do soldo. Assim a soma mede só a deserção.
-    // 2.500 homens: a folha passa da renda, mas o saldo alimentar fecha em zero; ninguém
-    // passa fome e a soma mede somente a deserção.
-    c.recrutar('atenas', 2500);
-    c.passarTurno();
+    /**
+     * Leva pequena de propósito: o reino continua alimentando todo mundo, e o único aperto
+     * em cima da tropa é o do soldo. Assim a soma mede só a deserção.
+     *
+     * E ela marcha para FORA: em casa 2.500 homens cabem folgados na renda de Atenas, e
+     * sem aperto não há deserção para medir. Quem não paga a campanha é quem vê a tropa
+     * ir embora — a pergunta "aguento mais um turno disto?" é a da guerra, não a da paz.
+     */
+    function emCampanha(): Campanha {
+      const c = comQuartel();
+      c.recrutar('atenas', 2500);
+      c.passarTurno();
+      ordenar(c, 'atenas', 'eleusis', c.forcaEm('atenas'), 'atenas', 'sitiar');
+      c.passarTurno();
+      return c;
+    }
+
+    const c = emCampanha();
     c.darOuro(-c.tesouro);
 
     // O controle é a mesma campanha com o cofre cheio: mesma tropa, mesma comida, mesma
     // demografia — só que sem deserção. A diferença entre as duas é o que este teste mede.
-    const pago = comQuartel();
-    pago.recrutar('atenas', 2500);
-    pago.passarTurno();
+    const pago = emCampanha();
     pago.darOuro(50_000);
 
-    const forca = c.forcaEm('atenas');
+    const forca = c.forcaEm('eleusis', 'atenas');
     c.passarTurno();
     pago.passarTurno();
 
     expect(c.fome.provincias).toEqual([]); // ninguém passou fome nesta janela
-    expect(c.forcaEm('atenas')).toBeLessThan(forca); // desertou
-    expect(pago.forcaEm('atenas')).toBe(forca); // e o controle não
+    expect(c.forcaEm('eleusis', 'atenas')).toBeLessThan(forca); // desertou
+    expect(pago.forcaEm('eleusis', 'atenas')).toBe(forca); // e o controle não
     // O que saiu do exército reapareceu na província: o mundo continua com a mesma gente.
     // A margem de um punhado é arredondamento — o exército menor come um pouco menos, e o
     // crescimento do turno cai noutro inteiro.

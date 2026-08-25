@@ -47,6 +47,7 @@ export function checarEconomia(): void {
     // retrato autoral da terra — o que ela renderia com administração perfeita.
     const renda = rendaDaProvincia(ficha, economia.produtos, {}, ajustes.data.jogo.economia, {
       construcoes: {},
+      escalaDeObra: 1,
       populacao: ficha.populacao,
       corrupcao: 0,
       fatorDeImposto: 1,

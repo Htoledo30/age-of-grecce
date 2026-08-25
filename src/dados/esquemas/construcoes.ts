@@ -108,6 +108,46 @@ export const Construcoes = z.object({
           ]),
         }),
         z.object({
+          tipo: z.literal('corrupcao'),
+          /**
+           * Qual METADE da corrupção esta obra alivia.
+           *
+           * A conta tem duas: perde-se por haver gente demais para uma administração
+           * arcaica (`tamanho`) e por a terra ficar longe de quem governa (`distancia`).
+           * Nenhuma das duas tinha contrapartida — `corrupcao.ts` já dizia, desde o
+           * primeiro dia, que "quem a muda é mudar a capital — e, no futuro, Ágora e
+           * estrada". É este campo.
+           *
+           * Cada obra ataca UMA metade, e por isso elas não são a mesma obra com números
+           * diferentes: Estrada espalha o império, Ágora engole população.
+           */
+          alvo: z.enum(['tamanho', 'distancia']),
+          /**
+           * O que SOBRA da fatia, por nível. 0,8 corta um quinto dela.
+           *
+           * Fração do que resta e não pontos subtraídos: assim a obra vale mais onde a
+           * corrupção dói mais, e nunca produz corrupção negativa.
+           */
+          fatores: TresNiveisPositivos,
+        }),
+        z.object({
+          tipo: z.literal('troca'),
+          /**
+           * Multiplica a renda da REDE DE TROCAS do reino — não a parcela local.
+           *
+           * É investimento nacional posto num lugar só. Multiplicar o comércio da própria
+           * província era o defeito: `comercioBase` é 0,18 em Tanagra contra 0,60 em
+           * Corinto, e multiplicador em cima de quase nada é quase nada — o Mercado não se
+           * pagava em província nenhuma fora das duas potências comerciais. Ligado à rede,
+           * ele vale mais quanto mais bens DISTINTOS o reino alcança, e passa a ligar
+           * construção a conquista.
+           *
+           * ⚠️ Vale UMA vez por reino, pelo melhor nível erguido: dois Mercados não
+           * multiplicam a mesma rede duas vezes.
+           */
+          fatores: TresNiveisPositivos,
+        }),
+        z.object({
           tipo: z.literal('futuro'),
         }),
       ]),

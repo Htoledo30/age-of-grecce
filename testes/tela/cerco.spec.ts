@@ -25,6 +25,7 @@ interface Ganchos {
   donoDe: (idProvincia: string) => string;
   forcaEm: (idProvincia: string, idPoder?: string) => number;
   hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
+  plantarHoste: (idProvincia: string, idPoder: string, homens: number) => void;
   ordenarMarcha: (
     idHoste: string,
     destino: string,
@@ -50,6 +51,8 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -139,6 +142,8 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   // Elêusis mantém a guarnição de pé de propósito: é ela que faz a segunda peça existir.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -202,6 +207,8 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();

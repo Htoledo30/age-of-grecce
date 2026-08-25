@@ -15,16 +15,23 @@ describe('economia da Ática', () => {
       if (!ficha || !produto) throw new Error(`ficha ausente: ${id}`);
 
       const r = c.economiaDe(id);
-      const producao = produto.valor * ficha.nivel;
+      const segundo = economia.produtos[ficha.secundario.produto];
+      if (!segundo) throw new Error(`secundário ausente: ${id}`);
+      const eco = ajustes.economia;
+      // ⚠️ A corrupção come as TRÊS parcelas, não só o imposto: ela é o que se perde entre
+      // a província e o tesouro, e o que se perde no caminho não pergunta de onde veio a
+      // moeda. O teste guarda a fórmula, não os números dela.
+      const chega = (bruto: number): number => Math.round(bruto * (1 - c.corrupcaoEm(id).total));
 
-      // O imposto é população × taxa × (1 − corrupção) — a fórmula do GDD. A fração de
-      // corrupção vem da própria campanha: o teste guarda a fórmula, não o número dela.
       expect(r).toMatchObject({
-        impostos: Math.round(
-          ficha.populacao * ajustes.economia.impostoPorHabitante * (1 - c.corrupcaoEm(id).total),
+        impostos: chega(ficha.populacao * eco.impostoPorHabitante),
+        // A produção soma os DOIS produtos da terra, o segundo com peso.
+        producao: chega(
+          produto.valor * ficha.nivel +
+            segundo.valor * ficha.secundario.nivel * eco.pesoDoSecundario,
         ),
-        producao,
-        comercio: Math.round(producao * ficha.comercioBase),
+        // O comércio é POSIÇÃO e não uma fatia da lavoura: `comercioBase` vezes a escala.
+        comercio: chega(ficha.comercioBase * eco.escalaDeComercio),
       });
       // O total é a soma das três, e cada parcela é arredondada sozinha — é isso que faz
       // a ficha bater exata com a barra de turno, sem sobra de centavo.

@@ -39,6 +39,10 @@ export function instalarInspecao(jogo: Jogo): void {
     darOuro: (valor: number) => campanha.darOuro(valor),
     passarTurno: () => virarTurno(jogo),
     comecar: (idPoder: string) => entrarNaCampanha(jogo, idPoder),
+    // O preço de uma obra deixou de ser o número do catálogo: ele acompanha a riqueza da
+    // terra. O teste de tela pergunta em vez de cravar.
+    custoDaObraEm: (idProvincia: string, idConstrucao: string, nivel: number) =>
+      campanha.custoDaObraEm(idProvincia, idConstrucao, nivel),
     construir: (idProvincia: string, idConstrucao: string) =>
       campanha.construir(idProvincia, idConstrucao),
     recrutar: (idProvincia: string, homens: number) => campanha.recrutar(idProvincia, homens),

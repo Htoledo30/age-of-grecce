@@ -25,6 +25,7 @@
  */
 
 import type { Ajustes, Construcoes, Economia } from '@/dados/esquema';
+import { custoDaObra, manutencaoDaObra } from './custo-de-obra';
 
 type AjustesEconomia = Ajustes['jogo']['economia'];
 type FichaEconomica = Economia['provincias'][string];
@@ -42,6 +43,13 @@ export type NivelDeImposto = 'baixo' | 'normal' | 'alto';
 export interface BaseDaProvincia {
   /** Construções já erguidas ali, com nível I–III. */
   construcoes: Readonly<Record<string, number>>;
+  /**
+   * O multiplicador de preço e de folha das obras desta terra. 1 é a de referência.
+   *
+   * Vem calculado de fora, de `campanha/custo-de-obra.ts`, e sai da população AUTORAL —
+   * ver o cabeçalho de lá para por que não é a viva.
+   */
+  escalaDeObra: number;
   /**
    * Fração do imposto perdida entre o campo e o tesouro. 0 é administração perfeita.
    *
@@ -77,8 +85,8 @@ export interface BaseDaProvincia {
    * ⚠️ **Sitiada perde produção e comércio, e NÃO perde impostos.** A escolha é
    * deliberada: o campo está tomado e a estrada está cortada, mas a cidade continua
    * cobrando de quem está dentro dela — e continua podendo levantar tropa. Cortar o
-   * imposto também deixaria sem saída quem tem uma província só, que é a situação de 120
-   * dos 148 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
+   * imposto também deixaria sem saída quem tem uma província só, que é a situação de 111
+   * dos 139 poderes: sitiado e sem dinheiro é derrota anunciada, não decisão.
    */
   sitiada: boolean;
 }
@@ -154,24 +162,55 @@ export function rendaDaProvincia(
   // bater exata com o número da barra de turno, sem sobra de centavo em canto nenhum.
   // A fórmula do GDD, inteira e numa multiplicação só: população × taxa × (1−corrupção)
   // × nível de imposto × construções. O povo revoltoso não paga nada.
+  // ⚠️ **A corrupção come as TRÊS parcelas, não só o imposto.**
+  //
+  // Ela nasceu como freio do imposto, e enquanto o imposto era metade da renda isso quase
+  // dava no mesmo. Deixou de dar quando a economia passou a ser sobre a TERRA: com o
+  // imposto valendo um quinto da renda, "perder 30% do imposto" virou perder 6% do total,
+  // e a corrupção deixou de ser freio de coisa nenhuma — junto com ela, a Ágora e a
+  // Estrada, que existem para aliviá-la, viraram prejuízo.
+  //
+  // E é o que a palavra sempre quis dizer: corrupção é **o que se perde entre a província e
+  // o tesouro**. O que se perde no caminho não pergunta se aquela moeda veio de imposto, de
+  // lavoura ou de porto.
+  //
+  // Aplicada parcela a parcela, e não sobre o total: é o que faz a soma das três linhas da
+  // ficha bater exata com a barra de turno, sem centavo sobrando em canto nenhum.
+  const chega = (bruto: number): number => Math.round(bruto * (1 - estado.corrupcao));
+
   const impostos = estado.revoltosa
     ? 0
-    : Math.round(
+    : chega(
         estado.populacao *
           ajustes.impostoPorHabitante *
-          (1 - estado.corrupcao) *
           estado.fatorDeImposto *
           fator('impostos'),
       );
 
   // O cerco zera as duas parcelas que dependem do CAMPO e da ESTRADA. O imposto continua:
   // ver `sitiada` em `BaseDaProvincia`.
+  //
+  // A produção soma os DOIS produtos da terra: o principal inteiro e o secundário com
+  // peso. Toda província tem os dois escritos com nível, e por muito tempo o segundo não
+  // rendia nada — metade da autoria econômica ficava fora da economia.
+  const secundario = catalogo[ficha.secundario.produto];
+  if (!secundario) {
+    throw new Error(`produto secundário inexistente no catálogo: ${ficha.secundario.produto}`);
+  }
   const producao = estado.sitiada
     ? 0
-    : Math.round(produto.valor * ficha.nivel * fator('producao'));
+    : chega(
+        (produto.valor * ficha.nivel +
+          secundario.valor * ficha.secundario.nivel * ajustes.pesoDoSecundario) *
+          fator('producao'),
+      );
+  // ⚠️ **O comércio NÃO é uma fatia da produção.** Era `producao × comercioBase`, e isso
+  // fazia o entreposto depender da própria lavoura: Corinto, com o maior `comercioBase` do
+  // mapa, tirava um quinto da renda do comércio. Posição não se planta — `comercioBase`
+  // multiplica uma escala própria, e uma vila de porto pode viver do mar.
   const comercio = estado.sitiada
     ? 0
-    : Math.round(producao * ficha.comercioBase * fator('comercio'));
+    : chega(ficha.comercioBase * ajustes.escalaDeComercio * fator('comercio'));
 
   // A folha das construções: soma da manutenção de cada nível erguido. Não depende de
   // cerco nem de imposto — é compromisso permanente, e é isso que a torna um ralo.
@@ -179,7 +218,7 @@ export function rendaDaProvincia(
   for (const [id, nivel] of Object.entries(estado.construcoes)) {
     const construcao = construcoes[id];
     if (!construcao) throw new Error(`construção inexistente no catálogo: ${id}`);
-    manutencao += construcao.manutencao[Math.max(0, Math.min(2, nivel - 1))] ?? 0;
+    manutencao += manutencaoDaObra(construcao, nivel, estado.escalaDeObra);
   }
 
   return {
@@ -222,6 +261,14 @@ export function retornoDaConstrucao(
   ajustes: AjustesEconomia,
   base: BaseDaProvincia,
   idConstrucao: string,
+  /**
+   * A corrupção que a província teria COM a obra de pé.
+   *
+   * Vem de fora porque a corrupção depende de população e de saltos até a capital, que
+   * esta função não conhece. Sem isto, uma obra que só alivia corrupção — Ágora, Estrada —
+   * apareceria como puro prejuízo: a manutenção entrava na conta e o benefício não.
+   */
+  corrupcaoComAObra = base.corrupcao,
 ): RetornoDaConstrucao {
   const construcao = construcoes[idConstrucao];
   if (!construcao) throw new Error(`construção inexistente no catálogo: ${idConstrucao}`);
@@ -233,16 +280,17 @@ export function retornoDaConstrucao(
   const antes = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, base).total;
   const depois = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
     ...base,
+    corrupcao: corrupcaoComAObra,
     construcoes: { ...erguidas, [idConstrucao]: nivelAlvo },
   }).total;
 
   const ganhoPorTurno = depois - antes;
   return {
-    custo: construcao.custos[nivelAlvo - 1] ?? construcao.custos[2],
+    custo: custoDaObra(construcao, nivelAlvo, base.escalaDeObra),
     ganhoPorTurno,
     turnosParaPagar:
       ganhoPorTurno > 0
-        ? (construcao.custos[nivelAlvo - 1] ?? construcao.custos[2]) / ganhoPorTurno
+        ? custoDaObra(construcao, nivelAlvo, base.escalaDeObra) / ganhoPorTurno
         : Number.POSITIVE_INFINITY,
   };
 }

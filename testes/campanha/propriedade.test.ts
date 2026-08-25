@@ -14,7 +14,8 @@ describe('o saldo completo da província: renda menos a tropa nascida nela', () 
     expect(c.custoDaTropaDe('atenas')).toBe(0);
     c.passarTurno();
 
-    const custo = Math.round(1000 * ajustes.combate.manutencaoPorHomem);
+    // A hoste ficou parada em Atenas, que e de Atenas: taxa de casa.
+    const custo = Math.round(1000 * ajustes.combate.manutencaoPorHomem.emCasa);
     expect(c.custoDaTropaDe('atenas')).toBe(custo);
     const renda = c.economiaDe('atenas')?.total ?? 0;
     expect(c.saldoDaProvincia('atenas')).toBe(renda - custo);
@@ -65,12 +66,12 @@ describe('propriedade: de quem é a província agora', () => {
     // exemplo aqui porque agora tem tropa em pé — perder o chão a deixaria no EXÍLIO.
     const c = nova();
     expect(c.vivo('esparta')).toBe(true);
-    expect(c.poderesVivos()).toHaveLength(148);
+    expect(c.poderesVivos()).toHaveLength(139);
 
     for (const id of [...c.provinciasDe('esparta')]) c.trocarDono(id, 'atenas');
 
     expect(c.vivo('esparta')).toBe(false);
-    expect(c.poderesVivos()).toHaveLength(147);
+    expect(c.poderesVivos()).toHaveLength(138);
     expect(c.poderesVivos()).not.toContain('esparta');
   });
 
@@ -132,10 +133,22 @@ describe('propriedade: de quem é a província agora', () => {
     // uma cidade rica valer mais que tomar uma pobre.
     expect(c.construcoesEm('sounion')).toContain('mina');
     // A produção fica multiplicada pelo fator da Mina — nível e fator são balanço.
-    const semObra = nova().economiaDe('sounion')?.producao ?? 0;
+    // ⚠️ O controle tem que ter o MESMO dono, senão a comparação mede outra coisa: a
+    // corrupção conta os saltos até a capital de quem manda, e Sunião mudou de mão. Sem
+    // isto, o teste comparava Sunião-de-Atenas com Sunião-de-Mégara e culpava a Mina.
+    const controle = nova();
+    controle.comecar('atenas');
+    controle.trocarDono('sounion', 'megara');
+    const semObra = controle.economiaDe('sounion')?.producao ?? 0;
     const mina = construcoes.construcoes['mina'];
     if (mina?.efeito.tipo !== 'renda') throw new Error('Mina deveria render moeda');
-    expect(c.economiaDe('sounion')?.producao).toBe(Math.round(semObra * mina.efeito.fatores[0]));
+    // Razão e não igualdade: a corrupção entra ANTES do arredondamento de cada parcela, e
+    // repetir a ordem das operações aqui só provaria que eu sei copiar a fórmula. O que
+    // este teste guarda é que a Mina multiplica a produção pelo fator dela.
+    expect((c.economiaDe('sounion')?.producao ?? 0) / semObra).toBeCloseTo(
+      mina.efeito.fatores[0],
+      1,
+    );
   });
 
   it('trocar pro mesmo dono não faz nada, e poder inexistente estoura', () => {
@@ -147,13 +160,13 @@ describe('propriedade: de quem é a província agora', () => {
     expect(() => c.donoDe('cartago')).toThrow(/província inexistente: cartago/);
   });
 
-  it('a soma das províncias de todos os poderes é sempre 205', () => {
+  it('a soma das províncias de todos os poderes é sempre 196', () => {
     const c = nova();
     const total = (): number => atlas.poderes.reduce((s, p) => s + c.provinciasDe(p.id).length, 0);
-    expect(total()).toBe(205);
+    expect(total()).toBe(196);
     c.trocarDono('megara', 'atenas');
     c.trocarDono('esparta', 'atenas');
     // Nenhuma província some nem aparece em dois donos ao mesmo tempo.
-    expect(total()).toBe(205);
+    expect(total()).toBe(196);
   });
 });
