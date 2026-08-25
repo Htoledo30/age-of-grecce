@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "QUEM é cada IA. Os números são iniciais, não definitivos — medidos com `npm run partida`. `valorDaObra` está em MOEDAS POR TURNO e soma ao retorno que o próprio jogo calcula: é assim que Muralha e Armaria, que rendem zero em ouro, entram na conta sem um peso abstrato no meio.",
+  "comentario": "QUEM é cada IA. Os números são iniciais, não definitivos — medidos com `npm run partida`. `valorDaObra` está em MOEDAS POR TURNO e soma ao retorno que o próprio jogo calcula: é assim que Muralha e Armaria, que rendem zero em ouro, entram na conta sem um peso abstrato no meio. `folhaMilitar` é a fatia da renda que ela topa gastar mantendo tropa; `arma` diz se ela paga por qualidade ou por quantidade.",
   "padrao": "equilibrado",
   "estilos": {
     "equilibrado": {
@@ -18,7 +18,9 @@
       "limiarDeAperto": 1,
       "guardaDoTesouro": 0.2,
       "imposto": "normal",
-      "humorParaAliviar": 40
+      "humorParaAliviar": 40,
+      "folhaMilitar": 0.25,
+      "arma": "barata"
     },
     "guerreiro": {
       "valorDaObra": {
@@ -35,7 +37,9 @@
       "limiarDeAperto": 1,
       "guardaDoTesouro": 0.1,
       "imposto": "alto",
-      "humorParaAliviar": 30
+      "humorParaAliviar": 30,
+      "folhaMilitar": 0.45,
+      "arma": "melhor"
     },
     "mercador": {
       "valorDaObra": {
@@ -52,7 +56,9 @@
       "limiarDeAperto": 1,
       "guardaDoTesouro": 0.3,
       "imposto": "normal",
-      "humorParaAliviar": 45
+      "humorParaAliviar": 45,
+      "folhaMilitar": 0.15,
+      "arma": "barata"
     },
     "cauteloso": {
       "valorDaObra": {
@@ -69,7 +75,9 @@
       "limiarDeAperto": 2,
       "guardaDoTesouro": 0.35,
       "imposto": "baixo",
-      "humorParaAliviar": 50
+      "humorParaAliviar": 50,
+      "folhaMilitar": 0.3,
+      "arma": "melhor"
     }
   },
   "porPoder": {

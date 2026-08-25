@@ -23,11 +23,13 @@ Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos e 
 Ocidentais (Melos, Sifnos e Tera). As ilhas continuam desenhadas e clicáveis; qualquer
 pedaço seleciona a província do arquipélago. A costa e o terreno não foram alterados.
 
-**A IA existe, na primeira etapa: ela cuida da economia.** Os 17 poderes jogáveis que não são
-o jogador constroem e decretam imposto todo turno, cada um com o estilo escrito em
-`dados/ia.json` (guerreiro, mercador, cauteloso, equilibrado). Nenhum deles levanta tropa nem
-marcha ainda. `npm run partida` roda a coisa toda e conta o que aconteceu. Diplomacia e naval
-continuam ausentes. Save/load existe (a campanha salva sozinha a
+**A IA existe, em duas etapas: ela cuida da economia e se defende.** Os 17 poderes jogáveis
+que não são o jogador constroem, decretam imposto, levantam tropa, socorrem terra ameaçada e
+fazem surtida — cada um com o estilo escrito em `dados/ia.json` (guerreiro, mercador,
+cauteloso, equilibrado). ⚠️ **Nenhuma hoste da IA pisa em terra alheia**: atacar é a etapa 3.
+Ela joga em `virarTurno`, ANTES de a rodada resolver, porque as ordens são simultâneas — e
+fica FORA de `passarTurno` porque é um jogador e não uma regra da campanha. `npm run partida`
+roda a coisa toda e conta o que aconteceu. Diplomacia e naval continuam ausentes. Save/load existe (a campanha salva sozinha a
 cada mudança e o menu oferece continuar), e a campanha tem começo e fim: vitória ao
 dominar a Grécia central alcançável por terra, derrota ao deixar de existir. O que falta
 para a campanha completa do GDD é a IA mínima e a diplomacia necessária.

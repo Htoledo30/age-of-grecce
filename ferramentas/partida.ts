@@ -25,6 +25,7 @@ import { resolve } from 'node:path';
 import { Campanha } from '../src/campanha/campanha';
 import { Ajustes, Construcoes, Economia, Exercitos, Ia, Provincias } from '../src/dados/esquema';
 import { jogarIA, poderesDaIa } from '../src/ia/ia';
+import { forcaTotalDe } from '../src/ia/percepcao/ameaca';
 import { nomeDoEstiloDe } from '../src/ia/estilo';
 import { Atlas } from '../src/mundo/atlas';
 
@@ -51,10 +52,11 @@ const poderes = [...poderesDaIa(c), 'atenas'].sort();
 const inicial = new Map(poderes.map((id) => [id, c.rendaDe(id)]));
 const obras = new Map<string, Map<string, number>>();
 let turnosComFome = 0;
+let tropaComFome = 0;
 let quebrados = 0;
 
 for (let turno = 0; turno < TURNOS; turno++) {
-  for (const lance of jogarIA(c, ia)) {
+  for (const lance of jogarIA(c, ia, ajustes.combate)) {
     if (!lance.obra) continue;
     const doPoder = obras.get(lance.poder) ?? new Map<string, number>();
     doPoder.set(lance.obra.construcao, (doPoder.get(lance.obra.construcao) ?? 0) + 1);
@@ -62,12 +64,18 @@ for (let turno = 0; turno < TURNOS; turno++) {
   }
   c.passarTurno();
   if (c.fome.provincias.length > 0) turnosComFome += 1;
+  if (c.fome.tropas.length > 0) tropaComFome += 1;
   for (const id of poderes) if (c.tesouroDe(id) < 0) quebrados += 1;
 }
 
 console.log(`\n════ ${TURNOS} TURNOS, TODO MUNDO NA IA (menos Atenas, que fica parada) ════\n`);
 console.log(
-  pad('poder', 17) + pad('estilo', 12) + pad('renda', 14) + pad('tesouro', 10) + 'o que ergueu',
+  pad('poder', 17) +
+    pad('estilo', 12) +
+    pad('renda', 14) +
+    pad('tesouro', 10) +
+    pad('exército', 10) +
+    'o que ergueu',
 );
 for (const id of [...poderes].sort((a, b) => c.rendaDe(b) - c.rendaDe(a))) {
   const antes = inicial.get(id) ?? 0;
@@ -81,6 +89,7 @@ for (const id of [...poderes].sort((a, b) => c.rendaDe(b) - c.rendaDe(a))) {
       pad(id === 'atenas' ? '— parado —' : nomeDoEstiloDe(ia, id), 12) +
       pad(`${n(antes)} → ${n(agora)}`, 14) +
       pad(n(c.tesouroDe(id)), 10) +
+      pad(n(forcaTotalDe(c, id)), 10) +
       (erguidas || '—'),
   );
 }
@@ -88,7 +97,10 @@ for (const id of [...poderes].sort((a, b) => c.rendaDe(b) - c.rendaDe(a))) {
 const rendas = poderes.map((id) => c.rendaDe(id)).sort((a, b) => b - a);
 const maior = rendas[0] ?? 0;
 const menor = rendas.at(-1) ?? 1;
+const emArmas = poderes.reduce((soma, id) => soma + forcaTotalDe(c, id), 0);
 console.log(`\n  turnos com fome em algum lugar: ${turnosComFome}`);
 console.log(`  poder-turnos com o cofre negativo: ${quebrados}`);
+console.log(`  turnos com a TROPA passando fome: ${tropaComFome}`);
+console.log(`  homens em armas no mapa: ${n(emArmas)}`);
 console.log(`  distância entre o maior e o menor: ${(maior / Math.max(1, menor)).toFixed(1)}×`);
 console.log(`  no turno 1 ela era: ${(732 / 118).toFixed(1)}×\n`);

@@ -4,7 +4,7 @@ import { obraEscolhida } from '../../src/ia/economia/construir';
 import { decretosEscolhidos } from '../../src/ia/economia/imposto';
 import { estiloDe } from '../../src/ia/estilo';
 import { jogarIA, poderesDaIa } from '../../src/ia/ia';
-import { ia, novaCampanha } from '../apoio/mundo';
+import { ajustes, ia, novaCampanha } from '../apoio/mundo';
 
 const nova = (jogador = 'atenas') => {
   const c = novaCampanha();
@@ -118,7 +118,7 @@ describe('a IA joga pela mesma porta que a tela', () => {
     // encontrasse seria um defeito do caminho dela, não do jogo.
     const c = nova('atenas');
     const antes = c.tesouroDe('corinto');
-    const lances = jogarIA(c, ia);
+    const lances = jogarIA(c, ia, ajustes.combate);
 
     const deCorinto = lances.find((l) => l.poder === 'corinto');
     expect(deCorinto).toBeDefined();
@@ -135,7 +135,7 @@ describe('a IA joga pela mesma porta que a tela', () => {
     const c = nova('atenas');
     const antes = c.rendaDe('corinto');
     for (let i = 0; i < 20; i++) {
-      jogarIA(c, ia);
+      jogarIA(c, ia, ajustes.combate);
       c.passarTurno();
     }
     expect(c.rendaDe('corinto')).toBeGreaterThan(antes);

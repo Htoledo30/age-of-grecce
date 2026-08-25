@@ -67,6 +67,28 @@ const Estilo = z.object({
    * se revolta para de pagar qualquer coisa, e aí o imposto alto rendeu zero.
    */
   humorParaAliviar: z.number(),
+  /**
+   * Fatia da RENDA que esta IA topa gastar mantendo gente em armas.
+   *
+   * É o único teto que ela se impõe sozinha; os outros dois — comida e população — vêm do
+   * mundo. 0,3 quer dizer "um terço do que entra vai para a folha militar", e com a taxa de
+   * casa em 0,1 por homem isso são três homens por moeda de renda.
+   *
+   * ⚠️ **Sem este teto ela recruta até a deserção.** O jogo deixa levantar tropa enquanto
+   * houver ouro no cofre, e o cofre é o de HOJE — a folha é todo turno.
+   */
+  folhaMilitar: z.number().min(0),
+  /**
+   * Que soldado ela levanta quando a terra oferece mais de um.
+   *
+   * `melhor` pega quem mais vale em campo (`ataque × aguento`), custe o que custar — é o
+   * guerreiro, que prefere quinhentos hoplitas a oitocentos leves. `barata` pega quem rende
+   * mais luta por moeda — é o mercador, que prefere a massa.
+   *
+   * ⚠️ Nenhuma tabela de armas mora no código da IA: os dois cálculos saem de
+   * `ajustes.batalha.armas`, que é o mesmo lugar de onde a batalha lê.
+   */
+  arma: z.enum(['melhor', 'barata']),
 });
 
 export const Ia = z.object({

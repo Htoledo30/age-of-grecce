@@ -40,7 +40,64 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a IA, etapa 1 — os vizinhos deixaram de ser estátuas
+### Agora: a IA, etapa 2 — o mapa revida
+
+A IA levanta tropa e defende. ⚠️ **Nenhuma hoste pisa em terra alheia** — atacar é a etapa 3,
+e misturar as duas aqui faria a etapa 2 virar a etapa 3 por acidente, que é o tipo de coisa
+que ninguém depura depois porque o mapa inteiro se mexe de uma vez. Um teste de cem turnos
+guarda isso: nenhuma província troca de dono.
+
+**Ela recruta pelo que AGUENTA, não pelo que quer.** Três tetos ao mesmo tempo, e uma IA que
+olhasse um só quebraria pelo outro:
+
+- **a folha**, em ouro por turno — `folhaMilitar` do estilo diz que fatia da renda ela topa
+  gastar. ⚠️ Sem este teto ela recrutaria até a deserção: o jogo deixa levantar tropa enquanto
+  houver ouro no COFRE, e o cofre é o de hoje enquanto a folha é todo turno;
+- **a comida**, do reino inteiro — despensa no vermelho tranca o recrutamento, e despensa
+  apertada tira da lista qualquer arma que coma por dois;
+- **a gente**, província por província, que o jogo já limita.
+
+E ela recruta **na paz**: leva demora um turno para virar hoste, e quem espera a marcha
+inimiga aparecer já perdeu a província.
+
+**O estilo escolhe a arma, e os números saem dos ajustes.** `melhor` pega quem mais vale em
+campo (`ataque × aguento`); `barata` pega quem rende mais luta por moeda.
+
+⚠️ **E o preço entra ao QUADRADO na conta do barato** — foi um teste que cobrou. Dividindo o
+valor por `custo` uma vez só, "barata" escolhia HOPLITA: o aguento 1,5 dele cobre o custo
+1,25. Na conta verdadeira não cobre, porque a força de um lado é `homens² × ataque × aguento`
+e dobrar o preço divide por quatro o que o mesmo ouro põe em campo. É a mesma conta que o
+`npm run armas` usa para dizer quem vence a coluna da moeda — e a IA agora usa a mesma.
+
+**Defender é reagir, e são duas reações.** Socorro: terra minha com invasor em cima chama a
+maior hoste que a alcance sem sair do reino — a mais apertada primeiro, e "apertada" é a
+diferença entre o que o inimigo tem lá e o que eu tenho lá, não o tamanho bruto dele. Surtida:
+cidade sitiada com guarnição maior que o sitiante sai para lutar; ⚠️ **só sai quem ganha**,
+porque surtida perdida é a guarnição morrendo fora do muro e a praça caindo no turno seguinte.
+
+#### `npm run partida` — 200 turnos, todo mundo na IA, Atenas parada
+
+| poder | estilo | renda | exército | o que ergueu |
+|---|---|---|---:|---|
+| Argos | guerreiro | 381 → 716 | **3.221** | armaria×9 quartel×8 acampamento×3 … |
+| Corinto | mercador | 314 → 710 | 1.063 | lagar×3 fazenda×3 agora×3 mercado×2 |
+| **Atenas** | **— parada —** | 732 → **775** | **0** | **—** |
+| Orcomeno | guerreiro | 268 → 471 | 2.119 | quartel×6 armaria×3 muralha×2 … |
+| Mégara | guerreiro | 185 → 302 | 1.354 | armaria×5 quartel×5 muralha×3 … |
+| Trezena | cauteloso | 127 → 172 | 527 | mercado×3 muralha×3 fazenda×3 armaria |
+
+- **18.907 homens em armas no mapa.** Zero fome civil, zero fome de tropa, zero cofre
+  negativo em 200 turnos.
+- **Mégara já tem 1.066 homens no turno 30**, mais a milícia. As 2.000 lanças do jogador
+  deixaram de entrar andando — que era a promessa inteira da etapa.
+- **Os guerreiros pagam por exército e ficam mais pobres**: Argos tem o maior exército e 2.868
+  no cofre; Corinto tem um terço da tropa e 27.589. O estilo virou uma escolha com preço.
+- **O ralo do dinheiro apareceu.** Na etapa 1 os cofres inchavam sem parar (Cálcis com 108
+  mil); agora quem constrói exército gasta o que ganha.
+
+Falta Henrique jogar e dizer se atacar ficou difícil na medida certa.
+
+### O que veio antes: a IA, etapa 1 — os vizinhos deixaram de ser estátuas
 
 Item 5, começado. A etapa 1 é a econômica: a IA constrói e decreta imposto. **Nenhum exército
 se move** — de propósito: um erro aqui aparece numa província só, e não numa guerra em

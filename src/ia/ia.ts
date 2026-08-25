@@ -27,23 +27,31 @@
  *
  * ## Onde ela está
  *
- * Primeira etapa: **ela cuida da casa.** Constrói e decreta imposto. Não levanta tropa, não
- * marcha, não defende — isso é a etapa 2, e vem depois de esta rodar duzentos turnos sem
- * susto. A ordem é assim de propósito: nenhum exército se mexe, então um erro aparece numa
- * província só, e não numa guerra em cascata.
+ * Etapas 1 e 2: **ela cuida da casa e se defende.** Constrói, decreta imposto, levanta tropa,
+ * socorre terra ameaçada e faz surtida. ⚠️ **Nenhuma hoste pisa em terra alheia** — atacar é a
+ * etapa 3. A ordem é assim de propósito: enquanto ela só reage, um erro aparece numa província
+ * e não numa guerra em cascata pelo mapa inteiro.
+ *
+ * A ordem das decisões dentro do turno também é escrita: **imposto, obra, leva, defesa.** O
+ * imposto muda a renda de hoje e a obra precisa saber com quanto conta; a leva precisa saber o
+ * que sobrou do cofre depois da obra; e a defesa é a última porque ela move o que já existe.
  */
 
 import type { Campanha } from '@/campanha/campanha';
-import type { Ia } from '@/dados/esquema';
+import type { Ajustes, Ia } from '@/dados/esquema';
 import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
 import { estiloDe } from './estilo';
+import { defesasEscolhidas } from './guerra/defender';
+import { levaEscolhida } from './guerra/recrutar';
 
 /** O que a IA fez num turno. Serve à ferramenta de partida e aos testes, não ao jogo. */
 export interface LanceDaIa {
   poder: string;
   obra: { provincia: string; construcao: string } | null;
   decretos: readonly { provincia: string; nivel: string }[];
+  leva: { provincia: string; arma: string; homens: number } | null;
+  defesas: readonly { destino: string; homens: number; tipo: string }[];
 }
 
 /**
@@ -54,7 +62,11 @@ export interface LanceDaIa {
  * Soltar a IA neles faria um vizinho engolir meia Grécia vazia de graça, e o mapa viraria
  * sopa antes de o jogo começar.
  */
-export function jogarIA(campanha: Campanha, dados: Ia): readonly LanceDaIa[] {
+export function jogarIA(
+  campanha: Campanha,
+  dados: Ia,
+  ajustes: Ajustes['jogo']['combate'],
+): readonly LanceDaIa[] {
   const lances: LanceDaIa[] = [];
   for (const idPoder of poderesDaIa(campanha)) {
     const estilo = estiloDe(dados, idPoder);
@@ -69,10 +81,25 @@ export function jogarIA(campanha: Campanha, dados: Ia): readonly LanceDaIa[] {
     const obra = obraEscolhida(campanha, idPoder, estilo);
     if (obra) campanha.construir(obra.provincia, obra.construcao, idPoder);
 
+    // A leva depois da obra: o cofre já está do tamanho que ficou, e recrutar em cima de um
+    // dinheiro que ela acabou de gastar seria a IA contando a mesma moeda duas vezes.
+    const leva = levaEscolhida(campanha, idPoder, estilo, ajustes);
+    if (leva) campanha.recrutar(leva.provincia, leva.homens, leva.arma, idPoder);
+
+    // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
+    // depois de virar hoste, no turno que vem.
+    const defesas = defesasEscolhidas(campanha, idPoder);
+    for (const ordem of defesas) {
+      if (ordem.tipo === 'surtida') campanha.surtir(ordem.hoste, idPoder);
+      else campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+    }
+
     lances.push({
       poder: idPoder,
       obra: obra ? { provincia: obra.provincia, construcao: obra.construcao } : null,
       decretos,
+      leva: leva ? { provincia: leva.provincia, arma: leva.arma, homens: leva.homens } : null,
+      defesas: defesas.map((d) => ({ destino: d.destino, homens: d.homens, tipo: d.tipo })),
     });
   }
   return lances;
