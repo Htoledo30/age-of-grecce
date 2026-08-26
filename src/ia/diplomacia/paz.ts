@@ -11,7 +11,9 @@
  *    cai. Guerra sem alvo é folha de campanha paga a troco de nada.
  * 2. **"Ele é mais forte do que nós."** A conta é a mesma que decide declarar, pelo avesso: se
  *    hoje eu não assinaria esta guerra, é porque ela já não me serve.
- * 3. **"Já dura demais."** ⚠️ Existe para as guerras EMPATADAS terminarem. Duas cidades do
+ * 3. **"Não temos nada contra ele."** Guerra contra quem não se odeia acaba mais fácil — é o
+ *    avesso exato de `relacaoParaDeclarar`, o número que decide começá-la.
+ * 4. **"Já dura demais."** ⚠️ Existe para as guerras EMPATADAS terminarem. Duas cidades do
  *    mesmo tamanho, nenhuma capaz de tomar a outra, podem ficar se olhando para sempre — as
  *    duas achando que ganham e nenhuma conseguindo. O relógio é o que desempata, e é por isso
  *    que o estado guarda o turno em que cada guerra começou.
@@ -47,6 +49,10 @@ export function querPaz(
 
   // "Ele é mais forte do que nós": a mesma conta de declarar, pelo avesso.
   if (forcaTotalDe(campanha, idPoder) < forcaTotalDe(campanha, inimigo)) return true;
+
+  // "Não temos nada contra ele": guerra contra quem não se odeia acaba mais fácil — e é o
+  // avesso exato de `relacaoParaDeclarar`, que é o que decide começá-la.
+  if (campanha.relacaoEntre(idPoder, inimigo) > estilo.relacaoParaDeclarar) return true;
 
   // "Não há mais o que tomar dele."
   const alvos = oportunidadesDe(campanha, idPoder).filter((o) => o.dono === inimigo);

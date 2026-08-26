@@ -139,6 +139,9 @@ const SalvamentoCampanha = z.object({
     // curso é a única coisa que se perde, e ela é justamente o que aquele mundo não tinha.
     guerras: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     tregoas: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    // `default` pelo mesmo motivo: salvamento de antes da relação ainda carrega, e o mundo
+    // dele volta com todo mundo indiferente — que é onde uma campanha começa.
+    relacoes: z.record(z.string().min(1), z.number().min(-100).max(100)).default({}),
   }),
 });
 

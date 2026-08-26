@@ -168,3 +168,47 @@
   font-size: 13px;
   color: var(--ui-texto-fraco);
 }
+
+/* A opinião e a conta dela. ⚠️ A conta inteira fica à vista, como a do humor do povo e a da
+   comida: um número de −100 a 100 sem explicação é um número que o jogador acha injusto. */
+.diplomacia__opiniao {
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+.diplomacia__numero {
+  margin: 0 0 8px;
+  font-family: var(--fonte-titulo);
+  font-size: 20px;
+  letter-spacing: 0.04em;
+}
+.diplomacia__numero[data-tom='bom'] {
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__numero[data-tom='ruim'] {
+  color: var(--ui-sangue-claro, #d98b83);
+}
+.diplomacia__parcelas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__parcelas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 0;
+}
+.diplomacia__parcelas li[data-tom='ruim'] .diplomacia__pontos {
+  color: var(--ui-sangue-claro, #d98b83);
+}
+.diplomacia__parcelas li[data-tom='bom'] .diplomacia__pontos {
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__pontos {
+  font-variant-numeric: tabular-nums;
+}

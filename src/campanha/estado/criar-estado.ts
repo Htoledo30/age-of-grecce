@@ -111,6 +111,8 @@ export function criarEstadoInicial(
     // nome, e não o estado natural das coisas.
     guerras: {},
     tregoas: {},
+    // Indiferença é o padrão: a tabela guarda só quem já se esbarrou.
+    relacoes: {},
     revoltas: {},
   };
 }

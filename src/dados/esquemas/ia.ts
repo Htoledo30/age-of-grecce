@@ -177,6 +177,18 @@ const Estilo = z.object({
    */
   vantagemParaDeclarar: z.number().min(0),
   /**
+   * Até que opinião ela ainda considera declarar guerra a alguém, de −100 a 100.
+   *
+   * ⚠️ **É o que impede a relação de ser enfeite.** Um número que sobe e desce e não muda
+   * decisão nenhuma é um número que o jogador aprende a ignorar. Aqui ele vira a primeira
+   * pergunta da guerra: *gosto demais deste para atacá-lo?*
+   *
+   * +20 é o guerreiro, que ataca até quem lhe é indiferente; −40 é o mercador, que só marcha
+   * sobre quem ele já detesta. É por este número que um presente ou um acordo de comércio
+   * compram segurança de verdade — eles empurram a opinião para longe do limiar.
+   */
+  relacaoParaDeclarar: z.number().min(-100).max(100),
+  /**
    * A partir de quantos turnos uma guerra é longa demais e ela assina a paz.
    *
    * ⚠️ **É o que faz as guerras EMPATADAS terminarem.** Duas cidades do mesmo tamanho, nenhuma

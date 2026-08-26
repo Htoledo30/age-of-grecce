@@ -53,6 +53,22 @@ alheia, 33 províncias mudando de dono, 23% dos poder-turnos em guerra, 15 turno
 passando fome (eram 88) e zero cofre negativo.** Sobrevivem poderes dos três estilos, e não só
 os guerreiros.
 
+**A RELAÇÃO entre os reinos existe, de −100 a +100** — e ela é a mesma máquina do humor do
+povo, de propósito: um valor que caminha em direção a um alvo feito de parcelas com nome, que
+a tela mostra linha a linha. `indiferença 0 · em guerra −60 · fronteira comum (3) −15 · terra
+dele na sua mão (1) −15`. Nada salta, o passado se apaga sozinho enquanto os fatos não o
+renovam, e um ATO empurra o número na hora — tomar a cidade à força é um choque de −25, do
+mesmo jeito que a conquista já derruba o humor do povo. É por essa porta que presente, pacto,
+comércio e aliança vão entrar, sem mecânica nova nenhuma.
+
+⚠️ **Nenhuma parcela existe que o jogador não veja no mapa**, e a opinião JÁ DECIDE: a IA não
+declara guerra a quem ela gosta (`relacaoParaDeclarar` no estilo) e aceita paz mais fácil com
+quem ela não odeia. Medido em 100 turnos, o efeito de a opinião entrar na conta: **poderes
+eliminados caíram de 11 para 6 de 18, e o maior reino de 12 províncias para 5** — o mapa
+briga mais (41 guerras, 36 pazes, 28% dos poder-turnos em guerra) e ninguém dispara na frente.
+A relação existe só entre os 18 poderes com ficha: opinião de quem não arrecada nem decide
+seria um número que não vira decisão nenhuma.
+
 ⚠️ **E ela senta com trava, porque cerco DURA.** Só abre cerco quem tem mais gente do que a
 milícia da praça, quem ganharia do exército inteiro do dono se ele viesse socorrer, e quem tem
 renda para pagar a taxa de campanha — três vezes a de casa — sem fim marcado. Sem as três, a

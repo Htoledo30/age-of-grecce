@@ -13,11 +13,12 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe, populacaoDe } from '../provincia/consultas';
 import { conquistar } from '../provincia/posse';
 import { impedeAssaltoImediatoEm } from '../guerra/cercos';
-import { emGuerra } from '../diplomacia/relacoes';
+import { abalarRelacao, emGuerra } from '../diplomacia/relacoes';
 import { miliciaEm } from '../guerra/defesa-local';
 import { saquearProvincia } from '../guerra/saque';
 
 export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
+  const ajustes = nucleo.ajustes.diplomacia.choque;
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
     batalha: nucleo.ajustes.combate.batalha,
     donoDe: (id) => donoDe(nucleo, id),
@@ -54,6 +55,12 @@ export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
     trocarDono: (id, poder) => conquistar(nucleo, id, poder),
     // ⚠️ Só o ASSALTO chega aqui. Entrar numa cidade vazia não mata civil nem derruba obra:
     // não houve luta. Ver `guerra/saque.ts` para o que se perde e por quê.
-    saquear: (id) => saquearProvincia(nucleo, id),
+    saquear: (id) => {
+      // ⚠️ **Tomar a cidade à força abala a opinião de quem a perdeu**, e é o mesmo choque que
+      // a conquista já dá no humor do povo. Some devagar se você não repetir — quem caminha
+      // para o alvo esquece, e o alvo já conta a terra que ficou na sua mão.
+      abalarRelacao(nucleo, donoDe(nucleo, id), nucleo.atlas.donoInicial(id), ajustes.conquista);
+      return saquearProvincia(nucleo, id);
+    },
   });
 }

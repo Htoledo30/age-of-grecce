@@ -25,7 +25,20 @@
         }
       }
     },
-    "diplomacia": { "tregoaEmTurnos": 12 },
+    "diplomacia": {
+      "tregoaEmTurnos": 12,
+      "passoPorTurno": 3,
+      "alvo": {
+        "base": 0,
+        "guerra": -60,
+        "tregoa": -15,
+        "porProvinciaDeFronteira": -5,
+        "fronteiraMaxima": -20,
+        "porTerraTomada": -15,
+        "terraTomadaMaxima": -45
+      },
+      "choque": { "conquista": -25 }
+    },
     "populacao": {
       "taxaNatural": 0.005,
       "faixas": [

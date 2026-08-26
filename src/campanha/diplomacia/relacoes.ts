@@ -34,6 +34,13 @@
 
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
 import { vivo } from '../governo/poderes';
+import {
+  alvoDaRelacao,
+  aproximarRelacao,
+  comChoque,
+  parcelasDaRelacao,
+} from './relacao';
+import type { ParcelaDaRelacao, SituacaoDaRelacao } from './relacao';
 
 /**
  * A chave de um par de poderes, sempre a mesma nos dois sentidos.
@@ -185,6 +192,89 @@ export function limparGuerrasMortas(nucleo: NucleoDaCampanha): void {
     if (a === undefined || b === undefined) continue;
     if (!vivo(nucleo, a) || !vivo(nucleo, b)) delete nucleo.estado.guerras[par];
   }
+}
+
+/** A opinião deste par agora. Zero — indiferença — para quem nunca se esbarrou. */
+export function relacaoEntre(nucleo: NucleoDaCampanha, a: string, b: string): number {
+  if (a === b) return 100;
+  return nucleo.estado.relacoes[parDe(a, b)] ?? 0;
+}
+
+/**
+ * A situação que decide o alvo da opinião — só fatos que o jogador vê no mapa.
+ *
+ * Fica aqui, e não em `relacao.ts`, pelo mesmo motivo que `SituacaoDaProvincia` é montada
+ * fora do arquivo da felicidade: o cálculo é puro e testável sozinho; quem sabe ler o mundo é
+ * a campanha. Privada porque ninguém de fora pergunta a situação — pergunta-se a OPINIÃO, ou
+ * a conta dela.
+ */
+function situacaoDaRelacao(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): SituacaoDaRelacao {
+  const minhas = nucleo.territorios.provinciasDe(a);
+  const delas = new Set(nucleo.territorios.provinciasDe(b));
+  let fronteira = 0;
+  for (const id of [...delas].sort()) {
+    if (nucleo.atlas.provincia(id).vizinhas.some((v) => minhas.includes(v))) fronteira += 1;
+  }
+  // A memória da conquista sem guardar memória: enquanto a bandeira dele estiver na minha
+  // mão, ele lembra. Devolver a terra apaga a mágoa sozinho.
+  const terrasTomadas = minhas.filter((id) => nucleo.atlas.donoInicial(id) === b).length;
+  return {
+    emGuerra: emGuerra(nucleo, a, b),
+    tregoa: tregoaAte(nucleo, a, b) === undefined ? 0 : 1,
+    fronteira,
+    terrasTomadas,
+  };
+}
+
+/** A conta do alvo, parcela a parcela — é o que a tela mostra linha a linha. */
+export function parcelasDaRelacaoEntre(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): readonly ParcelaDaRelacao[] {
+  return parcelasDaRelacao(situacaoDaRelacao(nucleo, a, b), nucleo.ajustes.diplomacia);
+}
+
+/**
+ * Anda a opinião de todos os pares que importam, um passo por turno.
+ *
+ * ⚠️ **Só entre os poderes COM FICHA.** São 18 deles: 153 pares, e cada um vira decisão de
+ * alguém. Com os 139 do mapa seriam 9.591 pares em que nada acontece — e opinião que não vira
+ * decisão nenhuma é tabela crescendo no salvamento à toa.
+ *
+ * Pares que chegam ao alvo e ficam em zero saem do registro: indiferença é a ausência dele.
+ */
+export function andarRelacoes(nucleo: NucleoDaCampanha, comFicha: readonly string[]): void {
+  const passo = nucleo.ajustes.diplomacia.passoPorTurno;
+  const ordenados = [...comFicha].sort();
+  for (const [i, a] of ordenados.entries()) {
+    for (const b of ordenados.slice(i + 1)) {
+      const par = parDe(a, b);
+      const atual = nucleo.estado.relacoes[par] ?? 0;
+      const alvo = alvoDaRelacao(situacaoDaRelacao(nucleo, a, b), nucleo.ajustes.diplomacia);
+      const novo = aproximarRelacao(atual, alvo, passo);
+      if (novo === 0) delete nucleo.estado.relacoes[par];
+      else nucleo.estado.relacoes[par] = novo;
+    }
+  }
+}
+
+/** O choque de um ato sobre a opinião de um par. Ver `comChoque`. */
+export function abalarRelacao(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  pontos: number,
+): void {
+  if (a === b) return;
+  const par = parDe(a, b);
+  const novo = comChoque(nucleo.estado.relacoes[par] ?? 0, pontos);
+  if (novo === 0) delete nucleo.estado.relacoes[par];
+  else nucleo.estado.relacoes[par] = novo;
 }
 
 /**

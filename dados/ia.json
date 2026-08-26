@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "QUEM é cada IA. Os números são iniciais, não definitivos — medidos com `npm run partida`. `valorDaObra` está em MOEDAS POR TURNO e soma ao retorno que o próprio jogo calcula: é assim que Muralha e Armaria, que rendem zero em ouro, entram na conta sem um peso abstrato no meio. `folhaMilitar` é a fatia da renda que ela topa gastar mantendo tropa; `arma` diz se ela paga por qualidade ou por quantidade. `valorDaCapital` e `sobraMinima` são da etapa 3: quanto a capital alheia vale além da renda dela, e com quanto do exército ela topa terminar uma conquista e que fatia dele ela topa pôr na estrada. `vantagemParaDeclarar` é a diplomacia: de quantas vezes o exército do vizinho ela precisa antes de assinar uma guerra contra ele — declarar é assinar que o outro vem atrás.",
+  "comentario": "QUEM é cada IA. Os números são iniciais, não definitivos — medidos com `npm run partida`. `valorDaObra` está em MOEDAS POR TURNO e soma ao retorno que o próprio jogo calcula: é assim que Muralha e Armaria, que rendem zero em ouro, entram na conta sem um peso abstrato no meio. `folhaMilitar` é a fatia da renda que ela topa gastar mantendo tropa; `arma` diz se ela paga por qualidade ou por quantidade. `valorDaCapital` e `sobraMinima` são da etapa 3: quanto a capital alheia vale além da renda dela, e com quanto do exército ela topa terminar uma conquista e que fatia dele ela topa pôr na estrada. `vantagemParaDeclarar` é a diplomacia: de quantas vezes o exército do vizinho ela precisa antes de assinar uma guerra contra ele — declarar é assinar que o outro vem atrás. `relacaoParaDeclarar` é a opinião acima da qual ela nem considera atacar — é o que faz presente, pacto e comércio comprarem segurança de verdade.",
   "padrao": "equilibrado",
   "estilos": {
     "equilibrado": {
@@ -27,6 +27,7 @@
       "sobraMinima": 0.5,
       "fracaoQueMarcha": 0.7,
       "vantagemParaDeclarar": 1.3,
+      "relacaoParaDeclarar": 0,
       "guerraLonga": 20
     },
     "guerreiro": {
@@ -53,6 +54,7 @@
       "sobraMinima": 0.3,
       "fracaoQueMarcha": 0.9,
       "vantagemParaDeclarar": 1.0,
+      "relacaoParaDeclarar": 20,
       "guerraLonga": 30
     },
     "mercador": {
@@ -79,6 +81,7 @@
       "sobraMinima": 0.65,
       "fracaoQueMarcha": 0.55,
       "vantagemParaDeclarar": 1.8,
+      "relacaoParaDeclarar": -40,
       "guerraLonga": 12
     },
     "cauteloso": {
@@ -105,6 +108,7 @@
       "sobraMinima": 0.7,
       "fracaoQueMarcha": 0.5,
       "vantagemParaDeclarar": 2.0,
+      "relacaoParaDeclarar": -20,
       "guerraLonga": 15
     }
   },

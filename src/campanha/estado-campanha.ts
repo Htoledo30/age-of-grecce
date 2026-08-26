@@ -198,6 +198,18 @@ export interface EstadoCampanha {
    * assalto.
    */
   tregoas: Record<string, number>;
+  /**
+   * A opinião de cada par de poderes, de −100 a 100, pela mesma chave das guerras.
+   *
+   * ⚠️ **Um número por PAR, e não um por lado.** Relação recíproca é uma simplificação
+   * assumida: Corinto e você têm a mesma opinião um do outro. Dois números por par dobrariam
+   * a tabela e a tela para representar uma assimetria que este jogo ainda não usa em decisão
+   * nenhuma — no dia em que usar, a chave já é a mesma e a mudança é local.
+   *
+   * Ausente é ZERO: indiferença é o padrão, e a tabela guarda só quem já se esbarrou. Mesma
+   * escolha do nível de imposto e das guerras, pelo mesmo motivo.
+   */
+  relacoes: Record<string, number>;
 }
 
 /** Uma construção em andamento. */

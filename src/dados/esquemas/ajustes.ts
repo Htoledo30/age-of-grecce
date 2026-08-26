@@ -137,6 +137,43 @@ export const Ajustes = z.object({
        * quem está perdendo compra fôlego sem ceder nada.
        */
       tregoaEmTurnos: z.number().int().positive(),
+      /**
+       * Quantos pontos a opinião anda por turno em direção ao alvo.
+       *
+       * ⚠️ Gradual pela mesma razão que o humor do povo é: ninguém vira aliado de um dia para
+       * o outro, e ninguém passa a te odiar porque uma fronteira mudou de lugar ontem.
+       */
+      passoPorTurno: z.number().positive(),
+      /**
+       * As parcelas do alvo da opinião — a conta que a tela mostra linha a linha.
+       *
+       * ⚠️ **Nenhuma parcela existe que o jogador não consiga ver no mapa.** É o que faz a
+       * opinião nunca parecer arbitrária: guerra, trégua, fronteira comum e a terra dele que
+       * está na sua mão são todas visíveis.
+       */
+      alvo: z.object({
+        /** Onde dois reinos que nunca se esbarraram ficam. Zero: nem amor nem ódio. */
+        base: z.number(),
+        guerra: z.number(),
+        /** Guerra recente ainda dói enquanto a trégua durar. */
+        tregoa: z.number(),
+        porProvinciaDeFronteira: z.number(),
+        /** Teto do atrito de fronteira: o vigésimo quilômetro de divisa não dói mais. */
+        fronteiraMaxima: z.number(),
+        /** Por terra dele que está na sua mão — a memória da conquista, sem guardar memória. */
+        porTerraTomada: z.number(),
+        terraTomadaMaxima: z.number(),
+      }),
+      /**
+       * Os choques: o que um ATO faz com a opinião na hora, antes de ela voltar a caminhar.
+       *
+       * É por esta porta que toda ação diplomática entra — e é a mesma ideia do choque da
+       * conquista sobre o humor do povo.
+       */
+      choque: z.object({
+        /** Tomar uma terra dele à força. Some devagar se você não repetir. */
+        conquista: z.number(),
+      }),
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({

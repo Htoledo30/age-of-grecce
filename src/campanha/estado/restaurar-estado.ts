@@ -56,4 +56,5 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   estado.revoltas = { ...salvo.revoltas };
   estado.guerras = { ...salvo.guerras };
   estado.tregoas = { ...salvo.tregoas };
+  estado.relacoes = { ...salvo.relacoes };
 }

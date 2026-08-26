@@ -28,10 +28,14 @@ import {
   emGuerra,
   guerraDesde,
   guerrasDe,
+  parcelasDaRelacaoEntre,
   podeDeclararGuerra,
   podeFazerPaz,
+  relacaoEntre,
   tregoaAte,
 } from '../diplomacia/relacoes';
+import type { ParcelaDaRelacao } from '../diplomacia/relacao';
+import { poderesComFicha } from '../governo/poderes';
 import type { BemEmCirculacao } from '../comercio/rede-de-trocas';
 import { conferirCatalogos, criarEstadoInicial } from '../estado/criar-estado';
 import { efemerosVazios } from '../estado/efemeros';
@@ -237,6 +241,25 @@ export abstract class ConsultasDoReino {
   /** Desde que turno estes dois se enfrentam. `undefined` em paz. */
   guerraDesde(a: string, b: string): number | undefined {
     return guerraDesde(this.nucleo, a, b);
+  }
+
+  /**
+   * A opinião entre dois poderes, de −100 a 100. Zero é indiferença.
+   *
+   * Recíproca por simplificação assumida: os dois têm a mesma opinião um do outro.
+   */
+  relacaoEntre(a: string, b: string): number {
+    return relacaoEntre(this.nucleo, a, b);
+  }
+
+  /** A conta dessa opinião, parcela a parcela — a mesma legibilidade do humor do povo. */
+  parcelasDaRelacaoEntre(a: string, b: string): readonly ParcelaDaRelacao[] {
+    return parcelasDaRelacaoEntre(this.nucleo, a, b);
+  }
+
+  /** Os poderes que a campanha simula: os que têm ficha econômica. São 18 dos 139. */
+  poderesComFicha(): readonly string[] {
+    return poderesComFicha(this.nucleo);
   }
 
   /** Até que turno a trégua segura. `undefined` quando não há trégua em pé. */

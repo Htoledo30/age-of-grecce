@@ -12,6 +12,7 @@
  */
 
 import type { NucleoDaCampanha } from '../nucleo';
+import { simuladasDe } from '../provincia/consultas';
 
 /** Um poder está vivo enquanto tiver chão OU hoste. */
 export function vivo(nucleo: NucleoDaCampanha, idPoder: string): boolean {
@@ -24,6 +25,27 @@ export function vivo(nucleo: NucleoDaCampanha, idPoder: string): boolean {
 export function noExilio(nucleo: NucleoDaCampanha, idPoder: string): boolean {
   return (
     !nucleo.territorios.temTerritorio(idPoder) && nucleo.mobilizacao.temTropa(idPoder)
+  );
+}
+
+/**
+ * Os poderes que a campanha SIMULA: os que têm ficha econômica.
+ *
+ * ⚠️ São 18 dos 139. É a mesma lista que a IA dirige e a mesma que tem opinião sobre alguém —
+ * poder sem ficha não arrecada, não recruta e não decide nada, e um número sobre ele não
+ * viraria decisão nenhuma.
+ */
+export function poderesComFicha(nucleo: NucleoDaCampanha): readonly string[] {
+  return nucleo.atlas.poderes
+    .map((p) => p.id)
+    .filter((id) => simuladasDe(nucleo, id).length > 0 || temFicha(nucleo, id))
+    .sort();
+}
+
+/** Este poder tem ao menos uma província com ficha, hoje ou originalmente. */
+function temFicha(nucleo: NucleoDaCampanha, idPoder: string): boolean {
+  return Object.keys(nucleo.economia.provincias).some(
+    (id) => nucleo.atlas.donoInicial(id) === idPoder,
   );
 }
 

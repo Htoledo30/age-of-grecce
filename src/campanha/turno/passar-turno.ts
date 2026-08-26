@@ -31,7 +31,8 @@ import { processarObras } from './processar-obras';
 import { resolverMarchas } from './resolver-marchas';
 
 /** Vira o turno e devolve tudo o que virou notícia. */
-import { limparGuerrasMortas, limparTregoas } from '../diplomacia/relacoes';
+import { andarRelacoes, limparGuerrasMortas, limparTregoas } from '../diplomacia/relacoes';
+import { poderesComFicha } from '../governo/poderes';
 
 export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   const jogador = nucleo.estado.jogador;
@@ -60,6 +61,8 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   // Depois de o turno andar, e não antes: a trégua que vence NESTE turno já não segura mais.
   // Sem esta limpeza o registro cresceria para sempre com pares que não significam mais nada.
   limparTregoas(nucleo);
+  // A opinião anda um passo por turno, como o humor do povo — e pelos mesmos motivos.
+  andarRelacoes(nucleo, poderesComFicha(nucleo));
   // E a guerra contra quem não existe mais acaba sozinha: ver `limparGuerrasMortas`.
   limparGuerrasMortas(nucleo);
 

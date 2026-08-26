@@ -16,6 +16,9 @@
  * 2. **Eu ganho a GUERRA, e não só a primeira batalha?** Declarar é assinar que o outro vem
  *    atrás. Por isso a conta é exército contra exército, e o estilo diz de quanta vantagem ele
  *    precisa antes de assinar.
+ * 0. **Eu gosto dele?** Acima de `relacaoParaDeclarar` a conversa acaba aqui — e é o que dá
+ *    peso a presente, pacto e comércio: eles empurram a opinião para fora do alcance da
+ *    guerra. Sem esta pergunta, a relação seria um número bonito que não decide nada.
  * 3. **⚠️ Uma guerra de cada vez.** Quem já está em guerra não abre segunda frente. É a regra
  *    que substituiu o preço fingido, e é melhor por três motivos: ela é verdadeira (dois
  *    inimigos ao mesmo tempo derrubam qualquer um destes poderes), ela é legível (o jogador vê
@@ -55,6 +58,10 @@ export function guerraEscolhida(
   for (const alvo of oportunidadesDe(campanha, idPoder)) {
     if (campanha.emGuerra(idPoder, alvo.dono)) continue;
     if (!campanha.podeDeclararGuerra(alvo.dono, idPoder).pode) continue;
+    // ⚠️ **Gosto demais dele para atacá-lo?** É a primeira pergunta, e é o que impede a
+    // relação de ser enfeite: um número que não muda decisão nenhuma o jogador aprende a
+    // ignorar. É também o que faz presente e acordo comprarem segurança de verdade.
+    if (campanha.relacaoEntre(idPoder, alvo.dono) > estilo.relacaoParaDeclarar) continue;
     // A força que ele tem no mundo, e não a que está naquela província: quem declara passa a
     // enfrentar o reino inteiro, e é o reino inteiro que vem cobrar.
     if (meuExercito < forcaTotalDe(campanha, alvo.dono) * estilo.vantagemParaDeclarar) continue;

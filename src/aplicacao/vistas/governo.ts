@@ -146,6 +146,9 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
         .hostes()
         .filter((h) => h.poder === id)
         .reduce((soma, h) => soma + campanha.forcaDaHoste(h.id), 0),
+      relacao: campanha.relacaoEntre(jogador.id, id),
+      // A conta inteira, como a do humor do povo: o número sozinho parece arbitrário.
+      parcelas: campanha.parcelasDaRelacaoEntre(jogador.id, id),
     }))
     // Guerra primeiro: é o que exige decisão. Depois por nome, que é como se procura na lista.
     .sort((a, b) => Number(b.emGuerra) - Number(a.emGuerra) || a.nome.localeCompare(b.nome));

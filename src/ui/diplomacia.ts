@@ -41,6 +41,10 @@ export interface VizinhoNaDiplomacia {
   fronteira: readonly string[];
   /** Homens em armas que ele tem no mundo. É público: hostes estão no mapa. */
   exercito: number;
+  /** A opinião dele sobre você, de −100 a 100. Zero é indiferença. */
+  relacao: number;
+  /** A conta dessa opinião, linha a linha — a mesma legibilidade do humor do povo. */
+  parcelas: readonly { rotulo: string; pontos: number }[];
 }
 
 export interface VistaDaDiplomacia {
@@ -211,7 +215,41 @@ export class Diplomacia {
     acoes.className = 'diplomacia__acoes';
     acoes.appendChild(this.acaoDe(vizinho));
 
-    return [titulo, relacao, fatos, acoes];
+    return [titulo, relacao, this.opiniao(vizinho), fatos, acoes];
+  }
+
+  /**
+   * A opinião e a conta dela, parcela a parcela.
+   *
+   * ⚠️ **A conta inteira fica à vista, como a do humor do povo e a da comida.** Um número de
+   * −100 a 100 sem explicação é um número que o jogador acha injusto; com as parcelas, ele lê
+   * "fronteira comum −15, você tomou Mégara −25" e sabe exatamente o que fazer a respeito.
+   */
+  private opiniao(vizinho: VizinhoNaDiplomacia): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__opiniao';
+
+    const numero = document.createElement('p');
+    numero.className = 'diplomacia__numero';
+    numero.dataset['tom'] = vizinho.relacao > 15 ? 'bom' : vizinho.relacao < -15 ? 'ruim' : 'morno';
+    numero.textContent = `opinião ${vizinho.relacao > 0 ? '+' : ''}${vizinho.relacao}`;
+
+    const conta = document.createElement('ul');
+    conta.className = 'diplomacia__parcelas';
+    for (const parcela of vizinho.parcelas) {
+      const linha = document.createElement('li');
+      linha.dataset['tom'] = parcela.pontos >= 0 ? 'bom' : 'ruim';
+      const rotulo = document.createElement('span');
+      rotulo.textContent = parcela.rotulo;
+      const pontos = document.createElement('span');
+      pontos.className = 'diplomacia__pontos';
+      pontos.textContent = `${parcela.pontos > 0 ? '+' : ''}${parcela.pontos}`;
+      linha.append(rotulo, pontos);
+      conta.appendChild(linha);
+    }
+
+    caixa.append(numero, conta);
+    return caixa;
   }
 
   private acaoDe(vizinho: VizinhoNaDiplomacia): HTMLButtonElement {

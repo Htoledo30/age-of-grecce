@@ -159,3 +159,69 @@ describe('a IA passa pela mesma porta', () => {
     expect(querPaz(c, 'caristo', 'megara', estiloDe(ia, 'caristo'), ajustes.combate)).toBe(true);
   });
 });
+
+describe('a relação: o humor entre reinos', () => {
+  it('começa em indiferença e caminha para o alvo, sem saltar', () => {
+    // ⚠️ A mesma mecânica do humor do povo, de propósito: um VALOR que anda em direção a um
+    // ALVO feito de parcelas com nome. O jogador já aprendeu essa máquina uma vez.
+    const c = nova();
+    expect(c.relacaoEntre('atenas', 'eleusis')).toBe(0);
+    const alvo = c
+      .parcelasDaRelacaoEntre('atenas', 'eleusis')
+      .reduce((soma, p) => soma + p.pontos, 0);
+    // Vizinhos se atritam: fronteira comum puxa o alvo para baixo de zero.
+    expect(alvo).toBeLessThan(0);
+
+    c.passarTurno();
+    const depois = c.relacaoEntre('atenas', 'eleusis');
+    expect(depois).toBeLessThan(0);
+    // Um passo, e não um salto: ninguém passa a odiar você da noite para o dia.
+    expect(depois).toBeGreaterThan(alvo);
+  });
+
+  it('a guerra afunda a opinião, e a conta diz por quê', () => {
+    const c = nova();
+    c.declararGuerra('eleusis');
+    const rotulos = c.parcelasDaRelacaoEntre('atenas', 'eleusis').map((p) => p.rotulo);
+    expect(rotulos).toContain('em guerra');
+    for (let i = 0; i < 30; i++) c.passarTurno();
+    expect(c.relacaoEntre('atenas', 'eleusis')).toBeLessThan(-40);
+  });
+
+  it('⚠️ a terra dele na sua mão é a memória da conquista — e devolver apaga', () => {
+    // Sem guardar memória nenhuma: enquanto a bandeira dele estiver com você, ele lembra.
+    const c = nova();
+    const conta = () =>
+      c.parcelasDaRelacaoEntre('atenas', 'megara').map((p) => p.rotulo).join(' | ');
+    expect(conta()).not.toContain('terra dele');
+    c.trocarDono('megara', 'atenas');
+    expect(conta()).toContain('terra dele');
+    c.trocarDono('megara', 'megara');
+    expect(conta()).not.toContain('terra dele');
+  });
+
+  it('a IA não declara guerra a quem ela gosta', () => {
+    // ⚠️ É o que impede a relação de ser enfeite: um número que não muda decisão nenhuma o
+    // jogador aprende a ignorar. É também o que fará presente e acordo comprarem segurança.
+    const c = nova('atenas');
+    c.plantarHoste('tebas', 'tebas', 4000);
+    const estilo = estiloDe(ia, 'tebas');
+    const alvo = guerraEscolhida(c, 'tebas', estilo, ajustes.combate);
+    expect(alvo).not.toBeNull();
+    // O mesmo tabuleiro, com Tebas gostando muito de todo mundo: ela não ataca ninguém.
+    const amigo = { ...estilo, relacaoParaDeclarar: -100 };
+    expect(guerraEscolhida(c, 'tebas', amigo, ajustes.combate)).toBeNull();
+  });
+
+  it('a opinião atravessa o salvamento', () => {
+    const original = nova();
+    original.declararGuerra('megara');
+    for (let i = 0; i < 5; i++) original.passarTurno();
+    const outra = novaCampanha();
+    outra.restaurar(lerSalvamento(original.serializar()));
+    expect(outra.relacaoEntre('atenas', 'megara')).toBe(
+      original.relacaoEntre('atenas', 'megara'),
+    );
+    expect(original.relacaoEntre('atenas', 'megara')).toBeLessThan(0);
+  });
+});
