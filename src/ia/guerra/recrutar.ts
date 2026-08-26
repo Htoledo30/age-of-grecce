@@ -7,6 +7,12 @@
  * 1. **A FOLHA**, todo turno, em ouro. É o teto que a IA respeita de propósito: o estilo diz
  *    que fatia da renda ela topa gastar mantendo gente em armas. Passar disso é o caminho
  *    curto para a deserção por falta de pagamento.
+ *
+ *    ⚠️ **E são DUAS folhas: a de paz e a de guerra.** Com uma só, ela alistava o exército
+ *    inteiro no turno 1 — 8.524 homens num mundo onde ninguém tinha marchado, e vários
+ *    poderes ficando mais pobres na hora, porque recrutar tira gente da lavoura e do imposto.
+ *    Em paz ela mantém uma GUARDA; exército se levanta quando alguém aparece na porta. É a
+ *    mesma decisão que o jogador toma.
  * 2. **A COMIDA**, que é do reino inteiro. Tropa a mais com a despensa no zero mata civil e
  *    para o crescimento — perde-se a corrida sem levar uma batalha.
  * 3. **A GENTE**, província por província. Quem vai pras armas sai da lavoura e do imposto.
@@ -32,6 +38,7 @@
 import type { Campanha } from '@/campanha/campanha';
 import type { Arma } from '@/combate/exercito';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
+import { estaAmeacado } from '../percepcao/ameaca';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
 
@@ -96,11 +103,17 @@ function folgaDaFolha(
   ajustes: AjustesCombate,
 ): number {
   const renda = campanha.rendaDe(idPoder);
-  const emArmas = campanha
-    .provinciasDe(idPoder)
-    .reduce((soma, id) => soma + campanha.homensEmArmasDe(id), 0);
+  // ⚠️ **Os homens DESTE PODER, e não os nascidos nas terras dele.** A diferença parece
+  // acadêmica e não é: `homensEmArmasDe` conta por TERRA NATAL, então um exército inimigo
+  // acampado numa província minha entrava na minha folha — e a IA parava de recrutar bem na
+  // hora em que o inimigo estava em cima dela. Medido: 211 homens sob ameaça contra 316 em
+  // paz, com a folha de guerra sendo o dobro da de paz.
+  const emArmas = campanha.homensEmArmasDoPoder(idPoder);
   const folhaAtual = emArmas * ajustes.manutencaoPorHomem.emCasa;
-  return renda * estilo.folhaMilitar - folhaAtual;
+  // ⚠️ Guerra é ter alguém nas suas terras ou na porta delas — e não uma declaração, que este
+  // jogo ainda não tem. Ver `estaAmeacado`.
+  const teto = estaAmeacado(campanha, idPoder) ? estilo.folhaMilitar : estilo.folhaEmPaz;
+  return renda * teto - folhaAtual;
 }
 
 /** A arma que esta terra levanta e que este estilo prefere, com o que ela vale. */

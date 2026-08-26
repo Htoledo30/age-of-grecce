@@ -123,6 +123,17 @@ export abstract class ConsultasDoReino {
     return this.nucleo.atlas.nomeDe(idProvincia);
   }
 
+  /**
+   * As províncias que fazem fronteira por TERRA com esta.
+   *
+   * ⚠️ Entra na fachada porque a IA precisou dela para saber se o inimigo está na porta — e a
+   * regra da casa é que a pergunta entra aqui em vez de a IA abrir um caminho próprio pelo
+   * atlas. O jogador já vê isso no mapa; agora as duas leem do mesmo lugar.
+   */
+  vizinhasDe(idProvincia: string): readonly string[] {
+    return this.nucleo.atlas.vizinhasDe(idProvincia);
+  }
+
   provinciasDe(idPoder: string): readonly string[] {
     return this.nucleo.territorios.provinciasDe(idPoder);
   }

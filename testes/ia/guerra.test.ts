@@ -4,7 +4,7 @@ import { estiloDe } from '../../src/ia/estilo';
 import { defesasEscolhidas } from '../../src/ia/guerra/defender';
 import { levaEscolhida } from '../../src/ia/guerra/recrutar';
 import { jogarIA, poderesDaIa } from '../../src/ia/ia';
-import { ameacasDe, forcaTotalDe } from '../../src/ia/percepcao/ameaca';
+import { ameacasDe, estaAmeacado, forcaTotalDe } from '../../src/ia/percepcao/ameaca';
 import { ajustes, ia, novaCampanha } from '../apoio/mundo';
 
 const nova = (jogador = 'atenas') => {
@@ -29,10 +29,10 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     // pagamento, que é o erro clássico de quem olha só o caixa.
     const c = nova('atenas');
     const estilo = estiloDe(ia, 'tebas');
-    const semFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 0 }, ajustes.combate);
+    const semFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 0, folhaEmPaz: 0 }, ajustes.combate);
     expect(semFolha).toBeNull();
 
-    const comFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 1 }, ajustes.combate);
+    const comFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 1, folhaEmPaz: 1 }, ajustes.combate);
     expect(comFolha).not.toBeNull();
     expect(comFolha!.homens).toBeGreaterThan(0);
   });
@@ -44,14 +44,14 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     const estilo = estiloDe(ia, 'tebas');
     // Tira comida do reino enchendo-o de gente em armas até o saldo virar.
     for (let i = 0; i < 40 && c.balancoAlimentarDe('tebas').saldo >= 0; i++) {
-      const leva = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99 }, ajustes.combate);
+      const leva = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes.combate);
       if (!leva) break;
       c.darOuro(50_000, 'tebas');
       c.recrutar(leva.provincia, leva.homens, leva.arma, 'tebas');
       c.passarTurno();
     }
     if (c.balancoAlimentarDe('tebas').saldo < 0) {
-      expect(levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99 }, ajustes.combate)).toBeNull();
+      expect(levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes.combate)).toBeNull();
     }
   });
 
@@ -66,8 +66,8 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     expect(c.armasEm('tebas')).toContain('hoplita');
 
     const base = estiloDe(ia, 'tebas');
-    const bom = levaEscolhida(c, 'tebas', { ...base, arma: 'melhor', folhaMilitar: 9 }, ajustes.combate);
-    const barato = levaEscolhida(c, 'tebas', { ...base, arma: 'barata', folhaMilitar: 9 }, ajustes.combate);
+    const bom = levaEscolhida(c, 'tebas', { ...base, arma: 'melhor', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes.combate);
+    const barato = levaEscolhida(c, 'tebas', { ...base, arma: 'barata', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes.combate);
     expect(bom?.arma).toBe('hoplita');
     expect(barato?.arma).toBe('leve');
   });
@@ -130,5 +130,61 @@ describe('o mapa deixou de ser um jardim de estátuas', () => {
     for (const poder of poderesDaIa(c)) {
       expect(`${poder}: ${c.tesouroDe(poder) >= 0}`).toBe(`${poder}: true`);
     }
+  });
+});
+
+describe('em paz é guarda; em guerra é exército', () => {
+  it('guarnição do vizinho PARADA EM CASA não é ameaça', () => {
+    // ⚠️ A primeira versão disto errava aqui, e o efeito era enorme: com dezessete poderes
+    // mantendo guarda nas próprias fronteiras, todo mundo era vizinho do exército de alguém —
+    // e o mapa inteiro vivia em pé de guerra permanente, gastando folha de guerra numa paz
+    // completa. Um soldado em casa é como uma muralha: existe, e não quer dizer nada.
+    const c = nova('atenas');
+    c.plantarHoste('tebas', 'tebas', 2000);
+    expect(estaAmeacado(c, 'tanagra')).toBe(false);
+    expect(estaAmeacado(c, 'tebas')).toBe(false);
+  });
+
+  it('exército alheio na minha terra, ou em campanha na porta dela, é ameaça', () => {
+    const naMinhaTerra = nova('atenas');
+    naMinhaTerra.plantarHoste('tebas', 'atenas', 500);
+    expect(estaAmeacado(naMinhaTerra, 'tebas')).toBe(true);
+
+    // Fora de casa, na porta: alguém em campanha, e o próximo passo pode ser aqui.
+    const naPorta = nova('atenas');
+    naPorta.trocarDono('tanagra', 'atenas');
+    naPorta.plantarHoste('tanagra', 'megara', 500);
+    expect(naPorta.donoDe('tanagra')).not.toBe('megara');
+    expect(estaAmeacado(naPorta, 'tebas')).toBe(true);
+  });
+
+  it('a IA levanta MAIS quando alguém aparece do que quando o mapa está em paz', () => {
+    // A promessa que Henrique cobrou: *"quando entrar em guerra se espera que a IA crie
+    // exércitos para atacar e se defender"*. Em paz ela mantém guarda; sob ameaça ela arma.
+    const emPaz = nova('atenas');
+    const estilo = estiloDe(ia, 'tebas');
+    const guarda = levaEscolhida(emPaz, 'tebas', estilo, ajustes.combate);
+
+    const naGuerra = nova('atenas');
+    naGuerra.plantarHoste('tebas', 'atenas', 500);
+    const exercito = levaEscolhida(naGuerra, 'tebas', estilo, ajustes.combate);
+
+    expect(guarda).not.toBeNull();
+    expect(exercito).not.toBeNull();
+    expect(exercito!.homens).toBeGreaterThan(guarda!.homens);
+    // E a diferença é a razão entre as duas folhas do estilo, não um número solto.
+    expect(estilo.folhaMilitar).toBeGreaterThan(estilo.folhaEmPaz);
+  });
+
+  it('o mapa em paz NÃO vira um quartel no primeiro turno', () => {
+    // ⚠️ Henrique viu jogando: *"todas as províncias geram soldados, todas no round 1 já vão
+    // direto para soldados"*. Medido antes do conserto: 8.524 homens em armas no turno 1 de
+    // um mundo onde ninguém tinha marchado — e vários poderes ficando mais pobres na hora,
+    // porque recrutar tira gente da lavoura e do imposto.
+    const c = correr(nova('atenas'), 1);
+    const total = poderesDaIa(c).reduce((soma, id) => soma + forcaTotalDe(c, id), 0);
+    const povo = c.provinciasSimuladas.reduce((soma, id) => soma + c.populacaoDe(id), 0);
+    // Guarda, e não exército: menos de 2% do povo do mapa em armas no primeiro turno.
+    expect(total / povo).toBeLessThan(0.02);
   });
 });

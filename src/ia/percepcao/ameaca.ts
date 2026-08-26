@@ -55,6 +55,39 @@ export function ameacasDe(campanha: Campanha, idPoder: string): readonly Ameaca[
   );
 }
 
+/**
+ * Há guerra na minha porta?
+ *
+ * Duas coisas contam, e nenhuma outra:
+ *
+ * 1. **exército alheio pisando na minha terra** — não há o que discutir;
+ * 2. **exército alheio acampado FORA DE CASA na porta da minha terra** — alguém em campanha,
+ *    e o próximo passo pode ser aqui. Levantar tropa quando ele já pisou é tarde: a leva
+ *    demora um turno para virar hoste e a batalha é hoje.
+ *
+ * ⚠️ **Guarnição do vizinho parada em casa NÃO é ameaça, e a primeira versão disto errava
+ * justamente aí.** Com dezessete poderes mantendo guarda nas próprias fronteiras, todo mundo
+ * era vizinho do exército de alguém — e o mapa inteiro vivia em pé de guerra permanente,
+ * gastando folha de guerra numa paz completa. Um soldado em casa é a mesma coisa que uma
+ * muralha: existe, e não quer dizer nada.
+ *
+ * É esta pergunta que separa a folha de PAZ da de GUERRA. Sem ela a IA alistava o exército
+ * inteiro no turno 1, num mundo onde ninguém tinha marchado ainda.
+ */
+export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
+  const minhas = new Set(campanha.provinciasDe(idPoder));
+  for (const hoste of campanha.hostes()) {
+    if (hoste.poder === idPoder) continue;
+    if (minhas.has(hoste.posicao)) return true;
+    // Em casa não é campanha. Só conta quem já saiu da própria terra.
+    if (campanha.donoDe(hoste.posicao) === hoste.poder) continue;
+    for (const vizinha of campanha.vizinhasDe(hoste.posicao)) {
+      if (minhas.has(vizinha)) return true;
+    }
+  }
+  return false;
+}
+
 /** Quantos homens este poder tem em pé no mundo todo, fora os que ainda se formam. */
 export function forcaTotalDe(campanha: Campanha, idPoder: string): number {
   let total = 0;

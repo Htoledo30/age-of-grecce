@@ -20,7 +20,8 @@
       "imposto": "normal",
       "humorParaAliviar": 40,
       "folhaMilitar": 0.25,
-      "arma": "barata"
+      "arma": "barata",
+      "folhaEmPaz": 0.1
     },
     "guerreiro": {
       "valorDaObra": {
@@ -39,7 +40,8 @@
       "imposto": "alto",
       "humorParaAliviar": 30,
       "folhaMilitar": 0.45,
-      "arma": "melhor"
+      "arma": "melhor",
+      "folhaEmPaz": 0.2
     },
     "mercador": {
       "valorDaObra": {
@@ -58,7 +60,8 @@
       "imposto": "normal",
       "humorParaAliviar": 45,
       "folhaMilitar": 0.15,
-      "arma": "barata"
+      "arma": "barata",
+      "folhaEmPaz": 0.05
     },
     "cauteloso": {
       "valorDaObra": {
@@ -77,7 +80,8 @@
       "imposto": "baixo",
       "humorParaAliviar": 50,
       "folhaMilitar": 0.3,
-      "arma": "melhor"
+      "arma": "melhor",
+      "folhaEmPaz": 0.15
     }
   },
   "porPoder": {

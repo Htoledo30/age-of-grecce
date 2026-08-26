@@ -40,7 +40,36 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: três defeitos que Henrique achou JOGANDO
+### Agora: em paz é guarda, em guerra é exército
+
+Henrique, jogando: *"todas as províncias geram soldados, todas no round 1 já vão direto para
+soldados"* — e, na mensagem seguinte, o que ele esperava: *"quando entrar em guerra se espera
+que a IA crie exércitos para atacar e se defender"*. As duas frases juntas são a regra.
+
+**Medido antes:** 8.524 homens em armas no TURNO 1, num mundo onde ninguém tinha marchado. A
+IA tinha uma folha militar só e a enchia de uma vez — e vários poderes ficavam mais pobres na
+hora, porque recrutar tira gente da lavoura e do imposto.
+
+Agora são **duas folhas**: `folhaEmPaz` mantém uma guarda; `folhaMilitar` só entra quando há
+guerra na porta. Medido depois: **4.454 no turno 1 e 8.706 no turno 200** — uma guarda que
+cresce com a renda, e não um quartel instantâneo.
+
+⚠️ **Dois defeitos apareceram consertando este, e os dois eram meus.**
+
+**A ameaça estava definida errado.** A primeira versão contava qualquer exército alheio VIZINHO
+como perigo — e com dezessete poderes mantendo guarda nas próprias fronteiras, todo mundo era
+vizinho do exército de alguém: o mapa inteiro vivia em pé de guerra permanente, gastando folha
+de guerra numa paz completa. **Guarnição parada em casa não é ameaça**; um soldado no próprio
+chão é como uma muralha — existe, e não quer dizer nada. Conta quem pisou na minha terra, ou
+quem está acampado FORA DE CASA na porta dela.
+
+**A folha somava o exército errado.** Ela usava `homensEmArmasDe`, que conta por TERRA NATAL —
+então um exército inimigo acampado numa província minha entrava na MINHA folha, e a IA parava
+de recrutar bem na hora em que o inimigo estava em cima dela. Medido: 211 homens sob ameaça
+contra 316 em paz, com a folha de guerra valendo o dobro da de paz. A fachada ganhou
+`homensEmArmasDoPoder`, e as duas perguntas ficaram com nomes que não se confundem.
+
+### O que veio antes: três defeitos que Henrique achou JOGANDO
 
 ⚠️ **Os três passaram por 390 testes e por três bancos de provas.** Vale registrar por quê: os
 testes guardam regras, e nenhum deles guardava *"o botão responde ao clique"*, *"a hoste

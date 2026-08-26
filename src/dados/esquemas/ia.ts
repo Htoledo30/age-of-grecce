@@ -79,6 +79,20 @@ const Estilo = z.object({
    */
   folhaMilitar: z.number().min(0),
   /**
+   * A mesma fatia, mas **em paz** — quando não há exército alheio nas suas terras nem na
+   * porta delas.
+   *
+   * ⚠️ **Sem esta separação a IA alistava tudo no turno 1.** Medido: 8.524 homens em armas no
+   * primeiro turno de um mundo onde ninguém tinha marchado, e vários poderes ficando mais
+   * pobres na hora, porque recrutar tira gente da lavoura e do imposto. Henrique viu jogando:
+   * *"todas as províncias geram soldados, todas no round 1 já vão direto para soldados"*.
+   *
+   * Em paz o que se mantém é uma GUARDA: gente suficiente para a ordem pública e para não ser
+   * tomado por um bando. Exército de verdade se levanta quando alguém aparece — e é a mesma
+   * decisão que o jogador toma, que é o teste de se a IA está jogando este jogo.
+   */
+  folhaEmPaz: z.number().min(0),
+  /**
    * Que soldado ela levanta quando a terra oferece mais de um.
    *
    * `melhor` pega quem mais vale em campo (`ataque × aguento`), custe o que custar — é o

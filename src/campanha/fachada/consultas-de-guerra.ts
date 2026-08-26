@@ -85,6 +85,19 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
   }
 
   /** Quantos homens NASCIDOS nesta província estão em armas, onde quer que estejam. */
+  /**
+   * Quantos homens ESTE PODER sustenta em armas, contando as levas em formação.
+   *
+   * ⚠️ **Não confundir com `homensEmArmasDe`, que é por PROVÍNCIA e conta por terra natal.**
+   * As duas perguntas são diferentes e a confusão entre elas já custou um defeito: a IA
+   * media a própria folha somando os homens NASCIDOS nas terras dela — e com um exército
+   * inimigo acampado numa dessas terras, os soldados dele entravam na conta dela e a faziam
+   * parar de recrutar bem na hora em que precisava recrutar.
+   */
+  homensEmArmasDoPoder(idPoder: string): number {
+    return this.nucleo.mobilizacao.homensDe(idPoder);
+  }
+
   homensEmArmasDe(idProvincia: string): number {
     return this.nucleo.mobilizacao.homensEmArmasDe(idProvincia);
   }
