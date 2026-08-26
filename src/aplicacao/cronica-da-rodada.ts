@@ -6,9 +6,7 @@
  * pronto e desenha — ela não conhece regra nenhuma.
  *
  * ⚠️ **O tom é do ponto de vista do JOGADOR.** A mesma batalha é ganho para um lado e perda
- * para o outro; uma crônica que pintasse tudo de neutro obrigaria a ler o nome do vencedor
- * para saber se a notícia é boa. Hoje toda batalha é dele — quando a IA existir, é aqui que
- * se decide o que ainda vale ser contado.
+ * para o outro; este é o lugar que decide o tom e quais conflitos da rodada merecem notícia.
  */
 
 import type { LinhaDaCronica } from '@/ui/cronica';
@@ -21,6 +19,33 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   const numero = (n: number): string => n.toLocaleString('pt-BR');
   const linhas: LinhaDaCronica[] = [];
   const relatorio = campanha.rodada;
+
+  // ⚠️ **A diplomacia vem ANTES das batalhas, e a ordem importa.** Declarar guerra e marchar
+  // acontecem no mesmo turno: sem esta linha em cima, o jogador leria "Batalha em Elêusis" sem
+  // nunca ter sabido que alguém tinha declarado guerra a ele. É por aqui que ele descobre.
+  for (const noticia of campanha.diplomaciaDaRodada) {
+    const comigo = noticia.de === eu || noticia.com === eu;
+    const outro = noticia.de === eu ? noticia.com : noticia.de;
+    if (noticia.tipo === 'guerra') {
+      linhas.push({
+        tom: comigo && noticia.de !== eu ? 'perda' : 'neutro',
+        icone: 'lanca',
+        texto: comigo
+          ? noticia.de === eu
+            ? `Você declarou guerra a ${nomeDoPoder(outro)}.`
+            : `${nomeDoPoder(outro)} DECLAROU GUERRA a você.`
+          : `${nomeDoPoder(noticia.de)} declarou guerra a ${nomeDoPoder(noticia.com)}.`,
+      });
+      continue;
+    }
+    linhas.push({
+      tom: comigo ? 'ganho' : 'neutro',
+      icone: 'templo',
+      texto: comigo
+        ? `Paz assinada com ${nomeDoPoder(outro)}.`
+        : `${nomeDoPoder(noticia.de)} e ${nomeDoPoder(noticia.com)} fizeram as pazes.`,
+    });
+  }
 
   for (const batalha of relatorio.batalhas) {
     // ⚠️ Um assalto produz DUAS batalhas na mesma província: o exército de fora contra o de

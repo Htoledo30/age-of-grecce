@@ -43,6 +43,15 @@ export interface MundoDaResolucao {
    */
   batalha: AjustesDaBatalha;
   donoDe: (idProvincia: string) => string;
+  /**
+   * Estes dois poderes estão em guerra?
+   *
+   * ⚠️ **Existe porque três lados numa província deixaram de significar três brigas.** Dois
+   * invasores podem estar em guerra com o dono da terra e em PAZ entre si; sem esta pergunta a
+   * resolução emparelhava os dois maiores presentes e fazia dois aliados se matarem no
+   * acampamento. A resolução não conhece diplomacia: pergunta e recebe sim ou não.
+   */
+  emGuerra: (a: string, b: string) => boolean;
   trocarDono: (idProvincia: string, idPoder: string) => void;
   /**
    * Cobra da cidade o preço de ter sido tomada à força, e conta o que ela perdeu.

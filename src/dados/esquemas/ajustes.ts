@@ -121,6 +121,23 @@ export const Ajustes = z.object({
         }),
       }),
     }),
+    /**
+     * Diplomacia: os números de paz e guerra.
+     *
+     * Poucos de propósito. A diplomacia básica existe para uma coisa só — dar ao mapa um
+     * motivo para NÃO estar em guerra com todo mundo —, e cada número a mais aqui é uma
+     * regra a mais que o jogador teria de aprender antes de entender a primeira.
+     */
+    diplomacia: z.object({
+      /**
+       * Quantos turnos a trégua segura depois de uma paz assinada.
+       *
+       * ⚠️ **É o que faz a paz valer.** Sem trégua, fazer as pazes e redeclarar na virada
+       * seguinte é grátis: a paz vira uma pausa para respirar no meio do mesmo assalto, e
+       * quem está perdendo compra fôlego sem ceder nada.
+       */
+      tregoaEmTurnos: z.number().int().positive(),
+    }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({
       /**

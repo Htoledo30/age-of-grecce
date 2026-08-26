@@ -76,9 +76,17 @@ export function mudarPostura(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
   postura: Postura,
+  porPoder: string | null,
 ): boolean {
   const cerco = nucleo.estado.cercos[idProvincia];
   if (!cerco) return false;
+  // ⚠️ **Só o SITIANTE muda a postura do próprio cerco**, e a trava entrou quando a IA passou
+  // a atacar. Sem ela, um poder mandava o exército de outro subir a muralha — bastava chamar o
+  // comando com a província certa. Era inalcançável pela tela, que só oferece o botão a quem
+  // está sentado ali, e virou alcançável no instante em que dezessete poderes passaram a
+  // chamar a mesma fachada. É o que a regra "a IA não tem caminho de serviço" existe para
+  // encontrar.
+  if (cerco.sitiante !== porPoder) return false;
   // A muralha barra o assalto antes da hora. A resolução também recusa — ela é a
   // autoridade, porque a postura ainda pode chegar por uma ordem de marcha — mas deixar
   // a ordem ser registrada aqui mostraria ao jogador uma decisão que não vai acontecer.

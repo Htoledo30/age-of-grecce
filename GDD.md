@@ -302,7 +302,7 @@ uma província só — o preço da obra escala pelo peso da terra, e Corinto pag
 alto do catálogo por um ganho que dependia de quantas províncias ela tinha. **A perna local
 paga a encruzilhada; a nacional paga o império.**
 
-- Ágora: economia, administração e futura redução de corrupção;
+- Ágora: economia, administração e redução da corrupção por tamanho;
 - Mercado: a praça — multiplica a rede de trocas do REINO e o trânsito desta terra;
 - Quartel: não é requisito para recrutar — multiplica o TREINO da tropa levantada naquela
   província, e o treino é carimbado na leva;
@@ -311,10 +311,10 @@ paga a encruzilhada; a nacional paga o império.**
 - Acampamento de arqueiro: libera o arqueiro, e só nasce onde há madeira;
 - Treinamento de cavaleiros: libera a cavalaria, e só nasce onde há cavalos;
 - Muralha: fortalece milícia e impede assalto imediato;
-- Templo: felicidade, cultura ou estabilidade futura;
+- Templo: aumenta a felicidade; cultura ou estabilidade só entram se ganharem função própria;
 - Porto: liga esta terra ao reino POR MAR (precisa de porto nos dois lados) e aumenta o
   trânsito local; base do futuro sistema naval;
-- Estradas: possível ligação entre movimento, mercado e administração;
+- Estradas: reduzem a corrupção por distância; movimento e logística continuam possibilidades;
 - construções de exploração são liberadas pelos produtos principal e secundário: Fazenda
   para Grãos, Pastagem para Gado, Porto pesqueiro para Peixe, Lagar para Azeite, Vinhedo
   para Vinho, Serraria para Madeira, Mina para Ferro e metais preciosos e Pedreira para
@@ -455,9 +455,7 @@ da base terrestre e da IA mínima estarem estáveis.
 
 - IA usa as mesmas regras do jogador: tesouro, população, alimento, recrutamento,
   manutenção, movimento, cerco e conquista.
-- Ela só entra quando a base necessária estiver estável, para não ser refeita a cada
-  mudança estrutural.
-- A primeira IA deve ser simples: sobreviver, recrutar, formar hostes, mover, escolher
+- A IA básica permanece simples: sobreviver, recrutar, formar hostes, mover, escolher
   alvos, lutar, cercar e conquistar.
 - Personalidades, cheats, comportamento histórico e estratégia sofisticada não pertencem à
   primeira versão.
@@ -523,12 +521,11 @@ tem de carregar o manual.
 Estas ideias não têm ordem nem garantia de implementação:
 
 - quantidade e desenho das zonas marítimas;
-- composição futura das hostes;
 - profundidade adequada de moral, retirada e generais;
 - quanto da capacidade anual vira comércio automático;
 - preços, oferta e demanda regionais;
-- danos a construções;
-- migração, governadores e revoltas;
+- extensão dos danos a construções além da perda atual de um nível na conquista;
+- migração e governadores;
 - estradas, logística militar e abastecimento por distância;
 - expansão autoral das outras 200 províncias;
 - duração definitiva de uma rodada e ritmo completo da campanha.

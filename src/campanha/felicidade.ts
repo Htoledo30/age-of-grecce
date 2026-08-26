@@ -6,10 +6,9 @@
  * anda alguns pontos por turno em direção a ele. Nada salta, com uma exceção declarada:
  * o choque da conquista, que derruba o humor no dia em que a cidade cai.
  *
- * O que empurra o alvo hoje: a comida do REINO (mesa farta acalma, fome revolta), o
- * cerco e o domínio estrangeiro sobre a PRÓPRIA província, e o Templo erguido nela.
- * Imposto alto/baixo, nacionalidade e presença militar são futuros do GDD — entram NESTA
- * conta quando existirem, em vez de inventar o próprio modificador.
+ * O que empurra o alvo hoje: fome LOCAL, cerco e domínio estrangeiro sobre a própria
+ * província, Templo, nível de imposto e guarnição do dono. Nacionalidade além da distinção
+ * entre domínio original e estrangeiro continua fora do sistema.
  *
  * A consequência mora na primeira faixa: província **Revoltosa** não paga imposto, e —
  * quando vive sob bandeira alheia — arma um levante depois de alguns turnos. Ver

@@ -58,8 +58,8 @@ export const Construcoes = z.object({
        *
        * **Nem toda construção paga em ouro, e é isso que faz a lista ser uma escolha.**
        * Se todas rendessem moeda, escolher seria aritmética: bastaria pegar a de maior
-       * retorno. O Quartel não rende nada hoje: reserva um slot para qualidade militar
-       * futura, enquanto Fazenda compra alimento e Ágora compra arrecadação.
+       * retorno. O Quartel não rende moeda: reserva um slot para carimbar treino nas levas,
+       * enquanto Fazenda compra alimento e Ágora compra arrecadação.
        *
        * União discriminada e não campos opcionais: assim o compilador obriga quem lê a
        * decidir de que tipo é antes de usar `fator`, em vez de deixar um `undefined`
@@ -114,9 +114,8 @@ export const Construcoes = z.object({
            *
            * A conta tem duas: perde-se por haver gente demais para uma administração
            * arcaica (`tamanho`) e por a terra ficar longe de quem governa (`distancia`).
-           * Nenhuma das duas tinha contrapartida — `corrupcao.ts` já dizia, desde o
-           * primeiro dia, que "quem a muda é mudar a capital — e, no futuro, Ágora e
-           * estrada". É este campo.
+           * Ágora e Estrada são as contrapartidas de construção: uma reduz tamanho e a
+           * outra distância. É este campo que liga a obra à parcela correta.
            *
            * Cada obra ataca UMA metade, e por isso elas não são a mesma obra com números
            * diferentes: Estrada espalha o império, Ágora engole população.

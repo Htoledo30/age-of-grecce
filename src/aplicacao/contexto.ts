@@ -31,6 +31,7 @@ import type { Governo } from '@/ui/governo';
 import type { HostesMapa } from '@/ui/hostes-mapa';
 import type { InicioJogo } from '@/ui/inicio-jogo';
 import type { MarchasMapa } from '@/ui/marchas-mapa';
+import type { Diplomacia } from '@/ui/diplomacia';
 import type { Mercado } from '@/ui/mercado';
 import type { PainelFps } from '@/ui/painel-fps';
 import type { PainelLateral } from '@/ui/painel-lateral';
@@ -47,6 +48,7 @@ export interface Tela {
   balanco: Balanco;
   balancoAlimentar: BalancoAlimentar;
   mercado: Mercado;
+  diplomacia: Diplomacia;
   cronica: Cronica;
   batalha: JanelaDeBatalha;
   inicio: InicioJogo;

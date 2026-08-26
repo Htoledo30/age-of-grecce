@@ -18,16 +18,24 @@ import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 
 import { capitaisIniciais } from '../capitais';
 import type { NivelDeImposto } from '../economia';
-import type { CatalogoDeConstrucoes, NucleoDaCampanha, Recusa } from '../nucleo';
+import type { CatalogoDeConstrucoes, NucleoDaCampanha, Permissao, Recusa } from '../nucleo';
 import { serializarCampanha } from '../salvamento';
 import { Territorios } from '../territorios';
 import type { RelatorioDaFome } from '../alimentacao/aplicar-fome';
 import { balancoAlimentarDe } from '../alimentacao/balanco';
 import { bensAusentes, bensEmCirculacao, rendaDeTrocas } from '../comercio/rede-de-trocas';
+import {
+  emGuerra,
+  guerraDesde,
+  guerrasDe,
+  podeDeclararGuerra,
+  podeFazerPaz,
+  tregoaAte,
+} from '../diplomacia/relacoes';
 import type { BemEmCirculacao } from '../comercio/rede-de-trocas';
 import { conferirCatalogos, criarEstadoInicial } from '../estado/criar-estado';
 import { efemerosVazios } from '../estado/efemeros';
-import type { EfemerosDaCampanha } from '../estado/efemeros';
+import type { EfemerosDaCampanha, NoticiaDiplomatica } from '../estado/efemeros';
 import {
   capitalDe,
   capitalPerdida,
@@ -215,6 +223,38 @@ export abstract class ConsultasDoReino {
   }
 
   // ── Governo: imposto e capital ──────────────────────────────────────────────────────
+  // ── Diplomacia ──────────────────────────────────────────────────────────────────────
+  /** Estes dois estão em guerra agora? Paz é a ausência de guerra, e nada mais. */
+  emGuerra(a: string, b: string): boolean {
+    return emGuerra(this.nucleo, a, b);
+  }
+
+  /** Com quem este poder está em guerra, em ordem de id. */
+  guerrasDe(idPoder: string): readonly string[] {
+    return guerrasDe(this.nucleo, idPoder);
+  }
+
+  /** Desde que turno estes dois se enfrentam. `undefined` em paz. */
+  guerraDesde(a: string, b: string): number | undefined {
+    return guerraDesde(this.nucleo, a, b);
+  }
+
+  /** Até que turno a trégua segura. `undefined` quando não há trégua em pé. */
+  tregoaAte(a: string, b: string): number | undefined {
+    return tregoaAte(this.nucleo, a, b);
+  }
+
+  podeDeclararGuerra(
+    contra: string,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): Permissao {
+    return podeDeclararGuerra(this.nucleo, porPoder, contra);
+  }
+
+  podeFazerPaz(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): Permissao {
+    return podeFazerPaz(this.nucleo, porPoder, com);
+  }
+
   nivelDeImpostoEm(idProvincia: string): NivelDeImposto {
     return nivelDeImpostoEm(this.nucleo, idProvincia);
   }
@@ -265,6 +305,11 @@ export abstract class ConsultasDoReino {
   /** Os levantes da última virada. Vazio quando o povo se aguentou. */
   get revoltas(): readonly Levante[] {
     return this.efemeros.revoltas;
+  }
+
+  /** Guerras declaradas e pazes assinadas nesta virada. Notícia, não partida. */
+  get diplomaciaDaRodada(): readonly NoticiaDiplomatica[] {
+    return this.efemeros.diplomacia;
   }
 
   /** O catálogo inteiro, pra interface montar a lista de opções. */

@@ -2,8 +2,8 @@
  * A capital do reino: perdê-la, escolher outra, e o reassentamento da virada.
  *
  * Para o JOGADOR, perder a capital trava a virada: escolher outra é decisão dele e tem que
- * acontecer antes de o mundo andar. Os demais poderes reassentam sozinhos pela regra
- * derivada de `capitais.ts` — até a IA existir, é ela quem decide por eles.
+ * acontecer antes de o mundo andar. Os demais poderes reassentam automaticamente pela regra
+ * derivada de `capitais.ts`; isso é regra de campanha, não decisão estratégica da IA.
  */
 
 import { melhorCapitalEntre } from '../capitais';

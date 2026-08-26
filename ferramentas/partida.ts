@@ -5,7 +5,7 @@
  * escreve nada, não dá veredito: mostra os números e quem lê decide — mesma regra do
  * `npm run economia` e do `npm run armas`.
  *
- * ⚠️ **Existe antes da IA para eu não trabalhar cego.** As duas ferramentas anteriores já
+ * ⚠️ **Nasceu antes da IA para o desenvolvimento não trabalhar cego.** As duas ferramentas anteriores já
  * pagaram por si: `economia` mostrou que a Ágora era armadilha em metade do mapa, `armas`
  * mostrou que a cavalaria era armadilha em todas as réguas. Uma IA sem banco de provas é uma
  * IA que parece boa porque ninguém contou os turnos dela.
@@ -23,6 +23,11 @@
  *    dizem uma palavra sobre defender — foi a lacuna que uma auditoria apontou com razão. Com
  *    `npm run partida <turnos> invadir`, o jogador ataca de verdade: Atenas planta um exército
  *    e marcha sobre o vizinho, e o relatório conta quem socorreu, quem surtiu e quem caiu.
+ * 6. **O ATAQUE tem ritmo?** ⚠️ A pergunta da etapa 3, e a que mais importa: sem diplomacia,
+ *    dezessete poderes começam em guerra com todo mundo. A primeira versão da IA atacante fez
+ *    cinco conquistas no turno 1 e derrubou a capital de Atenas no turno 3 — o mapa decidido
+ *    antes de o jogo começar. Os números para ler são **conquistas por turno** e **poderes que
+ *    perderam tudo**: expansão tem que acontecer, e não pode acabar no turno vinte.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -30,7 +35,8 @@ import { Campanha } from '../src/campanha/campanha';
 import { Ajustes, Construcoes, Economia, Exercitos, Ia, Provincias } from '../src/dados/esquema';
 import { jogarIA, poderesDaIa } from '../src/ia/ia';
 import { estaAmeacado, forcaTotalDe } from '../src/ia/percepcao/ameaca';
-import { nomeDoEstiloDe } from '../src/ia/estilo';
+import { estiloDe, nomeDoEstiloDe } from '../src/ia/estilo';
+import { querPaz } from '../src/ia/diplomacia/paz';
 import { Atlas } from '../src/mundo/atlas';
 
 function ler<T>(e: { parse: (v: unknown) => T }, c: string): T {
@@ -67,6 +73,14 @@ let socorros = 0;
 let surtidas = 0;
 let tomadas = 0;
 let ameacados = 0;
+let conquistas = 0;
+let primeiraConquista = 0;
+let cercoTurnos = 0;
+let marchas = 0;
+let guerrasDeclaradas = 0;
+let pazes = 0;
+let emGuerraTurnos = 0;
+const cresceu = new Map<string, number>(poderes.map((id) => [id, c.provinciasDe(id).length]));
 
 /**
  * O jogador invadindo de verdade: junta o exército e marcha na vizinha mais fraca.
@@ -127,14 +141,39 @@ for (let turno = 0; turno < TURNOS; turno++) {
   for (const lance of jogarIA(c, ia, ajustes)) {
     socorros += lance.defesas.filter((d) => d.tipo === 'socorro').length;
     surtidas += lance.defesas.filter((d) => d.tipo === 'surtida').length;
+    marchas += lance.ataques.length;
+    if (lance.guerra !== null) guerrasDeclaradas += 1;
+    pazes += lance.pazes.length;
     if (!lance.obra) continue;
     const doPoder = obras.get(lance.poder) ?? new Map<string, number>();
     doPoder.set(lance.obra.construcao, (doPoder.get(lance.obra.construcao) ?? 0) + 1);
     obras.set(lance.poder, doPoder);
   }
+  // ⚠️ **O jogador parado ACEITA a paz que lhe pedem**, e sem isto o banco mede outra coisa.
+  // Ele é o alvo mais convidativo do mapa — não se defende, não contra-ataca —, então quase
+  // toda guerra acaba sendo contra ele; e como a paz precisa dos dois, essas guerras nunca
+  // terminariam. O resultado era o mapa inteiro travado numa guerra eterna com Atenas: 6
+  // guerras declaradas e 1 paz em 100 turnos. Um jogador de verdade assina.
+  for (const inimigo of c.guerrasDe('atenas')) {
+    if (!poderesDaIa(c).includes(inimigo)) continue;
+    if (querPaz(c, inimigo, 'atenas', estiloDe(ia, inimigo), ajustes.combate)) {
+      c.fazerPaz(inimigo, 'atenas');
+      pazes += 2;
+    }
+  }
   ameacados += poderesDaIa(c).filter((id) => estaAmeacado(c, id)).length;
   const antesDaRodada = c.provinciasDe('atenas').length;
+  // ⚠️ O jogador é o controle e não decide nada — mas a capital caída TRAVA a virada, e a
+  // escolha da nova é dele por regra. O banco reassenta na primeira terra que sobrou para a
+  // partida continuar; sem isto, o turno em que a IA toma Atenas é o último turno medido.
+  if (c.capitalPerdida('atenas') && c.provinciasDe('atenas').length > 0) {
+    c.mudarCapital([...c.provinciasDe('atenas')].sort()[0]!);
+  }
   c.passarTurno();
+  if (c.rodada.conquistas.length > 0 && conquistas === 0) primeiraConquista = turno;
+  conquistas += c.rodada.conquistas.length;
+  cercoTurnos += c.cercos().length;
+  emGuerraTurnos += poderesDaIa(c).filter((id) => c.guerrasDe(id).length > 0).length;
   tomadas += Math.max(0, c.provinciasDe('atenas').length - antesDaRodada);
   if (c.fome.provincias.length > 0) turnosComFome += 1;
   if (c.fome.tropas.length > 0) tropaComFome += 1;
@@ -178,6 +217,33 @@ console.log(`\n  turnos com fome em algum lugar: ${turnosComFome}`);
 console.log(`  poder-turnos com o cofre negativo: ${quebrados}`);
 console.log(`  turnos com a TROPA passando fome: ${tropaComFome}`);
 console.log(`  homens em armas no mapa: ${n(emArmas)}`);
+console.log(`
+  ── A GUERRA ──`);
+console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pazes / 2}`);
+// ⚠️ Zero aqui quer dizer que a diplomacia virou uma paz eterna, que é o mapa parado de outro
+// jeito. O número saudável é a maior parte dos poderes em paz e alguns em guerra o tempo todo.
+console.log(
+  `  poder-turnos em guerra: ${emGuerraTurnos} de ${TURNOS * 17} (${((100 * emGuerraTurnos) / (TURNOS * 17)).toFixed(0)}%)`,
+);
+console.log(`  marchas que a IA ordenou sobre terra alheia: ${marchas}`);
+console.log(
+  `  províncias que mudaram de dono: ${conquistas} (${(conquistas / TURNOS).toFixed(2)} por turno)`,
+);
+// ⚠️ Cerco é a metade da guerra que a IA só aprendeu na segunda volta. Zero aqui quer dizer que
+// ela voltou a conhecer um golpe só — tomar hoje ou desistir.
+console.log(`  cercos em pé, somados por turno: ${cercoTurnos}`);
+console.log(`  primeira conquista no turno: ${conquistas > 0 ? primeiraConquista : '—'}`);
+console.log(
+  `  poderes que perderam tudo: ${poderes.filter((id) => c.provinciasDe(id).length === 0).length} de ${poderes.length}`,
+);
+const maiorReino = [...poderes].sort(
+  (a, b) => c.provinciasDe(b).length - c.provinciasDe(a).length,
+)[0];
+if (maiorReino !== undefined) {
+  console.log(
+    `  maior reino: ${maiorReino} com ${c.provinciasDe(maiorReino).length} províncias (começou com ${cresceu.get(maiorReino) ?? 0})`,
+  );
+}
 if (INVADIR) {
   const vivos = poderes.filter((id) => id !== 'atenas' && c.provinciasDe(id).length > 0);
   console.log(`

@@ -18,8 +18,8 @@
  * ordem de grandeza no tamanho.
  *
  * ⚠️ **Corrupção é consequência, nunca recurso.** Não há barra para administrá-la nem
- * número para comprar de volta: quem a muda é mudar a capital — e, no futuro, Ágora e
- * estrada. Cada sistema novo entra NESTA conta em vez de inventar o próprio modificador.
+ * número para comprar de volta: capital, Ágora e Estrada mudam as parcelas da conta. Cada
+ * sistema novo entra NESTA conta em vez de inventar o próprio modificador.
  */
 
 import type { Ajustes, Construcoes } from '@/dados/esquema';

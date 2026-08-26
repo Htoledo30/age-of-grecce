@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { estiloDe } from '../../src/ia/estilo';
 import { defesasEscolhidas } from '../../src/ia/guerra/defender';
 import { levaEscolhida } from '../../src/ia/guerra/recrutar';
-import { jogarIA, poderesDaIa } from '../../src/ia/ia';
+import { poderesDaIa } from '../../src/ia/ia';
 import { ameacasDe, estaAmeacado, forcaTotalDe } from '../../src/ia/percepcao/ameaca';
-import { ajustes, ia, novaCampanha } from '../apoio/mundo';
+import { assaltosMaduros, ataquesEscolhidos } from '../../src/ia/guerra/marchar';
+import { oportunidadesDe } from '../../src/ia/percepcao/oportunidade';
+import { ajustes, correrIA, ia, novaCampanha } from '../apoio/mundo';
 
 const nova = (jogador = 'atenas') => {
   const c = novaCampanha();
@@ -14,10 +16,25 @@ const nova = (jogador = 'atenas') => {
 };
 
 /** Roda `turnos` viradas com a IA jogando. O jogador fica parado, como o controle. */
-const correr = (c: ReturnType<typeof nova>, turnos: number) => {
-  for (let i = 0; i < turnos; i++) {
-    jogarIA(c, ia, ajustes);
-    c.passarTurno();
+const correr = (c: ReturnType<typeof nova>, turnos: number) => correrIA(c, turnos);
+
+const guerreiro = () => estiloDe(ia, 'tebas');
+const batalha = ajustes.combate.batalha;
+const combate = ajustes.combate;
+const semOrdens = new Set<string>();
+
+/**
+ * Declara guerra a todo o mapa simulado.
+ *
+ * ⚠️ **Os testes de ATAQUE falam de ataque.** Desde a diplomacia, `ataquesEscolhidos` só olha
+ * para quem já está em guerra — e sem isto cada cenário aqui teria uma linha de tratado no
+ * começo dizendo a mesma coisa. Quem decide DECLARAR tem testes próprios, em
+ * `testes/diplomacia.test.ts`.
+ */
+const emGuerraComTodos = (c: ReturnType<typeof nova>, poder: string) => {
+  for (const provincia of c.provinciasSimuladas) {
+    const dono = c.donoDe(provincia);
+    if (dono !== poder && !c.emGuerra(dono, poder)) c.declararGuerra(dono, poder);
   }
   return c;
 };
@@ -97,18 +114,198 @@ describe('a IA defende, e só defende', () => {
     expect(ordens[0]).toMatchObject({ destino: alvo, tipo: 'socorro', homens: 800 });
   });
 
-  it('⚠️ NENHUMA hoste pisa em terra alheia: atacar é a etapa 3', () => {
-    // A regra dura desta etapa, e a que impede a etapa 2 de virar a etapa 3 por acidente —
-    // que é o tipo de coisa que ninguém depura depois, porque o mapa inteiro se mexe de uma
-    // vez. Cem turnos de IA e o dono de cada terra continua sendo quem era.
+});
+
+describe('a IA ataca — a etapa 3', () => {
+  it('o mapa muda de dono: cem turnos e alguém cresceu', () => {
+    // ⚠️ **Este teste era o contrário até a etapa 3.** Ele guardava a regra dura da etapa 2 —
+    // *"nenhuma hoste pisa em terra alheia"* —, e virá-lo do avesso é o que marca a passagem: o
+    // que antes provava que o mapa não se mexia agora prova que ele se mexe.
     const c = nova('atenas');
-    const donosAntes = new Map(
-      c.provinciasSimuladas.map((id) => [id, c.donoDe(id)] as const),
-    );
+    const antes = new Map(c.provinciasSimuladas.map((id) => [id, c.donoDe(id)] as const));
     correr(c, 100);
-    for (const [provincia, dono] of donosAntes) {
+    const mudaram = [...antes].filter(([id, dono]) => c.donoDe(id) !== dono);
+    expect(mudaram.length).toBeGreaterThan(0);
+  });
+
+  it('⚠️ e NÃO come as províncias sem ficha: Esparta não é conquista, é passeio', () => {
+    // Das 196 desenhadas, 25 são simuladas. As outras 171 não têm população e portanto não têm
+    // milícia: caem no primeiro soldado. Uma IA solta nelas dobraria de tamanho em cinco turnos
+    // sem levar uma batalha, e o teatro desenhado afundaria num mapa de terra grátis.
+    const c = nova('atenas');
+    const simuladas = new Set(c.provinciasSimuladas);
+    const vazias = [...new Set(c.provinciasSimuladas.flatMap((id) => c.vizinhasDe(id)))].filter(
+      (id) => !simuladas.has(id),
+    );
+    expect(vazias.length).toBeGreaterThan(0);
+    const antes = new Map(vazias.map((id) => [id, c.donoDe(id)] as const));
+    correr(c, 60);
+    for (const [provincia, dono] of antes) {
       expect(`${provincia}: ${c.donoDe(provincia)}`).toBe(`${provincia}: ${dono}`);
     }
+  });
+
+  it('com guerra na porta ela não sai de casa', () => {
+    // A hoste que sairia para atacar é a mesma que segura a fronteira. Não é timidez: as ordens
+    // são simultâneas, e trocar de província com o invasor entrega uma terra pronta por uma que
+    // ainda vai ferver.
+    const livre = emGuerraComTodos(nova('atenas'), 'tebas');
+    livre.plantarHoste('tebas', 'tebas', 4000);
+    expect(ataquesEscolhidos(livre, 'tebas', guerreiro(), combate, semOrdens).length)
+      .toBeGreaterThan(0);
+
+    // O mesmo tabuleiro, com um exército alheio em cima de uma terra dela.
+    const ameacado = emGuerraComTodos(nova('atenas'), 'tebas');
+    ameacado.plantarHoste('tebas', 'tebas', 4000);
+    ameacado.plantarHoste('tanagra', 'megara', 500);
+    expect(ataquesEscolhidos(ameacado, 'tebas', guerreiro(), combate, semOrdens)).toHaveLength(0);
+  });
+
+  it('a guarda de casa não vira exército de invasão', () => {
+    // ⚠️ Medido sem este freio: dezessete poderes olhavam a milícia do vizinho no turno 1, viam
+    // que ganhavam, e marchavam TODOS ao mesmo tempo — cinco conquistas no primeiro turno e a
+    // capital de Atenas caindo no terceiro. Nenhum estava errado sobre a batalha; todos estavam
+    // errados sobre a casa que deixavam.
+    const c = emGuerraComTodos(nova('atenas'), 'tebas');
+    c.plantarHoste('tebas', 'tebas', 4000);
+    const estilo = guerreiro();
+    const ordens = ataquesEscolhidos(c, 'tebas', estilo, combate, semOrdens);
+    const emCampanha = ordens.reduce((soma, o) => soma + o.homens, 0);
+    expect(ordens.length).toBeGreaterThan(0);
+    expect(emCampanha).toBeLessThanOrEqual(4000 * estilo.fracaoQueMarcha);
+    // E o que não marchou continua em casa: a ordem é de um DESTACAMENTO.
+    expect(emCampanha).toBeLessThan(4000);
+  });
+
+  it('não marcha sobre cidade que ela não toma, por mais que a queira', () => {
+    // Ganhar a batalha de campo não é tomar a praça: depois do choque vem a muralha, e ela é
+    // subida com o que SOBROU. Uma IA que parasse na primeira conta sentaria para sempre.
+    const c = nova('atenas');
+    c.plantarHoste('tebas', 'tebas', 300);
+    for (const ordem of ataquesEscolhidos(c, 'tebas', guerreiro(), combate, semOrdens)) {
+      const milicia = c.miliciaEm(ordem.destino);
+      expect(`${ordem.destino}: ${milicia < ordem.homens}`).toBe(`${ordem.destino}: true`);
+    }
+  });
+
+  it('o cerco dela vira assalto quando a muralha deixa — senão nunca terminaria', () => {
+    // Sentar NUNCA toma a praça, e a hoste sentada não recebe ordem de marcha nenhuma. Sem esta
+    // decisão o cerco da IA seria a estátua que Henrique já viu na revolta.
+    const c = nova('atenas');
+    c.plantarHoste('tebas', 'tebas', 6000);
+    const sitiante = c.hostesEm('tebas').find((h) => h.poder === 'tebas');
+    // Plateia não tem muralha: o assalto já poderia ser hoje, e mesmo assim ela SENTOU.
+    c.declararGuerra('plateia', 'tebas');
+    c.ordenarMarcha(sitiante!.id, 'plateia', 6000, 'tebas', 'sitiar');
+    c.passarTurno();
+    expect(c.cercoEm('plateia')).toMatchObject({ sitiante: 'tebas', postura: 'sitiar' });
+    expect(assaltosMaduros(c, 'tebas', guerreiro(), batalha)).toContain('plateia');
+    // ⚠️ **Com exército alheio de pé ali, a decisão continua sendo dela — e é a única saída.**
+    // A hoste sentada não recebe ordem de marcha, então trocar a postura é a ÚNICA forma de
+    // engajar o defensor: a primeira versão pulava esses cercos e os dois ficavam acampados lado
+    // a lado para sempre. Contra uma guarnição pequena ela vai.
+    c.plantarHoste('plateia', 'plateia', 400);
+    expect(assaltosMaduros(c, 'tebas', guerreiro(), batalha)).toContain('plateia');
+    // Contra um exército que a esmaga, não: perder o campo é perder o cerco junto.
+    c.plantarHoste('plateia', 'plateia', 40_000);
+    expect(assaltosMaduros(c, 'tebas', guerreiro(), batalha)).not.toContain('plateia');
+  });
+
+  it('quando a muralha barra o assalto, ela SENTA em vez de desistir', () => {
+    // ⚠️ **Sem esta jogada ela conhecia um golpe só, e por isso parecia tímida.** Medido antes:
+    // 7 turnos de cerco no mapa inteiro em 100 turnos, com dezessete poderes em guerra com todo
+    // mundo. Cidade murada exige rodadas de cerco antes de qualquer assalto — quem desiste
+    // diante dela nunca a toma.
+    const c = nova('atenas');
+    // Tebas fica com tudo em volta menos Tânagra, que é murada desde 700 a.C.
+    for (const id of ['calcis', 'opunte', 'plateia', 'tespias']) c.trocarDono(id, 'tebas');
+    emGuerraComTodos(c, 'tebas');
+    c.plantarHoste('tebas', 'tebas', 1200);
+    const ordens = ataquesEscolhidos(c, 'tebas', guerreiro(), combate, semOrdens);
+    expect(ordens).toHaveLength(1);
+    expect(ordens[0]).toMatchObject({ destino: 'tanagra', postura: 'sitiar' });
+  });
+
+  it('mas não senta com menos gente do que a praça tem em pé', () => {
+    // ⚠️ **A estátua que isto impede foi medida.** Sem esta linha a IA acampava com 142 homens
+    // diante dos 415 milicianos de Atenas — e continuava lá no turno 59. A fome do cerco derruba
+    // 1% da população por virada: a conta só viraria depois de cento e cinquenta turnos. Três
+    // cercos desses consumiam a fatia que podia marchar do mapa inteiro, e o resultado foi **3
+    // conquistas em 100 turnos**: a IA ficou MENOS agressiva por ter aprendido a sentar.
+    const c = emGuerraComTodos(nova('megara'), 'eleusis');
+    c.plantarHoste('eleusis', 'eleusis', 160);
+    expect(c.miliciaEm('atenas')).toBeGreaterThan(160);
+    // Ela pode achar outra terra que caia hoje — o que não pode é ACAMPAR diante de Atenas.
+    const destinos = ataquesEscolhidos(
+      c,
+      'eleusis',
+      estiloDe(ia, 'eleusis'),
+      combate,
+      semOrdens,
+    ).map((o) => o.destino);
+    expect(destinos).not.toContain('atenas');
+  });
+
+  it('e não abre cerco que a renda não paga', () => {
+    // Homem em terra alheia custa a taxa de campanha — três vezes a de casa — e um cerco não tem
+    // fim marcado. Exército parado diante de um muro sem ouro para pagá-lo é a mesma estátua,
+    // com o agravante de sangrar o reino inteiro junto.
+    const comFolga = nova('atenas');
+    for (const id of ['calcis', 'opunte', 'plateia', 'tespias']) comFolga.trocarDono(id, 'tebas');
+    emGuerraComTodos(comFolga, 'tebas');
+    comFolga.plantarHoste('tebas', 'tebas', 1200);
+    expect(
+      ataquesEscolhidos(comFolga, 'tebas', guerreiro(), combate, semOrdens).map((o) => o.destino),
+    ).toContain('tanagra');
+
+    // O mesmo cerco, com um exército que a renda não sustenta fora de casa.
+    const semFolga = nova('atenas');
+    for (const id of ['calcis', 'opunte', 'plateia', 'tespias']) semFolga.trocarDono(id, 'tebas');
+    emGuerraComTodos(semFolga, 'tebas');
+    semFolga.plantarHoste('tebas', 'tebas', 3000);
+    expect(
+      ataquesEscolhidos(semFolga, 'tebas', guerreiro(), combate, semOrdens).map((o) => o.destino),
+    ).not.toContain('tanagra');
+  });
+
+  it('a fatia que marcha desconta quem JÁ está fora de casa', () => {
+    // ⚠️ O furo da primeira versão: a fatia era recalculada do zero a cada virada, então um poder
+    // mandava 40% hoje, 40% amanhã e 40% depois — e acabava com o exército inteiro em terra
+    // alheia justamente porque existia um teto para isso não acontecer.
+    const c = emGuerraComTodos(nova('atenas'), 'tebas');
+    c.plantarHoste('tebas', 'tebas', 1000);
+    expect(ataquesEscolhidos(c, 'tebas', guerreiro(), combate, semOrdens).length).toBeGreaterThan(
+      0,
+    );
+    // A mesma força, mas já toda acampada em terra alheia: não sai mais ninguém.
+    const fora = emGuerraComTodos(nova('atenas'), 'tebas');
+    fora.plantarHoste('tanagra', 'tebas', 1000);
+    expect(ataquesEscolhidos(fora, 'tebas', guerreiro(), combate, semOrdens)).toEqual([]);
+  });
+
+  it('a mesma partida dá o mesmo mapa, duas vezes', () => {
+    // Determinismo de ponta a ponta: sem ele não há salvamento confiável nem regressão, e um
+    // defeito de guerra vira "às vezes acontece".
+    const mapaDe = (c: ReturnType<typeof nova>) =>
+      [...c.provinciasSimuladas]
+        .sort()
+        .map((id) => `${id}:${c.donoDe(id)}`)
+        .join(' ');
+    expect(mapaDe(correr(nova('atenas'), 40))).toBe(mapaDe(correr(nova('atenas'), 40)));
+  });
+
+  it('o alvo é escolhido pelo VALOR, e o estilo muda o que vale', () => {
+    // A capital alheia não rende mais por ser capital: ela é o coração da rede de trocas do
+    // dono. Quanto isso vale é do estilo, e é o que separa o guerreiro do mercador.
+    const c = nova('atenas');
+    expect(oportunidadesDe(c, 'tebas').some((o) => o.capital)).toBe(true);
+    expect(estiloDe(ia, 'tebas').valorDaCapital).toBeGreaterThan(
+      estiloDe(ia, 'corinto').valorDaCapital,
+    );
+    // E o mercador exige muito mais vantagem antes de assinar uma guerra do que o guerreiro.
+    expect(estiloDe(ia, 'corinto').vantagemParaDeclarar).toBeGreaterThan(
+      estiloDe(ia, 'tebas').vantagemParaDeclarar,
+    );
   });
 });
 
@@ -146,16 +343,29 @@ describe('em paz é guarda; em guerra é exército', () => {
     expect(estaAmeacado(c, 'tebas')).toBe(false);
   });
 
-  it('exército alheio na minha terra, ou em campanha na porta dela, é ameaça', () => {
+  it('exército INIMIGO na minha terra, ou em campanha na porta dela, é ameaça', () => {
+    // ⚠️ **INIMIGO, e não "alheio": desde a diplomacia as duas primeiras regras exigem guerra
+    // declarada.** Sem a distinção, o exército de um vizinho brigando com um TERCEIRO na minha
+    // fronteira me deixava permanentemente ameaçado — e a IA não sai de casa enquanto está.
+    // Medido no turno 151 de uma partida: Tebas, com 13.167 homens, não atacava uma cidade de
+    // 185 milicianos porque um vizinho em paz com ela estava em campanha do outro lado da
+    // divisa.
     const naMinhaTerra = nova('atenas');
     naMinhaTerra.plantarHoste('tebas', 'atenas', 500);
+    expect(estaAmeacado(naMinhaTerra, 'tebas')).toBe(false);
+    naMinhaTerra.declararGuerra('tebas', 'atenas');
     expect(estaAmeacado(naMinhaTerra, 'tebas')).toBe(true);
 
-    // Fora de casa, na porta: alguém em campanha, e o próximo passo pode ser aqui.
+    // Fora de casa, na porta: alguém em campanha CONTRA MIM, e o próximo passo pode ser aqui.
     const naPorta = nova('atenas');
     naPorta.trocarDono('tanagra', 'atenas');
     naPorta.plantarHoste('tanagra', 'megara', 500);
+    // Tebas com guarda de sobra: assim a terceira regra — "juntou mais gente do que eu tenho no
+    // mundo" — fica de fora, e o que este caso mede é só a campanha em curso na porta.
+    naPorta.plantarHoste('tebas', 'tebas', 1200);
     expect(naPorta.donoDe('tanagra')).not.toBe('megara');
+    expect(estaAmeacado(naPorta, 'tebas')).toBe(false);
+    naPorta.declararGuerra('tebas', 'megara');
     expect(estaAmeacado(naPorta, 'tebas')).toBe(true);
   });
 
@@ -168,6 +378,7 @@ describe('em paz é guarda; em guerra é exército', () => {
 
     const naGuerra = nova('atenas');
     naGuerra.plantarHoste('tebas', 'atenas', 500);
+    naGuerra.declararGuerra('tebas', 'atenas');
     const exercito = levaEscolhida(naGuerra, 'tebas', estilo, ajustes);
 
     expect(guarda).not.toBeNull();
@@ -220,6 +431,7 @@ describe('os buracos que a auditoria apontou', () => {
       // O cerco tem de ser DE VERDADE: sentar é o que cria o estado que a surtida pergunta.
       c.plantarHoste('eleusis', 'megara', 500, arma);
       const sitiante = c.hostesEm('eleusis').find((h) => h.poder === 'megara');
+      c.declararGuerra('atenas', 'megara');
       c.ordenarMarcha(sitiante!.id, 'atenas', 500, 'megara', 'sitiar');
       c.passarTurno();
       expect(c.cercoEm('atenas')).toBeDefined();

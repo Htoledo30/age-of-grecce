@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * O cerco visto de fora: escolher a postura, ver a cidade resistir, trocar de ideia.
@@ -21,6 +22,7 @@ interface Ganchos {
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
+  declararGuerra: (contra: string, porPoder?: string) => void;
   recrutar: (idProvincia: string, homens: number) => void;
   donoDe: (idProvincia: string) => string;
   forcaEm: (idProvincia: string, idPoder?: string) => number;
@@ -59,6 +61,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
     i.recrutar('atenas', 700);
     i.passarTurno(); // a leva leva uma rodada para virar hoste
   });
+  await fecharBatalhas(page);
 
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await page.getByRole('button', { name: 'Mover' }).click();
@@ -150,6 +153,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
     i.recrutar('atenas', 900);
     i.passarTurno();
   });
+  await fecharBatalhas(page);
 
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await page.getByRole('button', { name: 'Mover' }).click();
@@ -218,9 +222,15 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
     // Elêusis marcha sobre Atenas e SENTA: é o inimigo quem escolhe não lutar.
     const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
     if (!deles) throw new Error('Elêusis devia começar com guarnição');
+    // ⚠️ A guerra que a marcha passou a exigir. Este teste é de INTERFACE — o que ele guarda é
+    // o painel, o marcador e a ordem —, e a diplomacia tem os testes dela em
+    // `testes/diplomacia.test.ts`. Sem esta linha, a ordem seria recusada e o teste morreria
+    // falando de outra coisa.
+    i.declararGuerra('eleusis');
     i.ordenarMarcha(deles.id, 'atenas', 500, 'eleusis', 'sitiar');
     i.passarTurno();
   });
+  await fecharBatalhas(page);
 
   // A marcha é animada, e peça em movimento não aceita clique.
   const minha = page.locator('.hostes__marca[data-provincia="atenas"][data-minha="sim"]');

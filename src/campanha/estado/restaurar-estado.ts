@@ -54,4 +54,6 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
     Object.entries(salvo.obras).map(([id, o]) => [id, { ...o }]),
   );
   estado.revoltas = { ...salvo.revoltas };
+  estado.guerras = { ...salvo.guerras };
+  estado.tregoas = { ...salvo.tregoas };
 }

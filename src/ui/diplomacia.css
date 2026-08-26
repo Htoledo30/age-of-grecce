@@ -1,0 +1,170 @@
+/* A janela da diplomacia: própria, e não uma aba do Governo.
+   O Governo responde "como o reino se sustenta"; paz e guerra não são contabilidade — são a
+   decisão que abre o resto do jogo, e por isso têm botão próprio na barra. */
+.diplomacia {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ui-overlay);
+  backdrop-filter: blur(4px) saturate(0.7);
+}
+.diplomacia__janela {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 900px;
+  max-height: 760px;
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: var(--ui-fundo-elevado);
+  color: var(--ui-texto);
+  box-shadow: 0 28px 80px var(--ui-sombra);
+}
+.diplomacia__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.diplomacia__titulo {
+  font-family: var(--fonte-titulo);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.diplomacia__fechar {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
+  font-size: 22px;
+  cursor: pointer;
+}
+.diplomacia__fechar:hover {
+  border-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__conteudo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px 28px 26px;
+}
+.diplomacia__resumo {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+
+/* ⚠️ Lista à esquerda, dossiê à direita: a pergunta do jogador é sempre "o que eu faço com
+   Corinto?" — reino primeiro, ação depois. Cada ação nova é uma LINHA no painel da direita,
+   e não mais uma coluna numa tabela que já teria oito. */
+.diplomacia__colunas {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 22px;
+  min-height: 0;
+}
+.diplomacia__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  padding-right: 4px;
+  border-right: 1px solid var(--ui-borda-fraca);
+}
+.diplomacia__nome {
+  font: inherit;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-1);
+  background: transparent;
+  color: var(--ui-texto-fraco);
+  cursor: pointer;
+}
+.diplomacia__nome:hover {
+  color: var(--ui-texto);
+  background: var(--ui-fundo-suave);
+}
+.diplomacia__nome[data-escolhido='sim'] {
+  border-color: var(--ui-borda-fraca);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-bronze-claro);
+}
+/* A guerra fica visível na lista: o jogador varre e vê contra quem está sem ler nome nenhum. */
+.diplomacia__nome[data-relacao='guerra'] {
+  border-left: 3px solid var(--ui-sangue, #b4413a);
+}
+.diplomacia__dossie {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.diplomacia__reino {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.diplomacia__relacao {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ui-texto-fraco);
+}
+.diplomacia__relacao[data-relacao='guerra'] {
+  color: var(--ui-sangue-claro, #d98b83);
+}
+.diplomacia__fatos {
+  margin: 10px 0 20px;
+  font-size: 13px;
+  color: var(--ui-texto-tenue);
+}
+/* Uma ação por linha, e não lado a lado: é assim que a segunda, a terceira e a oitava entram
+   sem nada ser redesenhado. */
+.diplomacia__acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.diplomacia__acao {
+  font: inherit;
+  color: inherit;
+  padding: 3px 12px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.diplomacia__acao:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__acao[data-acao='guerra'] {
+  border-color: var(--ui-perigo-borda, rgb(180 65 58 / 55%));
+}
+/* A trégua desabilita em vez de sumir com o botão: um controle que desaparece é um controle
+   que o jogador procura. O tooltip diz quantos turnos faltam. */
+.diplomacia__acao:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.diplomacia__aviso {
+  margin: 14px 0 0;
+  min-height: 1.2em;
+  font-size: 13px;
+  color: var(--ui-texto-fraco);
+}

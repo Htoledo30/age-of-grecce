@@ -60,6 +60,10 @@ export interface SituacaoDaOrdem {
   rota: readonly string[] | undefined;
   /** Já existe ordem registrada para esta hoste nesta rodada. */
   jaTemOrdem: boolean;
+  /** O destino é meu, ou é de alguém com quem estou em guerra. */
+  emGuerraComODono: boolean;
+  /** Como se chama o dono do destino, para a recusa dizer com quem falta guerra. */
+  nomeDoDono: string;
 }
 
 /**
@@ -90,6 +94,16 @@ export function avaliarOrdem(
   // reino alheio pra chegar do outro lado.
   if (!situacao.rota) {
     return { pode: false, motivo: `${nomeDoDestino} está longe demais para esta rodada` };
+  }
+
+  // ⚠️ **Marchar sobre terra alheia é ATO DE GUERRA, e o jogo passou a exigir que ela esteja
+  // declarada.** A recusa vem depois da distância de propósito: reclamar da paz com um vizinho
+  // que a hoste nem alcança faria o jogador declarar uma guerra inútil.
+  if (!situacao.emGuerraComODono) {
+    return {
+      pode: false,
+      motivo: `${situacao.nomeDoDono} não está em guerra com você — declare antes de marchar`,
+    };
   }
 
   if (!Number.isInteger(homens) || homens <= 0) {

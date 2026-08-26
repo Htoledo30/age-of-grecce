@@ -65,8 +65,8 @@ export function instalarInspecao(jogo: Jogo): void {
         forca: forcaDe(h),
       })),
     noExilio: (idPoder: string) => campanha.noExilio(idPoder),
-    // `porPoder` opcional: a ordem pertence ao dono da HOSTE, e é assim que se monta um
-    // inimigo no tabuleiro enquanto a IA não existe.
+    // `porPoder` opcional: a ordem pertence ao dono da HOSTE. A inspeção usa isto para
+    // montar cenários controlados com qualquer poder.
     ordenarMarcha: (
       idHoste: string,
       destino: string,
@@ -111,5 +111,10 @@ export function instalarInspecao(jogo: Jogo): void {
     // vista e testada antes de existir exército.
     conquistar: (idProvincia: string, idPoder: string) =>
       campanha.trocarDono(idProvincia, idPoder),
+    // Diplomacia: o teste de tela confere contra a REGRA, e não contra o que a tela desenhou.
+    emGuerra: (a: string, b: string) => campanha.emGuerra(a, b),
+    guerrasDe: (idPoder: string) => [...campanha.guerrasDe(idPoder)],
+    declararGuerra: (contra: string, porPoder?: string) =>
+      campanha.declararGuerra(contra, porPoder),
   };
 }

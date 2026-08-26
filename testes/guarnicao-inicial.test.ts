@@ -93,8 +93,8 @@ describe('o mapa abre EM PAZ: nenhuma província tem tropa', () => {
     c.plantarHoste('atenas', 'atenas', invasor);
     ordenar(c, 'atenas', 'eleusis', invasor, 'atenas', 'assaltar');
     c.passarTurno();
-    // É um passeio, e é assim de propósito até existir IA: a correção disto é a etapa 6,
-    // não tropa de enfeite no arquivo de dados.
+    // Sem defensor plantado neste cenário, a milícia é o único escudo; tropa inicial de
+    // enfeite não deve voltar ao arquivo de dados.
     expect(c.donoDe('eleusis')).toBe('atenas');
   });
 });

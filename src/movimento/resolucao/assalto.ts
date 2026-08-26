@@ -5,9 +5,13 @@
  * força combatida; não existe multiplicador defensivo escondido para desfazer.
  */
 
-import { resolverBatalha } from '@/combate/batalha';
-import { leves, porArma, valorEmCampo } from '@/combate/composicao';
-import { defesaNoAssalto, milicianosPerdidos } from '@/combate/cerco';
+import { porArma } from '@/combate/composicao';
+import {
+  AGUENTO_DA_MURALHA,
+  choqueDoAssalto,
+  defesaNoAssalto,
+  milicianosPerdidos,
+} from '@/combate/cerco';
 import { forcaDe, retirar, terrasDe } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import type { EstadoDaResolucao, MundoDaResolucao, RelatorioEmConstrucao } from './relatorio';
@@ -23,37 +27,22 @@ export function assaltar(
   levantar: (provincia: string) => void,
 ): void {
   const dono = mundo.donoDe(provincia);
-  // ⚠️ **A muralha NÃO endurece o defensor, e é decisão de Henrique (25/08/2026).** Ela faz
-  // duas coisas, as duas reais e visíveis: põe mais gente em pé (`efeito.milicia`, ×1,25 /
-  // ×1,50 / ×1,75) e obriga o inimigo a sentar antes de assaltar. Um terceiro bônus foi
-  // medido e recusado por ele: no nível I mudava a conta de 250 para 260 atacantes — ruído
-  // — e no III de 340 para 410, encarecendo a guerra numa hora em que a IA ainda não existe.
-  //
-  // O campo continua aqui, valendo 1, porque é por ele que um muro entraria se um dia
-  // entrar: multiplicador de resistência VISÍVEL, aparecendo round a round na janela, nunca
-  // um número escondido dentro da força da defesa. Enquanto valer 1, a janela não desenha
-  // muro nenhum — e é assim que ela para de prometer o que o jogo não faz.
-  const aguentoDaMuralha = 1;
   const atacantes = forcaDe(hoste);
   const defesa = defesaNoAssalto(milicianos);
-  // ⚠️ **A milícia é sempre leve comum, e nunca melhora.** Ela não passa por Armaria, Quartel
-  // nem acampamento: é o lavrador com a lança que tinha em casa, o último escudo da cidade e
-  // não um exército de graça. Quem quer tropa boa levanta tropa boa e paga por ela.
   const naMuralha = [{ arma: 'leve' as const, qualidade: 1, homens: defesa }];
-  const ataca = valorEmCampo(hoste.contingentes, naMuralha, mundo.batalha);
-  // A muralha multiplica o aguento do defensor — e entra aqui, VISÍVEL, em vez de inflar o
-  // número de milicianos que a ficha mostra.
-  const defende = { ...leves(defesa), aguento: leves(defesa).aguento * aguentoDaMuralha };
-  // A cidade leva o empate: quem assalta precisa VENCER, e ser barrado já é derrota.
-  const choque = resolverBatalha(
-    { ...ataca, recuaAos: null },
-    { ...defende, recuaAos: null },
-    mundo.batalha,
-    'b',
-  );
+  // ⚠️ **A conta do assalto mora em `cerco.ts`, e não aqui.** Ela tem dois leitores: a rodada,
+  // que executa, e a IA, que precisa saber se vale a pena tentar. Escrita duas vezes, a que
+  // discordaria seria a da IA — justamente a que precisa estar certa para ela não jogar o
+  // exército contra uma muralha que não cai.
+  const choque = choqueDoAssalto(hoste.contingentes, milicianos, mundo.batalha);
   const ladosNoRelatorio = [
     { poder: hoste.poder, homens: atacantes, aguento: 1, composicao: porArma(hoste.contingentes) },
-    { poder: dono, homens: defesa, aguento: aguentoDaMuralha, composicao: porArma(naMuralha) },
+    {
+      poder: dono,
+      homens: defesa,
+      aguento: AGUENTO_DA_MURALHA,
+      composicao: porArma(naMuralha),
+    },
   ] as const;
 
   const perder = (perdidos: number): void => {

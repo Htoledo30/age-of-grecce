@@ -33,6 +33,19 @@ function idEm(c: Campanha, provincia: string, poder: string): string {
   return achadas[0]?.id ?? `sem-hoste:${provincia}`;
 }
 
+/**
+ * A guerra que a marcha passou a exigir, declarada em silêncio.
+ *
+ * ⚠️ **Para os testes de MOVIMENTO falarem de movimento.** Desde a diplomacia, marchar sobre
+ * terra alheia exige guerra declarada — e sem isto cada teste de rota, cerco, assalto e
+ * conquista teria uma linha de diplomacia no começo dizendo a mesma coisa. A regra em si tem
+ * testes próprios em `testes/diplomacia.test.ts`, que é onde ela deve ser guardada.
+ */
+function comGuerra(c: Campanha, destino: string, poder: string): void {
+  const dono = c.donoDe(destino);
+  if (dono !== poder && !c.emGuerra(dono, poder)) c.declararGuerra(dono, poder);
+}
+
 /** Manda a hoste deste poder marchar. O poder omitido é Atenas, o jogador dos testes. */
 export function ordenar(
   c: Campanha,
@@ -42,6 +55,7 @@ export function ordenar(
   poder = 'atenas',
   postura: Postura = 'sitiar',
 ): void {
+  comGuerra(c, destino, poder);
   c.ordenarMarcha(idEm(c, origem, poder), destino, homens, poder, postura);
 }
 
@@ -53,6 +67,7 @@ export function podeOrdenar(
   homens: number,
   poder = 'atenas',
 ) {
+  comGuerra(c, destino, poder);
   return c.podeOrdenarMarcha(idEm(c, origem, poder), destino, homens, poder);
 }
 

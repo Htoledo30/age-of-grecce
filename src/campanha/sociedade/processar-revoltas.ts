@@ -8,7 +8,8 @@
  */
 
 import type { NucleoDaCampanha } from '../nucleo';
-import { dominioEstrangeiroEm, populacaoDe } from '../provincia/consultas';
+import { declararGuerra } from '../diplomacia/relacoes';
+import { dominioEstrangeiroEm, donoDe, populacaoDe } from '../provincia/consultas';
 
 export interface Levante {
   provincia: string;
@@ -40,6 +41,10 @@ export function acenderPavioEm(
     nucleo.estado.revoltas[idProvincia] = pavio;
     return null;
   }
+  // ⚠️ **Pegar em armas contra o ocupante É declarar guerra a ele**, e sem esta linha o levante
+  // nasceria mudo: desde a diplomacia, duas forças só se enfrentam se houver guerra entre os
+  // poderes delas — os rebeldes acampariam na praça e o dono passaria ao lado sem tocá-los.
+  declararGuerra(nucleo, donoAntigo, donoDe(nucleo, idProvincia), true);
   const homens = Math.round(
     populacaoDe(nucleo, idProvincia) * nucleo.ajustes.felicidade.revolta.fracaoRebelde,
   );

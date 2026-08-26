@@ -7,6 +7,7 @@
 
 import type { VistaDoAlimento } from '@/ui/balanco-alimentar';
 import type { VistaDoBalanco } from '@/ui/balanco';
+import type { VistaDaDiplomacia } from '@/ui/diplomacia';
 import type { VistaDoMercado } from '@/ui/mercado';
 import type { Jogo } from '../contexto';
 
@@ -106,6 +107,50 @@ export function vistaDoAlimento(jogo: Jogo): VistaDoAlimento {
     saldo: balanco.saldo,
     categoria: balanco.categoria,
   };
+}
+
+/**
+ * A diplomacia: com quem o jogador faz fronteira, e o que ele é de cada um.
+ *
+ * ⚠️ **Só os vizinhos.** São 139 poderes no mapa, e uma lista com todos seria um catálogo onde
+ * o jogador procura um nome em vez de tomar uma decisão. Guerra só interessa contra quem a
+ * hoste alcança — e a vizinhança aqui é a mesma que ela enxerga.
+ */
+export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
+  const { campanha } = jogo;
+  const jogador = campanha.jogador;
+  if (!jogador) return { vizinhos: [], guerras: 0 };
+
+  const minhas = new Set(campanha.provinciasDe(jogador.id));
+  const fronteiras = new Map<string, string[]>();
+  for (const minha of [...minhas].sort()) {
+    for (const vizinha of campanha.vizinhasDe(minha)) {
+      if (minhas.has(vizinha)) continue;
+      const dono = campanha.donoDe(vizinha);
+      if (dono === jogador.id) continue;
+      const lista = fronteiras.get(dono) ?? [];
+      lista.push(campanha.nomeDe(vizinha));
+      fronteiras.set(dono, lista);
+    }
+  }
+
+  const vizinhos = [...fronteiras.keys()]
+    .map((id) => ({
+      id,
+      nome: campanha.poder(id).nome,
+      emGuerra: campanha.emGuerra(jogador.id, id),
+      // Em turnos que faltam, e não no turno em que ela vence: o jogador conta para frente.
+      tregoa: Math.max(0, (campanha.tregoaAte(jogador.id, id) ?? campanha.turno) - campanha.turno),
+      fronteira: (fronteiras.get(id) ?? []).sort(),
+      exercito: campanha
+        .hostes()
+        .filter((h) => h.poder === id)
+        .reduce((soma, h) => soma + campanha.forcaDaHoste(h.id), 0),
+    }))
+    // Guerra primeiro: é o que exige decisão. Depois por nome, que é como se procura na lista.
+    .sort((a, b) => Number(b.emGuerra) - Number(a.emGuerra) || a.nome.localeCompare(b.nome));
+
+  return { vizinhos, guerras: campanha.guerrasDe(jogador.id).length };
 }
 
 /**

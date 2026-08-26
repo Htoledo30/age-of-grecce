@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * A muralha vista pelo jogador: a cidade que dá para assaltar hoje e a que faz esperar.
@@ -14,6 +15,7 @@ interface Ganchos {
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
+  declararGuerra: (contra: string, porPoder?: string) => void;
   recrutar: (idProvincia: string, homens: number) => void;
   donoDe: (idProvincia: string) => string;
 }
@@ -35,7 +37,15 @@ async function comExercito(page: Page): Promise<void> {
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', 2000);
     i.passarTurno(); // a leva vira hoste
+    // ⚠️ A guerra que a marcha passou a exigir, declarada contra o mapa simulado inteiro. Este
+    // teste é de INTERFACE — o que ele guarda é o painel, o marcador e a ordem —, e a
+    // diplomacia tem os testes dela em `testes/diplomacia.test.ts`. Sem esta linha, a ordem
+    // seria recusada e o teste morreria falando de outra coisa.
+    for (const vizinho of ['eleusis', 'megara', 'tanagra', 'tebas', 'plateia']) {
+      i.declararGuerra(vizinho);
+    }
   });
+  await fecharBatalhas(page);
 }
 
 test('contra a cidade murada o assalto não é escolha do dia; contra a aberta é', async ({

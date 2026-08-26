@@ -55,6 +55,10 @@ export function mundoDe(
     },
     mortos,
     donoDe: (id: string) => donos[id] ?? 'ninguem',
+    // ⚠️ Neste tabuleiro todo mundo está em guerra com todo mundo, e é de propósito: estes
+    // testes são de ADJUDICAÇÃO — quem luta contra quem e em que ordem. A diplomacia tem os
+    // testes dela, e misturar as duas faria cada cenário daqui começar com um tratado.
+    emGuerra: () => true,
     trocarDono: (id: string, poder: string) => {
       donos[id] = poder;
     },

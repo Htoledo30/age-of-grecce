@@ -56,6 +56,7 @@ export function resolverRodada(
       mundo.donoDe,
       querLutar,
       choqueObrigado,
+      mundo.emGuerra,
     );
   }
   pousar(estado, forcas, relatorio.marchas);

@@ -21,10 +21,7 @@ function nova(): Campanha {
   return new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
 }
 
-/**
- * A capital ainda NÃO faz nada no jogo — ver `src/campanha/capitais.ts`. Estes testes
- * guardam o estado e a regra de derivação para o fluxo futuro de perda e substituição.
- */
+/** Guarda o estado, a derivação e o fluxo funcional de perda e substituição da capital. */
 
 describe('todo poder com província tem capital', () => {
   it('a província homônima manda, e é o caso comum', () => {

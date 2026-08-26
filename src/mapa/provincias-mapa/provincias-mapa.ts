@@ -134,8 +134,8 @@ export class ProvinciasMapa {
    *
    * **Idempotente de propósito.** Repintar as 196 custa menos que descobrir quais mudaram, e é
    * isso que faz retomar um salvamento produzir exatamente a mesma tela que jogar até ali
-   * produziria. Quando a IA entrar e vinte províncias trocarem de dono numa virada de turno,
-   * isto continua sendo uma passada e um envio.
+   * produziria. Mesmo quando várias províncias trocam de dono na mesma virada, isto continua
+   * sendo uma passada e um envio.
    */
   pintarDonos(donoDe: (idProvincia: string) => string): void {
     for (const id of this.idsDasProvincias) {

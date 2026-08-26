@@ -102,6 +102,12 @@ export function resolverCidades(
       continue;
     }
 
+    // ⚠️ **Exército parado em terra de quem não é inimigo não faz nada.** Acontece quando a paz
+    // é assinada com a tropa ainda acampada lá: sem esta linha ela continuaria sitiando, e uma
+    // cidade sem milícia CAIRIA para um poder em paz com o dono dela. A paz já levanta o cerco
+    // — isto é a segunda tranca, do lado da regra, porque é a regra que muda o mapa.
+    if (!mundo.emGuerra(hoste.poder, donoDe(provincia))) continue;
+
     const milicianos = mundo.miliciaDe(provincia);
     // Cidade sem quem feche o portão cai ao primeiro ingresso — mas exército do dono acampado
     // ali É quem fecha o portão, mesmo com a milícia zerada. Sem esta condição, sentar numa

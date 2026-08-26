@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * A marcha, de ponta a ponta: escolher a hoste, dizer quantos vão, pedir para mover, ver
@@ -15,6 +16,7 @@ interface Ganchos {
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
+  declararGuerra: (contra: string, porPoder?: string) => void;
   recrutar: (idProvincia: string, homens: number) => void;
   forcaEm: (idProvincia: string) => number;
   alcanceDaHoste: (idHoste: string) => string[];
@@ -39,7 +41,15 @@ async function comHoste(page: Page, homens: number) {
     for (let n = 0; n < 4; n++) i.passarTurno();
     i.recrutar('atenas', quantos);
     i.passarTurno(); // recrutas só recebem ordens a partir da rodada seguinte
+    // ⚠️ A guerra que a marcha passou a exigir, declarada contra o mapa simulado inteiro. Este
+    // teste é de INTERFACE — o que ele guarda é o painel, o marcador e a ordem —, e a
+    // diplomacia tem os testes dela em `testes/diplomacia.test.ts`. Sem esta linha, a ordem
+    // seria recusada e o teste morreria falando de outra coisa.
+    for (const vizinho of ['eleusis', 'megara', 'tanagra', 'tebas', 'plateia']) {
+      i.declararGuerra(vizinho);
+    }
   }, homens);
+  await fecharBatalhas(page);
   // ⚠️ Por província, e não `.hostes__marca` sozinho: Elêusis e Tanagra abrem a partida
   // com 500 homens cada, então há três peças no mapa desde o turno 1.
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
@@ -253,6 +263,7 @@ test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page
       y: caixa?.y ?? -1,
     };
   });
+  await fecharBatalhas(page);
 
   // Nas REGRAS ela já chegou: a chave do marcador é o destino. Na TELA ela ainda está em
   // Atenas, que é o ponto de onde a marcha parte.

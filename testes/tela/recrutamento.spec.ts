@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * O ciclo militar inteiro numa passada: o recrutamento básico tira a leva da
@@ -153,6 +154,7 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { forca: i.forcaEm('atenas'), formacao: i.formacaoEm('atenas') };
   });
+  await fecharBatalhas(page);
   expect(pronta).toEqual({ forca: 1000, formacao: undefined });
   await expect(formacao).toHaveAttribute('data-somente-formacao', 'nao');
   // A barra cobra a folha da tropa em pé: 1.000 homens à taxa de CASA, porque eles

@@ -12,6 +12,7 @@ import type { RecusaDeOrdem } from '@/movimento/ordens';
 import type { Postura } from '@/combate/cerco';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe } from '../provincia/consultas';
+import { emGuerra } from '../diplomacia/relacoes';
 import { ordemDaHoste, surtidaDe } from './ordens-da-rodada';
 
 /**
@@ -51,10 +52,18 @@ export function podeOrdenarMarcha(
     return { pode: false, motivo: 'a campanha ainda não começou' };
   }
   const hoste = nucleo.mobilizacao.hoste(idHoste);
+  const donoDoDestino = donoDe(nucleo, destino);
   return avaliarOrdem(hoste?.posicao ?? '', destino, nucleo.atlas.nomeDe(destino), homens, {
     forcaNaOrigem: nucleo.mobilizacao.forcaDaHoste(idHoste),
     minha: hoste?.poder === porPoder,
     rota: rotasDaHoste(nucleo, idHoste).get(destino),
+    // ⚠️ **É por aqui que a diplomacia entra no jogo.** Terra alheia só recebe marcha de quem
+    // está em guerra com o dono dela — e a porta é a mesma para o jogador e para a IA, que é o
+    // que garante que as duas joguem o mesmo jogo. Sem esta linha, "paz" seria um rótulo na
+    // aba de Diplomacia sem consequência nenhuma no mapa.
+    emGuerraComODono:
+      porPoder !== null && (donoDoDestino === porPoder || emGuerra(nucleo, porPoder, donoDoDestino)),
+    nomeDoDono: nucleo.atlas.poderes.find((p) => p.id === donoDoDestino)?.nome ?? donoDoDestino,
     // Surtir ocupa a rodada da hoste tanto quanto marchar: são a mesma decisão em dois
     // sentidos, e a recusa é a mesma frase de propósito.
     jaTemOrdem:

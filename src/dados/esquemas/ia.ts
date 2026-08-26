@@ -103,6 +103,69 @@ const Estilo = z.object({
    * `ajustes.batalha.armas`, que é o mesmo lugar de onde a batalha lê.
    */
   arma: z.enum(['melhor', 'barata']),
+  /**
+   * O que a CAPITAL alheia vale para ela, em moedas por turno, além da renda da província.
+   *
+   * A capital não rende mais que outra terra por ser capital — o que ela faz é ser o coração
+   * da rede de trocas do dono e o lugar de onde o reino se organiza. Perdê-la é um golpe que
+   * a renda da província não mede, e o estilo é quem diz o tamanho desse golpe: um guerreiro
+   * marcha por ela; um mercador prefere a terra do bem que lhe falta.
+   */
+  valorDaCapital: z.number(),
+  /**
+   * Com quanto do exército de pé ela topa terminar uma conquista, de 0 a 1.
+   *
+   * ⚠️ **É o freio do ataque, e sem ele a IA sangra até morrer ganhando.** Vencer não basta
+   * para atacar: uma vitória que custa nove décimos do exército entrega a província seguinte
+   * de graça a quem estiver olhando — e no turno seguinte ela não tem com que defender a que
+   * acabou de tomar. Para SOCORRER, ganhar continua bastando: lá a alternativa é perder a
+   * cidade.
+   *
+   * 0,3 é o guerreiro, que topa sair da batalha com um terço; 0,7 é o cauteloso, que só entra
+   * em briga que já está ganha.
+   */
+  sobraMinima: z.number().min(0).max(1),
+  /**
+   * Que fatia do próprio exército ela topa pôr em campanha longe de casa, de 0 a 1.
+   *
+   * ⚠️ **É o freio que faltava, e sem ele o mapa virava sopa no turno 3.** Medido: com as
+   * ordens simultâneas, dezessete poderes olhavam a milícia do vizinho no turno 1, viam que
+   * ganhavam, e marchavam TODOS ao mesmo tempo — cinco conquistas no primeiro turno, a
+   * capital de Atenas caindo no terceiro, e ninguém tendo levantado um exército de verdade.
+   * O erro não era achar que ganhava: era esvaziar a própria casa para ganhar.
+   *
+   * **Atacar é ficar mais fraco em casa.** Este número é a IA dizendo o quanto disso ela
+   * aceita. 0,7 é o guerreiro, que põe quase tudo na estrada; 0,35 é o cauteloso, que só sai
+   * com um exército de sobra. Com uma hoste só, a fatia é sempre 1 — e é por isso que ninguém
+   * marcha antes de conseguir sustentar o SEGUNDO exército, que é a mesma coisa que a
+   * história cobrava de uma cidade grega.
+   */
+  fracaoQueMarcha: z.number().min(0).max(1),
+  /**
+   * De quantas vezes o exército do vizinho ela precisa antes de DECLARAR guerra a ele.
+   *
+   * ⚠️ **Substituiu um preço fingido por conquista, e é melhor por ser verdadeiro.** O número
+   * anterior (`custoDaConquista`) existia só para segurar um mapa onde todo mundo estava em
+   * guerra com todo mundo desde o turno 1; medido, ele se comportava como cara ou coroa — a
+   * mesma direção do dial dava 20 conquistas numa configuração e 105 na vizinha. Este aqui
+   * pergunta uma coisa que existe: *declarar é assinar que o outro vem atrás; eu ganho essa?*
+   *
+   * 1,0 é o guerreiro, que topa uma guerra parelha; 2,0 é o cauteloso, que só entra com o
+   * dobro em armas. Vale sobre o exército do REINO inteiro do alvo, e não sobre a guarnição da
+   * província — quem declara passa a enfrentar tudo o que o outro tem.
+   */
+  vantagemParaDeclarar: z.number().min(0),
+  /**
+   * A partir de quantos turnos uma guerra é longa demais e ela assina a paz.
+   *
+   * ⚠️ **É o que faz as guerras EMPATADAS terminarem.** Duas cidades do mesmo tamanho, nenhuma
+   * capaz de tomar a outra, ficariam se olhando para sempre — as duas achando que ganham e
+   * nenhuma conseguindo —, e um mapa com todos os poderes travados numa guerra que não anda é
+   * o mesmo mapa parado de antes, só que pagando folha de campanha.
+   *
+   * O guerreiro aguenta mais tempo antes de desistir; o mercador quer voltar a vender.
+   */
+  guerraLonga: z.number().int().positive(),
 });
 
 export const Ia = z.object({

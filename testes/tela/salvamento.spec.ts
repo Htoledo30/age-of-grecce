@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * O salvamento visto pelo jogador: fechar o jogo no meio da partida e voltar exatamente
@@ -52,6 +53,7 @@ test('recarregar a página oferece continuar, e retomar devolve a mesma campanha
     i.passarTurno();
     return { ...i.campanha(), forca: i.forcaEm('atenas') };
   });
+  await fecharBatalhas(page);
   expect(antes.turno).toBe(3);
   expect(antes.forca).toBe(700);
 

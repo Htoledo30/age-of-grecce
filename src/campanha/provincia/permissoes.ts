@@ -57,7 +57,7 @@ export function podeMobilizarEm(
   return { pode: true, bonus: 0 };
 }
 
-/** Recrutamento é ação básica; Quartel melhorará a qualidade da leva no futuro. */
+/** Recrutamento leve é básico; prédios liberam armas e o Quartel carimba o treino da leva. */
 export function podeRecrutarEm(
   nucleo: NucleoDaCampanha,
   idProvincia: string,

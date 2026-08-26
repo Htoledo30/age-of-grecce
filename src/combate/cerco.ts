@@ -52,8 +52,13 @@
  */
 
 import type { Ajustes } from '@/dados/esquema';
+import { resolverBatalha } from './batalha';
+import type { ResultadoDaBatalha } from './batalha';
+import { leves, valorEmCampo } from './composicao';
+import type { GrupoEmCampo } from './composicao';
 
 type AjustesCerco = Ajustes['jogo']['combate']['cerco'];
+type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 
 /** O que o sitiante está fazendo neste turno. */
 export type Postura = 'assaltar' | 'sitiar';
@@ -134,4 +139,52 @@ export function milicianosPerdidos(
 ): number {
   const vivos = Math.min(milicianos, Math.floor(defesaRestante));
   return Math.max(0, milicianos - vivos);
+}
+
+/**
+ * O que a muralha acrescenta ao aguento de quem está atrás dela — **e é decisão de Henrique
+ * (25/08/2026) que ela não acrescente nada.**
+ *
+ * A Muralha faz duas coisas, as duas reais e visíveis: põe mais gente em pé
+ * (`efeito.milicia`, ×1,25 / ×1,50 / ×1,75) e obriga o inimigo a sentar antes de assaltar. Um
+ * terceiro bônus foi medido e recusado por ele: no nível I mudava a conta de 250 para 260
+ * atacantes — ruído — e no III de 340 para 410, encarecendo a guerra numa hora em que a IA
+ * ainda não existia.
+ *
+ * A constante continua aqui, valendo 1, porque é por ela que um muro entraria se um dia
+ * entrar: multiplicador de resistência VISÍVEL, aparecendo round a round na janela, nunca um
+ * número escondido dentro da força da defesa. Enquanto valer 1, a janela não desenha muro
+ * nenhum — e é assim que ela para de prometer o que o jogo não faz.
+ */
+export const AGUENTO_DA_MURALHA = 1;
+
+/**
+ * O choque do assalto: este exército contra a milícia desta cidade.
+ *
+ * ⚠️ **Vive aqui, e não dentro da resolução, porque tem DOIS leitores.** A rodada usa para
+ * executar o assalto; a IA usa para saber se vale a pena tentá-lo. Duas contas escritas à mão
+ * acabariam discordando — e a que discordasse seria a da IA, que é justamente a que precisa
+ * estar certa para ela não jogar o exército contra uma muralha que não cai.
+ *
+ * ⚠️ **A milícia é sempre leve comum, e nunca melhora.** Ela não passa por Armaria, Quartel
+ * nem acampamento: é o lavrador com a lança que tinha em casa, o último escudo da cidade e
+ * não um exército de graça.
+ *
+ * A cidade leva o empate: quem assalta precisa VENCER, e ser barrado já é derrota.
+ */
+export function choqueDoAssalto(
+  atacantes: readonly GrupoEmCampo[],
+  milicianos: number,
+  ajustes: AjustesDaBatalha,
+): ResultadoDaBatalha {
+  const defesa = defesaNoAssalto(milicianos);
+  const naMuralha = [{ arma: 'leve' as const, qualidade: 1, homens: defesa }];
+  const emCima = valorEmCampo(atacantes, naMuralha, ajustes);
+  const naoCede = leves(defesa);
+  return resolverBatalha(
+    { ...emCima, recuaAos: null },
+    { ...naoCede, aguento: naoCede.aguento * AGUENTO_DA_MURALHA, recuaAos: null },
+    ajustes,
+    'b',
+  );
 }

@@ -14,6 +14,7 @@ import { resolve } from 'node:path';
 
 import { Ajustes, Construcoes, Economia, Exercitos, Ia, Provincias } from '../../src/dados/esquema';
 import { Campanha } from '../../src/campanha/campanha';
+import { jogarIA } from '../../src/ia/ia';
 import { Atlas } from '../../src/mundo/atlas';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
@@ -33,4 +34,28 @@ export const atlas = new Atlas(provincias);
 
 export function novaCampanha(): Campanha {
   return new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
+}
+
+/**
+ * Roda `turnos` viradas com a IA jogando, e o jogador PARADO — o grupo de controle.
+ *
+ * ⚠️ **Reassenta a capital do jogador quando ela cai, e sem isto a etapa 3 trava a suíte.**
+ * Capital caída bloqueia a virada de propósito: escolher a nova é decisão do jogador, e o jogo
+ * não decide por ele. Só que num teste o jogador não decide nada — e desde que a IA passou a
+ * atacar, um jogador imóvel PERDE a capital, o que é a resposta certa do jogo e não um defeito.
+ */
+export function correrIA(campanha: Campanha, turnos: number): Campanha {
+  const jogador = campanha.jogador?.id;
+  for (let i = 0; i < turnos; i++) {
+    jogarIA(campanha, ia, ajustes);
+    if (
+      jogador !== undefined &&
+      campanha.capitalPerdida(jogador) &&
+      campanha.provinciasDe(jogador).length > 0
+    ) {
+      campanha.mudarCapital([...campanha.provinciasDe(jogador)].sort()[0]!);
+    }
+    campanha.passarTurno();
+  }
+  return campanha;
 }

@@ -55,8 +55,8 @@ export interface LadoNaBatalha extends ValorEmCampo {
    * exército**. A pergunta "aguento mais um round ou saio agora?" só existe porque as duas
    * coisas têm preços diferentes.
    *
-   * Quem preenche é quem chama: hoje ninguém preenche, e todo lado luta até quebrar. A janela
-   * de batalha é que vai pôr o botão na mão do jogador, e a IA, uma heurística.
+   * Quem preenche é quem chama. A ordem de marcha do jogador pode pedir recuo preventivo;
+   * `null` manda lutar até quebrar.
    */
   recuaAos: number | null;
 }
@@ -65,8 +65,8 @@ export interface LadoNaBatalha extends ValorEmCampo {
  * O que aconteceu num round. É isto que a janela reproduz.
  *
  * Sem `export` enquanto ninguém precisar do NOME: `ResultadoDaBatalha` já carrega a forma, e
- * o `codigo-morto` cobra tipo exportado que ninguém importa. A janela da fase 3 vai precisar
- * dele por nome, e aí ele sai daqui exportado.
+ * o `codigo-morto` cobra tipo exportado que ninguém importa. A janela consome os rounds pelo
+ * resultado público, sem precisar importar este nome.
  */
 interface RoundDaBatalha {
   /** Homens do lado A ao FIM deste round. */

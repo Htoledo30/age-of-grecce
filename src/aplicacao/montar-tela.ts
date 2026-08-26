@@ -24,6 +24,7 @@ import { Governo } from '@/ui/governo';
 import { HostesMapa } from '@/ui/hostes-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { MarchasMapa } from '@/ui/marchas-mapa';
+import { Diplomacia } from '@/ui/diplomacia';
 import { Mercado } from '@/ui/mercado';
 import { PainelFps } from '@/ui/painel-fps';
 import { PainelLateral } from '@/ui/painel-lateral';
@@ -91,6 +92,10 @@ export function montarTela(
   // não é de província (é nacional) nem da barra (é uma lista, não um número).
   const mercado = new Mercado();
   const governo = new Governo(ui, [balanco, balancoAlimentar, mercado]);
+  // ⚠️ **Janela própria, e não aba do Governo.** É a única tela que é PRÉ-REQUISITO de outra:
+  // sem guerra declarada a ordem de marcha recusa, e o jogador precisa de um lugar óbvio onde
+  // declarar. Decisão de Henrique.
+  const diplomacia = new Diplomacia(ui);
 
   return {
     ficha,
@@ -102,6 +107,7 @@ export function montarTela(
     balanco,
     balancoAlimentar,
     mercado,
+    diplomacia,
     cronica,
     batalha,
     inicio,

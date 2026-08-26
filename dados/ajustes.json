@@ -25,6 +25,7 @@
         }
       }
     },
+    "diplomacia": { "tregoaEmTurnos": 12 },
     "populacao": {
       "taxaNatural": 0.005,
       "faixas": [

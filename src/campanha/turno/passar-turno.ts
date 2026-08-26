@@ -31,6 +31,8 @@ import { processarObras } from './processar-obras';
 import { resolverMarchas } from './resolver-marchas';
 
 /** Vira o turno e devolve tudo o que virou notícia. */
+import { limparGuerrasMortas, limparTregoas } from '../diplomacia/relacoes';
+
 export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   const jogador = nucleo.estado.jogador;
   if (jogador === null) throw new Error('a campanha ainda não começou');
@@ -55,6 +57,13 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   nucleo.estado.ano = avancarAno(nucleo.estado.ano, nucleo.ajustes.anosPorTurno);
   nucleo.estado.turno += 1;
   nucleo.mobilizacao.concluirFormacoes(nucleo.estado.turno, (id) => donoDe(nucleo, id));
+  // Depois de o turno andar, e não antes: a trégua que vence NESTE turno já não segura mais.
+  // Sem esta limpeza o registro cresceria para sempre com pares que não significam mais nada.
+  limparTregoas(nucleo);
+  // E a guerra contra quem não existe mais acaba sozinha: ver `limparGuerrasMortas`.
+  limparGuerrasMortas(nucleo);
 
-  return { rodada, fome, quedasDeCapital, revoltas };
+  // ⚠️ A notícia diplomática NÃO nasce aqui: ela é anotada quando a guerra é declarada, antes
+  // de o turno virar. A fachada a carrega por cima desta lista — ver `Campanha.passarTurno`.
+  return { rodada, fome, quedasDeCapital, revoltas, diplomacia: [] };
 }

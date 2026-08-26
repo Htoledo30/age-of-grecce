@@ -23,16 +23,40 @@ Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos e 
 Ocidentais (Melos, Sifnos e Tera). As ilhas continuam desenhadas e clicáveis; qualquer
 pedaço seleciona a província do arquipélago. A costa e o terreno não foram alterados.
 
-**A IA existe, em duas etapas: ela cuida da economia e se defende.** Os 17 poderes jogáveis
-que não são o jogador constroem, decretam imposto, levantam tropa, socorrem terra ameaçada e
-fazem surtida — cada um com o estilo escrito em `dados/ia.json` (guerreiro, mercador,
-cauteloso, equilibrado). ⚠️ **Nenhuma hoste da IA pisa em terra alheia**: atacar é a etapa 3.
+**A IA entregue cuida da economia, se defende e ATACA.** Os 17 poderes jogáveis que não são o
+jogador constroem, decretam imposto, levantam tropa, socorrem terra ameaçada, fazem surtida,
+marcham sobre a vizinha que valorizam e que acreditam TOMAR, e **sentam na frente da cidade
+murada** que não cai hoje — cada um com o estilo escrito em `dados/ia.json` (guerreiro,
+mercador, cauteloso, equilibrado). "Tomar" e não "vencer": ela roda as mesmas funções da rodada
+para prever o choque de campo e depois o assalto à muralha, com o que sobrou do primeiro.
 Ela joga em `virarTurno`, ANTES de a rodada resolver, porque as ordens são simultâneas — e
-fica FORA de `passarTurno` porque é um jogador e não uma regra da campanha. `npm run partida`
-roda a coisa toda e conta o que aconteceu. Diplomacia e naval continuam ausentes. Save/load existe (a campanha salva sozinha a
-cada mudança e o menu oferece continuar), e a campanha tem começo e fim: vitória ao
+fica FORA de `passarTurno` porque é um jogador e não uma regra da campanha. A ordem dentro do
+turno é imposto, obra, leva, defesa, ataque: **uma ordem por hoste por rodada**, e a casa
+decide primeiro. `npm run partida` roda a coisa toda e conta o que aconteceu, inclusive marchas,
+cercos e quantas províncias mudaram de dono. Diplomacia e naval continuam ausentes.
+
+⚠️ **Sem diplomacia, os 18 poderes começam em guerra com todo mundo, e isso se vê.** Medido em
+100 turnos com todos na IA: 35 marchas sobre terra alheia, 25 províncias mudando de dono, 19
+turnos de cerco em pé, 8 poderes absorvidos, o maior reino saindo de 3 para 6 províncias, zero
+fome e zero cofre negativo. A guerra não para no meio da partida e ninguém dispara na frente.
+
+O ritmo vem de três números, todos em `dados/ia.json`: `fracaoQueMarcha` (que fatia do exército
+pode estar fora de casa — e ela desconta quem já está lá), `custoDaConquista` (o que uma terra
+tomada à força custa por turno enquanto não assenta) e `sobraMinima` (com quanto de exército ela
+topa terminar a briga). ⚠️ **São remendo no lugar da diplomacia, e mexer neles é loteria:** a
+resposta é caótica porque uma conquista cedo vira bola de neve — medido, andar na mesma direção
+de um dial deu 20 conquistas numa configuração e 105 na vizinha. O conserto de verdade é a
+diplomacia, e é o próximo item.
+
+⚠️ **E ela senta com trava, porque cerco DURA.** Só abre cerco quem tem mais gente do que a
+milícia da praça, quem ganharia do exército inteiro do dono se ele viesse socorrer, e quem tem
+renda para pagar a taxa de campanha — três vezes a de casa — sem fim marcado. Sem as três, a
+medição mostrou 142 homens acampados diante dos 415 milicianos de Atenas ainda no turno 59, e a
+IA ficando MENOS agressiva por ter aprendido a sentar. O que ela ainda não faz é **levantar um
+cerco que azedou**: isso é reação, e vem depois.
+Save/load existe (a campanha salva sozinha a cada mudança e o menu oferece continuar), e a campanha tem começo e fim: vitória ao
 dominar a Grécia central alcançável por terra, derrota ao deixar de existir. O que falta
-para a campanha completa do GDD é a IA mínima e a diplomacia necessária.
+para a campanha completa do GDD é a diplomacia necessária.
 
 ## O que o jogador consegue fazer
 
@@ -282,13 +306,10 @@ são preservadas na restauração.
 
 ### Guerra terrestre
 
-- **O mapa abre em paz.** `dados/exercitos.json` tem `guarnicoes` vazio de propósito e o
-  comentário do arquivo guarda o motivo: aquilo nasceu como andaime para a ausência de IA
-  (duas cidades, 1.000 homens), cresceu sozinho para onze cidades e 6.300 homens dentro da
-  autoria da 0.0.4, e passou a cobrar folha — Tebas abria em −42 por turno, Erétria em −16 e
-  Tanagra em −9, sangrando até desertar, enquanto Atenas, sem guarnição nenhuma, abria em
-  +702. O mecanismo de levantar guarnição por dados continua funcionando para cenários; o
-  arquivo é que está vazio. **Não repovoar sem Henrique pedir.**
+- **O mapa abre em paz.** `dados/exercitos.json` tem `guarnicoes` vazio de propósito. Cada
+  poder decide quanto recrutar durante a campanha e toda cidade já possui milícia local. O
+  mecanismo de hostes iniciais continua funcionando para cenários. **Não repovoar sem
+  Henrique pedir.**
 - **A folha militar tem duas taxas: casa e campanha** (`combate.manutencaoPorHomem.emCasa`
   e `.emCampanha`). Vale a de casa quando a hoste está em província do próprio poder;
   a de campanha em terra alheia, inclusive sitiando. O predicado vive na `Mobilizacao`,

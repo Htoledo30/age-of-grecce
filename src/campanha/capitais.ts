@@ -2,11 +2,11 @@
  * A capital de cada poder: o centro administrativo da campanha.
  *
  * O fluxo de perda existe: a capital conquistada obriga o JOGADOR a escolher outra antes
- * de passar o turno, e os demais poderes — que ainda não têm IA — reassentam a deles pela
- * mesma regra derivada da capital inicial, na virada. Poder sem chão fica sem capital.
+ * de passar o turno, e os demais poderes reassentam a deles automaticamente pela mesma
+ * regra derivada da capital inicial, na virada. Poder sem chão fica sem capital.
  *
- * Ela ainda não muda número nenhum; a corrupção por distância (etapa seguinte) é o
- * primeiro sistema que vai ler este campo de verdade.
+ * Corrupção por distância e circulação de mercadorias leem este campo: mover ou perder a
+ * capital muda a administração e as conexões do reino.
  */
 
 import type { Atlas } from '@/mundo/atlas';

@@ -28,7 +28,7 @@ export interface EstadoCampanha {
   ano: number;
   /** 0 na abertura; vira 1 quando o jogador escolhe um poder. */
   turno: number;
-  /** Tesouro do jogador. Vira uma tabela por poder quando a IA entrar. */
+  /** Compatibilidade de saves antigos que guardavam somente o tesouro do jogador. */
   /**
    * Moedas de cada poder, por id. **Todos os 139, não só o jogador.**
    *
@@ -140,11 +140,9 @@ export interface EstadoCampanha {
   /**
    * A capital de cada poder, por id de poder.
    *
-   * ⚠️ **Só o estado, por enquanto.** A capital ainda não faz nada: o fluxo de perdê-la e
-   * escolher outra ainda será criado. O campo existe agora porque vários
-   * sistemas futuros vão perguntar qual é — ineficiência administrativa, prioridade
-   * alimentar em escassez, revolta, comércio interno — e cada um inventar a própria
-   * resposta seria a mesma verdade em quatro lugares.
+   * Perder a capital obriga o jogador a escolher outra; os demais poderes reassentam a sua
+   * automaticamente. Corrupção por distância e circulação de mercadorias consultam este
+   * campo, mantendo uma única resposta para todo o jogo.
    *
    * Ver `capitais.ts` para a regra de derivação inicial.
    */
@@ -180,6 +178,26 @@ export interface EstadoCampanha {
    * clique.
    */
   obras: Record<string, Obra>;
+  /**
+   * Guerras em curso, pela chave do par de poderes, guardando o TURNO em que começaram.
+   *
+   * ⚠️ **Paz é a ausência de registro.** São 139 poderes: a tabela cheia seriam 9.591 pares,
+   * quase todos dizendo "nada acontece entre estes dois". Guardar só a exceção é a mesma
+   * escolha do nível de imposto, e pelo mesmo motivo — o padrão não precisa ser escrito para
+   * valer.
+   *
+   * O turno de início não é enfeite: é ele que responde "há quanto tempo esta guerra dura",
+   * que é o que a IA pergunta antes de propor paz.
+   */
+  guerras: Record<string, number>;
+  /**
+   * Tréguas, pela mesma chave, guardando o turno ATÉ o qual elas seguram.
+   *
+   * Existem para a paz significar alguma coisa: sem trégua, fazer as pazes e redeclarar na
+   * virada seguinte seria grátis, e a paz viraria uma pausa para respirar no meio do mesmo
+   * assalto.
+   */
+  tregoas: Record<string, number>;
 }
 
 /** Uma construção em andamento. */

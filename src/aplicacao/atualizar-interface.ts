@@ -7,7 +7,7 @@
  */
 
 import type { Jogo } from './contexto';
-import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDaDiplomacia, vistaDoMercado } from './vistas/governo';
 import {
   destinosDaMarcha,
   marcadoresDasHostes,
@@ -84,6 +84,7 @@ export function atualizarInterface(jogo: Jogo): void {
   if (doBalanco) tela.balanco.desenhar(doBalanco);
   tela.balancoAlimentar.desenhar(vistaDoAlimento(jogo));
   tela.mercado.desenhar(vistaDoMercado(jogo));
+  tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
 }
 
 /**

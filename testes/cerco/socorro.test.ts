@@ -46,7 +46,8 @@ describe('o socorro que chega de fora já chega lutando', () => {
     // assalto do sitiante virava cerco, sem nada ter sido lutado. Marcha para casa não
     // declara postura nenhuma.
     const c = eleusisSitiadaPorTanagra(3000);
-    c.mudarPostura('eleusis', 'assaltar');
+    // O sitiante é Tânagra, e só ele muda a postura do próprio cerco: o comando pede o poder.
+    c.mudarPostura('eleusis', 'assaltar', 'tanagra');
     c.plantarHoste('atenas', 'atenas', 100);
     ordenar(c, 'atenas', 'eleusis', 100, 'atenas');
     c.passarTurno();

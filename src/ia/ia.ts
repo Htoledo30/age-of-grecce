@@ -28,21 +28,35 @@
  * ## Onde ela está
  *
  * Etapas 1 e 2: **ela cuida da casa e se defende.** Constrói, decreta imposto, levanta tropa,
- * socorre terra ameaçada e faz surtida. ⚠️ **Nenhuma hoste pisa em terra alheia** — atacar é a
- * etapa 3. A ordem é assim de propósito: enquanto ela só reage, um erro aparece numa província
- * e não numa guerra em cascata pelo mapa inteiro.
+ * socorre terra ameaçada e faz surtida. Etapa 3: **ela ataca** — marcha sobre a terra alheia
+ * que vale mais e que ela acredita TOMAR, não só vencer. Ver `guerra/marchar.ts`.
  *
- * A ordem das decisões dentro do turno também é escrita: **imposto, obra, leva, defesa.** O
- * imposto muda a renda de hoje e a obra precisa saber com quanto conta; a leva precisa saber o
- * que sobrou do cofre depois da obra; e a defesa é a última porque ela move o que já existe.
+ * A ordem foi essa de propósito, e não por gosto de faseamento: enquanto ela só reagia, um erro
+ * aparecia numa província e não numa guerra em cascata pelo mapa inteiro. Cada defeito da etapa
+ * 2 foi encontrado num tabuleiro parado — e nenhum deles teria sido legível com dezessete
+ * poderes marchando ao mesmo tempo.
+ *
+ * A ordem das decisões dentro do turno também é escrita: **imposto, obra, leva, guerra, defesa,
+ * ataque — e a paz por último, num passo à parte.** O imposto muda a renda de hoje e a obra precisa saber com quanto conta; a leva
+ * precisa saber o que sobrou do cofre depois da obra; a defesa move o que já existe; e o ataque
+ * vem por último porque **é uma ordem por hoste por rodada** — quem já foi socorrer não marcha
+ * sobre o vizinho, e a casa decide primeiro.
  */
 
 import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
+import { guerraEscolhida } from './diplomacia/declarar';
+import { querPaz } from './diplomacia/paz';
 import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
 import { estiloDe } from './estilo';
 import { defesasEscolhidas } from './guerra/defender';
+import {
+  assaltosMaduros,
+  ataquesEscolhidos,
+  concentracoesEscolhidas,
+  retiradasEscolhidas,
+} from './guerra/marchar';
 import { levaEscolhida } from './guerra/recrutar';
 
 /** O que a IA fez num turno. Serve à ferramenta de partida e aos testes, não ao jogo. */
@@ -51,7 +65,14 @@ export interface LanceDaIa {
   obra: { provincia: string; construcao: string } | null;
   decretos: readonly { provincia: string; nivel: string }[];
   leva: { provincia: string; arma: string; homens: number } | null;
+  /** Contra quem ela declarou guerra nesta virada, se declarou. */
+  guerra: string | null;
   defesas: readonly { destino: string; homens: number; tipo: string }[];
+  ataques: readonly { destino: string; homens: number; postura: string; valor: number }[];
+  /** Com quem ela assinou a paz nesta virada. */
+  pazes: readonly string[];
+  /** Cercos dela que viraram assalto nesta virada. */
+  assaltos: readonly string[];
 }
 
 /**
@@ -67,7 +88,7 @@ export function jogarIA(
   dados: Ia,
   ajustes: Ajustes['jogo'],
 ): readonly LanceDaIa[] {
-  const lances: LanceDaIa[] = [];
+  const lances: (LanceDaIa & { pazes: readonly string[] })[] = [];
   for (const idPoder of poderesDaIa(campanha)) {
     const estilo = estiloDe(dados, idPoder);
 
@@ -86,23 +107,124 @@ export function jogarIA(
     const leva = levaEscolhida(campanha, idPoder, estilo, ajustes);
     if (leva) campanha.recrutar(leva.provincia, leva.homens, leva.arma, idPoder);
 
+    // Antes de tudo o que é militar: recolher quem ficou em terra que deixou de ser inimiga.
+    // Exército encalhado paga folha de campanha e ocupa o teto do que pode marchar — deixá-lo
+    // lá impediria este poder de atacar qualquer outro pelo resto da campanha.
+    const retiradas = retiradasEscolhidas(campanha, idPoder, new Set());
+    for (const ordem of retiradas) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+    }
+
+    // ⚠️ **A guerra é declarada ANTES da defesa e do ataque, e no mesmo turno em que se
+    // marcha.** As ordens são simultâneas: um aviso prévio de uma virada daria ao defensor um
+    // turno inteiro de vantagem sobre quem declarou, e o ataque de surpresa deixaria de
+    // existir. O que a declaração garante é aparecer na crônica e na aba de Diplomacia.
+    const guerra = guerraEscolhida(campanha, idPoder, estilo, ajustes.combate);
+    if (guerra !== null) campanha.declararGuerra(guerra, idPoder);
+
     // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
     // depois de virar hoste, no turno que vem.
-    const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha);
+    const jaMandadas = new Set(retiradas.map((r) => r.hoste));
+    const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha).filter(
+      (o) => !jaMandadas.has(o.hoste),
+    );
     for (const ordem of defesas) {
       if (ordem.tipo === 'surtida') campanha.surtir(ordem.hoste, idPoder);
       else campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
     }
+
+    // E o ataque depois da defesa, pelo mesmo motivo que a defesa veio depois da leva: uma
+    // ordem por hoste por rodada. Quem já foi socorrer não marcha sobre o vizinho, e a casa
+    // decide primeiro — não porque atacar valha menos, mas porque a hoste é a mesma.
+    const ataques = ataquesEscolhidos(
+      campanha,
+      idPoder,
+      estilo,
+      ajustes.combate,
+      new Set([...jaMandadas, ...defesas.map((d) => d.hoste)]),
+    );
+    for (const ordem of ataques) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura);
+    }
+
+    // E o que sobrou vai JUNTAR O EXÉRCITO. Depois do ataque de propósito: quem já marchou
+    // sobre o inimigo hoje tem trabalho feito; quem ficou é que precisa se ajuntar para o
+    // ataque de amanhã. Sem esta decisão a IA fica com seis mil homens espalhados em oito
+    // hostes e nenhuma delas toma uma cidade de duzentos milicianos.
+    const ocupadas = new Set([
+      ...jaMandadas,
+      ...defesas.map((d) => d.hoste),
+      ...ataques.map((a) => a.hoste),
+    ]);
+    const concentracoes = concentracoesEscolhidas(campanha, idPoder, estilo, ocupadas);
+    for (const ordem of concentracoes) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+    }
+
+    // ⚠️ Os cercos que já podem virar assalto, por último: a hoste sentada não recebe ordem de
+    // marcha, e sem esta linha o cerco da IA nunca terminaria — sitiar não toma a praça.
+    const assaltos = assaltosMaduros(campanha, idPoder, estilo, ajustes.combate.batalha);
+    for (const provincia of assaltos) campanha.mudarPostura(provincia, 'assaltar', idPoder);
 
     lances.push({
       poder: idPoder,
       obra: obra ? { provincia: obra.provincia, construcao: obra.construcao } : null,
       decretos,
       leva: leva ? { provincia: leva.provincia, arma: leva.arma, homens: leva.homens } : null,
+      guerra,
       defesas: defesas.map((d) => ({ destino: d.destino, homens: d.homens, tipo: d.tipo })),
+      ataques: ataques.map((a) => ({
+        destino: a.destino,
+        homens: a.homens,
+        postura: a.postura,
+        valor: a.valor,
+      })),
+      assaltos,
+      pazes: [],
     });
   }
+  // ⚠️ **A paz é resolvida DEPOIS de todo mundo jogar, e num passo só.** Ela precisa dos dois
+  // lados, e perguntar dentro do laço faria a resposta depender de quem foi primeiro na ordem
+  // alfabética — Argos teria uma chance de sair que Tebas não teria. Aqui os dois são
+  // consultados no mesmo mundo.
+  for (const par of pazesFechadas(campanha, dados, ajustes.combate)) {
+    campanha.fazerPaz(par.b, par.a);
+    for (const lance of lances) {
+      if (lance.poder === par.a || lance.poder === par.b) {
+        lance.pazes = [...lance.pazes, lance.poder === par.a ? par.b : par.a].sort();
+      }
+    }
+  }
   return lances;
+}
+
+/**
+ * As guerras entre computadores que terminam nesta virada — as que os DOIS lados querem
+ * encerrar.
+ *
+ * Guerra com o jogador não entra: a paz dele é uma proposta que ele faz ou recebe, e quem
+ * junta as duas respostas nesse caso é a aplicação. A IA não assina no lugar dele.
+ */
+function pazesFechadas(
+  campanha: Campanha,
+  dados: Ia,
+  ajustes: Ajustes['jogo']['combate'],
+): readonly { a: string; b: string }[] {
+  const daIa = new Set(poderesDaIa(campanha));
+  const fechadas: { a: string; b: string }[] = [];
+  const vistos = new Set<string>();
+  for (const a of [...daIa].sort()) {
+    for (const b of campanha.guerrasDe(a)) {
+      if (!daIa.has(b)) continue;
+      const par = a < b ? `${a}|${b}` : `${b}|${a}`;
+      if (vistos.has(par)) continue;
+      vistos.add(par);
+      if (!querPaz(campanha, a, b, estiloDe(dados, a), ajustes)) continue;
+      if (!querPaz(campanha, b, a, estiloDe(dados, b), ajustes)) continue;
+      fechadas.push({ a, b });
+    }
+  }
+  return fechadas;
 }
 
 /** Quem a IA dirige: vivo, com economia completa, e que não seja o jogador. */

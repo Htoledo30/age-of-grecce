@@ -47,11 +47,19 @@ export class BarraTurno {
   private readonly tinta = document.createElement('span');
   private readonly botao = document.createElement('button');
   private readonly botaoGoverno = document.createElement('button');
+  private readonly botaoDiplomacia = document.createElement('button');
 
   /** Chamado quando o jogador manda passar o turno. */
   aoPassarTurno: () => void = () => {};
   /** Chamado quando o jogador abre a janela de governo. */
   aoAbrirGoverno: () => void = () => {};
+  /**
+   * ⚠️ **Botão próprio, ao lado do Governo, e é decisão de Henrique.** O Governo responde
+   * "como o reino se sustenta"; paz e guerra não são contabilidade — são a decisão que ABRE o
+   * resto do jogo. Sem guerra declarada a ordem de marcha recusa, e esconder isso a dois
+   * cliques dentro de outra janela faria o jogador procurar o que ele precisa antes de tudo.
+   */
+  aoAbrirDiplomacia: () => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'barra-turno';
@@ -88,7 +96,22 @@ export class BarraTurno {
       this.botaoGoverno.blur();
     });
 
-    this.cabecalhoNacao.append(this.tinta, this.botaoGoverno);
+    this.botaoDiplomacia.className = 'botao barra-turno__governo';
+    this.botaoDiplomacia.type = 'button';
+    // ⚠️ A CORUJA, e não a lança. A lança é o ícone da guerra em todo o resto do jogo — marcha,
+    // cerco, batalha, crônica —, e esta tela é sobre paz E guerra: pôr a lança nela seria dizer
+    // ao jogador que o botão só serve para atacar. A coruja é de Atena: conselho.
+    rotularComIcone(this.botaoDiplomacia, 'coruja', 'Diplomacia');
+    definirTooltip(this.botaoDiplomacia, {
+      titulo: 'Diplomacia',
+      corpo: 'Com quem você está em paz e em guerra. Marchar em terra alheia exige guerra.',
+    });
+    this.botaoDiplomacia.addEventListener('click', () => {
+      this.aoAbrirDiplomacia();
+      this.botaoDiplomacia.blur();
+    });
+
+    this.cabecalhoNacao.append(this.tinta, this.botaoGoverno, this.botaoDiplomacia);
     this.nacao.append(this.cabecalhoNacao, this.tesouro);
     this.controleTurno.append(this.cronologia, this.botao);
     this.raiz.append(this.nacao, this.controleTurno);
@@ -111,7 +134,12 @@ export class BarraTurno {
         `${vista.provincias} ${vista.provincias === 1 ? 'província' : 'províncias'}`,
       ),
     );
-    this.cabecalhoNacao.replaceChildren(this.tinta, identidade, this.botaoGoverno);
+    this.cabecalhoNacao.replaceChildren(
+      this.tinta,
+      identidade,
+      this.botaoGoverno,
+      this.botaoDiplomacia,
+    );
     this.tesouro.replaceChildren(trechoTesouro(vista));
     this.cronologia.replaceChildren(
       trecho('barra-turno__dado', formatarAno(vista.ano)),

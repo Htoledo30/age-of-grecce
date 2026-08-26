@@ -13,6 +13,7 @@ import '@/ui/painel-lateral.css';
 import '@/ui/ficha-provincia.css';
 import '@/ui/acoes-provincia.css';
 import '@/ui/governo.css';
+import '@/ui/diplomacia.css';
 import '@/ui/inicio-jogo.css';
 import '@/ui/controles.css';
 import '@/ui/barra-turno.css';

@@ -190,6 +190,7 @@ describe('sair de campo acaba a batalha, não começa outra', () => {
     c.plantarHoste('eleusis', 'eleusis', 1400);
     const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
     expect(minha).toBeDefined();
+    c.declararGuerra(c.donoDe('eleusis'), 'atenas');
     c.ordenarMarcha(
       minha!.id,
       'eleusis',
@@ -215,6 +216,7 @@ describe('sair de campo acaba a batalha, não começa outra', () => {
     c.darOuro(400_000);
     c.plantarHoste('atenas', 'atenas', 150);
     const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
+    c.declararGuerra(c.donoDe('eleusis'), 'atenas');
     c.ordenarMarcha(minha!.id, 'eleusis', 150, 'atenas', 'assaltar');
 
     const semAssalto = novaCampanha();

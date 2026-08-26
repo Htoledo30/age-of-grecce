@@ -10,8 +10,10 @@ import { atualizarInterface } from './atualizar-interface';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { esquecerCampanha, salvarCampanha } from './salvamento-local';
+import { querPaz } from '@/ia/diplomacia/paz';
+import { estiloDe } from '@/ia/estilo';
 import { virarTurno } from './virar-turno';
-import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDaDiplomacia, vistaDoMercado } from './vistas/governo';
 
 export function ligarAcoes(jogo: Jogo): void {
   const { campanha, atlas, ajustes, cena, tela, selecao } = jogo;
@@ -39,6 +41,10 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.balancoAlimentar.desenhar(vistaDoAlimento(jogo));
     tela.mercado.desenhar(vistaDoMercado(jogo));
     tela.governo.alternar();
+  };
+  tela.barraTurno.aoAbrirDiplomacia = () => {
+    tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
+    tela.diplomacia.alternar();
   };
 
   // ── Os painéis da província ─────────────────────────────────────────────────────────
@@ -93,6 +99,41 @@ export function ligarAcoes(jogo: Jogo): void {
     repintar();
   };
   tela.exercitoFicha.aoTrocarPosturaDoCerco = (id, postura) => campanha.mudarPostura(id, postura);
+
+  // ── Diplomacia ─────────────────────────────────────────────────────────────────────
+  tela.diplomacia.aoDeclararGuerra = (idPoder) => {
+    const r = campanha.podeDeclararGuerra(idPoder);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    campanha.declararGuerra(idPoder);
+    tela.diplomacia.dizer(`Guerra declarada a ${campanha.poder(idPoder).nome}.`);
+  };
+
+  /**
+   * ⚠️ **A paz precisa dos DOIS, e é aqui que as duas respostas se encontram.**
+   *
+   * A regra do jogo (`campanha.fazerPaz`) só REGISTRA o acordo — ela não sabe negociar, e não
+   * deve saber: se soubesse, a regra dependeria da cabeça de um dos jogadores. Quem responde
+   * pelo outro lado é a IA, pela mesma função que ela usa para decidir as pazes dela. A
+   * aplicação é o lugar onde o clique do jogador e a cabeça da IA se juntam.
+   */
+  tela.diplomacia.aoProporPaz = (idPoder) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const nome = campanha.poder(idPoder).nome;
+    if (!campanha.podeFazerPaz(idPoder).pode) {
+      tela.diplomacia.dizer(`Você não está em guerra com ${nome}.`);
+      return;
+    }
+    if (!querPaz(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder), jogo.ajustes.jogo.combate)) {
+      tela.diplomacia.dizer(`${nome} recusou: acha que ainda tem o que ganhar.`);
+      return;
+    }
+    campanha.fazerPaz(idPoder);
+    tela.diplomacia.dizer(`Paz assinada com ${nome}.`);
+  };
 
   // ── As camadas do mapa ──────────────────────────────────────────────────────────────
   tela.destinosMapa.aoEscolher = (destino) => {

@@ -13,6 +13,7 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe, populacaoDe } from '../provincia/consultas';
 import { conquistar } from '../provincia/posse';
 import { impedeAssaltoImediatoEm } from '../guerra/cercos';
+import { emGuerra } from '../diplomacia/relacoes';
 import { miliciaEm } from '../guerra/defesa-local';
 import { saquearProvincia } from '../guerra/saque';
 
@@ -20,6 +21,7 @@ export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
     batalha: nucleo.ajustes.combate.batalha,
     donoDe: (id) => donoDe(nucleo, id),
+    emGuerra: (a, b) => emGuerra(nucleo, a, b),
     miliciaDe: (id) => miliciaEm(nucleo, id),
     impedeAssaltoImediato: (id) => impedeAssaltoImediatoEm(nucleo, id),
     // ⚠️ Quebrar custa o EXÉRCITO, não a geração: quem escapou da perseguição volta para a

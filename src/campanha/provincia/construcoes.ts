@@ -140,8 +140,8 @@ export function podeConstruir(
     const nome = nucleo.catalogo[obra.construcao]?.nome ?? obra.construcao;
     return { pode: false, motivo: `${nome} em obra aqui (${obra.turnosRestantes} turnos)` };
   }
-  // Quem paga a obra é o DONO da província, não o jogador. Hoje dá no mesmo porque só o
-  // jogador constrói; quando a IA construir, o cofre certo já é o que está aqui.
+  // Quem paga a obra é o DONO da província, não necessariamente o jogador. A IA passa pela
+  // mesma regra e usa o próprio cofre.
   const caixa = tesouroDe(nucleo, donoDe(nucleo, idProvincia));
   const custo = custoDaObra(construcao, nivelAtual + 1, escalaDeObraEm(nucleo, idProvincia));
   if (custo > caixa) {

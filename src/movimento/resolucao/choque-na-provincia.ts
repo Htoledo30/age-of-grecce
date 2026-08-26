@@ -23,6 +23,7 @@ export function naProvincia(
   donoDe: (idProvincia: string) => string,
   querLutar: (forca: Forca) => boolean,
   choqueObrigado: (provincia: string, presentes: readonly Forca[]) => boolean,
+  emGuerra: (a: string, b: string) => boolean,
 ): void {
   const porProvincia = new Map<string, Forca[]>();
   for (const forca of forcas) {
@@ -68,7 +69,12 @@ export function naProvincia(
         .sort((x, y) => y.forca - x.forca || x.poder.localeCompare(y.poder));
 
       const maior = ordenadas[0];
-      const segunda = ordenadas[1];
+      // ⚠️ **O segundo é o maior que está EM GUERRA com o primeiro, e não o segundo maior.**
+      // Dois invasores podem estar os dois em guerra com o dono da terra e em paz entre si;
+      // sem esta escolha eles se matavam no acampamento por serem os dois maiores presentes.
+      const segunda = maior
+        ? ordenadas.slice(1).find((outra) => emGuerra(maior.poder, outra.poder))
+        : undefined;
       if (!maior || !segunda) break;
       // ⚠️ **Empate encerra a província nesta rodada.** Com choque e perseguição os dois
       // lados podem terminar de pé, e aí eles continuam sendo os dois maiores presentes: sem

@@ -107,7 +107,7 @@ export const Economia = z
          * Se a costa daqui abriga navio.
          *
          * **Não é um porto construído** — é a terra permitir um. Este campo é a pergunta
-         * que os futuros sistemas naval e de construção de portos vão fazer. Maratona é o
+         * que a construção de Porto já consulta e que o futuro sistema naval também usará. Maratona é o
          * caso que justifica o campo existir: ela é
          * litorânea e não tem abrigo nenhum, então estar no mar não vale de nada.
          */

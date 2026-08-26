@@ -60,11 +60,18 @@ export function ameacasDe(campanha: Campanha, idPoder: string): readonly Ameaca[
  *
  * Três coisas contam, e nenhuma outra:
  *
- * 1. **exército alheio pisando na minha terra** — não há o que discutir;
- * 2. **exército alheio acampado FORA DE CASA na porta da minha terra** — alguém em campanha,
- *    e o próximo passo pode ser aqui;
+ * 1. **exército INIMIGO pisando na minha terra** — não há o que discutir;
+ * 2. **exército INIMIGO acampado fora de casa na porta da minha terra** — alguém em campanha
+ *    contra mim, e o próximo passo pode ser aqui;
  * 3. **exército alheio em casa, na minha fronteira, MAIOR que tudo o que eu posso pôr em pé**
  *    — exército mais milícia — porque alguém se juntando assim está se juntando para vir.
+ *
+ * ⚠️ **As duas primeiras passaram a exigir GUERRA DECLARADA, e a falta disso travava o mapa.**
+ * Sem a distinção, o exército de um vizinho brigando com um TERCEIRO, na minha fronteira, me
+ * deixava permanentemente ameaçado — e a IA não sai de casa enquanto está. Medido no turno 151:
+ * Tebas, com 13.167 homens, não atacava uma cidade de 185 milicianos porque um vizinho em paz
+ * com ela estava em campanha do outro lado da divisa. A terceira regra continua valendo em paz,
+ * e é de propósito: declarar e marchar acontecem no mesmo turno.
  *
  * ⚠️ **A terceira faltava, e sem ela a IA era cega para a invasão que se prepara.** As ordens
  * deste jogo são simultâneas: quando o invasor pisa na minha terra, a batalha é HOJE, e a leva
@@ -91,14 +98,19 @@ export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
     [...minhas].reduce((soma, id) => soma + campanha.miliciaEm(id), 0);
   for (const hoste of campanha.hostes()) {
     if (hoste.poder === idPoder) continue;
-    if (minhas.has(hoste.posicao)) return true;
+    const inimigo = campanha.emGuerra(idPoder, hoste.poder);
+    if (inimigo && minhas.has(hoste.posicao)) return true;
     const naFronteira = campanha
       .vizinhasDe(hoste.posicao)
       .some((vizinha) => minhas.has(vizinha));
     if (!naFronteira) continue;
-    // Fora de casa na minha porta é campanha em curso: basta estar ali.
-    if (campanha.donoDe(hoste.posicao) !== hoste.poder) return true;
-    // Em casa, só conta quem está juntando mais gente do que eu tenho no mundo todo.
+    // Fora de casa na minha porta é campanha em curso — mas só me diz respeito se a campanha
+    // for CONTRA MIM. Exército de um vizinho brigando com um terceiro passa ao largo.
+    if (inimigo && campanha.donoDe(hoste.posicao) !== hoste.poder) return true;
+    // ⚠️ **E em casa, guerra ou paz, conta quem junta mais gente do que eu tenho no mundo.**
+    // Vale mesmo para quem está em paz comigo, e é de propósito: declarar guerra e marchar
+    // acontecem no MESMO turno, então a paz não protege de quem já está pronto. É o mesmo aviso
+    // que o jogador lê no mapa.
     if (campanha.forcaDaHoste(hoste.id) > minhaDefesa) return true;
   }
   return false;

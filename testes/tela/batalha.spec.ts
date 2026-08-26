@@ -13,6 +13,7 @@ interface Ganchos {
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
+  declararGuerra: (contra: string, porPoder?: string) => void;
   recrutar: (idProvincia: string, homens: number) => void;
   forcaEm: (idProvincia: string, idPoder?: string) => number;
   plantarHoste: (
@@ -60,6 +61,16 @@ test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu
     i.plantarHoste('eleusis', 'eleusis', 800);
     const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
     if (!deles) throw new Error('a hoste de Elêusis não subiu');
+    // ⚠️ A guerra que a marcha passou a exigir. Este teste é de INTERFACE — o que ele guarda é
+    // o painel, o marcador e a ordem —, e a diplomacia tem os testes dela em
+    // `testes/diplomacia.test.ts`. Sem esta linha, a ordem seria recusada e o teste morreria
+    // falando de outra coisa.
+    i.declararGuerra('eleusis');
+    // ⚠️ A guerra que a marcha passou a exigir. Este teste é de INTERFACE — o que ele guarda é
+    // o painel, o marcador e a ordem —, e a diplomacia tem os testes dela em
+    // `testes/diplomacia.test.ts`. Sem esta linha, a ordem seria recusada e o teste morreria
+    // falando de outra coisa.
+    i.declararGuerra('eleusis');
     i.ordenarMarcha(deles.id, 'atenas', 800, 'eleusis', 'assaltar');
   });
   await page.getByRole('button', { name: 'Passar o turno' }).click();

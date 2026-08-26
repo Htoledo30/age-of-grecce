@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { fecharBatalhas } from './apoio';
 
 /**
  * A crônica da rodada: o jogo passou a dizer o que aconteceu na virada.
@@ -14,6 +15,7 @@ interface Ganchos {
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
+  declararGuerra: (contra: string, porPoder?: string) => void;
   recrutar: (idProvincia: string, homens: number) => void;
   donoDe: (idProvincia: string) => string;
   hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
@@ -59,6 +61,7 @@ test('a rodada sem notícia não escreve nada; a com batalha conta o que houve',
     i.recrutar('atenas', 2000);
     i.passarTurno();
   });
+  await fecharBatalhas(page);
 
   // Assalto sobre Elêusis, que é cidade aberta: batalha de campo, milícia derrotada e
   // conquista na mesma virada.
@@ -120,9 +123,15 @@ test('a surtida perdida é contada: a hoste não some mais em silêncio', async 
     // Elêusis manda 500 homens sentar diante de Atenas: o jogador é o sitiado.
     const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
     if (!deles) throw new Error('Elêusis devia começar com guarnição');
+    // ⚠️ A guerra que a marcha passou a exigir. Este teste é de INTERFACE — o que ele guarda é
+    // o painel, o marcador e a ordem —, e a diplomacia tem os testes dela em
+    // `testes/diplomacia.test.ts`. Sem esta linha, a ordem seria recusada e o teste morreria
+    // falando de outra coisa.
+    i.declararGuerra('eleusis');
     i.ordenarMarcha(deles.id, 'atenas', 500, 'eleusis', 'sitiar');
     i.passarTurno();
   });
+  await fecharBatalhas(page);
 
   const minha = page.locator('.hostes__marca[data-provincia="atenas"][data-minha="sim"]');
   await expect(minha).toHaveAttribute('data-marchando', 'nao');

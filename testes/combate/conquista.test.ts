@@ -38,6 +38,10 @@ describe('perder o chão não é o mesmo que morrer', () => {
     c.recrutar('atenas', 1000);
     c.passarTurno(); // a leva leva uma rodada pra virar hoste
     for (const id of [...c.provinciasDe('atenas')]) c.trocarDono(id, 'megara');
+    // ⚠️ `trocarDono` é o gancho de desenvolvimento: ele move a bandeira sem guerra nenhuma.
+    // Numa partida, quem perdeu a terra a perdeu LUTANDO e já está em guerra — e desde a
+    // diplomacia é a guerra que autoriza o exército a sitiar a própria capital tomada.
+    c.declararGuerra('megara', 'atenas');
     expect(c.renda).toBe(0); // sem província, sem arrecadação
     expect(c.noExilio('atenas')).toBe(true);
 
@@ -49,7 +53,7 @@ describe('perder o chão não é o mesmo que morrer', () => {
     expect(c.noExilio('atenas')).toBe(true);
     expect(c.cercoEm('atenas')).toMatchObject({ sitiante: 'atenas', postura: 'sitiar' });
 
-    c.mudarPostura('atenas', 'assaltar');
+    c.mudarPostura('atenas', 'assaltar', 'atenas');
     c.passarTurno();
 
     expect(c.donoDe('atenas')).toBe('atenas');
@@ -75,6 +79,7 @@ describe('tomar à força quebra a cidade', () => {
     c.plantarHoste('atenas', 'atenas', homens);
     const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
     if (!minha) throw new Error('a hoste não subiu');
+    c.declararGuerra(c.donoDe(alvo), 'atenas');
     c.ordenarMarcha(minha.id, alvo, homens, 'atenas', 'assaltar');
     return c;
   };
@@ -126,6 +131,7 @@ describe('tomar à força quebra a cidade', () => {
 
     c.plantarHoste('atenas', 'atenas', 500);
     const minha = c.hostesEm('atenas').find((h) => h.poder === 'atenas');
+    c.declararGuerra('eleusis', 'atenas');
     c.ordenarMarcha(minha!.id, 'eleusis', 500, 'atenas', 'assaltar');
     c.passarTurno();
 

@@ -134,6 +134,11 @@ const SalvamentoCampanha = z.object({
       z.record(z.string().min(1), z.number().int().min(1).max(3)),
     ),
     obras: z.record(z.string().min(1), Obra),
+    // `default` pelo mesmo motivo das revoltas: salvamento de antes da diplomacia ainda
+    // carrega — e o mundo dele volta em paz, que é como toda campanha começa. Guerra em
+    // curso é a única coisa que se perde, e ela é justamente o que aquele mundo não tinha.
+    guerras: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    tregoas: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
   }),
 });
 

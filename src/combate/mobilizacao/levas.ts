@@ -73,8 +73,8 @@ export function levantarRebeldes(
 /**
  * Põe uma hoste no mapa do nada. **Só desenvolvimento** — ver `Campanha.plantarHoste`.
  *
- * Serve pra montar um inimigo no tabuleiro enquanto a IA não existe. Não cobra ouro, não tira
- * gente da população, e por isso nenhuma regra do jogo pode chamar isto.
+ * Serve para testes, inspeção e cenários controlados. Não cobra ouro, não tira gente da
+ * população, e por isso nenhuma regra normal do jogo pode chamar isto.
  */
 export function plantar(
   estado: EstadoDeMobilizacao,

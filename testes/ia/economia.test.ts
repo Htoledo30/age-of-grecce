@@ -4,7 +4,7 @@ import { obraEscolhida } from '../../src/ia/economia/construir';
 import { decretosEscolhidos } from '../../src/ia/economia/imposto';
 import { estiloDe } from '../../src/ia/estilo';
 import { jogarIA, poderesDaIa } from '../../src/ia/ia';
-import { ajustes, ia, novaCampanha } from '../apoio/mundo';
+import { ajustes, correrIA, ia, novaCampanha } from '../apoio/mundo';
 
 const nova = (jogador = 'atenas') => {
   const c = novaCampanha();
@@ -132,13 +132,16 @@ describe('a IA joga pela mesma porta que a tela', () => {
 
   it('vinte turnos depois, os vizinhos deixaram de ser estátuas', () => {
     // A promessa inteira da primeira etapa, num teste só.
+    //
+    // ⚠️ **Mede a SOMA das rendas, e não a de Corinto**, desde que a IA passou a atacar. Um
+    // poder sozinho pode ser conquistado no meio da medição, e aí a renda dele cai a zero por
+    // ter perdido a guerra — o que não diz nada sobre a economia dele ter melhorado. Somando o
+    // mapa, o que se mede continua sendo o que se queria medir: o mundo ficou mais rico.
     const c = nova('atenas');
-    const antes = c.rendaDe('corinto');
-    for (let i = 0; i < 20; i++) {
-      jogarIA(c, ia, ajustes);
-      c.passarTurno();
-    }
-    expect(c.rendaDe('corinto')).toBeGreaterThan(antes);
+    const soma = (): number => poderesDaIa(c).reduce((total, id) => total + c.rendaDe(id), 0);
+    const antes = soma();
+    correrIA(c, 20);
+    expect(soma()).toBeGreaterThan(antes);
     // E ninguém quebrou o cofre no caminho.
     for (const poder of poderesDaIa(c)) expect(c.tesouroDe(poder)).toBeGreaterThanOrEqual(0);
   });

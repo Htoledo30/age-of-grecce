@@ -1,6 +1,6 @@
 {
   "name": "age-of-grecce",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Jogo de estratégia por província na Grécia antiga",
   "scripts": {
     "gerar-mapa": "tsx gerador/gerar-mapa.ts",

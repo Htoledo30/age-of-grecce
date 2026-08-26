@@ -1,10 +1,11 @@
 /**
  * A IA defendendo o que é dela — **e só isso.**
  *
- * ⚠️ **Regra dura desta etapa: nenhuma hoste pisa em terra alheia.** Socorrer é marchar para
- * uma província SUA que está com inimigo em cima. Atacar é a etapa 3, e misturar as duas aqui
- * faria a etapa 2 virar a etapa 3 por acidente — que é exatamente o tipo de coisa que depois
- * ninguém consegue depurar, porque o mapa inteiro se mexe de uma vez.
+ * ⚠️ **Regra dura DESTE ARQUIVO: nenhuma hoste dele pisa em terra alheia.** Socorrer é marchar
+ * para uma província SUA que está com inimigo em cima. Atacar mora em `marchar.ts`, e a
+ * separação não é arrumação: enquanto a IA só reagia, cada defeito dela aparecia numa província
+ * e não numa guerra em cascata pelo mapa inteiro — foi assim que os seis da etapa 2 foram
+ * achados. Misturar as duas aqui apagaria a fronteira que torna isso possível de novo.
  *
  * Três reações, e **as três só saem se a conta fechar**:
  *

@@ -47,6 +47,7 @@ describe('o salvamento vai e volta inteiro', () => {
     if (!hoste) throw new Error('a hoste de Sunião sumiu do cenário');
     const destino = [...original.rotasDaHoste(hoste.id).keys()][0];
     if (!destino) throw new Error('Sunião sem rota nenhuma');
+    original.declararGuerra(original.donoDe(destino));
     original.ordenarMarcha(hoste.id, destino, 300);
 
     const texto = original.serializar();
