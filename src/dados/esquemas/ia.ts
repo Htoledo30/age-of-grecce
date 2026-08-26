@@ -52,6 +52,20 @@ const Estilo = z.object({
   /** Em que saldo a despensa já conta como apertada. 1 é "uma folga e nada mais". */
   limiarDeAperto: z.number().int(),
   /**
+   * O que uma obra de DEFESA vale quando há exército alheio na porta, em moedas por turno.
+   *
+   * ⚠️ **É a irmã de `alimentoApertado`, e existe pelo mesmo motivo.** Medido numa partida de
+   * 100 turnos com todos na IA, os quatro únicos sobreviventes eram os quatro `guerreiro`:
+   * mercador, cauteloso e equilibrado morriam todos. O estilo não descrevia três jeitos de
+   * jogar — descrevia um de jogar e três de morrer, porque `valorDaObra.milicia` era um gosto
+   * fixo em vez de uma reação. Um mercador acha muro caro, e está certo em paz; com o inimigo
+   * na fronteira ele deixa de estar.
+   *
+   * Alto de propósito, como o alimento apertado, e para todo estilo: a diferença entre eles
+   * volta a aparecer no dia em que a ameaça passar.
+   */
+  defesaAmeacada: z.number(),
+  /**
    * Fatia do tesouro que esta IA NÃO gasta em obra.
    *
    * Sem reserva ela zera o caixa numa Ágora e não tem com que pagar a folha no turno
@@ -76,6 +90,13 @@ const Estilo = z.object({
    *
    * ⚠️ **Sem este teto ela recruta até a deserção.** O jogo deixa levantar tropa enquanto
    * houver ouro no cofre, e o cofre é o de HOJE — a folha é todo turno.
+   *
+   * ⚠️ **Ela é ALTA para todo estilo, e a diferença entre eles mora em `folhaEmPaz`.** O
+   * mercador tinha 0,15 aqui contra 0,20 do guerreiro em PAZ: ele, em guerra, gastava menos
+   * com tropa do que o guerreiro gastava sem inimigo nenhum à vista. Isso não é uma
+   * personalidade, é uma sentença — e a partida confirmou, matando todo estilo que não fosse
+   * guerreiro. Quem não quer guerra ainda decide isso na paz; com o inimigo na porta, todo
+   * mundo paga o que tem.
    */
   folhaMilitar: z.number().min(0),
   /**

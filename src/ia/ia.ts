@@ -107,10 +107,12 @@ export function jogarIA(
     const leva = levaEscolhida(campanha, idPoder, estilo, ajustes);
     if (leva) campanha.recrutar(leva.provincia, leva.homens, leva.arma, idPoder);
 
-    // Antes de tudo o que é militar: recolher quem ficou em terra que deixou de ser inimiga.
-    // Exército encalhado paga folha de campanha e ocupa o teto do que pode marchar — deixá-lo
-    // lá impediria este poder de atacar qualquer outro pelo resto da campanha.
-    const retiradas = retiradasEscolhidas(campanha, idPoder, new Set());
+    // ⚠️ **Antes de tudo o que é militar: DESISTIR do que não dá mais.** Voltam para casa as
+    // hostes em terra que deixou de ser inimiga, as que seguram um cerco que azedou, e todas as
+    // que estiverem longe enquanto a casa pega fogo. Sem esta decisão a IA vira estátua — e
+    // vinha virando: exército parado diante de um muro por cinquenta turnos, pagando folha de
+    // campanha, enquanto a província dele era tomada do outro lado do reino.
+    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, new Set());
     for (const ordem of retiradas) {
       campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
     }

@@ -75,7 +75,7 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Postura } from '@/combate/cerco';
 import type { Contingente, Exercito } from '@/combate/exercito';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
-import { estaAmeacado, forcaTotalDe } from '../percepcao/ameaca';
+import { ameacasDe, estaAmeacado, forcaTotalDe } from '../percepcao/ameaca';
 import { oportunidadesDe } from '../percepcao/oportunidade';
 import type { Oportunidade } from '../percepcao/oportunidade';
 import { prever, preverAssalto } from '../percepcao/prever';
@@ -187,13 +187,21 @@ export function assaltosMaduros(
 }
 
 /**
- * As hostes que precisam VOLTAR PARA CASA — as que ficaram encalhadas quando a paz chegou.
+ * VOLTAR PARA CASA — a decisão de DESISTIR, que é a que faltava.
  *
- * ⚠️ **A paz deixa exército em terra que deixou de ser inimiga**, e ele não pode ficar lá: paga
- * a folha de campanha, três vezes a de casa, e conta como tropa fora do reino no teto do que
- * pode marchar — ou seja, um poder que assina a paz com o exército adiantado fica impedido de
- * atacar qualquer outro pelo resto da campanha. Recolher é a decisão óbvia, e é a única
- * "reação" que a etapa 3 precisou ter para a diplomacia não criar estátuas.
+ * Uma IA que só sabe ir vira estátua: ela senta na frente de um muro, a guerra acaba, a conta
+ * vira, a casa pega fogo — e ela continua lá, porque nenhuma regra manda voltar. Três motivos
+ * trazem o exército de volta, e cada um foi visto acontecendo:
+ *
+ * 1. **A terra deixou de ser inimiga.** A paz deixa exército parado em campo alheio, pagando a
+ *    folha de campanha — três vezes a de casa — e ocupando o teto do que pode marchar. Um poder
+ *    que assina a paz com o exército adiantado ficava impedido de atacar qualquer outro pelo
+ *    resto da campanha.
+ * 2. **O cerco azedou.** Ou o cofre parou de pagar a campanha, ou o dono juntou mais gente do
+ *    que o sitiante tem: nos dois casos ficar sentado é só escolher onde perder o exército. É a
+ *    mesma conta que autorizou sentar, refeita todo turno — sentar não é um compromisso eterno.
+ * 3. **A casa está pegando fogo.** Com inimigo pisando em terra minha, o exército que está
+ *    longe é o exército que está faltando. Larga o que estiver fazendo e volta.
  *
  * Volta para a província PRÓPRIA mais próxima que a hoste alcança nesta rodada. Quando não
  * alcança nenhuma, ela fica — e aí é o exílio se resolvendo sozinho pela deserção.
@@ -201,15 +209,21 @@ export function assaltosMaduros(
 export function retiradasEscolhidas(
   campanha: Campanha,
   idPoder: string,
+  ajustes: AjustesDeCombate,
   jaMandadas: ReadonlySet<string>,
 ): readonly { hoste: string; destino: string; homens: number }[] {
+  // Casa pegando fogo é inimigo PISANDO na minha terra, e não um exército grande na fronteira:
+  // para o segundo, o lugar do meu exército é onde ele já está. Ver `ameacasDe`.
+  const casaEmChamas = ameacasDe(campanha, idPoder).length > 0;
+
   const ordens: { hoste: string; destino: string; homens: number }[] = [];
   for (const hoste of campanha.hostes()) {
     if (hoste.poder !== idPoder || jaMandadas.has(hoste.id)) continue;
     const dono = campanha.donoDe(hoste.posicao);
-    if (dono === idPoder || campanha.emGuerra(idPoder, dono)) continue;
+    if (dono === idPoder) continue;
     const homens = campanha.forcaDaHoste(hoste.id);
     if (homens <= 0) continue;
+    if (!voltaria(campanha, idPoder, hoste, dono, ajustes, casaEmChamas)) continue;
     const casa = [...campanha.alcanceDaHoste(hoste.id)]
       .filter((id) => campanha.donoDe(id) === idPoder)
       .sort()[0];
@@ -218,6 +232,24 @@ export function retiradasEscolhidas(
     ordens.push({ hoste: hoste.id, destino: casa, homens });
   }
   return ordens;
+}
+
+/** Esta hoste, parada em terra alheia, tem motivo para voltar? Ver os três acima. */
+function voltaria(
+  campanha: Campanha,
+  idPoder: string,
+  hoste: Exercito,
+  dono: string,
+  ajustes: AjustesDeCombate,
+  casaEmChamas: boolean,
+): boolean {
+  if (!campanha.emGuerra(idPoder, dono)) return true;
+  if (casaEmChamas) return true;
+  // Sentado: a conta que autorizou sentar é refeita, e ela pode ter virado.
+  if (campanha.cercoEm(hoste.posicao)?.sitiante !== idPoder) return false;
+  const homens = campanha.forcaDaHoste(hoste.id);
+  if (!aguentaOCerco(campanha, idPoder, homens, ajustes)) return true;
+  return !prever([hoste], exercitoDe(campanha, dono), ajustes.batalha, 'b').venci;
 }
 
 /** O valor de cada terra para ESTE estilo, da maior para a menor, e por id no empate. */

@@ -25,22 +25,19 @@ A campanha básica, a economia provincial, a alimentação, as construções, o 
 capital, a corrupção, a felicidade, as revoltas, a guerra terrestre e a IA econômica,
 defensiva e **ofensiva** já existem. O resumo completo está em `ESTADO_DO_JOGO.md`.
 
-A IA ofensiva está entregue e verificada. Ela marcha pelas mesmas consultas, comandos,
-previsões de batalha, cercos e custos do jogador — a previsão roda as próprias funções da
-rodada, e não uma segunda conta escrita à mão. O ritmo dela vive em `dados/ia.json`
-(`fracaoQueMarcha`, `custoDaConquista`, `sobraMinima`, `valorDaCapital`) e é balanço, não
-código: mexer nele é editar JSON e rodar `npm run partida`.
+A IA ataca, reage e desiste; a diplomacia básica existe. O ritmo dela vive em `dados/ia.json`
+(`fracaoQueMarcha`, `sobraMinima`, `valorDaCapital`, `vantagemParaDeclarar`, `guerraLonga`,
+`defesaAmeacada`) e é balanço, não código: mexer nele é editar JSON e rodar `npm run partida`.
 
-Antes de abrir outra frente:
+**O trabalho autorizado agora é a RELAÇÃO entre os reinos**, decidida por Henrique: um número
+de −100 a +100 por par de poderes, que sobe e desce com o que cada um faz, e que passa a decidir
+o que hoje é decidido por uma conta militar seca — se a paz é aceita, se a guerra é declarada e,
+depois, se uma aliança ou um tributo fazem sentido. É o que transforma a lista de vizinhos numa
+mesa de negociação.
 
-1. Henrique jogar e avaliar se os ataques parecem prudentes, legíveis e frequentes na
-   medida certa;
-2. só depois começar a diplomacia, que é o último item da sequência dele.
-
-⚠️ **O buraco conhecido continua sendo a falta de diplomacia.** Sem ela os 18 poderes estão em
-guerra com todo mundo desde o turno 1, e o único freio contra o mapa virar sopa são os números
-acima. É a explicação, não a desculpa: se a partida parecer violenta demais, o conserto de
-verdade é o item 6.
+⚠️ **Cuidado ao mexer nos números da IA sem medir.** A resposta é caótica: uma conquista cedo
+vira bola de neve, e andar na mesma direção de um dial já deu 20 conquistas numa configuração e
+105 na vizinha. `npm run partida 100` é barato e é o corte.
 
 Não começar comércio internacional, diplomacia, espionagem, naval, migração ou governadores
 sem uma nova decisão de Henrique.

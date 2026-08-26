@@ -35,18 +35,23 @@ turno é imposto, obra, leva, defesa, ataque: **uma ordem por hoste por rodada**
 decide primeiro. `npm run partida` roda a coisa toda e conta o que aconteceu, inclusive marchas,
 cercos e quantas províncias mudaram de dono. Diplomacia e naval continuam ausentes.
 
-⚠️ **Sem diplomacia, os 18 poderes começam em guerra com todo mundo, e isso se vê.** Medido em
-100 turnos com todos na IA: 35 marchas sobre terra alheia, 25 províncias mudando de dono, 19
-turnos de cerco em pé, 8 poderes absorvidos, o maior reino saindo de 3 para 6 províncias, zero
-fome e zero cofre negativo. A guerra não para no meio da partida e ninguém dispara na frente.
+**Ela REAGE, e é isso que faz os quatro estilos serem quatro jeitos de jogar.** Com exército
+alheio na fronteira, a obra de defesa passa a valer `defesaAmeacada` — a mesma ideia de
+`alimentoApertado`, que faz a comida atropelar tudo quando a despensa aperta — e a folha de
+guerra sobe para todo estilo, porque a diferença entre eles é o que se gasta na PAZ. ⚠️ Sem
+isso, medido em 100 turnos, **os quatro únicos sobreviventes eram os quatro `guerreiro`**:
+mercador, cauteloso e equilibrado morriam todos, porque o estilo era um gosto fixo em vez de
+uma reação.
 
-O ritmo vem de três números, todos em `dados/ia.json`: `fracaoQueMarcha` (que fatia do exército
-pode estar fora de casa — e ela desconta quem já está lá), `custoDaConquista` (o que uma terra
-tomada à força custa por turno enquanto não assenta) e `sobraMinima` (com quanto de exército ela
-topa terminar a briga). ⚠️ **São remendo no lugar da diplomacia, e mexer neles é loteria:** a
-resposta é caótica porque uma conquista cedo vira bola de neve — medido, andar na mesma direção
-de um dial deu 20 conquistas numa configuração e 105 na vizinha. O conserto de verdade é a
-diplomacia, e é o próximo item.
+**E ela DESISTE.** Volta para casa quando a terra deixou de ser inimiga, quando o cerco azedou
+(o cofre parou de pagar a campanha, ou o dono juntou mais gente do que o sitiante tem) e quando
+há inimigo pisando em terra dela — o exército que está longe é o que está faltando. Sentar é
+uma decisão refeita todo turno, não um compromisso eterno.
+
+Medido em 100 turnos com todos na IA: **36 guerras declaradas, 29 pazes, 42 marchas sobre terra
+alheia, 33 províncias mudando de dono, 23% dos poder-turnos em guerra, 15 turnos com tropa
+passando fome (eram 88) e zero cofre negativo.** Sobrevivem poderes dos três estilos, e não só
+os guerreiros.
 
 ⚠️ **E ela senta com trava, porque cerco DURA.** Só abre cerco quem tem mais gente do que a
 milícia da praça, quem ganharia do exército inteiro do dono se ele viesse socorrer, e quem tem

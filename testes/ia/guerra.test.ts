@@ -5,7 +5,11 @@ import { defesasEscolhidas } from '../../src/ia/guerra/defender';
 import { levaEscolhida } from '../../src/ia/guerra/recrutar';
 import { poderesDaIa } from '../../src/ia/ia';
 import { ameacasDe, estaAmeacado, forcaTotalDe } from '../../src/ia/percepcao/ameaca';
-import { assaltosMaduros, ataquesEscolhidos } from '../../src/ia/guerra/marchar';
+import {
+  assaltosMaduros,
+  ataquesEscolhidos,
+  retiradasEscolhidas,
+} from '../../src/ia/guerra/marchar';
 import { oportunidadesDe } from '../../src/ia/percepcao/oportunidade';
 import { ajustes, correrIA, ia, novaCampanha } from '../apoio/mundo';
 
@@ -281,6 +285,40 @@ describe('a IA ataca — a etapa 3', () => {
     const fora = emGuerraComTodos(nova('atenas'), 'tebas');
     fora.plantarHoste('tanagra', 'tebas', 1000);
     expect(ataquesEscolhidos(fora, 'tebas', guerreiro(), combate, semOrdens)).toEqual([]);
+  });
+
+  it('ela DESISTE de um cerco que azedou, em vez de virar estátua', () => {
+    // ⚠️ Sentar não é compromisso eterno: a conta que autorizou sentar é refeita todo turno. Sem
+    // isto a IA ficava cinquenta turnos diante de um muro, pagando folha de campanha três vezes
+    // maior que a de casa, enquanto a província dela era tomada do outro lado do reino.
+    const c = nova('atenas');
+    // Tebas fica com tudo em volta menos Tânagra, que é murada: o único alvo dela pede cerco.
+    for (const id of ['calcis', 'opunte', 'plateia', 'tespias']) c.trocarDono(id, 'tebas');
+    emGuerraComTodos(c, 'tebas');
+    c.plantarHoste('tebas', 'tebas', 1200);
+    const ordens = ataquesEscolhidos(c, 'tebas', guerreiro(), combate, semOrdens);
+    expect(ordens[0]).toMatchObject({ destino: 'tanagra', postura: 'sitiar' });
+    for (const o of ordens) c.ordenarMarcha(o.hoste, o.destino, o.homens, 'tebas', o.postura);
+    c.passarTurno();
+    expect(c.cercoEm('tanagra')).toMatchObject({ sitiante: 'tebas' });
+    // Enquanto a conta fecha, ela fica: sentar é uma decisão, não teimosia.
+    expect(retiradasEscolhidas(c, 'tebas', combate, semOrdens)).toEqual([]);
+    // O dono junta um exército que o sitiante não vence: ficar ali é escolher onde perder.
+    c.plantarHoste('tanagra', 'tanagra', 40_000);
+    expect(
+      retiradasEscolhidas(c, 'tebas', combate, semOrdens).map((v) => v.destino),
+    ).not.toHaveLength(0);
+  });
+
+  it('e volta para casa quando a casa está pegando fogo', () => {
+    // Com inimigo pisando em terra minha, o exército que está longe é o que está faltando.
+    const c = emGuerraComTodos(nova('atenas'), 'tebas');
+    c.plantarHoste('plateia', 'tebas', 900);
+    expect(retiradasEscolhidas(c, 'tebas', combate, semOrdens)).toEqual([]);
+    c.plantarHoste('tebas', 'plateia', 500);
+    expect(retiradasEscolhidas(c, 'tebas', combate, semOrdens).map((v) => v.hoste)).toHaveLength(
+      1,
+    );
   });
 
   it('a mesma partida dá o mesmo mapa, duas vezes', () => {

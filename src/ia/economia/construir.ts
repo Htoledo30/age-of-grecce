@@ -17,16 +17,25 @@
  * indefesas. O estilo resolve isso dizendo **quanto aquilo vale em moedas por turno para
  * ele** — ver `dados/ia.json`. Fica na mesma unidade e soma direto.
  *
- * ## Come primeiro
+ * ## Come primeiro, e se defende quando batem na porta
  *
  * ⚠️ **Comida não é uma preferência, é uma trava.** Reino com saldo alimentar no chão para de
  * crescer e começa a perder gente — perde a corrida sem levar uma batalha. Quando a despensa
  * aperta, a obra de alimento passa a valer `alimentoApertado`, que é alto de propósito, e
- * atropela qualquer Ágora. É a única regra dura desta etapa; o resto é comparação de números.
+ * atropela qualquer Ágora.
+ *
+ * ⚠️ **E a MURALHA segue a mesma regra, pelo mesmo motivo.** Um mercador acha muro caro — e
+ * está certo, em paz. Com um exército alheio na fronteira ele deixa de estar: medido, numa
+ * partida de 100 turnos com todos na IA, **os quatro únicos sobreviventes eram os quatro
+ * `guerreiro`** — mercador, cauteloso e equilibrado morriam todos. O estilo não estava
+ * descrevendo três jeitos de jogar, estava descrevendo um jeito de jogar e três de morrer,
+ * porque ele era um gosto fixo em vez de uma reação. `defesaAmeacada` é o preço que a
+ * segurança passa a ter quando a ameaça é real, e vale para qualquer estilo.
  */
 
 import type { Campanha } from '@/campanha/campanha';
 import type { EstiloDeIa } from '@/dados/esquema';
+import { estaAmeacado } from '../percepcao/ameaca';
 
 /** Uma obra que a IA considerou, com o valor que ela deu. */
 export interface ObraCotada {
@@ -64,6 +73,8 @@ export function obraEscolhida(
   // turno seguinte. É o erro que todo jogador novo comete uma vez.
   const disponivel = caixa * (1 - estilo.guardaDoTesouro);
   const apertada = campanha.balancoAlimentarDe(idPoder).saldo <= estilo.limiarDeAperto;
+  // A mesma pergunta que separa a folha de paz da de guerra decide o preço do muro.
+  const ameacado = estaAmeacado(campanha, idPoder);
 
   let melhor: ObraCotada | null = null;
   // Em ordem de id, e a comparação é estritamente maior: com duas obras de valor igual
@@ -74,7 +85,8 @@ export function obraEscolhida(
       const retorno = campanha.retornoDaConstrucaoEm(provincia, construcao);
       if (!retorno || retorno.custo > disponivel) continue;
 
-      const valor = retorno.ganhoPorTurno + valorDoPapel(campanha, construcao, estilo, apertada);
+      const valor =
+        retorno.ganhoPorTurno + valorDoPapel(campanha, construcao, estilo, apertada, ameacado);
       if (valor <= 0) continue;
       const porMoeda = retorno.custo > 0 ? valor / retorno.custo : valor;
       if (melhor === null || porMoeda > melhor.porMoeda) {
@@ -98,11 +110,14 @@ function valorDoPapel(
   construcao: string,
   estilo: EstiloDeIa,
   despensaApertada: boolean,
+  ameacado: boolean,
 ): number {
   const tipo = campanha.efeitoDaObra(construcao);
   if (tipo === null) return 0;
   if (tipo === 'alimento') {
     return despensaApertada ? estilo.alimentoApertado : estilo.valorDaObra.alimento;
   }
+  // Muro em paz é gosto; muro com exército alheio na fronteira é sobrevivência.
+  if (tipo === 'milicia' && ameacado) return estilo.defesaAmeacada;
   return tipo === 'futuro' ? 0 : estilo.valorDaObra[tipo];
 }
