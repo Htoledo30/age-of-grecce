@@ -92,7 +92,9 @@
       "alvo": {
         "fome": -20,
         "sitiada": -15,
-        "dominioEstrangeiro": -12
+        "dominioEstrangeiro": -12,
+        "guarnicao": 12,
+        "guarnicaoPlena": 0.02
       },
       "revolta": {
         "turnos": 3,

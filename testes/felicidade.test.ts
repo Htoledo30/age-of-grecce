@@ -46,6 +46,7 @@ describe('o alvo e o passo do humor', () => {
     dominioEstrangeiro: false,
     construcoes: {},
     humorDoImposto: 0,
+    guarnicao: 0,
   };
 
   it('o alvo soma a situação sobre a base, e o Templo entra pelos pontos dele', () => {
@@ -69,6 +70,7 @@ describe('o alvo e o passo do humor', () => {
         sitiada: true,
         dominioEstrangeiro: true,
         construcoes: {},
+        guarnicao: 0,
         humorDoImposto: -8,
       },
       catalogo,
@@ -94,6 +96,7 @@ describe('o alvo e o passo do humor', () => {
       dominioEstrangeiro: true,
       construcoes: { templo: 1 },
       humorDoImposto: -8,
+      guarnicao: 0.01,
     };
     const parcelas = parcelasDoAlvo(situacao, catalogo, felicidade);
     const soma = parcelas.reduce((total, p) => total + p.pontos, 0);
@@ -188,6 +191,30 @@ describe('o humor dentro da campanha', () => {
     });
   });
 
+  it('o levante SENTA na cidade: ele não é uma estátua', () => {
+    // ⚠️ Henrique achou jogando: *"a província se revoltou e criou um exército no local, só
+    // que o exército está na minha província e não tomou a província"*. Uma hoste solta em
+    // terra alheia, sem ordem e sem cerco, não luta e não toma nada — `quemLuta` responde que
+    // ela não quer briga. Ela ficava lá, para sempre.
+    //
+    // Sitiando, o resto do jogo já sabe o que fazer: a cidade para de produzir e de mandar o
+    // trânsito ao tesouro, o dono pode esmagá-los com surtida ou socorro, e eles assaltam
+    // quando a muralha permitir. A revolta virou a pergunta que devia ser: esmaga ou perde.
+    const c = nova();
+    c.trocarDono('eleusis', 'atenas');
+    comHumor(c, 'eleusis', 5);
+    for (let i = 0; i < felicidade.revolta.turnos; i++) c.passarTurno();
+
+    const cerco = c.cercoEm('eleusis');
+    expect(cerco).toBeDefined();
+    expect(cerco?.sitiante).toBe('eleusis');
+    // E a cidade sentiu na hora: sitiada não produz nem manda trânsito.
+    expect(c.economiaDe('eleusis')?.producao).toBe(0);
+    expect(c.economiaDe('eleusis')?.transito).toBe(0);
+    // A província continua sendo do jogador — o levante ainda precisa tomá-la.
+    expect(c.donoDe('eleusis')).toBe('atenas');
+  });
+
   it('província revoltosa de dono legítimo faz greve, mas não arma levante', () => {
     const c = comHumor(nova(), 'atenas', 5);
     for (let i = 0; i < felicidade.revolta.turnos + 2; i++) c.passarTurno();
@@ -249,5 +276,48 @@ describe('as revoltas viajam no salvamento', () => {
     delete antigo.estado['revoltas'];
     const relido = lerSalvamento(JSON.stringify(antigo));
     expect(relido.revoltas).toEqual({});
+  });
+});
+
+describe('a guarnição é ordem pública', () => {
+  const parada = {
+    passaFome: false,
+    sitiada: false,
+    dominioEstrangeiro: false,
+    construcoes: {},
+    humorDoImposto: 0,
+    guarnicao: 0,
+  };
+
+  it('tropa do dono parada na terra acalma o povo, proporcional ao tamanho da cidade', () => {
+    // ⚠️ É a ÚNICA coisa que o jogador pode fazer contra o descontentamento no mesmo turno.
+    // Templo leva turnos, imposto baixo custa renda, e o domínio estrangeiro não sai enquanto
+    // a terra não assimilar — antes disto, conquistar uma província e vê-la ferver era
+    // esperar e torcer. Pedido de Henrique jogando.
+    const catalogo = construcoes.construcoes;
+    const semTropa = alvoDeFelicidade(parada, catalogo, felicidade);
+    const comPouca = alvoDeFelicidade(
+      { ...parada, guarnicao: felicidade.alvo.guarnicaoPlena / 2 },
+      catalogo,
+      felicidade,
+    );
+    const comCheia = alvoDeFelicidade(
+      { ...parada, guarnicao: felicidade.alvo.guarnicaoPlena },
+      catalogo,
+      felicidade,
+    );
+    expect(comPouca).toBeGreaterThan(semTropa);
+    expect(comCheia).toBeGreaterThan(comPouca);
+    // E tem teto: a partir da guarnição cheia, mais lança na rua não acalma mais ninguém.
+    expect(alvoDeFelicidade({ ...parada, guarnicao: 1 }, catalogo, felicidade)).toBe(comCheia);
+  });
+
+  it('a ficha explica a parcela, como explica todas as outras', () => {
+    const parcelas = parcelasDoAlvo(
+      { ...parada, guarnicao: felicidade.alvo.guarnicaoPlena },
+      construcoes.construcoes,
+      felicidade,
+    );
+    expect(parcelas.map((p) => p.rotulo)).toContain('guarnição');
   });
 });

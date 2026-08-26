@@ -70,6 +70,19 @@ export interface VistaDoExercito {
    * antes seria pedir uma decisão sobre um lugar que o jogador ainda não olhou; perguntar
    * numa marcha dentro do próprio território seria pedir uma decisão que não existe.
    */
+  /**
+   * Por que a ordem contra o alvo não sai, ou vazio quando ela sai.
+   *
+   * ⚠️ **Existe porque o botão de postura chamava a regra direto e a regra ATIRA.** Uma
+   * recusa — "esta hoste já tem ordem nesta rodada" — virava exceção dentro do clique, o
+   * navegador engolia, e o jogador clicava em Assaltar e Sitiar a partida inteira sem nada
+   * acontecer e sem nada explicar. Henrique encontrou isso jogando.
+   *
+   * É a regra da casa em todo o resto do jogo: **mostra-se o motivo, não se esconde a
+   * opção.** Construir, recrutar e decretar imposto já faziam assim; a ordem de marcha era o
+   * único comando da tela que podia estourar em silêncio.
+   */
+  recusaDaOrdem: string;
   alvo: {
     nome: string;
     /**

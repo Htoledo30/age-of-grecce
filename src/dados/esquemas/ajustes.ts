@@ -291,6 +291,29 @@ export const Ajustes = z.object({
         sitiada: z.number().int(),
         /** Dono atual diferente do dono de 700 a.C.: o povo vive sob bandeira alheia. */
         dominioEstrangeiro: z.number().int(),
+        /**
+         * Quanto uma guarnição CHEIA acalma a província. Ordem pública com lança na porta.
+         *
+         * ⚠️ **É a única coisa que o jogador pode FAZER contra o descontentamento no mesmo
+         * turno.** Templo leva turnos para erguer, imposto baixo custa renda, e o domínio
+         * estrangeiro (−12) não sai enquanto a assimilação não acontecer — antes disto,
+         * conquistar uma terra e vê-la ferver era esperar e torcer. Pedido de Henrique
+         * jogando: *"nessa fase de assimilação, ter um exército na província deve subir a
+         * moral por ordem pública"*.
+         *
+         * ⚠️ **Não substitui o Templo.** O Templo é permanente e não come; a guarnição cobra
+         * folha todo turno e some no dia em que a tropa marchar. Segurar a província com
+         * exército é uma decisão com preço, e é isso que a torna interessante.
+         */
+        guarnicao: z.number(),
+        /**
+         * Que fatia da população em armas ali já conta como guarnição CHEIA.
+         *
+         * Proporcional à cidade, e não um número fixo de homens: quinhentos soldados são uma
+         * ocupação numa vila de 5.000 e uma ronda numa metrópole de 35.000. Abaixo disso o
+         * efeito é proporcional, para que cem homens numa vila já valham alguma coisa.
+         */
+        guarnicaoPlena: z.number().gt(0).max(1),
       }),
       revolta: z.object({
         /** Turnos consecutivos na faixa revoltosa até o levante armado. */

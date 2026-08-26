@@ -9,7 +9,7 @@
 import { alvoDeFelicidade, parcelasDoAlvo, revoltosa } from '../felicidade';
 import type { ParcelaDoAlvo, SituacaoDaProvincia } from '../felicidade';
 import type { NucleoDaCampanha } from '../nucleo';
-import { donoDe, dominioEstrangeiroEm } from '../provincia/consultas';
+import { donoDe, dominioEstrangeiroEm, populacaoDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 import { humorDoImpostoEm } from '../governo/nivel-de-imposto';
 import { balancoAlimentarDe } from '../alimentacao/balanco';
@@ -44,7 +44,26 @@ function situacaoDeFelicidadeEm(
     dominioEstrangeiro: dominioEstrangeiroEm(nucleo, idProvincia),
     construcoes: nucleo.estado.construcoes[idProvincia] ?? {},
     humorDoImposto: humorDoImpostoEm(nucleo, idProvincia),
+    guarnicao: fracaoDaGuarnicaoEm(nucleo, idProvincia),
   };
+}
+
+/**
+ * Que fatia da população desta terra está em armas AQUI, do próprio dono.
+ *
+ * ⚠️ **Só a tropa do DONO, e só a que está parada aqui.** Exército inimigo acampado na porta
+ * não é ordem pública — é cerco, e o cerco já desconta os seus próprios pontos. Somar as duas
+ * coisas faria uma cidade sitiada ficar mais feliz quanto maior fosse quem a sitia.
+ */
+function fracaoDaGuarnicaoEm(nucleo: NucleoDaCampanha, idProvincia: string): number {
+  const povo = populacaoDe(nucleo, idProvincia);
+  if (povo <= 0) return 0;
+  const dono = donoDe(nucleo, idProvincia);
+  let homens = 0;
+  for (const hoste of nucleo.mobilizacao.hostesEm(idProvincia)) {
+    if (hoste.poder === dono) homens += nucleo.mobilizacao.forcaDaHoste(hoste.id);
+  }
+  return homens / povo;
 }
 
 /** Para onde o humor desta província caminha. É o que a ficha pode explicar. */

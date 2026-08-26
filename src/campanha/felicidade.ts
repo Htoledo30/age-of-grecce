@@ -41,6 +41,13 @@ export interface SituacaoDaProvincia {
    * é a metade social da alavanca que o GDD pede.
    */
   humorDoImposto: number;
+  /**
+   * Fração da população desta terra que está em armas AQUI, do próprio dono.
+   *
+   * Fração e não homens: quinhentos soldados são uma ocupação numa vila de 5.000 e uma ronda
+   * numa metrópole de 35.000.
+   */
+  guarnicao: number;
 }
 
 /** Uma parcela do alvo, com nome: é o que deixa a ficha explicar a conta inteira. */
@@ -69,6 +76,16 @@ export function parcelasDoAlvo(
   }
   if (situacao.humorDoImposto !== 0) {
     parcelas.push({ rotulo: 'nível de imposto', pontos: situacao.humorDoImposto });
+  }
+  // ⚠️ **Tropa na porta acalma o povo, e é a única coisa que o jogador pode fazer HOJE contra
+  // o descontentamento.** Templo leva turnos, imposto baixo custa renda, e o domínio
+  // estrangeiro não sai enquanto a terra não assimilar. Proporcional até a guarnição cheia,
+  // para que cem homens numa vila já valham alguma coisa — e com teto, porque a partir de um
+  // ponto mais lança na rua não acalma mais ninguém.
+  const ordem = Math.min(1, situacao.guarnicao / ajustes.alvo.guarnicaoPlena);
+  if (ordem > 0) {
+    const pontos = Math.round(ajustes.alvo.guarnicao * ordem);
+    if (pontos !== 0) parcelas.push({ rotulo: 'guarnição', pontos });
   }
 
   for (const [id, nivel] of Object.entries(situacao.construcoes)) {

@@ -40,7 +40,42 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: a IA, etapa 2 — o mapa revida
+### Agora: três defeitos que Henrique achou JOGANDO
+
+⚠️ **Os três passaram por 390 testes e por três bancos de provas.** Vale registrar por quê: os
+testes guardam regras, e nenhum deles guardava *"o botão responde ao clique"*, *"a hoste
+rebelde faz alguma coisa"* ou *"dá para fazer algo contra o descontentamento hoje"*. Jogar
+continua sendo a única prova que pega esta classe.
+
+**1. O botão de postura não respondia — e a culpa era de uma exceção engolida.**
+`aoEscolherPostura` chamava `campanha.ordenarMarcha` direto, e a regra ATIRA quando recusa. Uma
+recusa comum — *"esta hoste já tem ordem nesta rodada"* — virava exceção dentro do clique, o
+navegador engolia, e o jogador clicava em Assaltar e Sitiar sem nada acontecer e sem nada
+explicar. Agora o painel **pergunta antes**, desabilita os dois botões e escreve o motivo na
+linha de cima — que é a regra da casa em todo o resto do jogo. Construir, recrutar e decretar
+imposto já faziam assim; a ordem de marcha era o único comando da tela que podia estourar em
+silêncio.
+
+**2. O levante era uma estátua.** A revolta erguia uma hoste rebelde dentro da província e
+mais nada: sem ordem e sem cerco, `quemLuta` responde que ela não quer briga, e ela ficava lá
+para sempre. Henrique: *"a província se revoltou e criou um exército no local, só que o
+exército está na minha província e não tomou a província"*. Agora ela **senta em cerco, com
+postura de assalto** — e o resto do jogo já sabe o que fazer: a cidade para de produzir e de
+mandar trânsito, o dono pode esmagá-los com surtida ou socorro, e eles assaltam quando a
+muralha permitir. A revolta virou a pergunta que devia ser: **esmagar ou perder a terra.**
+
+**3. Guarnição é ordem pública.** Pedido dele, e ele tem razão: *"nessa fase de assimilação,
+ter um exército na província deve subir a moral por ordem pública"*. Antes, conquistar uma
+terra e vê-la ferver era **esperar e torcer** — Templo leva turnos, imposto baixo custa renda,
+e os −12 de domínio estrangeiro não saem enquanto a assimilação não acontecer. Agora tropa do
+DONO parada ali sobe o alvo do humor (+12 na guarnição cheia), proporcional ao tamanho da
+cidade e com teto. E tem preço: cobra folha todo turno e some quando a tropa marchar. Exército
+inimigo acampado não conta — aquilo é cerco, e o cerco já desconta.
+
+Falta o quarto que ele apontou e que não é defeito: *"tá tudo funcionando mas muito duro
+ainda, talvez porque não exista diplomacia"*. Fica anotado para o item 6.
+
+### O que veio antes: a IA, etapa 2 — o mapa revida
 
 A IA levanta tropa e defende. ⚠️ **Nenhuma hoste pisa em terra alheia** — atacar é a etapa 3,
 e misturar as duas aqui faria a etapa 2 virar a etapa 3 por acidente, que é o tipo de coisa

@@ -6,6 +6,7 @@
  */
 
 import { ARMAS, forcaDe, porTerra } from '@/combate/exercito';
+import type { Exercito } from '@/combate/exercito';
 import { NOME_DA_ARMA } from '@/ui/armas';
 import type { Ajustes } from '@/dados/esquema';
 import type { VistaDoExercito } from '@/ui/exercito-ficha/exercito-ficha';
@@ -36,6 +37,9 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
     minha: campanha.jogador?.id === exercito.poder,
     destinos: campanha.alcanceDaHoste(exercito.id).length,
     marchando: selecao.marchando === exercito.id,
+    // ⚠️ Perguntada com o MESMO poder e os MESMOS homens que o botão vai usar: uma recusa
+    // calculada com outros números seria uma tela que promete o que a regra nega.
+    recusaDaOrdem: motivoDaRecusa(jogo, exercito),
     alvo:
       selecao.alvoHostil === null
         ? null
@@ -92,6 +96,24 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
       })
       .sort((a, b) => b.homens - a.homens),
   };
+}
+
+/**
+ * Por que a ordem contra o alvo apontado não sairia. Vazio quando ela sai.
+ *
+ * A pergunta é feita à campanha, e não deduzida aqui: `podeOrdenarMarcha` é quem sabe que
+ * uma hoste só recebe uma ordem por rodada, que surtir ocupa a mesma rodada, e que a rota
+ * precisa existir.
+ */
+function motivoDaRecusa(jogo: Jogo, exercito: Exercito): string {
+  const { campanha, selecao } = jogo;
+  if (selecao.alvoHostil === null || selecao.marchando !== exercito.id) return '';
+  const r = campanha.podeOrdenarMarcha(
+    exercito.id,
+    selecao.alvoHostil,
+    selecao.homensParaMarchar,
+  );
+  return r.pode ? '' : r.motivo;
 }
 
 /** Casa ou campanha: é o chão que decide o soldo. */

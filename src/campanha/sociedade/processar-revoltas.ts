@@ -46,6 +46,25 @@ export function acenderPavioEm(
   const idHoste = nucleo.mobilizacao.levantarRebeldes(idProvincia, donoAntigo, homens);
   delete nucleo.estado.revoltas[idProvincia];
   if (idHoste === null) return null;
+
+  // ⚠️ **O levante SENTA na cidade, e é isso que faz dele uma ameaça em vez de uma estátua.**
+  // Ele nascia como uma hoste solta em terra alheia, sem ordem e sem cerco — e uma hoste
+  // assim não luta, não sitia e não toma nada: o `quemLuta` responde que ela não quer briga.
+  // Henrique encontrou jogando: *"a província se revoltou e criou um exército no local, só
+  // que o exército está na minha província e não tomou a província"*. Ficava lá, para sempre.
+  //
+  // Sitiando, o resto do jogo já sabe o que fazer: a cidade para de produzir e de comerciar,
+  // o dono pode esmagá-los com uma surtida ou com socorro de fora, e eles assaltam quando a
+  // muralha permitir. A revolta virou a pergunta que ela devia ser desde sempre — **esmaga ou
+  // perde a terra?**
+  nucleo.estado.cercos[idProvincia] = {
+    sitiante: donoAntigo,
+    // Assaltar, e não sentar: quem pegou em armas contra o ocupante não veio esperar. Cidade
+    // murada continua barrando o assalto de hoje, e aí eles ficam na porta — o que é o cerco
+    // de qualquer jeito.
+    postura: 'assaltar',
+    rodadas: 0,
+  };
   return {
     provincia: idProvincia,
     poder: donoAntigo,

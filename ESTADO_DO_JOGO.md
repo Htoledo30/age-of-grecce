@@ -240,17 +240,28 @@ enfrentada no assalto; não existe outro multiplicador escondido.
 
 O humor de cada província é vivo: caminha alguns pontos por turno (`passoPorTurno`) rumo
 a um ALVO — base de 50, mais a comida do reino (fome −20 … abundante +10), cerco (−15),
-domínio estrangeiro (dono atual ≠ dono de 700 a.C., −12), o nível de imposto (baixo +6,
+domínio estrangeiro (dono atual ≠ dono de 700 a.C., −12), a GUARNIÇÃO do dono (+12 na cheia,
+proporcional abaixo dela), o nível de imposto (baixo +6,
 alto −8) e Templo. A conquista dá um choque imediato (−25), único movimento não gradual.
 Números em `ajustes.json`. A conta é LEGÍVEL como a da comida: o tooltip do humor na
 ficha decompõe o alvo parcela a parcela ("base +50 · mesa farta +5 · imposto −8 · Templo
 +8 → caminhando para N").
 
+**Guarnição é ordem pública** (pedido de Henrique jogando): tropa do DONO parada ali sobe o
+alvo do humor, em proporção ao tamanho da cidade e com teto na guarnição cheia
+(`alvo.guarnicaoPlena`). É a única coisa que se pode fazer contra o descontentamento no MESMO
+turno — Templo leva turnos, imposto baixo custa renda, e o domínio estrangeiro não sai
+enquanto a terra não assimilar. Tem preço: cobra folha todo turno e some quando a tropa
+marchar. Exército inimigo acampado não conta — aquilo é cerco, e o cerco já desconta.
+
 Na faixa Revoltosa (primeira faixa das `faixas`), a província entra em greve fiscal:
 imposto zero, produção/comércio/manutenção seguem. Sob bandeira estrangeira, o pavio
 corre: após `revolta.turnos` turnos revoltosos, 2% da população pega em armas como hoste
-do dono de 700 a.C. — saindo da população, podendo reviver um poder eliminado, e cercando
-a cidade até ser esmagada (surtida) ou definhar de fome. Província revoltosa de dono
+do dono de 700 a.C. — saindo da população, podendo reviver um poder eliminado, e **sentando
+em cerco sobre a cidade com postura de assalto**. ⚠️ Ela nascia solta e sem ordem, e uma
+hoste assim não luta nem toma nada: ficava parada para sempre. Com o cerco de pé, a cidade
+para de produzir e de mandar trânsito, e a revolta vira a pergunta que devia ser — esmagar
+(surtida ou socorro) ou perder a terra. Província revoltosa de dono
 legítimo faz greve e nada mais, por enquanto. A crônica noticia os levantes.
 
 A campanha termina: vitória ao dominar todas as províncias simuladas alcançáveis por

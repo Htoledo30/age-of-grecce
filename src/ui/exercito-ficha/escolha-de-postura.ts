@@ -119,10 +119,20 @@ export class EscolhaDePostura {
     // grade de duas colunas, e um rótulo comprido vaza por cima do vizinho. Em cima há linha
     // inteira para escrever a frase toda.
     const muralha = alvo.rodadasDeCercoExigidas;
-    this.pergunta.textContent =
-      muralha > 0
+    // ⚠️ **A recusa da REGRA vem antes da muralha na pergunta.** Se a ordem não pode sair de
+    // jeito nenhum — a hoste já tem ordem nesta rodada, por exemplo —, dizer "é murada" seria
+    // responder outra coisa. Antes o painel não dizia nada: os dois botões ficavam de pé e o
+    // clique estourava em silêncio dentro da regra.
+    const travada = vista.recusaDaOrdem !== '';
+    this.pergunta.textContent = travada
+      ? `${alvo.nome}: ${vista.recusaDaOrdem}`
+      : muralha > 0
         ? `${alvo.nome} é murada: exige ${muralha} ${muralha === 1 ? 'rodada' : 'rodadas'} de cerco antes de um assalto`
         : `${alvo.nome}: o que fazer ao chegar?`;
-    this.botaoAssaltar.disabled = muralha > 0;
+    this.pergunta.dataset['travada'] = travada ? 'sim' : 'nao';
+    for (const botao of this.seletor.children) {
+      if (botao instanceof HTMLButtonElement) botao.disabled = travada;
+    }
+    this.botaoAssaltar.disabled = travada || muralha > 0;
   }
 }

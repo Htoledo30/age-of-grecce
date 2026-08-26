@@ -65,6 +65,18 @@ export function ligarAcoes(jogo: Jogo): void {
   };
   tela.exercitoFicha.aoEscolherPostura = (postura) => {
     if (selecao.marchando === null || selecao.alvoHostil === null) return;
+    // ⚠️ **Confere antes de mandar, porque a regra ATIRA.** O painel já desabilita os botões
+    // quando a ordem não pode sair, mas o clique não pode depender só disso: um clique que
+    // escape da tela vira exceção engolida pelo navegador, e o jogador fica clicando sem
+    // nada acontecer e sem nada explicar. Foi assim que este defeito viveu — Henrique o
+    // encontrou jogando, não os testes.
+    if (
+      !campanha.podeOrdenarMarcha(selecao.marchando, selecao.alvoHostil, selecao.homensParaMarchar)
+        .pode
+    ) {
+      repintar();
+      return;
+    }
     campanha.ordenarMarcha(
       selecao.marchando,
       selecao.alvoHostil,
