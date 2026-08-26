@@ -57,6 +57,12 @@ export interface VizinhoNaDiplomacia {
   pacto: number;
   /** Os prazos de pacto oferecidos, com a opinião que cada um exige. */
   prazos: readonly { turnos: number; opiniaoMinima: number; pode: boolean }[];
+  /** Já existe acordo de comércio com ele? */
+  temAcordo: boolean;
+  /** O que um acordo com ele renderia por turno, para cada um dos dois. */
+  rendaDoAcordo: number;
+  /** Dá para assinar agora? Vazio quando dá; o motivo quando não dá. */
+  acordoBloqueado: string;
 }
 
 export interface VistaDaDiplomacia {
@@ -71,6 +77,8 @@ export class Diplomacia {
   aoProporPaz: (idPoder: string) => void = () => {};
   aoPresentear: (idPoder: string, ouro: number) => void = () => {};
   aoFirmarPacto: (idPoder: string, turnos: number) => void = () => {};
+  aoAcordarComercio: (idPoder: string) => void = () => {};
+  aoDesfazerAcordo: (idPoder: string) => void = () => {};
   aoRomperPacto: (idPoder: string) => void = () => {};
 
   private readonly fundo = document.createElement('div');
@@ -229,6 +237,7 @@ export class Diplomacia {
     const acoes = document.createElement('div');
     acoes.className = 'diplomacia__acoes';
     acoes.appendChild(this.acaoDe(vizinho));
+    acoes.appendChild(this.comercio(vizinho));
     acoes.appendChild(this.pacto(vizinho));
     if (vizinho.presentes.length > 0) acoes.appendChild(this.presente(vizinho));
 
@@ -266,6 +275,50 @@ export class Diplomacia {
     }
 
     caixa.append(numero, conta);
+    return caixa;
+  }
+
+  /**
+   * O acordo de comércio: **a renda aparece ANTES de assinar.**
+   *
+   * ⚠️ Uma parcela de renda que ninguém sabe medir é uma parcela que o jogador ignora — e esta é
+   * a que abre o caminho de quem quer jogar de economia sendo amigo de todo mundo. O número no
+   * botão é o que ENTRA por turno, para os dois lados.
+   */
+  private comercio(vizinho: VizinhoNaDiplomacia): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__presentes';
+    const rotulo = document.createElement('span');
+    rotulo.className = 'diplomacia__rotulo';
+    caixa.appendChild(rotulo);
+
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'diplomacia__acao';
+    if (vizinho.temAcordo) {
+      rotulo.textContent = `Comércio: +${vizinho.rendaDoAcordo} por turno`;
+      botao.dataset['acao'] = 'desfazer-acordo';
+      botao.textContent = 'Encerrar comércio';
+      definirTooltip(botao, {
+        titulo: `Encerrar o comércio com ${vizinho.nome}`,
+        corpo: 'Os dois perdem a renda. Não custa reputação: comércio não é promessa de paz.',
+      });
+      botao.addEventListener('click', () => this.aoDesfazerAcordo(vizinho.id));
+    } else {
+      rotulo.textContent = 'Comércio:';
+      botao.dataset['acao'] = 'acordo';
+      botao.textContent = `Acordo (+${vizinho.rendaDoAcordo} por turno)`;
+      botao.disabled = vizinho.acordoBloqueado !== '';
+      definirTooltip(botao, {
+        titulo: `Acordo de comércio com ${vizinho.nome}`,
+        corpo:
+          vizinho.acordoBloqueado !== ''
+            ? vizinho.acordoBloqueado
+            : `Os dois passam a ganhar ${vizinho.rendaDoAcordo} por turno. A guerra desfaz.`,
+      });
+      botao.addEventListener('click', () => this.aoAcordarComercio(vizinho.id));
+    }
+    caixa.appendChild(botao);
     return caixa;
   }
 

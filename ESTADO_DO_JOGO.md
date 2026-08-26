@@ -85,13 +85,28 @@ opinião sobe sozinha, porque fronteira garantida é um fato. Romper é a única
 prazo, e custa a opinião do traído **e a sua REPUTAÇÃO com o mapa inteiro** — sem esse preço,
 pacto seria papel.
 
+**Acordo de comércio** — **mais uma fonte de renda, e os dois lados ganham o mesmo número
+sempre.** Rende por turno uma fração da renda do MENOR dos dois: um parceiro minúsculo não tem
+mercado a oferecer, e um gigante não despeja em você mais do que você absorve. Daí caem três
+coisas: comerciar com o grande vale mais que com o pequeno; crescer melhora todos os seus
+acordos; e **existe um caminho pacífico de verdade** — quem faz as pazes com o mapa e assina com
+todos vive de comércio. O quinto parceiro rende menos que o primeiro (saturação), a guerra
+desfaz o acordo na hora, e a exigência de opinião é baixa de propósito: mercador atravessa
+fronteira que exército não atravessa.
+
+⚠️ **A rede de bens distintos continua sendo só a SUA.** O acordo não faz o mármore dele
+circular no seu reino — quem quer o bem toma a terra. É essa separação que mantém a conquista
+valendo mais que o comércio, num jogo de conquista.
+
 ⚠️ **A assinatura precisa dos DOIS.** A primeira versão aceitava com o consentimento de um lado
 só, e a medição foi brutal: o fraco amarrava o forte, o forte ia comer quem não tinha amarrado,
 e o resultado saltou para **46 províncias mudando de dono e 12 poderes eliminados** contra 22 e
 6 sem pacto nenhum.
 
-E a IA usa as duas: medido em 100 turnos, **79 pactos assinados e 64 presentes, 10.390 de ouro
-circulando entre reinos**. O presente dela é suborno defensivo — vizinho mais forte, na faixa em
+E a IA usa as três: medido em 100 turnos, **85 pactos, 37 presentes (12.838 de ouro) e 93
+acordos de comércio — 90 de pé no fim, entre todos os 18 poderes, rendendo 695 por turno.** Com
+o comércio aberto o mapa ficou visivelmente menos letal: as conquistas caíram de 32 para 12 e os
+poderes eliminados de 10 para 6. O presente dela é suborno defensivo — vizinho mais forte, na faixa em
 que ele declararia guerra — e é o que dá ao estilo `mercador` uma jogada que não é levantar
 lanças que ele não sabe usar.
 

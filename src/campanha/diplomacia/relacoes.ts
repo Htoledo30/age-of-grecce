@@ -146,10 +146,14 @@ export function declararGuerra(
   if (apesarDaTregoa && de !== contra && !emGuerra(nucleo, de, contra)) {
     nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
     delete nucleo.estado.tregoas[parDe(de, contra)];
+    desfazerAcordo(nucleo, de, contra);
     return true;
   }
   if (!podeDeclararGuerra(nucleo, de, contra).pode) return false;
   nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
+  // ⚠️ A guerra desfaz o comércio na hora, e é isso que dá ao acordo um peso que não é só
+  // dinheiro: quem declara vê a renda cair no mesmo turno em que ganha um inimigo.
+  desfazerAcordo(nucleo, de, contra);
   return true;
 }
 
@@ -242,6 +246,7 @@ function situacaoDaRelacao(
     fronteira,
     terrasTomadas,
     temPacto: pactoAte(nucleo, a, b) !== undefined,
+    temAcordo: temAcordo(nucleo, a, b),
     // A PIOR das duas: o que envenena a relação é haver um quebrador de promessas nela.
     reputacao: Math.min(reputacaoDe(nucleo, a), reputacaoDe(nucleo, b)),
   };
@@ -255,6 +260,56 @@ export function pactoAte(
 ): number | undefined {
   const ate = nucleo.estado.pactos[parDe(a, b)];
   return ate !== undefined && ate > nucleo.estado.turno ? ate : undefined;
+}
+
+/** Estes dois têm acordo de comércio em pé? Privada: de fora se pergunta `acordosDe`. */
+function temAcordo(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
+  return nucleo.estado.acordos[parDe(a, b)] !== undefined;
+}
+
+/**
+ * Este acordo de comércio pode ser assinado?
+ *
+ * ⚠️ **A exigência de opinião é BAIXA de propósito.** Comércio historicamente vem antes da
+ * confiança militar, não depois: mercadores atravessam fronteiras que exércitos não atravessam.
+ * Exigir pacto antes tornaria a cadeia longa demais — presente, pacto, comércio — para o jogador
+ * sentir o resultado, e mataria o caminho pacífico que o acordo existe para abrir.
+ */
+export function podeAcordarComercio(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): Permissao {
+  if (a === b) return { pode: false, motivo: 'não se comercia consigo mesmo' };
+  if (!vivo(nucleo, a) || !vivo(nucleo, b)) {
+    return { pode: false, motivo: 'este poder não está mais no jogo' };
+  }
+  if (emGuerra(nucleo, a, b)) return { pode: false, motivo: 'vocês estão em guerra' };
+  if (temAcordo(nucleo, a, b)) return { pode: false, motivo: 'o acordo já está de pé' };
+  const minima = nucleo.ajustes.acordoDeComercio.opiniaoMinima;
+  if (relacaoEntre(nucleo, a, b) < minima) {
+    return { pode: false, motivo: `ele ainda não confia o bastante: exige opinião ${minima}` };
+  }
+  return { pode: true };
+}
+
+/** Assina o acordo. Devolve `false` quando ele não podia ser assinado. */
+export function acordarComercio(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
+  if (!podeAcordarComercio(nucleo, a, b).pode) return false;
+  nucleo.estado.acordos[parDe(a, b)] = nucleo.estado.turno;
+  return true;
+}
+
+/**
+ * Desfaz o acordo. Sem prazo e sem preço de reputação: comércio não é promessa de paz.
+ *
+ * ⚠️ Chamado também pela declaração de guerra — e é isso que faz o comércio virar uma razão de
+ * DINHEIRO para não atacar alguém. Quem declara vê a renda cair no mesmo turno.
+ */
+export function desfazerAcordo(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
+  if (!temAcordo(nucleo, a, b)) return false;
+  delete nucleo.estado.acordos[parDe(a, b)];
+  return true;
 }
 
 /** A reputação deste poder, de −100 a 0. Zero é quem nunca quebrou promessa. */

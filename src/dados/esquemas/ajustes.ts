@@ -162,6 +162,8 @@ export const Ajustes = z.object({
         fronteiraMaxima: z.number(),
         /** Por terra dele que está na sua mão — a memória da conquista, sem guardar memória. */
         porTerraTomada: z.number(),
+        /** Dinheiro entrando dos dois lados aproxima. Ver `acordoDeComercio`. */
+        acordoDeComercio: z.number(),
         terraTomadaMaxima: z.number(),
       }),
       /**
@@ -225,6 +227,42 @@ export const Ajustes = z.object({
         /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
         reputacaoPorTurno: z.number().positive(),
       }),
+    }),
+    /**
+     * O acordo de comércio: a fonte de renda que a diplomacia abre.
+     *
+     * ⚠️ **Os dois lados ganham o MESMO número, sempre.** Decisão de Henrique, e ela reescreveu
+     * o desenho: pagar só pelo bem que falta ao outro deixava metade dos pares do mapa ganhando
+     * zero, porque quase todo mundo faz grãos e azeite.
+     */
+    acordoDeComercio: z.object({
+      /**
+       * Que fatia da renda do MENOR dos dois o acordo rende, por turno, para cada um.
+       *
+       * O menor dos dois porque um parceiro minúsculo não tem mercado a oferecer, e um gigante
+       * não despeja em você mais do que você absorve. Sem esse teto, um reino de 118 de renda
+       * dobraria de tamanho se pendurando num de 732.
+       */
+      fracaoDaMenorRenda: z.number().positive(),
+      /**
+       * Quantos parceiros valem METADE do rendimento total — a saturação.
+       *
+       * ⚠️ Sem ela a diplomacia vira um concurso de assinaturas, e comerciar passa a pagar
+       * melhor que administrar. Mesma curva da perseguição da cavalaria e do presente.
+       */
+      meiosParceiros: z.number().positive(),
+      /**
+       * Opinião mínima para assinar.
+       *
+       * ⚠️ **Abaixo do que dois vizinhos normais têm, e é de propósito.** O atrito de fronteira
+       * segura qualquer par de vizinhos em torno de −15; exigir opinião positiva tornaria o
+       * comércio impossível justamente entre quem tem mais motivo para comerciar. Mercador
+       * atravessa fronteira que exército não atravessa — o que barra o acordo é ódio de
+       * verdade, do tamanho de uma terra tomada, e não a implicância de dividir uma divisa.
+       */
+      opiniaoMinima: z.number().min(-100).max(100),
+      /** O que um acordo em pé vale na conta da opinião, enquanto durar. */
+      pontos: z.number(),
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({

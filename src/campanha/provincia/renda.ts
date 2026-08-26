@@ -12,7 +12,7 @@ import { rendaDaProvincia } from '../economia';
 import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
 import { ligadaACapital } from '../comercio/circulacao';
-import { rendaDeTrocas } from '../comercio/rede-de-trocas';
+import { rendaDeAcordos, rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
 import { estaSitiada } from '../guerra/cercos';
@@ -64,6 +64,17 @@ export function economiaDe(
  * o resumo é que mostra os dois.
  */
 export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
+  return rendaBaseDe(nucleo, idPoder) + rendaDeAcordos(nucleo, idPoder);
+}
+
+/**
+ * A renda SEM os acordos de comércio: as terras mais a rede de bens distintos.
+ *
+ * ⚠️ **Existe para a conta do acordo não se morder.** O acordo rende uma fatia da renda do
+ * menor dos dois; se essa renda já incluísse os acordos, assinar aumentaria a renda, que
+ * aumentaria o acordo, que aumentaria a renda. É esta a base contra a qual se mede.
+ */
+export function rendaBaseDe(nucleo: NucleoDaCampanha, idPoder: string): number {
   let total = 0;
   for (const id of nucleo.territorios.provinciasDe(idPoder)) {
     total += economiaDe(nucleo, id)?.total ?? 0;

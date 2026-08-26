@@ -12,7 +12,9 @@
  */
 
 import {
+  acordarComercio,
   declararGuerra,
+  desfazerAcordo,
   fazerPaz,
   firmarPacto,
   presentear,
@@ -61,6 +63,21 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    */
   romperPacto(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (romperPacto(this.nucleo, porPoder, com)) this.aoMudar();
+  }
+
+  /**
+   * Assina o acordo de comércio: **mais uma fonte de renda, e os dois lados ganham o mesmo.**
+   *
+   * ⚠️ Exige pouca opinião de propósito. Comércio vem ANTES da confiança militar, não depois —
+   * e é ele que abre o caminho de quem quer jogar de economia sendo amigo de todo mundo.
+   */
+  acordarComercio(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (acordarComercio(this.nucleo, porPoder, com)) this.aoMudar();
+  }
+
+  /** Desfaz o acordo. Sem preço de reputação: comércio não é promessa de paz. */
+  desfazerAcordo(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (desfazerAcordo(this.nucleo, porPoder, com)) this.aoMudar();
   }
 
   /**

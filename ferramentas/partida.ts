@@ -80,6 +80,7 @@ let marchas = 0;
 let guerrasDeclaradas = 0;
 let pactos = 0;
 let presentes = 0;
+let acordos = 0;
 let ouroEmPresentes = 0;
 let pazes = 0;
 let emGuerraTurnos = 0;
@@ -147,6 +148,7 @@ for (let turno = 0; turno < TURNOS; turno++) {
     marchas += lance.ataques.length;
     if (lance.guerra !== null) guerrasDeclaradas += 1;
     if (lance.pacto !== null) pactos += 1;
+    if (lance.comercio !== null) acordos += 1;
     if (lance.presente !== null) {
       presentes += 1;
       ouroEmPresentes += lance.presente.ouro;
@@ -232,6 +234,15 @@ console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pa
 // veria uma tela cheia de botões que só ele aperta.
 console.log(
   `  pactos assinados: ${pactos} · presentes: ${presentes} (${n(ouroEmPresentes)} de ouro)`,
+);
+const comercios = poderes.filter((id) => c.acordosDe(id).length > 0).length;
+console.log(
+  `  acordos de comércio abertos: ${acordos} · de pé no fim: ${
+    poderes.reduce((s2, id) => s2 + c.acordosDe(id).length, 0) / 2
+  } entre ${comercios} poderes`,
+);
+console.log(
+  `  renda de comércio no fim: ${n(poderes.reduce((s2, id) => s2 + c.rendaDeAcordos(id), 0))} por turno`,
 );
 // ⚠️ Zero aqui quer dizer que a diplomacia virou uma paz eterna, que é o mapa parado de outro
 // jeito. O número saudável é a maior parte dos poderes em paz e alguns em guerra o tempo todo.

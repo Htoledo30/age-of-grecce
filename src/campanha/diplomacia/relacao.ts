@@ -52,6 +52,8 @@ export interface SituacaoDaRelacao {
   terrasTomadas: number;
   /** Há pacto de não-agressão em pé? Fronteira garantida é um fato como qualquer outro. */
   temPacto: boolean;
+  /** Há acordo de comércio? Dinheiro entrando dos dois lados é um fato como qualquer outro. */
+  temAcordo: boolean;
   /**
    * A pior reputação do par, de −100 a 0.
    *
@@ -99,6 +101,10 @@ export function parcelasDaRelacao(
 
   if (situacao.temPacto) {
     parcelas.push({ rotulo: 'pacto de não-agressão', pontos: ajustes.pacto.pontos });
+  }
+
+  if (situacao.temAcordo) {
+    parcelas.push({ rotulo: 'acordo de comércio', pontos: alvo.acordoDeComercio });
   }
 
   if (situacao.reputacao < 0) {

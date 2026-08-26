@@ -152,11 +152,20 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
       presentes: presentesPara(jogo, id),
       pacto: Math.max(0, (campanha.pactoAte(jogador.id, id) ?? campanha.turno) - campanha.turno),
       prazos: campanha.prazosDePacto(id),
+      temAcordo: campanha.acordosDe(jogador.id).includes(id),
+      rendaDoAcordo: campanha.rendaDeUmAcordoCom(id),
+      acordoBloqueado: bloqueioDoAcordo(jogo, id),
     }))
     // Guerra primeiro: é o que exige decisão. Depois por nome, que é como se procura na lista.
     .sort((a, b) => Number(b.emGuerra) - Number(a.emGuerra) || a.nome.localeCompare(b.nome));
 
   return { vizinhos, guerras: campanha.guerrasDe(jogador.id).length };
+}
+
+/** Por que o acordo de comércio não sai. Vazio quando ele sai. */
+function bloqueioDoAcordo(jogo: Jogo, id: string): string {
+  const r = jogo.campanha.podeAcordarComercio(id);
+  return r.pode ? '' : r.motivo;
 }
 
 /**

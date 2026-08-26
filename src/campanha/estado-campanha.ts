@@ -228,6 +228,14 @@ export interface EstadoCampanha {
    * Sobe sozinha de volta a zero com o tempo. Rancor por promessa quebrada não é eterno.
    */
   reputacao: Record<string, number>;
+  /**
+   * Acordos de comércio em pé, pela mesma chave dos pares, guardando o turno em que foram
+   * assinados.
+   *
+   * Não têm prazo: duram enquanto os dois quiserem. Quem declara guerra os desfaz, e é isso que
+   * transforma comércio numa razão de dinheiro para não atacar alguém.
+   */
+  acordos: Record<string, number>;
 }
 
 /** Uma construção em andamento. */

@@ -25,6 +25,12 @@
         }
       }
     },
+    "acordoDeComercio": {
+      "fracaoDaMenorRenda": 0.12,
+      "meiosParceiros": 3,
+      "opiniaoMinima": -25,
+      "pontos": 10
+    },
     "diplomacia": {
       "tregoaEmTurnos": 12,
       "passoPorTurno": 3,
@@ -35,6 +41,7 @@
         "porProvinciaDeFronteira": -5,
         "fronteiraMaxima": -20,
         "porTerraTomada": -15,
+        "acordoDeComercio": 10,
         "terraTomadaMaxima": -45
       },
       "choque": { "conquista": -25 },

@@ -25,6 +25,8 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { construcoesEm, fichaDe, nivelDaConstrucaoEm } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 import { ligadasACapital } from './circulacao';
+import { rendaDoAcordo, rendaTotalDeAcordos } from './acordos';
+import { rendaBaseDe } from '../provincia/renda';
 
 export interface BemEmCirculacao {
   id: string;
@@ -108,4 +110,37 @@ export function bensAusentes(
         ? [{ id, nome: produto.nome, troca: produto.troca }]
         : [];
     });
+}
+
+/**
+ * O que os ACORDOS DE COMÉRCIO deste poder rendem por turno, somados e com saturação.
+ *
+ * Fica ao lado da rede de trocas porque são as duas parcelas nacionais da renda — nenhuma cabe
+ * em província nenhuma. Mas são coisas diferentes, e de propósito: **a rede é o que a sua terra
+ * alcança; o acordo é o que a diplomacia abriu.** Quem quer o bem toma a terra.
+ */
+export function rendaDeAcordos(nucleo: NucleoDaCampanha, idPoder: string): number {
+  const ajustes = nucleo.ajustes.acordoDeComercio;
+  const minha = rendaBaseDe(nucleo, idPoder);
+  const valores: number[] = [];
+  for (const par of Object.keys(nucleo.estado.acordos).sort()) {
+    const [a, b] = par.split('|');
+    if (a === undefined || b === undefined) continue;
+    const outro = a === idPoder ? b : b === idPoder ? a : null;
+    if (outro === null) continue;
+    valores.push(rendaDoAcordo(minha, rendaBaseDe(nucleo, outro), ajustes));
+  }
+  return rendaTotalDeAcordos(valores, ajustes);
+}
+
+/** Com quem este poder tem acordo de comércio, em ordem de id. */
+export function acordosDe(nucleo: NucleoDaCampanha, idPoder: string): readonly string[] {
+  const parceiros: string[] = [];
+  for (const par of Object.keys(nucleo.estado.acordos).sort()) {
+    const [a, b] = par.split('|');
+    if (a === undefined || b === undefined) continue;
+    if (a === idPoder) parceiros.push(b);
+    else if (b === idPoder) parceiros.push(a);
+  }
+  return parceiros.sort();
 }

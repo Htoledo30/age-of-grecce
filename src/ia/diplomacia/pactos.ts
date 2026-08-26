@@ -129,6 +129,39 @@ function quantoCusta(
   return null;
 }
 
+/**
+ * COM QUEM ELA ABRE COMÉRCIO — e é a decisão mais fácil que ela tem.
+ *
+ * ⚠️ **Todo acordo é lucro dos dois lados**, então não há o que ponderar: ela assina com quem
+ * puder, do mais rendoso para o menos. A única pergunta real é *"eu pretendo atacá-lo?"* —
+ * abrir comércio com quem se vai invadir é montar uma renda para perdê-la no turno seguinte,
+ * já que a guerra desfaz o acordo na hora.
+ *
+ * É por aqui que o estilo `mercador` finalmente joga o jogo dele: sem exército para levantar,
+ * o que ele tem é renda, e renda se multiplica assinando.
+ */
+export function comercioEscolhido(
+  campanha: Campanha,
+  idPoder: string,
+  estilo: EstiloDeIa,
+): string | null {
+  let escolhido: string | null = null;
+  let melhor = 0;
+  // Vizinhos primeiro, mas comércio não exige fronteira: qualquer poder com ficha serve.
+  for (const outro of campanha.poderesComFicha()) {
+    if (outro === idPoder) continue;
+    if (!campanha.podeAcordarComercio(outro, idPoder).pode) continue;
+    // Abrir comércio com quem ela pretende atacar é montar renda para perdê-la amanhã.
+    if (campanha.relacaoEntre(idPoder, outro) <= estilo.relacaoParaDeclarar) continue;
+    const renda = campanha.rendaDeUmAcordoCom(outro, idPoder);
+    if (renda > melhor) {
+      melhor = renda;
+      escolhido = outro;
+    }
+  }
+  return escolhido;
+}
+
 /** Com quem e por quanto tempo este poder assinaria um pacto agora. `null` se com ninguém. */
 export function pactoEscolhido(
   campanha: Campanha,

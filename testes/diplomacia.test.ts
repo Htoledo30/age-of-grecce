@@ -381,3 +381,82 @@ describe('o pacto de não-agressão: o prazo se compra com CONFIANÇA', () => {
     expect(pactos.length).toBeGreaterThan(0);
   });
 });
+
+describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () => {
+  it('rende o mesmo para os dois, e o teto é o MENOR dos dois', () => {
+    // ⚠️ Decisão de Henrique, e ela reescreveu o desenho: pagar só pelo bem que falta ao outro
+    // deixava metade dos pares do mapa ganhando zero, porque quase todo mundo faz grãos.
+    const c = nova();
+    const grande = c.rendaDe('atenas');
+    const pequeno = c.rendaDe('plateia');
+    expect(grande).toBeGreaterThan(pequeno);
+
+    // O que Atenas ganha com Plateia é o que Plateia ganha com Atenas: o mesmo número.
+    expect(c.rendaDeUmAcordoCom('plateia', 'atenas')).toBe(
+      c.rendaDeUmAcordoCom('atenas', 'plateia'),
+    );
+    // E comerciar com um reino maior rende mais do que com um menor.
+    expect(c.rendaDeUmAcordoCom('argos')).toBeGreaterThan(c.rendaDeUmAcordoCom('plateia'));
+  });
+
+  it('assinado, o ouro entra todo turno para os dois', () => {
+    const c = nova();
+    const antes = c.rendaDe('atenas');
+    const dele = c.rendaDe('megara');
+    const valor = c.rendaDeUmAcordoCom('megara');
+    expect(valor).toBeGreaterThan(0);
+
+    c.acordarComercio('megara');
+    expect(c.rendaDe('atenas')).toBe(antes + valor);
+    expect(c.rendaDe('megara')).toBe(dele + valor);
+    expect(c.acordosDe('atenas')).toContain('megara');
+    // E ele é um FATO: entra na conta da opinião enquanto durar.
+    expect(c.parcelasDaRelacaoEntre('atenas', 'megara').map((p) => p.rotulo)).toContain(
+      'acordo de comércio',
+    );
+  });
+
+  it('⚠️ a guerra desfaz o comércio na hora — é a razão de DINHEIRO para não atacar', () => {
+    const c = nova();
+    c.acordarComercio('megara');
+    const comComercio = c.rendaDe('atenas');
+
+    c.declararGuerra('megara');
+    expect(c.acordosDe('atenas')).not.toContain('megara');
+    expect(c.rendaDe('atenas')).toBeLessThan(comComercio);
+  });
+
+  it('o quinto parceiro rende menos que o primeiro', () => {
+    // Sem saturação a diplomacia vira um concurso de assinaturas, e comerciar passa a pagar
+    // melhor que administrar.
+    const c = nova();
+    const parceiros = c.poderesComFicha().filter((id) => id !== 'atenas').slice(0, 5);
+    const ganhos: number[] = [];
+    let anterior = c.rendaDe('atenas');
+    for (const parceiro of parceiros) {
+      if (!c.podeAcordarComercio(parceiro).pode) continue;
+      c.acordarComercio(parceiro);
+      const agora = c.rendaDe('atenas');
+      ganhos.push(agora - anterior);
+      anterior = agora;
+    }
+    expect(ganhos.length).toBeGreaterThan(2);
+    expect(ganhos[ganhos.length - 1]!).toBeLessThan(ganhos[0]!);
+  });
+
+  it('e a rede de bens distintos continua sendo só a SUA', () => {
+    // Quem quer o bem toma a terra: é essa separação que mantém a conquista valendo mais do
+    // que o comércio, num jogo de conquista.
+    const c = nova();
+    const antes = c.bensEmCirculacao('atenas').map((b) => b.id).sort();
+    c.acordarComercio('argos');
+    expect(c.bensEmCirculacao('atenas').map((b) => b.id).sort()).toEqual(antes);
+  });
+
+  it('a IA abre comércio — é a decisão mais fácil que ela tem', () => {
+    const c = nova('atenas');
+    correrIA(c, 40);
+    const comAcordo = c.poderesComFicha().filter((id) => c.acordosDe(id).length > 0);
+    expect(comAcordo.length).toBeGreaterThan(0);
+  });
+});

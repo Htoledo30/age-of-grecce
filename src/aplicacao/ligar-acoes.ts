@@ -135,6 +135,24 @@ export function ligarAcoes(jogo: Jogo): void {
     );
   };
 
+  tela.diplomacia.aoAcordarComercio = (idPoder) => {
+    const r = campanha.podeAcordarComercio(idPoder);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    const renda = campanha.rendaDeUmAcordoCom(idPoder);
+    campanha.acordarComercio(idPoder);
+    tela.diplomacia.dizer(
+      `Comércio aberto com ${campanha.poder(idPoder).nome}: +${renda} por turno para os dois.`,
+    );
+  };
+
+  tela.diplomacia.aoDesfazerAcordo = (idPoder) => {
+    campanha.desfazerAcordo(idPoder);
+    tela.diplomacia.dizer(`Comércio encerrado com ${campanha.poder(idPoder).nome}.`);
+  };
+
   tela.diplomacia.aoFirmarPacto = (idPoder, turnos) => {
     const eu = campanha.jogador?.id;
     if (eu === undefined) return;

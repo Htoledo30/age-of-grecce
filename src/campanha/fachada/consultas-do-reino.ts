@@ -23,13 +23,22 @@ import { serializarCampanha } from '../salvamento';
 import { Territorios } from '../territorios';
 import type { RelatorioDaFome } from '../alimentacao/aplicar-fome';
 import { balancoAlimentarDe } from '../alimentacao/balanco';
-import { bensAusentes, bensEmCirculacao, rendaDeTrocas } from '../comercio/rede-de-trocas';
+import {
+  acordosDe,
+  bensAusentes,
+  bensEmCirculacao,
+  rendaDeAcordos,
+  rendaDeTrocas,
+} from '../comercio/rede-de-trocas';
+import { rendaDoAcordo } from '../comercio/acordos';
+import { rendaBaseDe } from '../provincia/renda';
 import {
   emGuerra,
   guerraDesde,
   guerrasDe,
   pactoAte,
   parcelasDaRelacaoEntre,
+  podeAcordarComercio,
   podeDeclararGuerra,
   podeFirmarPacto,
   podePresentear,
@@ -288,6 +297,37 @@ export abstract class ConsultasDoReino {
   /** A reputação deste poder, de −100 a 0. Zero é quem nunca quebrou promessa. */
   reputacaoDe(idPoder: string): number {
     return reputacaoDe(this.nucleo, idPoder);
+  }
+
+  /** Com quem este poder tem acordo de comércio, em ordem de id. */
+  acordosDe(idPoder: string): readonly string[] {
+    return acordosDe(this.nucleo, idPoder);
+  }
+
+  /** O que os acordos de comércio deste poder rendem por turno, somados. */
+  rendaDeAcordos(idPoder: string): number {
+    return rendaDeAcordos(this.nucleo, idPoder);
+  }
+
+  /**
+   * O que um acordo com este poder renderia por turno, para CADA um dos dois.
+   *
+   * A tela mostra antes de assinar: uma parcela de renda que ninguém sabe medir é uma parcela
+   * que o jogador ignora.
+   */
+  rendaDeUmAcordoCom(outro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): number {
+    return rendaDoAcordo(
+      rendaBaseDe(this.nucleo, porPoder),
+      rendaBaseDe(this.nucleo, outro),
+      this.nucleo.ajustes.acordoDeComercio,
+    );
+  }
+
+  podeAcordarComercio(
+    com: string,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): Permissao {
+    return podeAcordarComercio(this.nucleo, porPoder, com);
   }
 
   /** Os prazos de pacto que dá para assinar hoje, do mais longo ao mais curto. */
