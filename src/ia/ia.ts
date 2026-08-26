@@ -65,7 +65,7 @@ export interface LanceDaIa {
 export function jogarIA(
   campanha: Campanha,
   dados: Ia,
-  ajustes: Ajustes['jogo']['combate'],
+  ajustes: Ajustes['jogo'],
 ): readonly LanceDaIa[] {
   const lances: LanceDaIa[] = [];
   for (const idPoder of poderesDaIa(campanha)) {
@@ -88,7 +88,7 @@ export function jogarIA(
 
     // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
     // depois de virar hoste, no turno que vem.
-    const defesas = defesasEscolhidas(campanha, idPoder);
+    const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha);
     for (const ordem of defesas) {
       if (ordem.tipo === 'surtida') campanha.surtir(ordem.hoste, idPoder);
       else campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');

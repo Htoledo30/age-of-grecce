@@ -16,7 +16,7 @@ const nova = (jogador = 'atenas') => {
 /** Roda `turnos` viradas com a IA jogando. O jogador fica parado, como o controle. */
 const correr = (c: ReturnType<typeof nova>, turnos: number) => {
   for (let i = 0; i < turnos; i++) {
-    jogarIA(c, ia, ajustes.combate);
+    jogarIA(c, ia, ajustes);
     c.passarTurno();
   }
   return c;
@@ -29,10 +29,10 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     // pagamento, que é o erro clássico de quem olha só o caixa.
     const c = nova('atenas');
     const estilo = estiloDe(ia, 'tebas');
-    const semFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 0, folhaEmPaz: 0 }, ajustes.combate);
+    const semFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 0, folhaEmPaz: 0 }, ajustes);
     expect(semFolha).toBeNull();
 
-    const comFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 1, folhaEmPaz: 1 }, ajustes.combate);
+    const comFolha = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 1, folhaEmPaz: 1 }, ajustes);
     expect(comFolha).not.toBeNull();
     expect(comFolha!.homens).toBeGreaterThan(0);
   });
@@ -44,14 +44,14 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     const estilo = estiloDe(ia, 'tebas');
     // Tira comida do reino enchendo-o de gente em armas até o saldo virar.
     for (let i = 0; i < 40 && c.balancoAlimentarDe('tebas').saldo >= 0; i++) {
-      const leva = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes.combate);
+      const leva = levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes);
       if (!leva) break;
       c.darOuro(50_000, 'tebas');
       c.recrutar(leva.provincia, leva.homens, leva.arma, 'tebas');
       c.passarTurno();
     }
     if (c.balancoAlimentarDe('tebas').saldo < 0) {
-      expect(levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes.combate)).toBeNull();
+      expect(levaEscolhida(c, 'tebas', { ...estilo, folhaMilitar: 99, folhaEmPaz: 99 }, ajustes)).toBeNull();
     }
   });
 
@@ -66,8 +66,8 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     expect(c.armasEm('tebas')).toContain('hoplita');
 
     const base = estiloDe(ia, 'tebas');
-    const bom = levaEscolhida(c, 'tebas', { ...base, arma: 'melhor', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes.combate);
-    const barato = levaEscolhida(c, 'tebas', { ...base, arma: 'barata', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes.combate);
+    const bom = levaEscolhida(c, 'tebas', { ...base, arma: 'melhor', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes);
+    const barato = levaEscolhida(c, 'tebas', { ...base, arma: 'barata', folhaMilitar: 9, folhaEmPaz: 9 }, ajustes);
     expect(bom?.arma).toBe('hoplita');
     expect(barato?.arma).toBe('leve');
   });
@@ -92,7 +92,7 @@ describe('a IA defende, e só defende', () => {
     c.plantarHoste(alvo!, 'megara', 500);
     c.plantarHoste(base!, 'atenas', 800);
 
-    const ordens = defesasEscolhidas(c, 'atenas');
+    const ordens = defesasEscolhidas(c, 'atenas', ajustes.combate.batalha);
     expect(ordens).toHaveLength(1);
     expect(ordens[0]).toMatchObject({ destino: alvo, tipo: 'socorro', homens: 800 });
   });
@@ -140,7 +140,8 @@ describe('em paz é guarda; em guerra é exército', () => {
     // e o mapa inteiro vivia em pé de guerra permanente, gastando folha de guerra numa paz
     // completa. Um soldado em casa é como uma muralha: existe, e não quer dizer nada.
     const c = nova('atenas');
-    c.plantarHoste('tebas', 'tebas', 2000);
+    // Guarda, e não exército: menor do que a defesa que o vizinho consegue pôr em pé.
+    c.plantarHoste('tebas', 'tebas', 100);
     expect(estaAmeacado(c, 'tanagra')).toBe(false);
     expect(estaAmeacado(c, 'tebas')).toBe(false);
   });
@@ -163,11 +164,11 @@ describe('em paz é guarda; em guerra é exército', () => {
     // exércitos para atacar e se defender"*. Em paz ela mantém guarda; sob ameaça ela arma.
     const emPaz = nova('atenas');
     const estilo = estiloDe(ia, 'tebas');
-    const guarda = levaEscolhida(emPaz, 'tebas', estilo, ajustes.combate);
+    const guarda = levaEscolhida(emPaz, 'tebas', estilo, ajustes);
 
     const naGuerra = nova('atenas');
     naGuerra.plantarHoste('tebas', 'atenas', 500);
-    const exercito = levaEscolhida(naGuerra, 'tebas', estilo, ajustes.combate);
+    const exercito = levaEscolhida(naGuerra, 'tebas', estilo, ajustes);
 
     expect(guarda).not.toBeNull();
     expect(exercito).not.toBeNull();
@@ -186,5 +187,84 @@ describe('em paz é guarda; em guerra é exército', () => {
     const povo = c.provinciasSimuladas.reduce((soma, id) => soma + c.populacaoDe(id), 0);
     // Guarda, e não exército: menos de 2% do povo do mapa em armas no primeiro turno.
     expect(total / povo).toBeLessThan(0.02);
+  });
+});
+
+describe('os buracos que a auditoria apontou', () => {
+  it('cidade SITIADA recebe socorro de fora — antes recebia zero ordens', () => {
+    // ⚠️ O buraco: toda ameaça sitiada pulava direto para a próxima, então uma capital cercada
+    // com exército na província vizinha não recebia ordem nenhuma. Cidade sitiada é justamente
+    // a que mais precisa de gente de fora — quem está dentro não sai sem perder o muro.
+    const c = nova('megara');
+    const minhas = [...c.provinciasDe('atenas')].sort();
+    const [sitiada, base] = minhas;
+    // Um sitiante fraco: o socorro só sai se a conta fechar, e aqui ela fecha.
+    c.plantarHoste(sitiada!, 'megara', 200);
+    c.plantarHoste(base!, 'atenas', 1500);
+    c.mudarPostura(sitiada!, 'sitiar');
+
+    const ordens = defesasEscolhidas(c, 'atenas', ajustes.combate.batalha);
+    const socorro = ordens.find((o) => o.tipo === 'socorro' && o.destino === sitiada);
+    expect(socorro).toBeDefined();
+    expect(socorro?.homens).toBe(1500);
+  });
+
+  it('a surtida olha COMPOSIÇÃO, e não cabeças', () => {
+    // ⚠️ Comparando homens, 501 leves contra 500 arqueiros parecia vantagem — e o arqueiro
+    // vale 1,33 em campo contra 1,00 do leve. A guarnição saía para morrer fora do muro.
+    // Agora a previsão roda a MESMA função que decide a batalha.
+    const comArma = (arma: 'leve' | 'arqueiro') => {
+      const c = nova('megara');
+      c.darOuro(400_000, 'megara');
+      c.plantarHoste('atenas', 'atenas', 501, 'leve');
+      // O cerco tem de ser DE VERDADE: sentar é o que cria o estado que a surtida pergunta.
+      c.plantarHoste('eleusis', 'megara', 500, arma);
+      const sitiante = c.hostesEm('eleusis').find((h) => h.poder === 'megara');
+      c.ordenarMarcha(sitiante!.id, 'atenas', 500, 'megara', 'sitiar');
+      c.passarTurno();
+      expect(c.cercoEm('atenas')).toBeDefined();
+      return defesasEscolhidas(c, 'atenas', ajustes.combate.batalha).filter(
+        (o) => o.tipo === 'surtida',
+      );
+    };
+    // Contra 500 leves, 501 leves ganham: ela sai.
+    expect(comArma('leve')).toHaveLength(1);
+    // Contra 500 ARQUEIROS, os mesmos 501 leves perdem: ela fica dentro do muro.
+    expect(comArma('arqueiro')).toHaveLength(0);
+  });
+
+  it('a comida limita o TAMANHO da leva, e não só a decisão de levantar uma', () => {
+    // ⚠️ Medido antes: com saldo ZERO ela levantava vinte mil homens e o turno fechava em −6.
+    // Parar só quando o saldo já virou é chegar tarde — cada boca entra na conta do mesmo
+    // turno.
+    const c = nova('atenas');
+    c.darOuro(900_000, 'tebas');
+    const estilo = { ...estiloDe(ia, 'tebas'), folhaMilitar: 99, folhaEmPaz: 99 };
+
+    for (let i = 0; i < 30; i++) {
+      const leva = levaEscolhida(c, 'tebas', estilo, ajustes);
+      if (!leva) break;
+      c.recrutar(leva.provincia, leva.homens, leva.arma, 'tebas');
+      c.passarTurno();
+      c.darOuro(900_000, 'tebas');
+      // ⚠️ A invariante inteira num assert: ela nunca leva o próprio reino ao vermelho.
+      expect(`turno ${i}: saldo ${c.balancoAlimentarDe('tebas').saldo}`).toBe(
+        `turno ${i}: saldo ${Math.max(0, c.balancoAlimentarDe('tebas').saldo)}`,
+      );
+    }
+  });
+
+  it('exército alheio se JUNTANDO na fronteira já é ameaça', () => {
+    // ⚠️ As ordens são simultâneas: quando o invasor pisa na minha terra a batalha é hoje, e a
+    // leva que eu levantar só vira hoste amanhã. O único aviso que existe é o exército
+    // crescendo do outro lado — o mesmo que o jogador lê no mapa. Sem isto, o banco de provas
+    // media zero socorros em oitenta turnos de invasão.
+    const c = nova('megara');
+    // Guarda pequena do vizinho: menor que a milícia de Elêusis, não assusta ninguém.
+    c.plantarHoste('atenas', 'atenas', 100);
+    expect(estaAmeacado(c, 'eleusis')).toBe(false);
+    // Exército maior que tudo o que Elêusis tem: agora assusta.
+    c.plantarHoste('atenas', 'atenas', 5000);
+    expect(estaAmeacado(c, 'eleusis')).toBe(true);
   });
 });

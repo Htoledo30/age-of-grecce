@@ -118,7 +118,7 @@ describe('a IA joga pela mesma porta que a tela', () => {
     // encontrasse seria um defeito do caminho dela, não do jogo.
     const c = nova('atenas');
     const antes = c.tesouroDe('corinto');
-    const lances = jogarIA(c, ia, ajustes.combate);
+    const lances = jogarIA(c, ia, ajustes);
 
     const deCorinto = lances.find((l) => l.poder === 'corinto');
     expect(deCorinto).toBeDefined();
@@ -135,7 +135,7 @@ describe('a IA joga pela mesma porta que a tela', () => {
     const c = nova('atenas');
     const antes = c.rendaDe('corinto');
     for (let i = 0; i < 20; i++) {
-      jogarIA(c, ia, ajustes.combate);
+      jogarIA(c, ia, ajustes);
       c.passarTurno();
     }
     expect(c.rendaDe('corinto')).toBeGreaterThan(antes);

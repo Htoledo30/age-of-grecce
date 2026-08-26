@@ -181,8 +181,16 @@ export function resolverBatalha(
     // a linha quebrou, o inimigo está em cima, e sair ordenado deixou de ser uma opção. É essa
     // ordem que faz o recuo ser uma decisão de HORA — sair cedo custa pouco, tarde demais não
     // custa nada porque não existe mais.
-    if (a.recuaAos !== null && inicioA - vivosA >= inicioA * a.recuaAos) recuou = 'a';
-    else if (b.recuaAos !== null && inicioB - vivosB >= inicioB * b.recuaAos) recuou = 'b';
+    // ⚠️ **Os dois podem querer sair na mesma rodada, e aí quem sai é quem NÃO segura o
+    // chão.** Antes o lado A saía sempre, e isso era uma vantagem escondida na ordem dos
+    // argumentos: o mesmo par de exércitos dava resultados diferentes conforme quem tivesse
+    // sido passado primeiro. `desempate` já é o lado que segura o chão — quem sai é o outro,
+    // pela mesma razão que ele leva o empate.
+    const querSairA = a.recuaAos !== null && inicioA - vivosA >= inicioA * a.recuaAos;
+    const querSairB = b.recuaAos !== null && inicioB - vivosB >= inicioB * b.recuaAos;
+    if (querSairA && querSairB) recuou = desempate === 'a' ? 'b' : 'a';
+    else if (querSairA) recuou = 'a';
+    else if (querSairB) recuou = 'b';
     if (recuou) break;
   }
 

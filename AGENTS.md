@@ -8,6 +8,12 @@ O Git guarda o histórico. Não criar roadmap, backlog, changelog ou diário de 
 
 ## Fontes de verdade
 
+⚠️ **`PLANO_DE_COMBATE.md` foi apagado**, e de propósito: o plano foi executado inteiro e o que
+ele decidia vive hoje no GDD (as regras) e nas seções abaixo (o porquê e as medições). Manter o
+plano ao lado do resultado é acumular duas versões da mesma ideia, que é o que a regra logo
+abaixo proíbe. O único item aberto dele — **moral em batalha, se valer a pena** — está na lista
+de recusados por ora.
+
 - comportamento atual: código e testes;
 - resumo do jogo implementado: `ESTADO_DO_JOGO.md`;
 - visão do jogo: `GDD.md`;
@@ -40,7 +46,64 @@ documentação atualizada antes de abrir a próxima. Balanceamento novo entra em
 
 A IA é a última etapa do jogo, decidida por Henrique, e fica fora desta sequência.
 
-### Agora: em paz é guarda, em guerra é exército
+### Agora: a defesa da IA, fechada de verdade
+
+Segunda auditoria do outro chat, e ela achou coisa. Conferi uma a uma antes de mexer:
+**quatro procedem, uma não, e duas estavam desatualizadas** (a árvore estava limpa, e os cinco
+testes de tela que "falharam" eram a porta 4173 ocupada — o mesmo tropeço que eu levei).
+
+**1. A IA não socorria cidade SITIADA.** Toda ameaça sitiada pulava direto para a próxima, e
+uma capital cercada com exército na província vizinha recebia **zero ordens**. É a que mais
+precisa de gente de fora: quem está dentro não sai sem perder o muro. Corrigido — e o socorro
+agora conta com quem já está lá dentro, porque reforço não briga sozinho.
+
+**2. "Só faz surtida quando ganha" era falso.** Ela comparava CABEÇAS. 501 leves contra 500
+arqueiros parecia vantagem, e o arqueiro vale 1,33 em campo contra 1,00 do leve — a guarnição
+saía para morrer fora do muro. Agora a previsão roda `resolverBatalha`, **a mesma função que
+decide a batalha**: a resolução é determinística, então a previsão é exata. Ver
+`ia/percepcao/prever.ts`.
+
+**3. A comida não limitava o TAMANHO da leva.** Ela parava só quando o saldo já estava
+negativo — medido: com saldo ZERO levantava vinte mil homens e o turno fechava em −6. Agora o
+que sobra na despensa vira teto, em bocas, e cavalo conta por vários.
+
+**4. A folha militar era uma estimativa.** `homens × taxa de casa` erra em dois lugares: tropa
+em terra alheia paga a taxa de campanha e a soma por província perde quem nasceu em terra que
+caiu. Trocada por `manutencaoDe`, que é a conta verdadeira — a mesma que a barra de turno
+mostra. Dava no mesmo enquanto a IA não saía de casa, e é justamente por isso que tinha de ser
+consertada antes de ela sair.
+
+**5. O recuo simultâneo favorecia o lado A.** Quando os dois queriam sair na mesma rodada,
+saía sempre A — uma vantagem escondida na ordem dos argumentos, e o mesmo par de exércitos
+dava resultados diferentes conforme quem fosse passado primeiro. Agora sai quem NÃO segura o
+chão, pela mesma razão que ele perde o empate.
+
+**6. O banco de provas só testava paz**, e isso era verdade. `npm run partida <turnos> invadir`
+põe o jogador para atacar de verdade: ele junta o exército, escolhe a terra alheia mais fraca
+ao alcance e avança. Rolando pelo mapa, ele acaba encostando em quem tem duas terras e um
+exército — e aí a defesa tem o que fazer.
+
+⚠️ **E o banco cobrou um sexto defeito que a auditoria não viu: a IA era cega para a invasão
+que se prepara.** Com a invasão programada, ela dava **zero socorros e zero surtidas em oitenta
+turnos** — porque o atacante juntava tropa em CASA, e "em casa" não contava como ameaça. As
+ordens são simultâneas: quando o invasor pisa na minha terra, a batalha é hoje e a leva que eu
+levantar só vira hoste amanhã. O único aviso que existe é o exército crescendo do outro lado da
+fronteira, que é o mesmo que o jogador lê no mapa. Agora conta — **quando é maior do que tudo o
+que eu posso pôr em pé**, exército mais milícia. Medido depois: **281 poder-turnos em que a IA
+se viu ameaçada** numa partida de oitenta.
+
+⚠️ **Socorro e surtida seguem em ZERO no banco, e isso está certo.** A IA recusa reforço e
+saída que perderiam, e contra um invasor rolando com o exército inteiro ela perderia sempre —
+mandar seria alimentar a derrota em conta-gotas. Os dois caminhos têm teste provando que
+disparam quando a conta fecha. **A defesa que aparece na partida é o recrutamento**, e ela
+aparece: é ele que segura o avanço.
+
+**O que NÃO procede:** *"a composição leve + arqueiro venceu todos os adversários testados com
+o mesmo orçamento"*. Ela perde para "só leves" (−376). Quem vence as cinco na coluna do ouro é
+**só leves**, e isso está documentado como desenho desde a calibragem das armas — o leve é a
+opção eficiente em moeda, e perde a coluna da comida.
+
+### O que veio antes: em paz é guarda, em guerra é exército
 
 Henrique, jogando: *"todas as províncias geram soldados, todas no round 1 já vão direto para
 soldados"* — e, na mensagem seguinte, o que ele esperava: *"quando entrar em guerra se espera

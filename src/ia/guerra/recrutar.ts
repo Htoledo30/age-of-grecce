@@ -8,13 +8,21 @@
  *    que fatia da renda ela topa gastar mantendo gente em armas. Passar disso é o caminho
  *    curto para a deserção por falta de pagamento.
  *
+ *    ⚠️ **A folha vigente vem de `manutencaoDe`, que é a conta VERDADEIRA.** Estimá-la
+ *    multiplicando homens pela taxa de casa erra em dois lugares: tropa em terra alheia paga
+ *    a taxa de campanha, várias vezes maior, e a soma por província perde quem nasceu em
+ *    terra que caiu. Enquanto a IA não sai de casa isso dá no mesmo — e é justamente por isso
+ *    que tem de ser consertado antes de ela sair.
+ *
  *    ⚠️ **E são DUAS folhas: a de paz e a de guerra.** Com uma só, ela alistava o exército
  *    inteiro no turno 1 — 8.524 homens num mundo onde ninguém tinha marchado, e vários
  *    poderes ficando mais pobres na hora, porque recrutar tira gente da lavoura e do imposto.
  *    Em paz ela mantém uma GUARDA; exército se levanta quando alguém aparece na porta. É a
  *    mesma decisão que o jogador toma.
- * 2. **A COMIDA**, que é do reino inteiro. Tropa a mais com a despensa no zero mata civil e
- *    para o crescimento — perde-se a corrida sem levar uma batalha.
+ * 2. **A COMIDA**, que é do reino inteiro. ⚠️ **E ela limita o TAMANHO da leva, não só a
+ *    decisão de levantar uma.** Parar só quando o saldo já está negativo é chegar tarde:
+ *    medido, com saldo ZERO a IA levantava vinte mil homens e terminava o turno em −6. O
+ *    teto é a comida que sobra, convertida em bocas — e cavalo conta por vários.
  * 3. **A GENTE**, província por província. Quem vai pras armas sai da lavoura e do imposto.
  *
  * ⚠️ **Ela recruta na paz, e não quando o inimigo aparece.** Leva demora um turno para virar
@@ -57,9 +65,10 @@ export function levaEscolhida(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,
-  ajustes: AjustesCombate,
+  ajustes: Ajustes['jogo'],
 ): LevaCotada | null {
-  const folgaNaFolha = folgaDaFolha(campanha, idPoder, estilo, ajustes);
+  const combate = ajustes.combate;
+  const folgaNaFolha = folgaDaFolha(campanha, idPoder, estilo);
   if (folgaNaFolha <= 0) return null;
 
   const balanco = campanha.balancoAlimentarDe(idPoder);
@@ -67,15 +76,22 @@ export function levaEscolhida(
   // ⚠️ Despensa no vermelho tranca o recrutamento inteiro. Não é excesso de zelo: cada boca a
   // mais come de um saldo que já não fecha, e a fome mata civil, não só soldado.
   if (balanco.saldo < 0) return null;
+  // E o que sobra na despensa vira TETO da leva, em bocas. Sem isto ela recrutava até o saldo
+  // virar dentro do mesmo turno: medido, vinte mil homens com saldo zero e o turno fechando
+  // em −6.
+  const bocasQueSobram = balanco.saldo * ajustes.alimento.soldadosPorPonto;
 
   let melhor: LevaCotada | null = null;
   let melhorValor = 0;
   for (const provincia of [...campanha.provinciasDe(idPoder)].sort()) {
-    const arma = armaEscolhida(campanha, provincia, estilo, ajustes, apertada);
+    const arma = armaEscolhida(campanha, provincia, estilo, combate, apertada);
     if (arma === null) continue;
     const teto = Math.min(
       campanha.maximoParaLevaEm(provincia, arma.arma),
-      Math.floor(folgaNaFolha / ajustes.manutencaoPorHomem.emCasa),
+      Math.floor(folgaNaFolha / combate.manutencaoPorHomem.emCasa),
+      // Bocas em homens: cavalo come por vários, e por isso um ponto de comida compra menos
+      // cavaleiros do que hoplitas.
+      Math.floor(bocasQueSobram / combate.batalha.armas[arma.arma].comida),
     );
     if (teto <= 0) continue;
     if (!campanha.podeRecrutar(provincia, teto, arma.arma, idPoder).pode) continue;
@@ -96,20 +112,13 @@ export function levaEscolhida(
  * A renda menos o que a tropa já custa, limitado pela fatia que o estilo topa gastar. É o
  * único teto que a IA se impõe sozinha — os outros dois vêm do mundo.
  */
-function folgaDaFolha(
-  campanha: Campanha,
-  idPoder: string,
-  estilo: EstiloDeIa,
-  ajustes: AjustesCombate,
-): number {
+function folgaDaFolha(campanha: Campanha, idPoder: string, estilo: EstiloDeIa): number {
   const renda = campanha.rendaDe(idPoder);
-  // ⚠️ **Os homens DESTE PODER, e não os nascidos nas terras dele.** A diferença parece
-  // acadêmica e não é: `homensEmArmasDe` conta por TERRA NATAL, então um exército inimigo
-  // acampado numa província minha entrava na minha folha — e a IA parava de recrutar bem na
-  // hora em que o inimigo estava em cima dela. Medido: 211 homens sob ameaça contra 316 em
-  // paz, com a folha de guerra sendo o dobro da de paz.
-  const emArmas = campanha.homensEmArmasDoPoder(idPoder);
-  const folhaAtual = emArmas * ajustes.manutencaoPorHomem.emCasa;
+  // ⚠️ **A conta VERDADEIRA, e não uma estimativa.** `manutencaoDe` é a mesma que a barra de
+  // turno mostra e que o tesouro paga: ela já sabe quem está em casa e quem pisa em terra
+  // alheia pagando a taxa de campanha. Multiplicar homens pela taxa de casa dava no mesmo
+  // enquanto a IA não saía do reino — e erraria feio no dia em que saísse.
+  const folhaAtual = campanha.manutencaoDe(idPoder);
   // ⚠️ Guerra é ter alguém nas suas terras ou na porta delas — e não uma declaração, que este
   // jogo ainda não tem. Ver `estaAmeacado`.
   const teto = estaAmeacado(campanha, idPoder) ? estilo.folhaMilitar : estilo.folhaEmPaz;

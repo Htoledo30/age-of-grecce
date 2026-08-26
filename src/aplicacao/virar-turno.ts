@@ -21,7 +21,7 @@ export function virarTurno(jogo: Jogo): void {
   // E ela vive AQUI, fora de `passarTurno`, porque é um jogador e não uma regra da campanha —
   // se morasse lá dentro, os testes que viram turnos passariam a ter dezessete poderes agindo
   // dentro deles, e um teste sobre fome deixaria de ser sobre fome.
-  jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo.combate);
+  jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo);
   jogo.campanha.passarTurno();
   jogo.tela.cronica.mostrar(jogo.campanha.turno, noticiasDaRodada(jogo));
   // ⚠️ A animação começa DEPOIS de resolver e ANTES de repintar, e a ordem importa: só depois

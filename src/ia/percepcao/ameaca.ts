@@ -58,32 +58,48 @@ export function ameacasDe(campanha: Campanha, idPoder: string): readonly Ameaca[
 /**
  * Há guerra na minha porta?
  *
- * Duas coisas contam, e nenhuma outra:
+ * Três coisas contam, e nenhuma outra:
  *
  * 1. **exército alheio pisando na minha terra** — não há o que discutir;
  * 2. **exército alheio acampado FORA DE CASA na porta da minha terra** — alguém em campanha,
- *    e o próximo passo pode ser aqui. Levantar tropa quando ele já pisou é tarde: a leva
- *    demora um turno para virar hoste e a batalha é hoje.
+ *    e o próximo passo pode ser aqui;
+ * 3. **exército alheio em casa, na minha fronteira, MAIOR que tudo o que eu posso pôr em pé**
+ *    — exército mais milícia — porque alguém se juntando assim está se juntando para vir.
  *
- * ⚠️ **Guarnição do vizinho parada em casa NÃO é ameaça, e a primeira versão disto errava
- * justamente aí.** Com dezessete poderes mantendo guarda nas próprias fronteiras, todo mundo
- * era vizinho do exército de alguém — e o mapa inteiro vivia em pé de guerra permanente,
- * gastando folha de guerra numa paz completa. Um soldado em casa é a mesma coisa que uma
- * muralha: existe, e não quer dizer nada.
+ * ⚠️ **A terceira faltava, e sem ela a IA era cega para a invasão que se prepara.** As ordens
+ * deste jogo são simultâneas: quando o invasor pisa na minha terra, a batalha é HOJE, e a leva
+ * que eu levantar só vira hoste amanhã. O único aviso que existe é o exército crescendo do
+ * outro lado da fronteira — e é o mesmo aviso que o jogador humano lê no mapa. Medido: com uma
+ * invasão programada no banco de provas, a IA dava **zero socorros e zero surtidas** em oitenta
+ * turnos, porque o atacante juntava tropa em casa e ela nunca via.
  *
- * É esta pergunta que separa a folha de PAZ da de GUERRA. Sem ela a IA alistava o exército
- * inteiro no turno 1, num mundo onde ninguém tinha marchado ainda.
+ * ⚠️ **Mas guarnição do vizinho parada em casa não é ameaça, e a primeira versão disto errava
+ * aí.** Com dezessete poderes mantendo guarda nas próprias fronteiras, todo mundo era vizinho
+ * do exército de alguém — e o mapa vivia em pé de guerra permanente numa paz completa. Por
+ * isso a terceira regra compara TAMANHO: um vizinho com guarda é vizinho; um vizinho com mais
+ * gente em armas do que eu tenho inteiro é um problema.
+ *
+ * É esta pergunta que separa a folha de PAZ da de GUERRA.
  */
 export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
   const minhas = new Set(campanha.provinciasDe(idPoder));
+  // ⚠️ Exército MAIS milícia: um poder sem tropa nenhuma ainda tem as cidades dele em pé, e
+  // sem contá-las qualquer guarda de vizinho viraria ameaça — que é o defeito da primeira
+  // versão, pelo outro lado.
+  const minhaDefesa =
+    forcaTotalDe(campanha, idPoder) +
+    [...minhas].reduce((soma, id) => soma + campanha.miliciaEm(id), 0);
   for (const hoste of campanha.hostes()) {
     if (hoste.poder === idPoder) continue;
     if (minhas.has(hoste.posicao)) return true;
-    // Em casa não é campanha. Só conta quem já saiu da própria terra.
-    if (campanha.donoDe(hoste.posicao) === hoste.poder) continue;
-    for (const vizinha of campanha.vizinhasDe(hoste.posicao)) {
-      if (minhas.has(vizinha)) return true;
-    }
+    const naFronteira = campanha
+      .vizinhasDe(hoste.posicao)
+      .some((vizinha) => minhas.has(vizinha));
+    if (!naFronteira) continue;
+    // Fora de casa na minha porta é campanha em curso: basta estar ali.
+    if (campanha.donoDe(hoste.posicao) !== hoste.poder) return true;
+    // Em casa, só conta quem está juntando mais gente do que eu tenho no mundo todo.
+    if (campanha.forcaDaHoste(hoste.id) > minhaDefesa) return true;
   }
   return false;
 }
