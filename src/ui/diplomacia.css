@@ -212,3 +212,18 @@
 .diplomacia__pontos {
   font-variant-numeric: tabular-nums;
 }
+
+/* As quantias de presente, em linha. ⚠️ Cotadas antes de o jogador pagar: ouro é o recurso
+   mais escasso do jogo, e botão que tira do cofre sem dizer o que compra ninguém aperta. */
+.diplomacia__presentes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.diplomacia__rotulo {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}

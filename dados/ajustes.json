@@ -37,7 +37,19 @@
         "porTerraTomada": -15,
         "terraTomadaMaxima": -45
       },
-      "choque": { "conquista": -25 }
+      "choque": { "conquista": -25 },
+      "presente": { "pontosMaximos": 40, "meiaRenda": 3, "tetoAcimaDoAlvo": 35 },
+      "pacto": {
+        "prazos": [
+          { "turnos": 10, "opiniaoMinima": -20 },
+          { "turnos": 20, "opiniaoMinima": 15 },
+          { "turnos": 40, "opiniaoMinima": 45 }
+        ],
+        "pontos": 15,
+        "choqueDeRuptura": -50,
+        "reputacaoDaRuptura": -25,
+        "reputacaoPorTurno": 1
+      }
     },
     "populacao": {
       "taxaNatural": 0.005,

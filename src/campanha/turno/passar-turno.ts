@@ -31,7 +31,12 @@ import { processarObras } from './processar-obras';
 import { resolverMarchas } from './resolver-marchas';
 
 /** Vira o turno e devolve tudo o que virou notícia. */
-import { andarRelacoes, limparGuerrasMortas, limparTregoas } from '../diplomacia/relacoes';
+import {
+  andarRelacoes,
+  andarReputacao,
+  limparGuerrasMortas,
+  limparTregoas,
+} from '../diplomacia/relacoes';
 import { poderesComFicha } from '../governo/poderes';
 
 export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
@@ -63,6 +68,8 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   limparTregoas(nucleo);
   // A opinião anda um passo por turno, como o humor do povo — e pelos mesmos motivos.
   andarRelacoes(nucleo, poderesComFicha(nucleo));
+  // A reputação volta devagar para zero e os pactos vencidos somem.
+  andarReputacao(nucleo);
   // E a guerra contra quem não existe mais acaba sozinha: ver `limparGuerrasMortas`.
   limparGuerrasMortas(nucleo);
 

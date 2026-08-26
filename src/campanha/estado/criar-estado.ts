@@ -113,6 +113,9 @@ export function criarEstadoInicial(
     tregoas: {},
     // Indiferença é o padrão: a tabela guarda só quem já se esbarrou.
     relacoes: {},
+    pactos: {},
+    // Ninguém quebrou promessa nenhuma ainda.
+    reputacao: {},
     revoltas: {},
   };
 }

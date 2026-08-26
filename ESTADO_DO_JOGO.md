@@ -69,6 +69,32 @@ briga mais (41 guerras, 36 pazes, 28% dos poder-turnos em guerra) e ninguém dis
 A relação existe só entre os 18 poderes com ficha: opinião de quem não arrecada nem decide
 seria um número que não vira decisão nenhuma.
 
+**Duas ações diplomáticas existem, e as duas pagam com algo que já existe no jogo.**
+
+**Presente** — ouro do tesouro. Vale pelo bolso de QUEM RECEBE: 500 moedas são quatro turnos de
+renda para quem arrecada 120 e troco para quem arrecada 2.000. Satura (dobrar o presente não
+dobra a amizade) e, sobretudo, **é um choque, não uma parcela**: empurra a opinião agora e o
+número volta a cair para o que os fatos dizem. ⚠️ **Presente compra TEMPO, não amizade** — há um
+teto de quanto o ouro levanta acima do que os fatos justificam, e é ele que impede o reino rico
+de comprar o mapa sem levantar um soldado.
+
+**Pacto de não-agressão** — paga com a sua liberdade de atacar. **O que estica o prazo não é
+ouro, é confiança**: 10 turnos pedem opinião −20, 20 turnos pedem +15, 40 turnos pedem +45. É
+isso que faz o presente ser a ENTRADA do pacto. Enquanto dura, ninguém declara guerra e a
+opinião sobe sozinha, porque fronteira garantida é um fato. Romper é a única saída antes do
+prazo, e custa a opinião do traído **e a sua REPUTAÇÃO com o mapa inteiro** — sem esse preço,
+pacto seria papel.
+
+⚠️ **A assinatura precisa dos DOIS.** A primeira versão aceitava com o consentimento de um lado
+só, e a medição foi brutal: o fraco amarrava o forte, o forte ia comer quem não tinha amarrado,
+e o resultado saltou para **46 províncias mudando de dono e 12 poderes eliminados** contra 22 e
+6 sem pacto nenhum.
+
+E a IA usa as duas: medido em 100 turnos, **79 pactos assinados e 64 presentes, 10.390 de ouro
+circulando entre reinos**. O presente dela é suborno defensivo — vizinho mais forte, na faixa em
+que ele declararia guerra — e é o que dá ao estilo `mercador` uma jogada que não é levantar
+lanças que ele não sabe usar.
+
 ⚠️ **E ela senta com trava, porque cerco DURA.** Só abre cerco quem tem mais gente do que a
 milícia da praça, quem ganharia do exército inteiro do dono se ele viesse socorrer, e quem tem
 renda para pagar a taxa de campanha — três vezes a de casa — sem fim marcado. Sem as três, a

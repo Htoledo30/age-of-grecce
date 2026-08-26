@@ -210,6 +210,24 @@ export interface EstadoCampanha {
    * escolha do nível de imposto e das guerras, pelo mesmo motivo.
    */
   relacoes: Record<string, number>;
+  /**
+   * Pactos de não-agressão em curso, pela mesma chave, guardando o turno em que VENCEM.
+   *
+   * Enquanto ele segura, nenhum dos dois declara guerra ao outro — e a opinião sobe, porque a
+   * fronteira segura é um fato como qualquer outro. Quem quiser atacar antes do prazo tem de
+   * ROMPER, e romper custa a reputação com o mapa inteiro.
+   */
+  pactos: Record<string, number>;
+  /**
+   * A reputação de cada poder, de −100 a 0. Zero é quem nunca quebrou promessa.
+   *
+   * ⚠️ **É o que faz um pacto valer o papel.** Sem ela, assinar e trair na virada seguinte
+   * sairia de graça, e o único prejudicado seria o traído — que já não confiava mesmo. Com ela,
+   * a traição entra na conta da opinião de TODO MUNDO: o mapa inteiro vê.
+   *
+   * Sobe sozinha de volta a zero com o tempo. Rancor por promessa quebrada não é eterno.
+   */
+  reputacao: Record<string, number>;
 }
 
 /** Uma construção em andamento. */

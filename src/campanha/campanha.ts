@@ -24,12 +24,11 @@ import type { NivelDeImposto } from './economia';
 import type { EstadoCampanha } from './estado-campanha';
 import { efemerosVazios } from './estado/efemeros';
 import { restaurarEstado } from './estado/restaurar-estado';
-import { ConsultasDeGuerra } from './fachada/consultas-de-guerra';
+import { ComandosDaDiplomacia } from './fachada/comandos-da-diplomacia';
 import { mudarCapital } from './governo/capital';
 import { definirImposto } from './governo/decreto-de-imposto';
 import { darOuro } from './governo/tesouro';
 import { mudarPostura } from './guerra/cercos';
-import { declararGuerra, fazerPaz } from './diplomacia/relacoes';
 import { recrutar } from './guerra/levas';
 import { cancelarOrdem, ordenarMarcha } from './guerra/marchas';
 import { surtir } from './guerra/surtidas';
@@ -37,7 +36,7 @@ import { construir } from './provincia/construcoes';
 import { trocarDono } from './provincia/posse';
 import { passarTurno } from './turno/passar-turno';
 
-export class Campanha extends ConsultasDeGuerra {
+export class Campanha extends ComandosDaDiplomacia {
   // ── A partida ───────────────────────────────────────────────────────────────────────
   /** Escolhe o poder do jogador e abre o turno 1. Só acontece uma vez. */
   comecar(idPoder: string): void {
@@ -135,31 +134,6 @@ export class Campanha extends ConsultasDeGuerra {
   }
 
   /** Troca a postura de um cerco já em pé. Vale na PRÓXIMA virada, como toda ordem. */
-  /**
-   * Declara guerra. **É a porta única da diplomacia**, e a IA passa por ela igual à tela.
-   *
-   * Declarar e marchar no mesmo turno é permitido de propósito: as ordens são simultâneas, e
-   * um aviso prévio de uma virada daria ao defensor um turno inteiro de vantagem sobre quem
-   * declarou — o ataque de surpresa deixaria de existir.
-   */
-  declararGuerra(contra: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (!declararGuerra(this.nucleo, porPoder, contra)) return;
-    this.efemeros.diplomacia.push({ de: porPoder, com: contra, tipo: 'guerra' });
-    this.aoMudar();
-  }
-
-  /**
-   * Encerra a guerra e abre a trégua.
-   *
-   * ⚠️ **Quem chama já tem o SIM dos dois lados.** A fachada registra o acordo; quem decide se
-   * a IA aceita é `src/ia/diplomacia/paz.ts`, e é a aplicação que junta as duas coisas.
-   */
-  fazerPaz(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (!fazerPaz(this.nucleo, porPoder, com)) return;
-    this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'paz' });
-    this.aoMudar();
-  }
-
   mudarPostura(
     idProvincia: string,
     postura: Postura,

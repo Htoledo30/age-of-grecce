@@ -78,6 +78,9 @@ let primeiraConquista = 0;
 let cercoTurnos = 0;
 let marchas = 0;
 let guerrasDeclaradas = 0;
+let pactos = 0;
+let presentes = 0;
+let ouroEmPresentes = 0;
 let pazes = 0;
 let emGuerraTurnos = 0;
 const cresceu = new Map<string, number>(poderes.map((id) => [id, c.provinciasDe(id).length]));
@@ -143,6 +146,11 @@ for (let turno = 0; turno < TURNOS; turno++) {
     surtidas += lance.defesas.filter((d) => d.tipo === 'surtida').length;
     marchas += lance.ataques.length;
     if (lance.guerra !== null) guerrasDeclaradas += 1;
+    if (lance.pacto !== null) pactos += 1;
+    if (lance.presente !== null) {
+      presentes += 1;
+      ouroEmPresentes += lance.presente.ouro;
+    }
     pazes += lance.pazes.length;
     if (!lance.obra) continue;
     const doPoder = obras.get(lance.poder) ?? new Map<string, number>();
@@ -220,6 +228,11 @@ console.log(`  homens em armas no mapa: ${n(emArmas)}`);
 console.log(`
   ── A GUERRA ──`);
 console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pazes / 2}`);
+// ⚠️ Zero pactos quer dizer que a diplomacia entre computadores é mecânica morta: o jogador
+// veria uma tela cheia de botões que só ele aperta.
+console.log(
+  `  pactos assinados: ${pactos} · presentes: ${presentes} (${n(ouroEmPresentes)} de ouro)`,
+);
 // ⚠️ Zero aqui quer dizer que a diplomacia virou uma paz eterna, que é o mapa parado de outro
 // jeito. O número saudável é a maior parte dos poderes em paz e alguns em guerra o tempo todo.
 console.log(

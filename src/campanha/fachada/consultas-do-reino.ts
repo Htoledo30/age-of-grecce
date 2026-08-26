@@ -28,11 +28,17 @@ import {
   emGuerra,
   guerraDesde,
   guerrasDe,
+  pactoAte,
   parcelasDaRelacaoEntre,
   podeDeclararGuerra,
+  podeFirmarPacto,
+  podePresentear,
+  prazosDePacto,
+  reputacaoDe,
   podeFazerPaz,
   relacaoEntre,
   tregoaAte,
+  valorDoPresente,
 } from '../diplomacia/relacoes';
 import type { ParcelaDaRelacao } from '../diplomacia/relacao';
 import { poderesComFicha } from '../governo/poderes';
@@ -272,6 +278,45 @@ export abstract class ConsultasDoReino {
     porPoder: string = this.nucleo.estado.jogador ?? '',
   ): Permissao {
     return podeDeclararGuerra(this.nucleo, porPoder, contra);
+  }
+
+  /** Até que turno o pacto de não-agressão segura. `undefined` quando não há. */
+  pactoAte(a: string, b: string): number | undefined {
+    return pactoAte(this.nucleo, a, b);
+  }
+
+  /** A reputação deste poder, de −100 a 0. Zero é quem nunca quebrou promessa. */
+  reputacaoDe(idPoder: string): number {
+    return reputacaoDe(this.nucleo, idPoder);
+  }
+
+  /** Os prazos de pacto que dá para assinar hoje, do mais longo ao mais curto. */
+  prazosDePacto(
+    com: string,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+    return prazosDePacto(this.nucleo, porPoder, com);
+  }
+
+  podeFirmarPacto(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): Permissao {
+    return podeFirmarPacto(this.nucleo, porPoder, com, turnos);
+  }
+
+  /** Quanto este presente valeria para ele, em pontos de opinião. A tela mostra antes. */
+  valorDoPresente(para: string, ouro: number): number {
+    return valorDoPresente(this.nucleo, para, ouro);
+  }
+
+  podePresentear(
+    para: string,
+    ouro: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): Permissao {
+    return podePresentear(this.nucleo, porPoder, para, ouro);
   }
 
   podeFazerPaz(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): Permissao {

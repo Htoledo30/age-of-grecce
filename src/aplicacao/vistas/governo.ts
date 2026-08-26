@@ -149,11 +149,33 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
       relacao: campanha.relacaoEntre(jogador.id, id),
       // A conta inteira, como a do humor do povo: o número sozinho parece arbitrário.
       parcelas: campanha.parcelasDaRelacaoEntre(jogador.id, id),
+      presentes: presentesPara(jogo, id),
+      pacto: Math.max(0, (campanha.pactoAte(jogador.id, id) ?? campanha.turno) - campanha.turno),
+      prazos: campanha.prazosDePacto(id),
     }))
     // Guerra primeiro: é o que exige decisão. Depois por nome, que é como se procura na lista.
     .sort((a, b) => Number(b.emGuerra) - Number(a.emGuerra) || a.nome.localeCompare(b.nome));
 
   return { vizinhos, guerras: campanha.guerrasDe(jogador.id).length };
+}
+
+/**
+ * As três quantias de presente que fazem sentido para ESTE vizinho, já cotadas.
+ *
+ * ⚠️ **A escala sai da renda DELE, não do seu cofre.** Um presente vale "quantos turnos de
+ * renda dele você está entregando" — então oferecer 5.000 a quem arrecada 120 seria absurdo, e
+ * oferecer 500 a quem arrecada 2.000 seria quase ofensa. As quantias nascem na escala certa e o
+ * jogador não precisa fazer essa conta de cabeça.
+ *
+ * Só entram as que cabem no cofre: botão que não dá para apertar é botão que frustra.
+ */
+function presentesPara(jogo: Jogo, id: string): readonly { ouro: number; pontos: number }[] {
+  const { campanha } = jogo;
+  const renda = Math.max(1, campanha.rendaDe(id));
+  return [1, 3, 8]
+    .map((turnos) => Math.round((renda * turnos) / 50) * 50)
+    .filter((ouro) => ouro > 0 && campanha.podePresentear(id, ouro).pode)
+    .map((ouro) => ({ ouro, pontos: campanha.valorDoPresente(id, ouro) }));
 }
 
 /**

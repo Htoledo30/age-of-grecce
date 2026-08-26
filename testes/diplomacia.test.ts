@@ -225,3 +225,159 @@ describe('a relação: o humor entre reinos', () => {
     expect(original.relacaoEntre('atenas', 'megara')).toBeLessThan(0);
   });
 });
+
+describe('o presente: ouro compra TEMPO, não amizade', () => {
+  it('vale pelo bolso de quem recebe, e não por uma tabela fixa', () => {
+    // ⚠️ 500 moedas para quem arrecada 120 são quatro turnos de renda — uma fortuna. As mesmas
+    // 500 para quem arrecada 2.000 são troco, e troco é quase ofensa.
+    const c = nova();
+    const pobre = [...c.poderesComFicha()]
+      .filter((id) => id !== 'atenas')
+      .sort((a, b) => c.rendaDe(a) - c.rendaDe(b))[0]!;
+    const rico = [...c.poderesComFicha()]
+      .filter((id) => id !== 'atenas')
+      .sort((a, b) => c.rendaDe(b) - c.rendaDe(a))[0]!;
+    expect(c.rendaDe(rico)).toBeGreaterThan(c.rendaDe(pobre));
+    expect(c.valorDoPresente(pobre, 500)).toBeGreaterThan(c.valorDoPresente(rico, 500));
+  });
+
+  it('satura: dobrar o presente não dobra a amizade', () => {
+    const c = nova();
+    const um = c.valorDoPresente('megara', 500);
+    const dobro = c.valorDoPresente('megara', 1000);
+    expect(dobro).toBeGreaterThan(um);
+    expect(dobro).toBeLessThan(um * 2);
+  });
+
+  it('o ouro muda de cofre e a opinião sobe', () => {
+    const c = nova();
+    c.darOuro(5_000, 'atenas');
+    const meu = c.tesouroDe('atenas');
+    const dele = c.tesouroDe('megara');
+    const antes = c.relacaoEntre('atenas', 'megara');
+
+    const pontos = c.presentear('megara', 1_000);
+    expect(pontos).toBeGreaterThan(0);
+    expect(c.tesouroDe('atenas')).toBe(meu - 1_000);
+    expect(c.tesouroDe('megara')).toBe(dele + 1_000);
+    expect(c.relacaoEntre('atenas', 'megara')).toBe(antes + pontos);
+  });
+
+  it('⚠️ mas o número volta a cair: presente não muda os FATOS', () => {
+    // O freio que impede a diplomacia de virar loja. O ouro cobre a distância até um ponto e
+    // para; quem quer a opinião lá em cima assina pacto, abre comércio, devolve a terra.
+    const c = nova();
+    c.darOuro(200_000, 'atenas');
+    for (let i = 0; i < 8; i++) c.presentear('megara', 5_000);
+    const comprado = c.relacaoEntre('atenas', 'megara');
+    expect(comprado).toBeLessThan(100);
+    for (let i = 0; i < 40; i++) c.passarTurno();
+    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(comprado);
+  });
+
+  it('não se presenteia quem está trocando tiros com você', () => {
+    const c = nova();
+    c.darOuro(5_000, 'atenas');
+    c.declararGuerra('megara');
+    const recusa = c.podePresentear('megara', 500);
+    expect(recusa.pode).toBe(false);
+    expect(recusa.pode === false && recusa.motivo).toContain('em guerra');
+  });
+
+  it('e não se dá o que não se tem', () => {
+    const c = nova();
+    expect(c.podePresentear('megara', 999_999).pode).toBe(false);
+  });
+});
+
+describe('o pacto de não-agressão: o prazo se compra com CONFIANÇA', () => {
+  it('quanto mais longo o pacto, mais opinião ele exige', () => {
+    const c = nova();
+    const prazos = c.prazosDePacto('megara');
+    expect(prazos.length).toBeGreaterThan(1);
+    // Do mais longo ao mais curto, e o mais longo é o que pede mais.
+    expect(prazos[0]!.turnos).toBeGreaterThan(prazos[prazos.length - 1]!.turnos);
+    expect(prazos[0]!.opiniaoMinima).toBeGreaterThan(prazos[prazos.length - 1]!.opiniaoMinima);
+  });
+
+  it('⚠️ o presente é a ENTRADA do pacto: ouro compra o momento, o momento compra o prazo', () => {
+    const c = nova();
+    const prazos = c.prazosDePacto('megara');
+    const medio = prazos[Math.floor(prazos.length / 2)]!;
+    expect(c.podeFirmarPacto('megara', medio.turnos).pode).toBe(false);
+
+    c.darOuro(300_000, 'atenas');
+    for (let i = 0; i < 6; i++) c.presentear('megara', 20_000);
+    expect(c.relacaoEntre('atenas', 'megara')).toBeGreaterThanOrEqual(medio.opiniaoMinima);
+    expect(c.podeFirmarPacto('megara', medio.turnos).pode).toBe(true);
+  });
+
+  it('⚠️ mas o prazo mais longo NÃO se compra: ouro não vira aliança', () => {
+    // O teto do presente é o freio: ele levanta a opinião só até certa altura acima do que os
+    // FATOS justificam. Para ir além é preciso mudar os fatos — e é isso que impede o reino
+    // rico de comprar o mapa inteiro sem levantar um soldado.
+    const c = nova();
+    c.darOuro(900_000, 'atenas');
+    for (let i = 0; i < 20; i++) c.presentear('megara', 40_000);
+    const longo = c.prazosDePacto('megara')[0]!;
+    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(longo.opiniaoMinima);
+    expect(c.podeFirmarPacto('megara', longo.turnos).pode).toBe(false);
+  });
+
+  it('enquanto ele segura, ninguém declara guerra — e a opinião sobe sozinha', () => {
+    const c = nova();
+    const curto = c.prazosDePacto('megara').filter((p) => p.pode).at(-1);
+    expect(curto).toBeDefined();
+    c.firmarPacto('megara', curto!.turnos);
+
+    const recusa = c.podeDeclararGuerra('megara');
+    expect(recusa.pode).toBe(false);
+    expect(recusa.pode === false && recusa.motivo).toContain('pacto');
+    // E ele é um FATO: entra na conta do alvo, então a opinião melhora enquanto dura.
+    expect(c.parcelasDaRelacaoEntre('atenas', 'megara').map((p) => p.rotulo)).toContain(
+      'pacto de não-agressão',
+    );
+  });
+
+  it('romper custa a opinião dele E a sua reputação com o mapa inteiro', () => {
+    // ⚠️ É a única saída antes do prazo, e é cara de propósito: pacto que não custa nada é
+    // papel que não vale nada.
+    const c = nova();
+    const curto = c.prazosDePacto('megara').filter((p) => p.pode).at(-1)!;
+    c.firmarPacto('megara', curto.turnos);
+    const antes = c.relacaoEntre('atenas', 'megara');
+    expect(c.reputacaoDe('atenas')).toBe(0);
+
+    c.romperPacto('megara');
+    expect(c.pactoAte('atenas', 'megara')).toBeUndefined();
+    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(antes);
+    expect(c.reputacaoDe('atenas')).toBeLessThan(0);
+    // E o mapa inteiro vê: a promessa quebrada entra na conta de OUTRO vizinho.
+    expect(c.parcelasDaRelacaoEntre('atenas', 'eleusis').map((p) => p.rotulo)).toContain(
+      'promessa quebrada',
+    );
+    expect(c.podeDeclararGuerra('megara').pode).toBe(true);
+  });
+
+  it('e o rancor não é eterno: a reputação volta devagar para zero', () => {
+    const c = nova();
+    const curto = c.prazosDePacto('megara').filter((p) => p.pode).at(-1)!;
+    c.firmarPacto('megara', curto.turnos);
+    c.romperPacto('megara');
+    const caida = c.reputacaoDe('atenas');
+    for (let i = 0; i < 10; i++) c.passarTurno();
+    expect(c.reputacaoDe('atenas')).toBeGreaterThan(caida);
+  });
+
+  it('a IA assina pactos e paga por eles', () => {
+    // ⚠️ Sem o presente, pacto entre computadores era mecânica morta: medido, zero pactos em
+    // 100 turnos. O ouro é o que faz o laço fechar.
+    const c = nova('atenas');
+    correrIA(c, 40);
+    const pactos = c
+      .poderesComFicha()
+      .flatMap((a) => c.poderesComFicha().map((b) => (a < b ? c.pactoAte(a, b) : undefined)))
+      .filter((ate) => ate !== undefined);
+    expect(pactos.length).toBeGreaterThan(0);
+  });
+});

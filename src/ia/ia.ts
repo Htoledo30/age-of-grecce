@@ -46,6 +46,7 @@
 import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
+import { pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
 import { querPaz } from './diplomacia/paz';
 import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
@@ -67,6 +68,10 @@ export interface LanceDaIa {
   leva: { provincia: string; arma: string; homens: number } | null;
   /** Contra quem ela declarou guerra nesta virada, se declarou. */
   guerra: string | null;
+  /** Com quem ela assinou pacto de não-agressão nesta virada, e por quantos turnos. */
+  pacto: { com: string; turnos: number } | null;
+  /** O presente que ela mandou nesta virada, se mandou. */
+  presente: { para: string; ouro: number } | null;
   defesas: readonly { destino: string; homens: number; tipo: string }[];
   ataques: readonly { destino: string; homens: number; postura: string; valor: number }[];
   /** Com quem ela assinou a paz nesta virada. */
@@ -121,6 +126,19 @@ export function jogarIA(
     // marcha.** As ordens são simultâneas: um aviso prévio de uma virada daria ao defensor um
     // turno inteiro de vantagem sobre quem declarou, e o ataque de surpresa deixaria de
     // existir. O que a declaração garante é aparecer na crônica e na aba de Diplomacia.
+    // ⚠️ O pacto ANTES da guerra, e a ordem tem motivo: ele só é assinado com quem ela não
+    // atacaria de qualquer jeito, então nunca tira um alvo da mesa — mas assinar depois de
+    // declarar seria a mesma virada oferecendo paz e guerra ao mesmo vizinho.
+    // ⚠️ O presente vem ANTES do pacto, e na MESMA virada: ele existe para desbloquear a
+    // assinatura, e mandar ouro num turno para assinar no outro daria ao vizinho uma virada
+    // inteira para mudar de ideia. É o laço inteiro num lugar só — ouro compra o momento, o
+    // momento compra o prazo.
+    const presente = presenteEscolhido(campanha, idPoder, estilo, dados);
+    if (presente !== null) campanha.presentear(presente.para, presente.ouro, idPoder);
+
+    const pacto = pactoEscolhido(campanha, idPoder, estilo, dados);
+    if (pacto !== null) campanha.firmarPacto(pacto.com, pacto.turnos, idPoder);
+
     const guerra = guerraEscolhida(campanha, idPoder, estilo, ajustes.combate);
     if (guerra !== null) campanha.declararGuerra(guerra, idPoder);
 
@@ -174,6 +192,8 @@ export function jogarIA(
       decretos,
       leva: leva ? { provincia: leva.provincia, arma: leva.arma, homens: leva.homens } : null,
       guerra,
+      pacto,
+      presente,
       defesas: defesas.map((d) => ({ destino: d.destino, homens: d.homens, tipo: d.tipo })),
       ataques: ataques.map((a) => ({
         destino: a.destino,

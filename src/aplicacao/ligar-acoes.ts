@@ -10,6 +10,7 @@ import { atualizarInterface } from './atualizar-interface';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { esquecerCampanha, salvarCampanha } from './salvamento-local';
+import { aceitaPacto } from '@/ia/diplomacia/pactos';
 import { querPaz } from '@/ia/diplomacia/paz';
 import { estiloDe } from '@/ia/estilo';
 import { virarTurno } from './virar-turno';
@@ -119,6 +120,52 @@ export function ligarAcoes(jogo: Jogo): void {
    * pelo outro lado é a IA, pela mesma função que ela usa para decidir as pazes dela. A
    * aplicação é o lugar onde o clique do jogador e a cabeça da IA se juntam.
    */
+  tela.diplomacia.aoPresentear = (idPoder, ouro) => {
+    const r = campanha.podePresentear(idPoder, ouro);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    const pontos = campanha.presentear(idPoder, ouro);
+    const nome = campanha.poder(idPoder).nome;
+    tela.diplomacia.dizer(
+      pontos > 0
+        ? `${nome} agradeceu o presente. Opinião +${pontos}.`
+        : `${nome} aceitou o ouro, mas já estava tão bem disposto quanto o ouro consegue deixá-lo.`,
+    );
+  };
+
+  tela.diplomacia.aoFirmarPacto = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const r = campanha.podeFirmarPacto(idPoder, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    // ⚠️ **A opinião abre a porta, mas ele ainda precisa QUERER** — a mesma pergunta que a IA
+    // faz antes de assinar com outro computador. Sem ela o jogador amarraria as mãos de um
+    // vizinho que está justamente juntando exército para atacá-lo, e foi assim que a medição
+    // pulou para 46 conquistas e 12 poderes eliminados.
+    if (!aceitaPacto(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder))) {
+      tela.diplomacia.dizer(
+        `${campanha.poder(idPoder).nome} recusou: não pretende amarrar as próprias mãos.`,
+      );
+      return;
+    }
+    campanha.firmarPacto(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `Pacto de ${turnos} turnos assinado com ${campanha.poder(idPoder).nome}.`,
+    );
+  };
+
+  tela.diplomacia.aoRomperPacto = (idPoder) => {
+    campanha.romperPacto(idPoder);
+    tela.diplomacia.dizer(
+      `Pacto rompido. ${campanha.poder(idPoder).nome} não esquece, e o mapa inteiro viu.`,
+    );
+  };
+
   tela.diplomacia.aoProporPaz = (idPoder) => {
     const eu = campanha.jogador?.id;
     if (eu === undefined) return;

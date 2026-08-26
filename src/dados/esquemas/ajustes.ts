@@ -174,6 +174,57 @@ export const Ajustes = z.object({
         /** Tomar uma terra dele à força. Some devagar se você não repetir. */
         conquista: z.number(),
       }),
+      /**
+       * O presente em ouro: quanto ele move a opinião, e até onde.
+       *
+       * ⚠️ Medido em TURNOS DE RENDA de quem recebe, e não em moedas: quinhentas moedas são
+       * uma fortuna para quem arrecada cento e vinte e um troco para quem arrecada dois mil.
+       */
+      presente: z.object({
+        /** O máximo que um presente pode valer, por maior que ele seja. */
+        pontosMaximos: z.number().positive(),
+        /**
+         * Quantos turnos de renda dele compram METADE do efeito máximo.
+         *
+         * É a mesma curva de saturação da perseguição da cavalaria: os primeiros compram
+         * quase tudo, e o resto rende pouco. Sem ela, dobrar o presente dobraria a amizade.
+         */
+        meiaRenda: z.number().positive(),
+        /**
+         * Quanto o ouro consegue levantar a opinião ACIMA do que os fatos justificam.
+         *
+         * ⚠️ É o freio que impede a diplomacia de virar loja: presente compra TEMPO, não
+         * amizade. Quem quer o número lá em cima muda os fatos — assina pacto, abre comércio,
+         * devolve a terra tomada.
+         */
+        tetoAcimaDoAlvo: z.number().positive(),
+      }),
+      /**
+       * O pacto de não-agressão: prazos, o que ele vale, e o que custa rompê-lo.
+       *
+       * ⚠️ **O que estica o prazo não é ouro, é CONFIANÇA.** Pagar mais por um pacto mais longo
+       * transformaria diplomacia em loja; exigir mais opinião faz o presente virar a entrada do
+       * pacto — o ouro compra o momento, e o momento compra o prazo.
+       */
+      pacto: z.object({
+        /** Os prazos oferecidos, do mais curto ao mais longo, com a opinião que cada um pede. */
+        prazos: z
+          .array(
+            z.object({
+              turnos: z.number().int().positive(),
+              opiniaoMinima: z.number().min(-100).max(100),
+            }),
+          )
+          .min(1),
+        /** O que um pacto em pé vale na conta da opinião, enquanto durar. */
+        pontos: z.number(),
+        /** O tombo na opinião de quem foi traído. */
+        choqueDeRuptura: z.number(),
+        /** E o tombo na REPUTAÇÃO de quem traiu — este o mapa inteiro sente. */
+        reputacaoDaRuptura: z.number(),
+        /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
+        reputacaoPorTurno: z.number().positive(),
+      }),
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({

@@ -142,6 +142,8 @@ const SalvamentoCampanha = z.object({
     // `default` pelo mesmo motivo: salvamento de antes da relação ainda carrega, e o mundo
     // dele volta com todo mundo indiferente — que é onde uma campanha começa.
     relacoes: z.record(z.string().min(1), z.number().min(-100).max(100)).default({}),
+    pactos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    reputacao: z.record(z.string().min(1), z.number().min(-100).max(0)).default({}),
   }),
 });
 

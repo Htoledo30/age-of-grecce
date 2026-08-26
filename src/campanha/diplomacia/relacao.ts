@@ -50,6 +50,16 @@ export interface SituacaoDaRelacao {
    * cessão de província vai poder existir sem regra nova.
    */
   terrasTomadas: number;
+  /** Há pacto de não-agressão em pé? Fronteira garantida é um fato como qualquer outro. */
+  temPacto: boolean;
+  /**
+   * A pior reputação do par, de −100 a 0.
+   *
+   * ⚠️ **A PIOR das duas**, e não a soma nem a média: o que envenena uma relação é haver um
+   * quebrador de promessas nela. Se você traiu alguém, todo mundo passa a olhar torto para
+   * você — e é exatamente isso que faz o pacto valer o papel em que está escrito.
+   */
+  reputacao: number;
 }
 
 /** Uma parcela do alvo, com nome — a mesma legibilidade da conta da felicidade. */
@@ -87,6 +97,14 @@ export function parcelasDaRelacao(
     parcelas.push({ rotulo: `fronteira comum (${situacao.fronteira})`, pontos });
   }
 
+  if (situacao.temPacto) {
+    parcelas.push({ rotulo: 'pacto de não-agressão', pontos: ajustes.pacto.pontos });
+  }
+
+  if (situacao.reputacao < 0) {
+    parcelas.push({ rotulo: 'promessa quebrada', pontos: situacao.reputacao });
+  }
+
   if (situacao.terrasTomadas > 0) {
     const pontos = Math.max(
       alvo.terraTomadaMaxima,
@@ -112,6 +130,50 @@ export function aproximarRelacao(atual: number, alvo: number, passo: number): nu
   if (atual < alvo) return Math.min(alvo, atual + passo);
   if (atual > alvo) return Math.max(alvo, atual - passo);
   return atual;
+}
+
+/**
+ * O que um presente em ouro VALE para quem o recebe, em pontos de opinião.
+ *
+ * ⚠️ **Medido no bolso DELE, e não numa tabela fixa.** Quinhentas moedas para Plateia, que
+ * arrecada 118 por turno, são quatro turnos de renda — uma fortuna. As mesmas quinhentas para
+ * Argos, que arrecada dois mil, são troco, e troco é quase ofensa. Um número fixo trataria as
+ * duas coisas como a mesma, e faria o reino rico comprar o mapa com o dinheiro do lanche.
+ *
+ * ⚠️ **E satura.** A curva é a mesma da perseguição da cavalaria: os primeiros turnos de renda
+ * compram quase todo o efeito e o resto rende pouco. Sem isso, dobrar o presente dobraria a
+ * amizade, e o cofre gordo viraria um botão de comprar o mundo.
+ */
+export function pontosDoPresente(
+  ouro: number,
+  rendaDoRecebedor: number,
+  ajustes: AjustesDiplomacia,
+): number {
+  if (ouro <= 0) return 0;
+  // Reino sem renda mede o presente contra uma moeda: para quem não tem nada, tudo é muito.
+  const turnosDeRenda = ouro / Math.max(1, rendaDoRecebedor);
+  const meia = ajustes.presente.meiaRenda;
+  return Math.round(
+    ajustes.presente.pontosMaximos * (turnosDeRenda / (turnosDeRenda + meia)),
+  );
+}
+
+/**
+ * O presente aplicado: empurra a opinião, **mas só até certa altura acima do alvo.**
+ *
+ * ⚠️ **É o freio que impede o ouro de comprar amizade.** Sem teto, dez presentes seguidos
+ * levariam qualquer inimigo a +100 e a diplomacia viraria uma loja. Com ele, o ouro cobre a
+ * distância até um ponto e para: **presente compra TEMPO, não amizade.** Quem quer o número
+ * lá em cima muda os FATOS — assina pacto, abre comércio, devolve a terra tomada.
+ */
+export function comPresente(
+  atual: number,
+  alvo: number,
+  pontos: number,
+  ajustes: AjustesDiplomacia,
+): number {
+  const teto = alvo + ajustes.presente.tetoAcimaDoAlvo;
+  return conter(Math.min(Math.max(atual, atual + pontos), Math.max(atual, teto)));
 }
 
 /**

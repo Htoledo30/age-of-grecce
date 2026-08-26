@@ -34,11 +34,15 @@
 
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
 import { vivo } from '../governo/poderes';
+import { darOuro, gastar, tesouroDe } from '../governo/tesouro';
+import { rendaDe } from '../provincia/renda';
 import {
   alvoDaRelacao,
   aproximarRelacao,
   comChoque,
+  comPresente,
   parcelasDaRelacao,
+  pontosDoPresente,
 } from './relacao';
 import type { ParcelaDaRelacao, SituacaoDaRelacao } from './relacao';
 
@@ -103,6 +107,16 @@ export function podeDeclararGuerra(
   }
   if (emGuerra(nucleo, de, contra)) {
     return { pode: false, motivo: 'a guerra já está declarada' };
+  }
+  // ⚠️ O pacto TRAVA a guerra, como a trégua. A diferença é que ele tem uma saída explícita —
+  // `romperPacto` — e ela custa a reputação com o mapa inteiro.
+  const pacto = pactoAte(nucleo, de, contra);
+  if (pacto !== undefined) {
+    const faltam = pacto - nucleo.estado.turno;
+    return {
+      pode: false,
+      motivo: `há pacto de não-agressão por mais ${faltam} ${faltam === 1 ? 'turno' : 'turnos'} — rompa antes`,
+    };
   }
   const tregoa = tregoaAte(nucleo, de, contra);
   if (tregoa !== undefined) {
@@ -227,7 +241,125 @@ function situacaoDaRelacao(
     tregoa: tregoaAte(nucleo, a, b) === undefined ? 0 : 1,
     fronteira,
     terrasTomadas,
+    temPacto: pactoAte(nucleo, a, b) !== undefined,
+    // A PIOR das duas: o que envenena a relação é haver um quebrador de promessas nela.
+    reputacao: Math.min(reputacaoDe(nucleo, a), reputacaoDe(nucleo, b)),
   };
+}
+
+/** Até que turno o pacto de não-agressão segura. `undefined` quando não há pacto. */
+export function pactoAte(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): number | undefined {
+  const ate = nucleo.estado.pactos[parDe(a, b)];
+  return ate !== undefined && ate > nucleo.estado.turno ? ate : undefined;
+}
+
+/** A reputação deste poder, de −100 a 0. Zero é quem nunca quebrou promessa. */
+export function reputacaoDe(nucleo: NucleoDaCampanha, idPoder: string): number {
+  return nucleo.estado.reputacao[idPoder] ?? 0;
+}
+
+/** Os prazos de pacto que ESTE par consegue assinar hoje, do mais longo ao mais curto. */
+export function prazosDePacto(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+  const opiniao = relacaoEntre(nucleo, a, b);
+  const livre = podeFirmarPacto(nucleo, a, b, 0).pode || pactoAte(nucleo, a, b) === undefined;
+  return [...nucleo.ajustes.diplomacia.pacto.prazos]
+    .sort((x, y) => y.turnos - x.turnos)
+    .map((prazo) => ({
+      ...prazo,
+      pode: livre && !emGuerra(nucleo, a, b) && opiniao >= prazo.opiniaoMinima,
+    }));
+}
+
+/**
+ * Este pacto pode ser firmado?
+ *
+ * ⚠️ **A opinião É a aceitação, e não há uma segunda pergunta.** Perguntar depois "e você
+ * aceita?" contaria a mesma confiança duas vezes: o número já diz o quanto ele confia em você.
+ * Quanto mais longo o prazo, mais opinião ele pede — e é por isso que o presente vira a entrada
+ * do pacto: o ouro compra o momento, e o momento compra o prazo.
+ */
+export function podeFirmarPacto(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  turnos: number,
+): Permissao {
+  if (a === b) return { pode: false, motivo: 'não se firma pacto consigo mesmo' };
+  if (!vivo(nucleo, a) || !vivo(nucleo, b)) {
+    return { pode: false, motivo: 'este poder não está mais no jogo' };
+  }
+  if (emGuerra(nucleo, a, b)) return { pode: false, motivo: 'vocês estão em guerra' };
+  if (pactoAte(nucleo, a, b) !== undefined) {
+    return { pode: false, motivo: 'já existe um pacto em pé' };
+  }
+  const prazo = nucleo.ajustes.diplomacia.pacto.prazos.find((p) => p.turnos === turnos);
+  if (!prazo) return { pode: false, motivo: 'este prazo não existe' };
+  const opiniao = relacaoEntre(nucleo, a, b);
+  if (opiniao < prazo.opiniaoMinima) {
+    return {
+      pode: false,
+      motivo: `ele não confia tanto assim: ${prazo.turnos} turnos exigem opinião ${prazo.opiniaoMinima}`,
+    };
+  }
+  return { pode: true };
+}
+
+/** Assina o pacto. Devolve `false` quando ele não podia ser assinado. */
+export function firmarPacto(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  turnos: number,
+): boolean {
+  if (!podeFirmarPacto(nucleo, a, b, turnos).pode) return false;
+  nucleo.estado.pactos[parDe(a, b)] = nucleo.estado.turno + turnos;
+  return true;
+}
+
+/**
+ * Rompe o pacto — **e o mapa inteiro fica sabendo.**
+ *
+ * ⚠️ É a única saída de um pacto antes do prazo, e ela é cara de propósito: a opinião do traído
+ * despenca e a REPUTAÇÃO de quem rompeu cai, o que entra na conta de todos os outros pares dele.
+ * Sem esse preço, assinar não custaria nada, e um pacto que não custa nada é um papel que não
+ * vale nada.
+ */
+export function romperPacto(nucleo: NucleoDaCampanha, quem: string, com: string): boolean {
+  if (pactoAte(nucleo, quem, com) === undefined) return false;
+  const pacto = nucleo.ajustes.diplomacia.pacto;
+  delete nucleo.estado.pactos[parDe(quem, com)];
+  abalarRelacao(nucleo, quem, com, pacto.choqueDeRuptura);
+  nucleo.estado.reputacao[quem] = Math.max(
+    -100,
+    reputacaoDe(nucleo, quem) + pacto.reputacaoDaRuptura,
+  );
+  return true;
+}
+
+/**
+ * A reputação volta devagar para zero, e os pactos vencidos somem.
+ *
+ * Rancor por promessa quebrada não é eterno: quem traiu uma vez e passou cinquenta turnos sem
+ * repetir volta a ser alguém com quem se assina.
+ */
+export function andarReputacao(nucleo: NucleoDaCampanha): void {
+  const passo = nucleo.ajustes.diplomacia.pacto.reputacaoPorTurno;
+  for (const [poder, valor] of Object.entries(nucleo.estado.reputacao)) {
+    const novo = Math.min(0, valor + passo);
+    if (novo === 0) delete nucleo.estado.reputacao[poder];
+    else nucleo.estado.reputacao[poder] = novo;
+  }
+  for (const [par, ate] of Object.entries(nucleo.estado.pactos)) {
+    if (ate <= nucleo.estado.turno) delete nucleo.estado.pactos[par];
+  }
 }
 
 /** A conta do alvo, parcela a parcela — é o que a tela mostra linha a linha. */
@@ -261,6 +393,69 @@ export function andarRelacoes(nucleo: NucleoDaCampanha, comFicha: readonly strin
       else nucleo.estado.relacoes[par] = novo;
     }
   }
+}
+
+/**
+ * Este presente pode ser dado?
+ *
+ * ⚠️ **Presente é um GESTO, e gesto não se faz para quem já está trocando tiros com você.** Em
+ * guerra, ouro entregue ao inimigo é ouro financiando o exército que vem te bater — e a mesa
+ * onde se conversa é a da PAZ. Quem quer sair da guerra pede paz, não manda um cesto.
+ */
+export function podePresentear(
+  nucleo: NucleoDaCampanha,
+  de: string,
+  para: string,
+  ouro: number,
+): Permissao {
+  if (de === para) return { pode: false, motivo: 'não se presenteia a si mesmo' };
+  if (!vivo(nucleo, de) || !vivo(nucleo, para)) {
+    return { pode: false, motivo: 'este poder não está mais no jogo' };
+  }
+  if (emGuerra(nucleo, de, para)) {
+    return { pode: false, motivo: 'vocês estão em guerra — peça paz antes' };
+  }
+  if (!Number.isInteger(ouro) || ouro <= 0) {
+    return { pode: false, motivo: 'o presente precisa ser um número inteiro de moedas' };
+  }
+  if (tesouroDe(nucleo, de) < ouro) {
+    return { pode: false, motivo: 'seu tesouro não tem isso' };
+  }
+  return { pode: true };
+}
+
+/** Quanto ESTE presente valeria para ELE, em pontos de opinião. A tela mostra antes. */
+export function valorDoPresente(
+  nucleo: NucleoDaCampanha,
+  para: string,
+  ouro: number,
+): number {
+  return pontosDoPresente(ouro, rendaDe(nucleo, para), nucleo.ajustes.diplomacia);
+}
+
+/**
+ * O ouro muda de cofre e a opinião sobe — **até o teto acima do alvo, e nem um ponto além.**
+ *
+ * Devolve os pontos que o gesto valeu, para a tela poder dizer o que aconteceu.
+ */
+export function presentear(
+  nucleo: NucleoDaCampanha,
+  de: string,
+  para: string,
+  ouro: number,
+): number {
+  if (!podePresentear(nucleo, de, para, ouro).pode) return 0;
+  gastar(nucleo, de, ouro);
+  darOuro(nucleo, para, ouro);
+
+  const pontos = valorDoPresente(nucleo, para, ouro);
+  const par = parDe(de, para);
+  const alvo = alvoDaRelacao(situacaoDaRelacao(nucleo, de, para), nucleo.ajustes.diplomacia);
+  const antes = nucleo.estado.relacoes[par] ?? 0;
+  const novo = comPresente(antes, alvo, pontos, nucleo.ajustes.diplomacia);
+  if (novo === 0) delete nucleo.estado.relacoes[par];
+  else nucleo.estado.relacoes[par] = novo;
+  return novo - antes;
 }
 
 /** O choque de um ato sobre a opinião de um par. Ver `comChoque`. */

@@ -45,6 +45,18 @@ export interface VizinhoNaDiplomacia {
   relacao: number;
   /** A conta dessa opinião, linha a linha — a mesma legibilidade do humor do povo. */
   parcelas: readonly { rotulo: string; pontos: number }[];
+  /**
+   * Os presentes que dá para mandar agora, já cotados.
+   *
+   * ⚠️ **Cotados ANTES de o jogador pagar.** Ouro é o recurso mais escasso do jogo, e um botão
+   * que tira do cofre sem dizer o que compra é um botão que ninguém aperta duas vezes. Vazia
+   * quando não dá para presentear — em guerra, ou sem ouro.
+   */
+  presentes: readonly { ouro: number; pontos: number }[];
+  /** Turnos que ainda faltam de pacto de não-agressão, ou 0 quando não há. */
+  pacto: number;
+  /** Os prazos de pacto oferecidos, com a opinião que cada um exige. */
+  prazos: readonly { turnos: number; opiniaoMinima: number; pode: boolean }[];
 }
 
 export interface VistaDaDiplomacia {
@@ -57,6 +69,9 @@ export class Diplomacia {
   /** A tela avisa; quem decide é a aplicação, que tem a campanha e a IA na mão. */
   aoDeclararGuerra: (idPoder: string) => void = () => {};
   aoProporPaz: (idPoder: string) => void = () => {};
+  aoPresentear: (idPoder: string, ouro: number) => void = () => {};
+  aoFirmarPacto: (idPoder: string, turnos: number) => void = () => {};
+  aoRomperPacto: (idPoder: string) => void = () => {};
 
   private readonly fundo = document.createElement('div');
   private readonly resumo = document.createElement('p');
@@ -214,6 +229,8 @@ export class Diplomacia {
     const acoes = document.createElement('div');
     acoes.className = 'diplomacia__acoes';
     acoes.appendChild(this.acaoDe(vizinho));
+    acoes.appendChild(this.pacto(vizinho));
+    if (vizinho.presentes.length > 0) acoes.appendChild(this.presente(vizinho));
 
     return [titulo, relacao, this.opiniao(vizinho), fatos, acoes];
   }
@@ -249,6 +266,95 @@ export class Diplomacia {
     }
 
     caixa.append(numero, conta);
+    return caixa;
+  }
+
+  /**
+   * O pacto de não-agressão: um botão por prazo, e o preço de cada um é CONFIANÇA.
+   *
+   * ⚠️ **Os prazos que ele ainda não confia em você aparecem desabilitados, dizendo quanto
+   * falta.** Escondê-los tiraria do jogador a única informação que importa aqui: o que ele
+   * ganharia se a opinião subisse. É o que transforma o presente numa entrada em vez de um
+   * gasto — ele vê os 20 turnos trancados a +25 e sabe exatamente por que dar ouro.
+   */
+  private pacto(vizinho: VizinhoNaDiplomacia): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__presentes';
+
+    if (vizinho.pacto > 0) {
+      const rotulo = document.createElement('span');
+      rotulo.className = 'diplomacia__rotulo';
+      rotulo.textContent = `Pacto por mais ${vizinho.pacto} ${vizinho.pacto === 1 ? 'turno' : 'turnos'}`;
+      const romper = document.createElement('button');
+      romper.type = 'button';
+      romper.className = 'diplomacia__acao';
+      romper.dataset['acao'] = 'romper';
+      romper.textContent = 'Romper o pacto';
+      definirTooltip(romper, {
+        titulo: `Romper o pacto com ${vizinho.nome}`,
+        corpo: 'A opinião dele despenca e sua reputação cai com o mapa inteiro. Não é de graça.',
+      });
+      romper.addEventListener('click', () => this.aoRomperPacto(vizinho.id));
+      caixa.append(rotulo, romper);
+      return caixa;
+    }
+
+    const rotulo = document.createElement('span');
+    rotulo.className = 'diplomacia__rotulo';
+    rotulo.textContent = 'Pacto de não-agressão:';
+    caixa.appendChild(rotulo);
+    for (const prazo of vizinho.prazos) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'diplomacia__acao';
+      botao.dataset['acao'] = 'pacto';
+      botao.dataset['turnos'] = String(prazo.turnos);
+      botao.textContent = `${prazo.turnos} turnos`;
+      botao.disabled = !prazo.pode;
+      definirTooltip(botao, {
+        titulo: `${prazo.turnos} turnos sem guerra com ${vizinho.nome}`,
+        corpo: prazo.pode
+          ? 'Nenhum dos dois declara guerra enquanto durar, e a opinião sobe sozinha.'
+          : `Ele exige opinião ${prazo.opiniaoMinima} para um prazo desses. A sua é ${vizinho.relacao}.`,
+      });
+      botao.addEventListener('click', () => this.aoFirmarPacto(vizinho.id, prazo.turnos));
+      caixa.appendChild(botao);
+    }
+    return caixa;
+  }
+
+  /**
+   * O presente: três quantias, cada uma dizendo o que compra.
+   *
+   * ⚠️ **Três botões e não uma caixa de digitar.** O jogador não sabe quanto vale um presente
+   * até vê-lo cotado — e o que ele quer decidir é "vale a pena?", não "quanto exatamente?". As
+   * três quantias saem da renda DELE, então elas já chegam na escala certa: para um vizinho
+   * pobre são números pequenos, e para um rico são grandes.
+   */
+  private presente(vizinho: VizinhoNaDiplomacia): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__presentes';
+    const rotulo = document.createElement('span');
+    rotulo.className = 'diplomacia__rotulo';
+    rotulo.textContent = 'Presentear:';
+    caixa.appendChild(rotulo);
+
+    for (const oferta of vizinho.presentes) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'diplomacia__acao';
+      botao.dataset['acao'] = 'presente';
+      botao.dataset['ouro'] = String(oferta.ouro);
+      botao.textContent = `${oferta.ouro.toLocaleString('pt-BR')} ouro`;
+      definirTooltip(botao, {
+        titulo: `${oferta.ouro.toLocaleString('pt-BR')} moedas a ${vizinho.nome}`,
+        corpo:
+          `Vale +${oferta.pontos} de opinião para ele. ` +
+          'Presente compra tempo, não amizade: a opinião volta a cair para o que os fatos dizem.',
+      });
+      botao.addEventListener('click', () => this.aoPresentear(vizinho.id, oferta.ouro));
+      caixa.appendChild(botao);
+    }
     return caixa;
   }
 
