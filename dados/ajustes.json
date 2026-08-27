@@ -28,8 +28,7 @@
     "acordoDeComercio": {
       "fracaoDaMenorRenda": 0.12,
       "meiosParceiros": 3,
-      "opiniaoMinima": -25,
-      "pontos": 10
+      "opiniaoMinima": -25
     },
     "diplomacia": {
       "tregoaEmTurnos": 12,
@@ -56,6 +55,21 @@
         "choqueDeRuptura": -50,
         "reputacaoDaRuptura": -25,
         "reputacaoPorTurno": 1
+      },
+      "tributo": {
+        "prazos": [
+          { "turnos": 10, "fracaoDaRenda": 0.2 },
+          { "turnos": 20, "fracaoDaRenda": 0.15 },
+          { "turnos": 40, "fracaoDaRenda": 0.12 }
+        ],
+        "materialidade": 0.04,
+        "vantagemMinima": 1.3,
+        "turnosDePremio": 6,
+        "pontos": 6,
+        "choqueDeRuptura": -35,
+        "reputacaoDaRuptura": -20,
+        "choqueDoCalote": -25,
+        "reputacaoDoCalote": -15
       }
     },
     "populacao": {

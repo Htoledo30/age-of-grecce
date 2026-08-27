@@ -33,9 +33,11 @@
  */
 
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
+import type { Tributo } from '../estado-campanha';
 import { vivo } from '../governo/poderes';
 import { darOuro, gastar, tesouroDe } from '../governo/tesouro';
-import { rendaDe } from '../provincia/renda';
+import { rendaBaseDe, rendaDe } from '../provincia/renda';
+import { valorDoTributo } from './tributo';
 import {
   alvoDaRelacao,
   aproximarRelacao,
@@ -118,6 +120,17 @@ export function podeDeclararGuerra(
       motivo: `há pacto de não-agressão por mais ${faltam} ${faltam === 1 ? 'turno' : 'turnos'} — rompa antes`,
     };
   }
+  // ⚠️ O TRIBUTO trava a guerra de um lado só: o de quem RECEBE. É literalmente o que o ouro
+  // comprou. Quem paga continua livre para declarar — quem paga é quem quer sair da situação,
+  // e prendê-lo também transformaria o tributo numa jaula que se compra com o próprio dinheiro.
+  const tributo = tributoEntre(nucleo, de, contra);
+  if (tributo !== undefined && tributo.pagador === contra) {
+    const faltam = tributo.ate - nucleo.estado.turno;
+    return {
+      pode: false,
+      motivo: `ele paga tributo a você por mais ${faltam} ${faltam === 1 ? 'turno' : 'turnos'} — rompa antes`,
+    };
+  }
   const tregoa = tregoaAte(nucleo, de, contra);
   if (tregoa !== undefined) {
     const faltam = tregoa - nucleo.estado.turno;
@@ -147,6 +160,9 @@ export function declararGuerra(
     nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
     delete nucleo.estado.tregoas[parDe(de, contra)];
     desfazerAcordo(nucleo, de, contra);
+    // Quem pega em armas contra o ocupante não consultou tratado nenhum — nem o que ele mesmo
+    // estava pagando. E não há preço de reputação: não foi o governo quem quebrou a promessa.
+    delete nucleo.estado.tributos[parDe(de, contra)];
     return true;
   }
   if (!podeDeclararGuerra(nucleo, de, contra).pode) return false;
@@ -247,6 +263,7 @@ function situacaoDaRelacao(
     terrasTomadas,
     temPacto: pactoAte(nucleo, a, b) !== undefined,
     temAcordo: temAcordo(nucleo, a, b),
+    temTributo: tributoEntre(nucleo, a, b) !== undefined,
     // A PIOR das duas: o que envenena a relação é haver um quebrador de promessas nela.
     reputacao: Math.min(reputacaoDe(nucleo, a), reputacaoDe(nucleo, b)),
   };
@@ -537,5 +554,330 @@ export function abalarRelacao(
 export function limparTregoas(nucleo: NucleoDaCampanha): void {
   for (const [par, ate] of Object.entries(nucleo.estado.tregoas)) {
     if (ate <= nucleo.estado.turno) delete nucleo.estado.tregoas[par];
+  }
+}
+
+/**
+ * O tributo em pé entre estes dois, ou `undefined` quando não há nenhum.
+ *
+ * Vencido conta como inexistente, do mesmo jeito que o pacto: a tabela ainda guarda a linha até
+ * a próxima virada limpar, mas ela já não segura mais nada.
+ */
+export function tributoEntre(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): Tributo | undefined {
+  const tributo = nucleo.estado.tributos[parDe(a, b)];
+  return tributo !== undefined && tributo.ate > nucleo.estado.turno ? tributo : undefined;
+}
+
+/** Os dois nomes de uma chave de par, na ordem em que ela os guarda. */
+function ladosDo(par: string): readonly [string, string] {
+  const corte = par.indexOf('|');
+  return [par.slice(0, corte), par.slice(corte + 1)];
+}
+
+/**
+ * Os tributos em pé deste poder, com quem está do outro lado de cada um, em ordem de id.
+ *
+ * Serve à tela e à IA: é por aqui que se pergunta "eu já pago alguém?" — e a resposta importa,
+ * porque um poder que compra o sossego de dois vizinhos ao mesmo tempo entrega quase um terço
+ * da renda pela mesma coisa.
+ */
+export function tributosDe(
+  nucleo: NucleoDaCampanha,
+  idPoder: string,
+): readonly { com: string; tributo: Tributo }[] {
+  const lista: { com: string; tributo: Tributo }[] = [];
+  for (const par of Object.keys(nucleo.estado.tributos).sort()) {
+    const tributo = nucleo.estado.tributos[par];
+    if (tributo === undefined || tributo.ate <= nucleo.estado.turno) continue;
+    const [a, b] = ladosDo(par);
+    if (a === idPoder) lista.push({ com: b, tributo });
+    else if (b === idPoder) lista.push({ com: a, tributo });
+  }
+  return lista;
+}
+
+/**
+ * O que os tributos deste poder somam ou tiram do cofre dele por turno.
+ *
+ * ⚠️ **Entra na RENDA, e é por isso que o número que o jogador lê não mente.** Uma sangria de
+ * 63 moedas por turno escondida fora da renda faria o balanço prometer um exército que o cofre
+ * não paga — e a IA, que decide obra e recrutamento pela renda, gastaria dinheiro que já tem
+ * dono. Positivo em quem recebe, negativo em quem paga, e a soma do mapa é sempre zero.
+ */
+export function saldoDeTributosDe(nucleo: NucleoDaCampanha, idPoder: string): number {
+  // ⚠️ `for...in` e não `Object.entries`, e não é preciosismo: esta função roda dentro de
+  // `rendaDe`, que é a conta mais chamada do jogo — cada província, de cada poder, a cada
+  // decisão da IA. `entries` alocaria um array novo em todas elas, e a tabela está VAZIA na
+  // esmagadora maioria das partidas. O laço nu não aloca nada quando não há tributo nenhum.
+  const tributos = nucleo.estado.tributos;
+  let saldo = 0;
+  for (const par in tributos) {
+    const tributo = tributos[par];
+    if (tributo === undefined || tributo.ate <= nucleo.estado.turno) continue;
+    const [a, b] = ladosDo(par);
+    if (a !== idPoder && b !== idPoder) continue;
+    saldo += tributo.pagador === idPoder ? -tributo.ouro : tributo.ouro;
+  }
+  return saldo;
+}
+
+/**
+ * O que um tributo pago por ELE custaria por turno. A tela mostra antes de qualquer assinatura.
+ *
+ * ⚠️ Medido na renda BASE, sem acordos e sem os tributos que ele já move: senão a conta se
+ * morderia, e um poder que recebe tributo de três vizinhos passaria a dever mais por isso.
+ */
+export function valorDeUmTributoDe(
+  nucleo: NucleoDaCampanha,
+  pagador: string,
+  turnos: number,
+): number {
+  const prazo = nucleo.ajustes.diplomacia.tributo.prazos.find((p) => p.turnos === turnos);
+  if (prazo === undefined) return 0;
+  return valorDoTributo(rendaBaseDe(nucleo, pagador), prazo.fracaoDaRenda);
+}
+
+/**
+ * Os prazos de tributo que ESTE par consegue assinar hoje, do mais curto ao mais longo, já cotados.
+ *
+ * ⚠️ **Do mais curto ao mais longo é a ordem em que o preço CAI**, e é assim que a tela conta a
+ * história sozinha: o jogador lê 80, 60, 48 de cima para baixo e entende o desconto sem que
+ * ninguém explique que existe um. A mesma escada dos prazos de pacto, com a moeda no lugar da
+ * confiança.
+ *
+ * ⚠️ **Os que não saem vêm com `pode: false` em vez de sumirem da lista**, como no pacto: um
+ * botão que desaparece manda o jogador procurar o que ele não achou, e o preço de um prazo que
+ * hoje está trancado é justamente o que faz ele querer destrancá-lo.
+ */
+export function prazosDeTributo(
+  nucleo: NucleoDaCampanha,
+  pagador: string,
+  recebedor: string,
+): readonly { turnos: number; ouro: number; pode: boolean }[] {
+  return [...nucleo.ajustes.diplomacia.tributo.prazos]
+    .sort((x, y) => x.turnos - y.turnos)
+    .map((prazo) => ({
+      turnos: prazo.turnos,
+      ouro: valorDoTributo(rendaBaseDe(nucleo, pagador), prazo.fracaoDaRenda),
+      pode: podeFirmarTributo(nucleo, pagador, recebedor, prazo.turnos).pode,
+    }));
+}
+
+/**
+ * Este tributo pode ser assinado?
+ *
+ * ⚠️ **As regras daqui são NEUTRAS, e a vontade do outro não está entre elas** — a mesma
+ * divisão que a paz já usa. Quem decide se a IA aceita ser paga é `src/ia/diplomacia/tributos.ts`,
+ * e é a aplicação que junta as duas coisas. Misturar as duas aqui esconderia a decisão dela
+ * dentro de uma permissão e tornaria impossível perguntar "e se eu oferecesse mais?".
+ *
+ * ⚠️ **O pacto em pé BARRA o tributo, e essa é a trava que impede o ouro de ser queimado à
+ * toa.** Quem já tem a fronteira garantida de graça não tem o que comprar; deixar assinar seria
+ * deixar o jogador pagar por uma coisa que ele já possui.
+ */
+export function podeFirmarTributo(
+  nucleo: NucleoDaCampanha,
+  pagador: string,
+  recebedor: string,
+  turnos: number,
+): Permissao {
+  if (pagador === recebedor) return { pode: false, motivo: 'não se paga tributo a si mesmo' };
+  if (!vivo(nucleo, pagador) || !vivo(nucleo, recebedor)) {
+    return { pode: false, motivo: 'este poder não está mais no jogo' };
+  }
+  if (emGuerra(nucleo, pagador, recebedor)) {
+    return { pode: false, motivo: 'vocês estão em guerra — o que se pede agora é paz' };
+  }
+  if (tributoEntre(nucleo, pagador, recebedor) !== undefined) {
+    return { pode: false, motivo: 'já existe um tributo em pé' };
+  }
+  if (pactoAte(nucleo, pagador, recebedor) !== undefined) {
+    return { pode: false, motivo: 'há pacto em pé: você já tem esse sossego de graça' };
+  }
+  // ⚠️ **UM tributo de cada lado, e esta trava é a mais importante do arquivo.** Sem ela a
+  // medição repetiu, número por número, a falha que o pacto já tinha tido: o fraco amarra o
+  // forte, o forte vai comer quem não amarrou, e a violência apenas MUDA DE ENDEREÇO. Foram
+  // 41 províncias mudando de dono e 11 poderes eliminados, contra 12 e 6 sem tributo nenhum —
+  // o mapa não ficou mais seguro, ficou mais desigual.
+  //
+  // Vender o ano é abrir mão de marchar naquela direção. Quem vende para todo mundo não tem
+  // guerra nenhuma sobrando e mantém um exército que não serve para nada; quem paga a dois
+  // vizinhos entrega um terço da renda pela mesma coisa e não paga a folha. Um de cada lado.
+  if (tributosDe(nucleo, pagador).some((t) => t.tributo.pagador === pagador)) {
+    return { pode: false, motivo: 'você já paga tributo a alguém' };
+  }
+  if (tributosDe(nucleo, recebedor).some((t) => t.tributo.pagador !== recebedor)) {
+    return { pode: false, motivo: 'ele já vende o ano a outro' };
+  }
+  const prazo = nucleo.ajustes.diplomacia.tributo.prazos.find((p) => p.turnos === turnos);
+  if (prazo === undefined) return { pode: false, motivo: 'este prazo não existe' };
+  const ouro = valorDeUmTributoDe(nucleo, pagador, turnos);
+  if (ouro <= 0) return { pode: false, motivo: 'sem renda não há tributo a oferecer' };
+  if (tesouroDe(nucleo, pagador) < ouro) {
+    return { pode: false, motivo: `seu tesouro não cobre a primeira parcela de ${ouro}` };
+  }
+  return { pode: true };
+}
+
+/**
+ * Assina o tributo, congelando o valor de hoje. Devolve `false` quando ele não podia ser assinado.
+ */
+export function firmarTributo(
+  nucleo: NucleoDaCampanha,
+  pagador: string,
+  recebedor: string,
+  turnos: number,
+): boolean {
+  if (!podeFirmarTributo(nucleo, pagador, recebedor, turnos).pode) return false;
+  nucleo.estado.tributos[parDe(pagador, recebedor)] = {
+    pagador,
+    ate: nucleo.estado.turno + turnos,
+    ouro: valorDeUmTributoDe(nucleo, pagador, turnos),
+  };
+  return true;
+}
+
+/**
+ * Rompe o tributo antes do prazo — **e custa a quem rompe, dos dois lados da mesa.**
+ *
+ * ⚠️ Vale para os dois, e de propósito. **Quem recebia e rompeu vendeu um ano que não entregou**,
+ * o que é a promessa mais suja que existe neste jogo. E **quem pagava e rompeu deu o calote**:
+ * combinou uma quantia e parou de honrá-la. Um preço só para as duas saídas mantém a regra em
+ * uma linha, e a diferença que importa já está no mapa — quem parou de pagar vai ser invadido.
+ */
+export function romperTributo(nucleo: NucleoDaCampanha, quem: string, com: string): boolean {
+  if (tributoEntre(nucleo, quem, com) === undefined) return false;
+  const ajustes = nucleo.ajustes.diplomacia.tributo;
+  delete nucleo.estado.tributos[parDe(quem, com)];
+  abalarRelacao(nucleo, quem, com, ajustes.choqueDeRuptura);
+  nucleo.estado.reputacao[quem] = Math.max(
+    -100,
+    reputacaoDe(nucleo, quem) + ajustes.reputacaoDaRuptura,
+  );
+  return true;
+}
+
+/**
+ * **A PAZ COMPRADA: o tributo como preço de uma paz que o inimigo recusaria de graça.**
+ *
+ * ⚠️ **É a porta principal do tributo, e ela existe porque `querPaz` não tinha alavanca nenhuma.**
+ * A IA aceita paz por quatro motivos — a guerra é longa, você é mais forte, ela não te odeia, ou
+ * não sobrou o que tomar. **Se ela está ganhando e ainda tem alvo, ela recusa, e o jogador que
+ * está perdendo não tem absolutamente nada a oferecer.** Perder província a província até não
+ * sobrar alvo era a única saída, e isso não é uma decisão: é uma espera.
+ *
+ * O tributo é o que se põe na mesa ali. Historicamente é o gesto mais comum que existe — Atenas
+ * pagando à Pérsia, Roma pagando a Átila — e no jogo ele fecha o ciclo que a diplomacia abriu:
+ * **a guerra passa a ter uma saída que não é a derrota.**
+ *
+ * ⚠️ **A paz sai PRIMEIRO e o tributo depois, e a ordem não é detalhe.** `podeFirmarTributo`
+ * recusa quem está em guerra; assinar a paz antes faz a segunda metade passar pela porta da
+ * frente, sem exceção nenhuma escrita para este caso. É por isso que tudo é conferido aqui
+ * antes de qualquer coisa se mexer — sem essa conferência, um tributo que falhasse depois de a
+ * paz já ter saído entregaria a paz de graça.
+ */
+export function podeFazerPazComTributo(
+  nucleo: NucleoDaCampanha,
+  quemPaga: string,
+  com: string,
+  turnos: number,
+): Permissao {
+  const paz = podeFazerPaz(nucleo, quemPaga, com);
+  if (!paz.pode) return paz;
+  if (nucleo.ajustes.diplomacia.tributo.prazos.every((p) => p.turnos !== turnos)) {
+    return { pode: false, motivo: 'este prazo não existe' };
+  }
+  if (tributoEntre(nucleo, quemPaga, com) !== undefined) {
+    return { pode: false, motivo: 'já existe um tributo em pé' };
+  }
+  // ⚠️ **As MESMAS travas que `podeFirmarTributo` cobra, e conferi-las aqui não é repetição.**
+  // `fazerPazComTributo` assina a paz primeiro e o tributo depois; se o tributo caísse numa
+  // trava que só a segunda metade conhece, a paz já teria saído — **de graça e em silêncio**,
+  // que é o pior desfecho possível para uma função que existe para cobrar por ela.
+  if (tributosDe(nucleo, quemPaga).some((t) => t.tributo.pagador === quemPaga)) {
+    return { pode: false, motivo: 'você já paga tributo a alguém' };
+  }
+  if (tributosDe(nucleo, com).some((t) => t.tributo.pagador !== com)) {
+    return { pode: false, motivo: 'ele já vende o ano a outro' };
+  }
+  const ouro = valorDeUmTributoDe(nucleo, quemPaga, turnos);
+  if (ouro <= 0) return { pode: false, motivo: 'sem renda não há tributo a oferecer' };
+  if (tesouroDe(nucleo, quemPaga) < ouro) {
+    return { pode: false, motivo: `seu tesouro não cobre a primeira parcela de ${ouro}` };
+  }
+  return { pode: true };
+}
+
+/**
+ * Os prazos de paz-com-tributo que ESTE par consegue assinar hoje, do mais curto ao mais longo.
+ *
+ * Existe separada de `prazosDeTributo` por um motivo simples: aquela recusa quem está em guerra,
+ * e esta só serve a quem está. São as duas portas do tributo, e cada uma cota a sua.
+ */
+export function prazosDePazComTributo(
+  nucleo: NucleoDaCampanha,
+  quemPaga: string,
+  com: string,
+): readonly { turnos: number; ouro: number; pode: boolean }[] {
+  return [...nucleo.ajustes.diplomacia.tributo.prazos]
+    .sort((x, y) => x.turnos - y.turnos)
+    .map((prazo) => ({
+      turnos: prazo.turnos,
+      ouro: valorDoTributo(rendaBaseDe(nucleo, quemPaga), prazo.fracaoDaRenda),
+      pode: podeFazerPazComTributo(nucleo, quemPaga, com, prazo.turnos).pode,
+    }));
+}
+
+/** Assina a paz e o tributo no mesmo ato. Devolve `false` quando o par não podia. */
+export function fazerPazComTributo(
+  nucleo: NucleoDaCampanha,
+  quemPaga: string,
+  com: string,
+  turnos: number,
+): boolean {
+  if (!podeFazerPazComTributo(nucleo, quemPaga, com, turnos).pode) return false;
+  return fazerPaz(nucleo, quemPaga, com) && firmarTributo(nucleo, quemPaga, com, turnos);
+}
+
+/**
+ * A virada dos tributos: **os vencidos somem, e os impagáveis quebram na cara de quem prometeu.**
+ *
+ * ⚠️ **Roda ANTES da arrecadação, e a ordem é o desenho todo.** A renda já carrega o tributo
+ * dentro dela, nos dois sentidos — então a única coisa que precisa acontecer antes de o ouro se
+ * mexer é decidir quais tributos ainda existem neste turno. Depois disso `arrecadar` faz o
+ * pagamento sozinho, sem uma segunda transferência que poderia discordar da primeira.
+ *
+ * ⚠️ **O calote é medido contra o cofre MAIS a renda de tudo o mais**, e não contra o cofre
+ * seco. Quem arrecada 400 e paga 63 nunca quebra, por mais vazio que o tesouro esteja no dia —
+ * quebrar ali seria punir o reino que vive no limite em vez do reino que encolheu. O que quebra
+ * é o poder que **perdeu a terra que sustentava a promessa**, e essa é exatamente a história que
+ * o tributo existe para contar.
+ */
+export function acertarTributos(nucleo: NucleoDaCampanha): void {
+  const ajustes = nucleo.ajustes.diplomacia.tributo;
+  for (const par of Object.keys(nucleo.estado.tributos).sort()) {
+    const tributo = nucleo.estado.tributos[par];
+    if (tributo === undefined) continue;
+    const [a, b] = ladosDo(par);
+    // Vencido sem culpa de ninguém, ou com um dos dois fora do jogo: a linha só sai da tabela.
+    if (tributo.ate <= nucleo.estado.turno || !vivo(nucleo, a) || !vivo(nucleo, b)) {
+      delete nucleo.estado.tributos[par];
+      continue;
+    }
+    const pagador = tributo.pagador;
+    const outro = pagador === a ? b : a;
+    const alcance = tesouroDe(nucleo, pagador) + rendaBaseDe(nucleo, pagador);
+    if (alcance >= tributo.ouro) continue;
+    // O calote: a terra que sustentava a promessa já não está lá.
+    delete nucleo.estado.tributos[par];
+    abalarRelacao(nucleo, pagador, outro, ajustes.choqueDoCalote);
+    nucleo.estado.reputacao[pagador] = Math.max(
+      -100,
+      reputacaoDe(nucleo, pagador) + ajustes.reputacaoDoCalote,
+    );
   }
 }

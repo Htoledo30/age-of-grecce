@@ -1,6 +1,16 @@
-/* A janela da diplomacia: própria, e não uma aba do Governo.
-   O Governo responde "como o reino se sustenta"; paz e guerra não são contabilidade — são a
-   decisão que abre o resto do jogo, e por isso têm botão próprio na barra. */
+/* A MESA DA DIPLOMACIA.
+
+   Janela própria, e não uma aba do Governo: o Governo responde "como o reino se sustenta";
+   paz e guerra não são contabilidade, são a decisão que abre o resto do jogo.
+
+   ⚠️ A queixa que refez esta folha foi "parece que nem estou negociando com outro reino", e a
+   resposta visual tem um eixo só: DUAS COLUNAS ESPELHADAS. Você de um lado, ele do outro, na
+   mesma moldura e com os mesmos campos na mesma ordem. É a mesa de negociação sem desenhar uma
+   mesa — o truque do Total War, que não custa uma linha de arte e só exige a disciplina de
+   nunca deixar um lado ter um campo que o outro não tem.
+
+   Estética da casa: pedra escura, bronze, marfim, pouquíssima ornamentação. O mapa é colorido;
+   a interface é moldura neutra. Nenhuma cor nova entra aqui — tudo sai dos tokens. */
 .diplomacia {
   position: absolute;
   inset: 0;
@@ -15,8 +25,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 900px;
-  max-height: 760px;
+  width: 960px;
+  max-width: calc(100vw - 48px);
+  max-height: min(780px, calc(100vh - 48px));
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
   background: var(--ui-fundo-elevado);
@@ -27,24 +38,24 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 28px 18px;
+  padding: 20px 26px 16px;
   border-bottom: 1px solid var(--ui-borda-fraca);
 }
 .diplomacia__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .diplomacia__fechar {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
 }
 .diplomacia__fechar:hover {
@@ -56,38 +67,47 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 18px 28px 26px;
+  padding: 14px 26px 22px;
 }
 .diplomacia__resumo {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
 
-/* ⚠️ Lista à esquerda, dossiê à direita: a pergunta do jogador é sempre "o que eu faço com
-   Corinto?" — reino primeiro, ação depois. Cada ação nova é uma LINHA no painel da direita,
-   e não mais uma coluna numa tabela que já teria oito. */
+/* ⚠️ Lista à esquerda, mesa à direita: a pergunta do jogador é sempre "o que eu faço com
+   Corinto?" — reino primeiro, ação depois. Abas por TIPO de ação foram recusadas por
+   responderem a pergunta ao contrário, obrigando a procurar Corinto em quatro lugares. */
 .diplomacia__colunas {
   display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 22px;
+  grid-template-columns: 212px 1fr;
+  gap: 20px;
   min-height: 0;
 }
+
+/* ── A lista: uma TABELA de vizinhos, e não uma fileira de nomes ──
+   Nome em cima, postura e força embaixo. É a tabela de nações do Supremacy 1914: o humor do
+   mapa inteiro fica legível num olhar, e o jogador escolhe com quem falar já sabendo por quê.
+   A fileira de nomes que havia antes obrigava a abrir um por um para descobrir. */
 .diplomacia__lista {
   display: flex;
   flex-direction: column;
   gap: 2px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
   border-right: 1px solid var(--ui-borda-fraca);
 }
 .diplomacia__nome {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font: inherit;
   text-align: left;
-  padding: 8px 10px;
+  padding: 7px 9px;
   border: 1px solid transparent;
+  border-left: 3px solid transparent;
   border-radius: var(--raio-1);
   background: transparent;
   color: var(--ui-texto-fraco);
@@ -102,93 +122,287 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-bronze-claro);
 }
-/* A guerra fica visível na lista: o jogador varre e vê contra quem está sem ler nome nenhum. */
-.diplomacia__nome[data-relacao='guerra'] {
-  border-left: 3px solid var(--ui-sangue, #b4413a);
+.diplomacia__nome-texto {
+  font-family: var(--fonte-titulo);
+  font-size: 15px;
+  letter-spacing: 0.02em;
 }
+.diplomacia__nome-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__nome-forca {
+  font-variant-numeric: tabular-nums;
+}
+/* A postura pinta a borda esquerda: o mapa inteiro se lê de relance, de bronze a sangue. */
+.diplomacia__nome[data-tom='bom'] {
+  border-left-color: var(--ui-verde);
+}
+.diplomacia__nome[data-tom='morno'] {
+  border-left-color: var(--ui-borda);
+}
+.diplomacia__nome[data-tom='ruim'] {
+  border-left-color: var(--ui-sangue-claro);
+}
+/* A guerra é o único estado que grita: ela exige decisão hoje. */
+.diplomacia__nome[data-relacao='guerra'] {
+  border-left-color: var(--ui-sangue);
+  border-left-width: 4px;
+}
+.diplomacia__nome[data-relacao='guerra'] .diplomacia__nome-estado {
+  color: var(--ui-sangue-claro);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 .diplomacia__dossie {
   display: flex;
   flex-direction: column;
+  gap: 14px;
   overflow-y: auto;
-}
-.diplomacia__reino {
-  margin: 0;
-  font-family: var(--fonte-titulo);
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-}
-.diplomacia__relacao {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--ui-texto-fraco);
-}
-.diplomacia__relacao[data-relacao='guerra'] {
-  color: var(--ui-sangue-claro, #d98b83);
-}
-.diplomacia__fatos {
-  margin: 10px 0 20px;
-  font-size: 13px;
-  color: var(--ui-texto-tenue);
-}
-/* Uma ação por linha, e não lado a lado: é assim que a segunda, a terceira e a oitava entram
-   sem nada ser redesenhado. */
-.diplomacia__acoes {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-.diplomacia__acao {
-  font: inherit;
-  color: inherit;
-  padding: 3px 12px;
-  border: 1px solid var(--ui-borda-fraca);
-  border-radius: var(--raio-1);
-  background: var(--ui-fundo-suave);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.diplomacia__acao:hover:not(:disabled) {
-  border-color: var(--ui-bronze);
-  color: var(--ui-bronze-claro);
-}
-.diplomacia__acao[data-acao='guerra'] {
-  border-color: var(--ui-perigo-borda, rgb(180 65 58 / 55%));
-}
-/* A trégua desabilita em vez de sumir com o botão: um controle que desaparece é um controle
-   que o jogador procura. O tooltip diz quantos turnos faltam. */
-.diplomacia__acao:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.diplomacia__aviso {
-  margin: 14px 0 0;
-  min-height: 1.2em;
-  font-size: 13px;
-  color: var(--ui-texto-fraco);
+  padding-right: 4px;
 }
 
-/* A opinião e a conta dela. ⚠️ A conta inteira fica à vista, como a do humor do povo e a da
-   comida: um número de −100 a 100 sem explicação é um número que o jogador acha injusto. */
-.diplomacia__opiniao {
-  margin: 14px 0 4px;
-  padding: 12px 14px;
+/* ── OS DOIS CARTÕES ──
+   O da direita é cópia exata do da esquerda: mesma moldura, mesmos campos, mesma ordem. O olho
+   compara linha por linha e a assimetria salta sem legenda nenhuma. O filete do meio é a mesa. */
+.diplomacia__mesa {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 0;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
 }
-.diplomacia__numero {
-  margin: 0 0 8px;
+.diplomacia__mesa::before {
+  content: '';
+  grid-column: 2;
+  grid-row: 1;
+  background: var(--ui-borda-fraca);
+}
+.diplomacia__cartao {
+  padding: 12px 14px;
+}
+.diplomacia__cartao[data-lado='eu'] {
+  grid-column: 1;
+}
+.diplomacia__cartao[data-lado='ele'] {
+  grid-column: 3;
+}
+.diplomacia__reino,
+.diplomacia__meu-reino {
+  margin: 0;
   font-family: var(--fonte-titulo);
   font-size: 20px;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.03em;
 }
+.diplomacia__meu-reino {
+  color: var(--ui-texto-fraco);
+}
+.diplomacia__reino {
+  color: var(--ui-bronze-claro);
+}
+/* O temperamento: o dado que estava em dados/ia.json desde sempre e a tela nunca mostrou.
+   Saber que Argos é guerreira muda toda proposta que se faz a ela. */
+.diplomacia__temperamento {
+  margin: 1px 0 9px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+  cursor: help;
+}
+.diplomacia__campos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.diplomacia__campos dt {
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__campos dd {
+  margin: 0;
+  text-align: right;
+  color: var(--ui-texto-fraco);
+  font-variant-numeric: tabular-nums;
+}
+.diplomacia__campos dd[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+  cursor: help;
+}
+
+/* ── A FALA DE ABERTURA ──
+   Ele fala primeiro, antes de qualquer botão. Porque só uma pessoa tinha voz nesta tela: você.
+   Todo elemento era um comando seu, e a contraparte era o rótulo do dossiê e depois o silêncio
+   contra o qual se apertavam botões. Uma linha dita por ele converte a IA de juiz em parte. */
+.diplomacia__abertura {
+  margin: 0;
+  padding: 2px 0;
+  font-family: var(--fonte-titulo);
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--ui-texto-fraco);
+}
+.diplomacia__abertura[data-tom='bom'] {
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__abertura[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+
+/* ── A RÉGUA, COM A LINHA DELE ──
+   É o que dava escala ao número da opinião. O jogador via "+12" sem ter como saber se +12 é
+   sossego ou véspera de invasão — e a resposta muda por vizinho, porque sai do temperamento:
+   o mercador só considera atacar abaixo de −40, o guerreiro já abaixo de +20.
+   Um traço, DUAS mecânicas: a mesma linha decide se ele te ataca e se ele assina um pacto. */
+.diplomacia__regua {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0 0;
+}
+.diplomacia__trilho {
+  position: relative;
+  height: 6px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 3px;
+  background: var(--ui-fundo);
+  cursor: help;
+}
+/* A faixa perigosa inteira, e não só o ponto: vê-se o TAMANHO do risco. */
+.diplomacia__risco {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ui-perigo-fundo);
+  border-radius: 2px 0 0 2px;
+}
+.diplomacia__linha-ataque {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ui-sangue);
+}
+.diplomacia__agulha {
+  position: absolute;
+  top: -4px;
+  width: 9px;
+  height: 12px;
+  margin-left: -4px;
+  border: 1px solid var(--ui-fundo-elevado);
+  border-radius: 2px;
+  background: var(--ui-bronze-claro);
+}
+.diplomacia__agulha[data-tom='ruim'] {
+  background: var(--ui-sangue-claro);
+}
+.diplomacia__regua-texto {
+  margin: 0;
+  font-size: 11px;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__regua-texto[data-tom='bom'] {
+  color: var(--ui-texto-fraco);
+}
+.diplomacia__regua-texto[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+
+/* ── A BARRA DE FORÇA ──
+   É o número que decide tudo neste jogo e estava escondido numa frase. A IA usa a razão de
+   forças para declarar guerra, aceitar paz e vender o ano de sossego — pôr isso como barra dá
+   ao jogador a mesma leitura que ela tem, de relance, antes de propor qualquer coisa. */
+.diplomacia__forca {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.diplomacia__barra-forca {
+  display: flex;
+  height: 7px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 4px;
+  background: var(--ui-sangue);
+  overflow: hidden;
+  cursor: help;
+}
+.diplomacia__barra-forca[data-vazia='sim'] {
+  background: var(--ui-fundo);
+}
+.diplomacia__forca-minha {
+  display: block;
+  height: 100%;
+  background: var(--ui-bronze);
+  border-right: 1px solid var(--ui-fundo-elevado);
+}
+.diplomacia__forca-texto {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__forca-texto[data-tom='bom'] {
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__forca-texto[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+
+/* ── A OPINIÃO ──
+   Dois números: onde ela está e para onde CAMINHA. A tela antiga jogava o segundo fora, e ele
+   é metade da frase — −37 indo para −45 e −37 indo para +10 são situações opostas.
+   E a conta inteira fica à vista, como a do humor do povo e a da comida. */
+.diplomacia__opiniao {
+  padding: 11px 14px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+.diplomacia__postura {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.diplomacia__postura-nome {
+  margin: 0;
+  font-family: var(--fonte-titulo);
+  font-size: 19px;
+  letter-spacing: 0.14em;
+}
+.diplomacia__numero {
+  margin: 0;
+  font-family: var(--fonte-numero);
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  cursor: help;
+}
+.diplomacia__postura-nome[data-tom='bom'],
 .diplomacia__numero[data-tom='bom'] {
   color: var(--ui-bronze-claro);
 }
+.diplomacia__postura-nome[data-tom='morno'],
+.diplomacia__numero[data-tom='morno'] {
+  color: var(--ui-texto-fraco);
+}
+.diplomacia__postura-nome[data-tom='ruim'],
 .diplomacia__numero[data-tom='ruim'] {
-  color: var(--ui-sangue-claro, #d98b83);
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__leitura {
+  margin: 5px 0 9px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  font-size: 12px;
+  color: var(--ui-texto-fraco);
 }
 .diplomacia__parcelas {
   margin: 0;
@@ -203,27 +417,236 @@
   gap: 16px;
   padding: 2px 0;
 }
+/* Filete pontilhado ligando o rótulo ao número: com oito parcelas, o olho perdia a linha no
+   meio do caminho e o jogador atribuía o −45 à parcela errada. */
+.diplomacia__parcelas li::before {
+  content: '';
+  order: 1;
+  flex: 1;
+  align-self: end;
+  margin-bottom: 4px;
+  border-bottom: 1px dotted var(--ui-borda-fraca);
+}
+.diplomacia__parcelas li > span:first-child {
+  order: 0;
+}
+.diplomacia__pontos {
+  order: 2;
+  font-variant-numeric: tabular-nums;
+}
 .diplomacia__parcelas li[data-tom='ruim'] .diplomacia__pontos {
-  color: var(--ui-sangue-claro, #d98b83);
+  color: var(--ui-sangue-claro);
 }
 .diplomacia__parcelas li[data-tom='bom'] .diplomacia__pontos {
   color: var(--ui-bronze-claro);
 }
-.diplomacia__pontos {
-  font-variant-numeric: tabular-nums;
+
+/* ── O QUE ELE QUER ──
+   A informação mais valiosa da tela, e ela é honesta: sai das mesmas funções que a IA consulta
+   ao escolher para onde mandar a hoste. Não é aviso vago de perigo, é a lista de nomes que ela
+   tem na mão. É a "agenda" do Civilization, sem inventar mecânica nova. */
+.diplomacia__intencao {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 13px;
+  border-left: 3px solid var(--ui-borda);
+  background: var(--ui-fundo-suave);
+  border-radius: 0 var(--raio-1) var(--raio-1) 0;
+}
+.diplomacia__intencao[data-tom='ameaca'] {
+  border-left-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+}
+.diplomacia__intencao[data-tom='oferta'] {
+  border-left-color: var(--ui-verde);
+  background: var(--ui-sucesso-fundo);
+}
+.diplomacia__marca {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__intencao[data-tom='ameaca'] .diplomacia__marca {
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__intencao[data-tom='oferta'] .diplomacia__marca {
+  color: var(--ui-verde-claro);
+}
+.diplomacia__intencao-texto {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ui-texto);
 }
 
-/* As quantias de presente, em linha. ⚠️ Cotadas antes de o jogador pagar: ouro é o recurso
-   mais escasso do jogo, e botão que tira do cofre sem dizer o que compra ninguém aperta. */
-.diplomacia__presentes {
+/* ── OS LAÇOS COM TERCEIROS ──
+   Sem isto o mundo parecia ter duas pessoas dentro, e cada proposta era uma transação isolada.
+   Saber que Argos está em guerra com Tebas transforma a mesma proposta numa jogada. */
+.diplomacia__lacos {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px;
+  margin: 0;
+}
+.diplomacia__laco {
+  padding: 2px 8px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__laco[data-tipo='guerra'] {
+  border-color: rgb(169 76 64 / 45%);
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__laco[data-tipo='comercio'],
+.diplomacia__laco[data-tipo='tributo-recebe'] {
+  color: var(--ui-bronze-claro);
+}
+
+/* ── AS PROPOSTAS ──
+   Agrupadas por assunto e nunca numa lista plana: com cinco grupos de botão do mesmo tamanho,
+   a decisão que abre o resto do jogo vira mais uma linha entre outras. */
+.diplomacia__acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.diplomacia__grupo {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 3px 12px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: 1px solid var(--ui-borda-fraca);
 }
 .diplomacia__rotulo {
-  font-size: 12px;
-  letter-spacing: 0.06em;
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 11px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
+}
+.diplomacia__botoes {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+/* ⚠️ A fala fica NA TELA, e não num tooltip. A crítica mais repetida sobre estas telas em todos
+   os jogos pesquisados é informação que devia estar à vista escondida atrás do mouse parado.
+   Se ele vai recusar, o jogador lê o motivo sem precisar caçar. */
+.diplomacia__fala {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__fala[data-tom='bom'] {
+  color: var(--ui-verde-claro);
+}
+.diplomacia__fala[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+
+.diplomacia__acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ui-texto-fraco);
+  padding: 6px 12px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  cursor: pointer;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.diplomacia__acao:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  background: var(--ui-fundo-claro);
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__acao:active:not(:disabled) {
+  background: var(--ui-pressionado);
+}
+.diplomacia__acao:focus-visible {
+  outline: 2px solid var(--ui-bronze);
+  outline-offset: 1px;
+}
+/* ⚠️ TRÊS estados e não dois, e a diferença é a tela inteira. ✓ ele assina; ✗ ele recusa mas
+   você pode propor e ouvir o não; apagado quando é a REGRA que barra — cofre curto, guerra em
+   curso, pacto em pé. Um botão apagado por falta de ouro e um apagado porque ele te odeia são
+   dois problemas com duas soluções, e a tela nunca os pinta igual. */
+.diplomacia__selo {
+  font-size: 11px;
+  opacity: 0.9;
+}
+.diplomacia__acao[data-resposta='sim'] {
+  border-color: rgb(66 107 92 / 60%);
+}
+.diplomacia__acao[data-resposta='sim'] .diplomacia__selo {
+  color: var(--ui-verde-claro);
+}
+.diplomacia__acao[data-resposta='nao'] {
+  border-color: var(--ui-borda-fraca);
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__acao[data-resposta='nao'] .diplomacia__selo {
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__acao:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+/* Guerra e paz são a decisão que ABRE o resto do jogo, e a única do dossiê que não é uma linha
+   entre outras. Peso visual maior é o que impede que ela se perca entre cinco grupos iguais. */
+.diplomacia__acao[data-acao='guerra'],
+.diplomacia__acao[data-acao='paz'] {
+  padding: 8px 18px;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--ui-texto);
+}
+.diplomacia__acao[data-acao='guerra'] {
+  border-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+}
+.diplomacia__acao[data-acao='guerra']:hover:not(:disabled) {
+  border-color: var(--ui-sangue-claro);
+  background: rgb(169 76 64 / 30%);
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__acao[data-acao='paz'] {
+  border-color: var(--ui-verde);
+  background: var(--ui-sucesso-fundo);
+}
+.diplomacia__acao[data-acao='paz']:hover:not(:disabled) {
+  border-color: var(--ui-verde-claro);
+  color: var(--ui-verde-claro);
+}
+/* Romper é sempre uma traição, custe pacto ou tributo: a cor avisa antes do tooltip. */
+.diplomacia__acao[data-acao='romper'],
+.diplomacia__acao[data-acao='romper-tributo'] {
+  border-color: rgb(169 76 64 / 45%);
+  color: var(--ui-sangue-claro);
+}
+
+.diplomacia__aviso {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  padding-top: 10px;
+  border-top: 1px solid var(--ui-borda-fraca);
+  font-size: 13px;
+  color: var(--ui-bronze-claro);
 }

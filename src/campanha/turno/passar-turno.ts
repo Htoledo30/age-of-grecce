@@ -32,6 +32,7 @@ import { resolverMarchas } from './resolver-marchas';
 
 /** Vira o turno e devolve tudo o que virou notícia. */
 import {
+  acertarTributos,
   andarRelacoes,
   andarReputacao,
   limparGuerrasMortas,
@@ -50,6 +51,10 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
     throw new Error('a capital caiu: assente outra antes de passar o turno');
   }
 
+  // ⚠️ ANTES de arrecadar, e a ordem é o desenho: a renda já carrega o tributo dentro dela, nos
+  // dois sentidos, então o que precisa acontecer primeiro é decidir quais tributos ainda existem
+  // neste turno. Quem perdeu a terra que sustentava a promessa quebra aqui, e não paga mais.
+  acertarTributos(nucleo);
   arrecadar(nucleo);
   pagarTropa(nucleo);
   const fome = alimentar(nucleo);

@@ -115,6 +115,8 @@ export function criarEstadoInicial(
     relacoes: {},
     pactos: {},
     acordos: {},
+    // Ninguém compra o ano de ninguém antes de haver um ano do qual ter medo.
+    tributos: {},
     // Ninguém quebrou promessa nenhuma ainda.
     reputacao: {},
     revoltas: {},

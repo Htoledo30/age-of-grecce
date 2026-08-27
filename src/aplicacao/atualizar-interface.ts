@@ -7,7 +7,8 @@
  */
 
 import type { Jogo } from './contexto';
-import { vistaDoAlimento, vistaDoBalanco, vistaDaDiplomacia, vistaDoMercado } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
+import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
 import {
   destinosDaMarcha,
   marcadoresDasHostes,
@@ -79,12 +80,17 @@ export function atualizarInterface(jogo: Jogo): void {
   // ⚠️ **As TRÊS abas, não só a primeira.** Só o Balanço se redesenhava, e as outras duas
   // ficavam paradas no que era verdade quando a janela abriu — conquistar uma província com
   // a janela aberta mudava a tabela de moedas e deixava a comida e o mercado mentindo.
+  // ⚠️ **A diplomacia é JANELA PRÓPRIA e se redesenha sozinha.** Ela estava dentro da trava do
+  // Governo, e o efeito era o pior possível: declarar guerra pela janela aberta não repintava
+  // nada — o botão sumia do mundo mas não da tela, e o jogador via a lista jurando paz com quem
+  // ele acabara de atacar. Só não acontecia com a janela do Governo aberta por acaso.
+  if (tela.diplomacia.visivel) tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
+
   if (!tela.governo.visivel) return;
   const doBalanco = vistaDoBalanco(jogo);
   if (doBalanco) tela.balanco.desenhar(doBalanco);
   tela.balancoAlimentar.desenhar(vistaDoAlimento(jogo));
   tela.mercado.desenhar(vistaDoMercado(jogo));
-  tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
 }
 
 /**

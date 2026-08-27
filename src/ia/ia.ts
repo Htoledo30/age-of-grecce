@@ -47,7 +47,8 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
 import { comercioEscolhido, pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
-import { querPaz } from './diplomacia/paz';
+import { tributoEscolhido } from './diplomacia/tributos';
+import { querPaz, querPazComTributo } from './diplomacia/paz';
 import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
 import { estiloDe } from './estilo';
@@ -74,6 +75,19 @@ export interface LanceDaIa {
   presente: { para: string; ouro: number } | null;
   /** Com quem ela abriu comércio nesta virada, se abriu. */
   comercio: string | null;
+  /**
+   * A quem ela passou a pagar tributo nesta virada, e por quantos turnos.
+   *
+   * ⚠️ Zero tributos numa partida inteira quer dizer mecânica morta: o jogador veria dois
+   * botões que só ele aperta. É por isso que a ferramenta de partida conta este campo.
+   */
+  tributo: { com: string; turnos: number } | null;
+  /**
+   * A guerra que ela encerrou nesta virada PAGANDO por isso, e por quantos turnos.
+   *
+   * Preenchido depois de todo mundo jogar, junto com `pazes`, porque a paz precisa dos dois.
+   */
+  pazComprada: { com: string; turnos: number; ouro: number } | null;
   defesas: readonly { destino: string; homens: number; tipo: string }[];
   ataques: readonly { destino: string; homens: number; postura: string; valor: number }[];
   /** Com quem ela assinou a paz nesta virada. */
@@ -141,6 +155,13 @@ export function jogarIA(
     const pacto = pactoEscolhido(campanha, idPoder, estilo, dados);
     if (pacto !== null) campanha.firmarPacto(pacto.com, pacto.turnos, idPoder);
 
+    // ⚠️ O TRIBUTO depois do pacto, e a ordem é a regra inteira: o pacto é de graça e o tributo
+    // custa o cofre todo turno. Tentar o caro antes do grátis faria o reino pagar por aquilo
+    // que uma assinatura lhe daria sem moeda nenhuma — e `podeFirmarTributo` já recusa quem
+    // acabou de assinar um pacto, então esta linha só vê quem o pacto deixou para trás.
+    const tributo = tributoEscolhido(campanha, idPoder, dados, ajustes.diplomacia.tributo);
+    if (tributo !== null) campanha.pagarTributoA(tributo.com, tributo.turnos, idPoder);
+
     // O comércio por último entre os acordos: ele é a decisão mais fácil — lucro dos dois lados
     // — e não tira nada da mesa, então nunca compete com pacto nem com guerra.
     const comercio = comercioEscolhido(campanha, idPoder, estilo);
@@ -202,6 +223,7 @@ export function jogarIA(
       pacto,
       presente,
       comercio,
+      tributo,
       defesas: defesas.map((d) => ({ destino: d.destino, homens: d.homens, tipo: d.tipo })),
       ataques: ataques.map((a) => ({
         destino: a.destino,
@@ -211,17 +233,25 @@ export function jogarIA(
       })),
       assaltos,
       pazes: [],
+      pazComprada: null,
     });
   }
   // ⚠️ **A paz é resolvida DEPOIS de todo mundo jogar, e num passo só.** Ela precisa dos dois
   // lados, e perguntar dentro do laço faria a resposta depender de quem foi primeiro na ordem
   // alfabética — Argos teria uma chance de sair que Tebas não teria. Aqui os dois são
   // consultados no mesmo mundo.
-  for (const par of pazesFechadas(campanha, dados, ajustes.combate)) {
-    campanha.fazerPaz(par.b, par.a);
+  for (const par of pazesFechadas(campanha, dados, ajustes)) {
+    if (par.comprada === null) campanha.fazerPaz(par.b, par.a);
+    else {
+      const outro = par.comprada.pagador === par.a ? par.b : par.a;
+      campanha.fazerPazComTributo(outro, par.comprada.turnos, par.comprada.pagador);
+    }
     for (const lance of lances) {
-      if (lance.poder === par.a || lance.poder === par.b) {
-        lance.pazes = [...lance.pazes, lance.poder === par.a ? par.b : par.a].sort();
+      if (lance.poder !== par.a && lance.poder !== par.b) continue;
+      const outro = lance.poder === par.a ? par.b : par.a;
+      lance.pazes = [...lance.pazes, outro].sort();
+      if (par.comprada !== null && par.comprada.pagador === lance.poder) {
+        lance.pazComprada = { com: outro, turnos: par.comprada.turnos, ouro: par.comprada.ouro };
       }
     }
   }
@@ -229,8 +259,16 @@ export function jogarIA(
 }
 
 /**
- * As guerras entre computadores que terminam nesta virada — as que os DOIS lados querem
- * encerrar.
+ * As guerras entre computadores que terminam nesta virada — de graça ou COMPRADAS.
+ *
+ * ⚠️ **A segunda metade é a que faltava, e a falta dela mentia na medição.** Sem ela, a paz
+ * entre computadores só existia quando os DOIS já queriam sair — e quem está ganhando nunca
+ * quer. Duas IAs em guerra iam até alguém ser eliminado, e o tributo, que existe justamente
+ * para dar uma saída a quem perde, ficava sendo um botão que só o jogador apertava.
+ *
+ * A regra é a mesma da mesa do jogador, e é curta: **quem quer sair e não é atendido põe ouro
+ * na mesa.** Se o outro achar que o pagamento vale mais do que o que ele ainda ia tomar, a
+ * guerra acaba ali — com uma dívida de quarenta turnos no lugar de uma província perdida.
  *
  * Guerra com o jogador não entra: a paz dele é uma proposta que ele faz ou recebe, e quem
  * junta as duas respostas nesse caso é a aplicação. A IA não assina no lugar dele.
@@ -238,10 +276,18 @@ export function jogarIA(
 function pazesFechadas(
   campanha: Campanha,
   dados: Ia,
-  ajustes: Ajustes['jogo']['combate'],
-): readonly { a: string; b: string }[] {
+  ajustes: Ajustes['jogo'],
+): readonly {
+  a: string;
+  b: string;
+  comprada: { pagador: string; turnos: number; ouro: number } | null;
+}[] {
   const daIa = new Set(poderesDaIa(campanha));
-  const fechadas: { a: string; b: string }[] = [];
+  const fechadas: {
+    a: string;
+    b: string;
+    comprada: { pagador: string; turnos: number; ouro: number } | null;
+  }[] = [];
   const vistos = new Set<string>();
   for (const a of [...daIa].sort()) {
     for (const b of campanha.guerrasDe(a)) {
@@ -249,12 +295,56 @@ function pazesFechadas(
       const par = a < b ? `${a}|${b}` : `${b}|${a}`;
       if (vistos.has(par)) continue;
       vistos.add(par);
-      if (!querPaz(campanha, a, b, estiloDe(dados, a), ajustes)) continue;
-      if (!querPaz(campanha, b, a, estiloDe(dados, b), ajustes)) continue;
-      fechadas.push({ a, b });
+      const querA = querPaz(campanha, a, b, estiloDe(dados, a), ajustes.combate);
+      const querB = querPaz(campanha, b, a, estiloDe(dados, b), ajustes.combate);
+      if (querA && querB) {
+        fechadas.push({ a, b, comprada: null });
+        continue;
+      }
+      // ⚠️ Só quem quer sair paga, e paga a quem NÃO quer. Os dois querendo já saiu de graça
+      // ali em cima; nenhum dos dois querendo é uma guerra que os dois ainda acham que ganham,
+      // e ninguém compra uma saída que não está procurando.
+      if (querA === querB) continue;
+      const pagador = querA ? a : b;
+      const comprada = pazQueElaCompra(campanha, pagador, querA ? b : a, dados, ajustes);
+      if (comprada !== null) fechadas.push({ a, b, comprada });
     }
   }
   return fechadas;
+}
+
+/**
+ * O prazo com que este poder compra a saída da guerra, ou `null` se nenhum é aceito.
+ *
+ * ⚠️ **O mais LONGO que ele aceitar**, que é a parcela mais barata — a mesma escolha de quem
+ * oferece tributo em tempo de paz, e pelo mesmo motivo: quem está perdendo uma guerra tem um
+ * cofre que não aguenta a parcela cara, e trocar liberdade futura por sobreviver agora é a
+ * troca que qualquer um faz com uma lança apontada.
+ */
+function pazQueElaCompra(
+  campanha: Campanha,
+  pagador: string,
+  inimigo: string,
+  dados: Ia,
+  ajustes: Ajustes['jogo'],
+): { pagador: string; turnos: number; ouro: number } | null {
+  const estilo = estiloDe(dados, inimigo);
+  // `prazosDePazComTributo` vem do mais curto ao mais longo: de trás para frente é do barato.
+  for (const prazo of [...campanha.prazosDePazComTributo(inimigo, pagador)].reverse()) {
+    if (!prazo.pode) continue;
+    const aceita = querPazComTributo(
+      campanha,
+      inimigo,
+      pagador,
+      prazo.ouro,
+      prazo.turnos,
+      estilo,
+      ajustes.combate,
+      ajustes.diplomacia.tributo,
+    );
+    if (aceita) return { pagador, turnos: prazo.turnos, ouro: prazo.ouro };
+  }
+  return null;
 }
 
 /** Quem a IA dirige: vivo, com economia completa, e que não seja o jogador. */

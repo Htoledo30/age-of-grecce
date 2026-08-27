@@ -13,6 +13,7 @@ import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
 import { ligadaACapital } from '../comercio/circulacao';
 import { rendaDeAcordos, rendaDeTrocas } from '../comercio/rede-de-trocas';
+import { saldoDeTributosDe } from '../diplomacia/relacoes';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
 import { estaSitiada } from '../guerra/cercos';
@@ -64,7 +65,9 @@ export function economiaDe(
  * o resumo é que mostra os dois.
  */
 export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
-  return rendaBaseDe(nucleo, idPoder) + rendaDeAcordos(nucleo, idPoder);
+  return (
+    rendaBaseDe(nucleo, idPoder) + rendaDeAcordos(nucleo, idPoder) + saldoDeTributosDe(nucleo, idPoder)
+  );
 }
 
 /**

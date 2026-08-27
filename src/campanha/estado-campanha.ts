@@ -236,6 +236,33 @@ export interface EstadoCampanha {
    * transforma comércio numa razão de dinheiro para não atacar alguém.
    */
   acordos: Record<string, number>;
+  /**
+   * Tributos em curso, pela mesma chave dos pares.
+   *
+   * ⚠️ **É o único registro do par que precisa saber de que LADO a coisa está**, e por isso é o
+   * único que guarda um objeto em vez de um número: guerra, trégua, pacto e comércio valem
+   * igual para os dois, mas alguém paga o tributo e alguém o recebe. A chave continua a mesma
+   * — o lado mora no valor, e não numa segunda tabela.
+   */
+  tributos: Record<string, Tributo>;
+}
+
+/** Um tributo em curso: quem sangra, quanto, e até quando. */
+export interface Tributo {
+  /** Quem tira do cofre todo turno. O outro nome do par é quem recebe. */
+  pagador: string;
+  /** O turno em que ele vence. Vencido, acaba sem culpa de ninguém e a conversa recomeça. */
+  ate: number;
+  /**
+   * Moedas por turno, **congeladas no dia da assinatura.**
+   *
+   * ⚠️ **É o número fixo que faz o tributo ter história.** Recalculado todo turno sobre a renda
+   * de quem paga, ele encolheria junto com o reino e ninguém jamais deixaria de pagar — o
+   * calote seria impossível e a decisão, morta. Fixo, ele vira as duas coisas que interessam:
+   * **quem perde província afunda** e não paga mais, e **quem cresce o supera** e um dia olha
+   * para a linha do cofre e vê troco onde antes havia uma sangria.
+   */
+  ouro: number;
 }
 
 /** Uma construção em andamento. */

@@ -30,7 +30,7 @@
     },
     {
       "id": "adramitio",
-      "nome": "Adramitio",
+      "nome": "Adramítio",
       "povo": "eolio",
       "cor": "#73659d"
     },
@@ -60,7 +60,7 @@
     },
     {
       "id": "apsintios",
-      "nome": "Apsintios",
+      "nome": "Apsíntios",
       "povo": "trace",
       "cor": "#8381b9"
     },
@@ -102,7 +102,7 @@
     },
     {
       "id": "bistones",
-      "nome": "Bistones",
+      "nome": "Bístones",
       "povo": "trace",
       "cor": "#6568ab"
     },
@@ -126,7 +126,7 @@
     },
     {
       "id": "calcis",
-      "nome": "Calcis",
+      "nome": "Cálcis",
       "povo": "jonio",
       "cor": "#64808f"
     },
@@ -150,31 +150,31 @@
     },
     {
       "id": "caristo",
-      "nome": "Caristo",
+      "nome": "Cáristo",
       "povo": "jonio",
       "cor": "#819ab9"
     },
     {
       "id": "carpatos",
-      "nome": "Carpatos",
+      "nome": "Cárpatos",
       "povo": "dorio",
       "cor": "#8f6465"
     },
     {
       "id": "cefalenia",
-      "nome": "Cefalenia",
+      "nome": "Cefalênia",
       "povo": "aqueu",
       "cor": "#ab8f65"
     },
     {
       "id": "cicones",
-      "nome": "Cicones",
+      "nome": "Cícones",
       "povo": "trace",
       "cor": "#615c8f"
     },
     {
       "id": "cidonia",
-      "nome": "Cidonia",
+      "nome": "Cidônia",
       "povo": "cretense",
       "cor": "#9d7565"
     },
@@ -198,13 +198,13 @@
     },
     {
       "id": "cizico",
-      "nome": "Cizico",
+      "nome": "Cízico",
       "povo": "jonio",
       "cor": "#65869d"
     },
     {
       "id": "clazomenas",
-      "nome": "Clazomenas",
+      "nome": "Clazômenas",
       "povo": "jonio",
       "cor": "#819ab9"
     },
@@ -222,13 +222,13 @@
     },
     {
       "id": "colofao",
-      "nome": "Colofao",
+      "nome": "Colofão",
       "povo": "jonio",
       "cor": "#5c6f8f"
     },
     {
       "id": "corcira",
-      "nome": "Corcira",
+      "nome": "Córcira",
       "povo": "dorio",
       "cor": "#9d6865"
     },
@@ -240,7 +240,7 @@
     },
     {
       "id": "cos",
-      "nome": "Cos",
+      "nome": "Cós",
       "povo": "dorio",
       "cor": "#8f6465"
     },
@@ -252,7 +252,7 @@
     },
     {
       "id": "dassaretios",
-      "nome": "Dassaretios",
+      "nome": "Dassarétios",
       "povo": "ilirio",
       "cor": "#8f5c7c"
     },
@@ -276,13 +276,13 @@
     },
     {
       "id": "edones",
-      "nome": "Edones",
+      "nome": "Édones",
       "povo": "trace",
       "cor": "#6568ab"
     },
     {
       "id": "efeso",
-      "nome": "Efeso",
+      "nome": "Éfeso",
       "povo": "jonio",
       "cor": "#5c6f8f"
     },
@@ -294,7 +294,7 @@
     },
     {
       "id": "eleusis",
-      "nome": "Eleusis",
+      "nome": "Elêusis",
       "povo": "jonio",
       "cor": "#819ab9"
     },
@@ -306,7 +306,7 @@
     },
     {
       "id": "elide",
-      "nome": "Elide",
+      "nome": "Élide",
       "povo": "aqueu",
       "cor": "#ab8f65"
     },
@@ -318,7 +318,7 @@
     },
     {
       "id": "enqueleos",
-      "nome": "Enqueleos",
+      "nome": "Enquéleos",
       "povo": "ilirio",
       "cor": "#9d6595"
     },
@@ -336,7 +336,7 @@
     },
     {
       "id": "eretria",
-      "nome": "Eretria",
+      "nome": "Erétria",
       "povo": "jonio",
       "cor": "#6589ab"
     },
@@ -348,7 +348,7 @@
     },
     {
       "id": "esciros",
-      "nome": "Esciros",
+      "nome": "Escíros",
       "povo": "pelasgo",
       "cor": "#65799d"
     },
@@ -366,7 +366,7 @@
     },
     {
       "id": "esporades",
-      "nome": "Esporades",
+      "nome": "Espórades",
       "povo": "jonio",
       "cor": "#6589ab"
     },
@@ -396,7 +396,7 @@
     },
     {
       "id": "figalia",
-      "nome": "Figalia",
+      "nome": "Figália",
       "povo": "arcadio",
       "cor": "#aba065"
     },
@@ -420,7 +420,7 @@
     },
     {
       "id": "gortina",
-      "nome": "Gortina",
+      "nome": "Górtina",
       "povo": "cretense",
       "cor": "#8f6d64"
     },
@@ -432,19 +432,19 @@
     },
     {
       "id": "hermione",
-      "nome": "Hermione",
+      "nome": "Hermíone",
       "povo": "dorio",
       "cor": "#8f695c"
     },
     {
       "id": "icaria",
-      "nome": "Icaria",
+      "nome": "Icária",
       "povo": "jonio",
       "cor": "#65869d"
     },
     {
       "id": "ilion",
-      "nome": "Ilion",
+      "nome": "Ílion",
       "povo": "eolio",
       "cor": "#9781b9"
     },
@@ -462,7 +462,7 @@
     },
     {
       "id": "itaca",
-      "nome": "Itaca",
+      "nome": "Ítaca",
       "povo": "aqueu",
       "cor": "#9d8365"
     },
@@ -558,7 +558,7 @@
     },
     {
       "id": "megara",
-      "nome": "Megara",
+      "nome": "Mégara",
       "povo": "dorio",
       "cor": "#8f6465"
     },
@@ -630,7 +630,7 @@
     },
     {
       "id": "orcomeno",
-      "nome": "Orcomeno",
+      "nome": "Orcômeno",
       "povo": "beocio",
       "cor": "#659d85"
     },
@@ -732,7 +732,7 @@
     },
     {
       "id": "samotracia",
-      "nome": "Samotracia",
+      "nome": "Samotrácia",
       "povo": "pelasgo",
       "cor": "#6578ab"
     },
@@ -744,7 +744,7 @@
     },
     {
       "id": "sicion",
-      "nome": "Sicion",
+      "nome": "Sícion",
       "povo": "dorio",
       "cor": "#9d6865"
     },
@@ -774,7 +774,7 @@
     },
     {
       "id": "taulantios",
-      "nome": "Taulantios",
+      "nome": "Taulântios",
       "povo": "ilirio",
       "cor": "#b981a9"
     },
@@ -804,7 +804,7 @@
     },
     {
       "id": "tespias",
-      "nome": "Tespias",
+      "nome": "Téspias",
       "povo": "beocio",
       "cor": "#648f79"
     },
@@ -834,7 +834,7 @@
     },
     {
       "id": "trifilia",
-      "nome": "Trifilia",
+      "nome": "Trifília",
       "povo": "aqueu",
       "cor": "#ab8f65"
     },

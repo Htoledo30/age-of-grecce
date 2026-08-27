@@ -69,7 +69,7 @@ briga mais (41 guerras, 36 pazes, 28% dos poder-turnos em guerra) e ninguém dis
 A relação existe só entre os 18 poderes com ficha: opinião de quem não arrecada nem decide
 seria um número que não vira decisão nenhuma.
 
-**Duas ações diplomáticas existem, e as duas pagam com algo que já existe no jogo.**
+**Quatro ações diplomáticas existem, e cada uma paga com algo que já existe no jogo.**
 
 **Presente** — ouro do tesouro. Vale pelo bolso de QUEM RECEBE: 500 moedas são quatro turnos de
 renda para quem arrecada 120 e troco para quem arrecada 2.000. Satura (dobrar o presente não
@@ -97,6 +97,45 @@ fronteira que exército não atravessa.
 ⚠️ **A rede de bens distintos continua sendo só a SUA.** O acordo não faz o mármore dele
 circular no seu reino — quem quer o bem toma a terra. É essa separação que mantém a conquista
 valendo mais que o comércio, num jogo de conquista.
+
+**A janela é uma MESA, e não um menu** — refeita depois de "parece que nem estou negociando com
+outro reino". Dois cartões espelhados, você de um lado e ele do outro na mesma moldura; a fala
+com que ele abre a conversa; a barra de força; a opinião com **dois números** (onde está e para
+onde caminha) sobre uma régua com a **linha em que aquele vizinho passa a te olhar** — que sai
+do temperamento dele e é a mesma linha que decide se ele assina um pacto; o que ele quer de
+você, com o nome das SUAS províncias que ele considera que valem a marcha; os laços dele com
+terceiros; e cada proposta trazendo **a resposta dele antes do clique**, pela mesma função que a
+IA usa quando decide de verdade. Nada de arte nova: tipografia, filete e texto.
+
+**Tributo** — **o ano de sossego que se compra quando não há confiança para pedi-lo de graça.**
+É o pacto pelo avesso: o pacto não custa moeda e exige opinião; o tributo não exige opinião
+nenhuma e custa ouro todo turno. Por isso os dois nunca competem — o ouro entra exatamente onde
+a confiança não chega, que era a faixa da régua abaixo de −25 em que não havia mais nada a fazer.
+
+Enquanto corre, **quem RECEBE não declara guerra ao pagador** — é literalmente o que foi
+comprado; quem paga continua livre, porque quem paga é quem quer sair. O prazo é negociado e
+**prazo longo custa MENOS por turno**, na lógica do aluguel: 10 turnos a 20% da renda, 20 a 15%,
+40 a 12%. Quem se compromete por quarenta ganha desconto; quem quer poder sair em dez paga o
+preço da liberdade.
+
+⚠️ **O valor congela na assinatura, e é o que faz o calote existir.** Recalculado todo turno ele
+encolheria junto com o reino e ninguém jamais deixaria de pagar. Fixo, vira as duas histórias que
+interessam: **quem perde província afunda** — o cofre não cobre mais, o tributo quebra e a
+reputação cai com o mapa inteiro — e **quem cresce o supera**, e um dia olha a linha e vê troco
+onde havia sangria.
+
+⚠️ **Duas portas, e a principal é a da guerra.** Em paz é pedágio; **em guerra é o preço de uma
+paz que o inimigo recusaria de graça** — e essa é a que importava, porque `querPaz` não tinha
+alavanca nenhuma: quem estava perdendo com um inimigo que ainda tinha alvo não podia oferecer
+nada, e perder província a província até não sobrar prêmio não é uma decisão, é uma espera.
+
+⚠️ **Um tributo de cada lado**, e essa trava foi medida, não intuída: sem ela o tributo repetia,
+número por número, a falha que o pacto já tivera — o fraco amarra o forte, o forte vai comer quem
+não amarrou, e a violência apenas MUDA DE ENDEREÇO (41 províncias trocando de dono contra 12 sem
+tributo nenhum).
+
+⚠️ **Não é vassalagem.** O pagador não perde província, exército, decisão nem voz: é um poder
+inteiro que comprou um ano. Suserania, chamado à guerra e herança de território são outra decisão.
 
 ⚠️ **A assinatura precisa dos DOIS.** A primeira versão aceitava com o consentimento de um lado
 só, e a medição foi brutal: o fraco amarrava o forte, o forte ia comer quem não tinha amarrado,

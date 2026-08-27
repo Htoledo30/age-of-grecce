@@ -23,8 +23,9 @@
  *
  * ⚠️ **Nenhuma parcela existe que o jogador não consiga ver no mapa.** Fronteira comum, guerra
  * em curso, trégua, e a terra dele que está na sua mão — as quatro são visíveis, e é por isso
- * que a opinião nunca vai parecer arbitrária. No dia em que houver pacto, comércio e aliança,
- * cada um entra como mais uma linha nesta mesma lista.
+ * que a opinião nunca vai parecer arbitrária. Pacto, comércio e tributo entraram depois, cada
+ * um como mais uma linha nesta mesma lista, sem mecânica nova nenhuma — e a aliança entrará
+ * pela mesma porta.
  *
  * ⚠️ **E ela só existe entre os poderes COM FICHA**, decisão de Henrique. Opinião de um poder
  * que não arrecada, não recruta e não decide nada é um número que não vira decisão nenhuma —
@@ -54,6 +55,16 @@ export interface SituacaoDaRelacao {
   temPacto: boolean;
   /** Há acordo de comércio? Dinheiro entrando dos dois lados é um fato como qualquer outro. */
   temAcordo: boolean;
+  /**
+   * Há tributo correndo entre os dois?
+   *
+   * ⚠️ **É um fato do PAR, e não de um lado só** — como tudo nesta conta, que é um número por
+   * par e não um por lado. Ouro atravessando a fronteira todo turno acalma a relação: enquanto
+   * ele corre, um dos dois já decidiu que não marcha, e o outro já decidiu que aceita ser pago.
+   * Que a humilhação seja de quem paga e o lucro de quem recebe é uma assimetria que este jogo
+   * ainda não usa em decisão nenhuma — no dia em que usar, a chave do par já é a mesma.
+   */
+  temTributo: boolean;
   /**
    * A pior reputação do par, de −100 a 0.
    *
@@ -105,6 +116,10 @@ export function parcelasDaRelacao(
 
   if (situacao.temAcordo) {
     parcelas.push({ rotulo: 'acordo de comércio', pontos: alvo.acordoDeComercio });
+  }
+
+  if (situacao.temTributo) {
+    parcelas.push({ rotulo: 'tributo em curso', pontos: ajustes.tributo.pontos });
   }
 
   if (situacao.reputacao < 0) {

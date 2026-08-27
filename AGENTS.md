@@ -29,18 +29,32 @@ A IA ataca, reage e desiste; a diplomacia básica existe. O ritmo dela vive em `
 (`fracaoQueMarcha`, `sobraMinima`, `valorDaCapital`, `vantagemParaDeclarar`, `guerraLonga`,
 `defesaAmeacada`) e é balanço, não código: mexer nele é editar JSON e rodar `npm run partida`.
 
-**O trabalho autorizado agora é a RELAÇÃO entre os reinos**, decidida por Henrique: um número
-de −100 a +100 por par de poderes, que sobe e desce com o que cada um faz, e que passa a decidir
-o que hoje é decidido por uma conta militar seca — se a paz é aceita, se a guerra é declarada e,
-depois, se uma aliança ou um tributo fazem sentido. É o que transforma a lista de vizinhos numa
-mesa de negociação.
+A relação, o presente, o pacto, o acordo de comércio e o **tributo** já existem — a lista de
+vizinhos virou mesa de negociação.
+
+**O trabalho autorizado agora é FECHAR O BALANÇO DO TRIBUTO**, e ele está aberto de propósito.
+A mecânica funciona e está medida, mas o número que decide se ela fica como está é de Henrique:
+
+- sem tributo: 12 províncias trocando de dono em 100 turnos, 6 poderes eliminados de 18;
+- com tributo, hoje: 25 e 7, com a desigualdade final em 3,2× contra 12,4× da linha de base.
+
+⚠️ **Uma configuração não é uma medição.** Rodar `npm run partida 100` com `turnosDePremio`
+(hoje 6) e `fracaoDaRenda` dos prazos em valores vizinhos antes de concluir qualquer coisa — este
+mesmo dial já deu 41 conquistas em 20 e 25 em 6, e a resposta é caótica.
+
+A pergunta de desenho que sobra, e é de Henrique: **o mapa no turno 100 deve ter poucos impérios
+grandes ou vários reinos ainda de pé?** O tributo empurra para o primeiro.
+
+Depois disso, a próxima peça natural é a **aliança**, que é o topo da régua: acima de +45 ainda
+não há nada a comprar.
 
 ⚠️ **Cuidado ao mexer nos números da IA sem medir.** A resposta é caótica: uma conquista cedo
 vira bola de neve, e andar na mesma direção de um dial já deu 20 conquistas numa configuração e
 105 na vizinha. `npm run partida 100` é barato e é o corte.
 
-Não começar comércio internacional, diplomacia, espionagem, naval, migração ou governadores
-sem uma nova decisão de Henrique.
+Não começar espionagem, naval, migração, governadores, vassalagem ou suserania sem uma nova
+decisão de Henrique. **A IA não EXIGE tributo nem rompe o que recebe** — as duas coisas foram
+deixadas de fora de propósito e são decisão nova.
 
 ## O que depende de Henrique testar
 
@@ -50,7 +64,11 @@ sem uma nova decisão de Henrique.
 - quatro armas, muralhas, cerco, recuo e folha militar dentro e fora de casa;
 - utilidade das abas de Alimentação e Mercado no Governo;
 - aparência dos três arquipélagos das Cíclades;
-- comportamento da IA, especialmente defesa e ataque.
+- comportamento da IA, especialmente defesa e ataque;
+- **o tributo jogando**: a parcela dói o suficiente? o prazo longo é tentador ou é armadilha?
+  comprar a saída de uma guerra perdida chega a tempo de salvar a partida?
+- **a mesa de diplomacia**: os dois cartões dizem o que precisam dizer? a régua com a linha do
+  vizinho dá escala ao número da opinião? a resposta antes do clique tira ou põe graça?
 
 Simulação mede relações e regressões; não substitui a sensação da partida.
 

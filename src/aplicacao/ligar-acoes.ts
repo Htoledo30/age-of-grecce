@@ -11,10 +11,12 @@ import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { esquecerCampanha, salvarCampanha } from './salvamento-local';
 import { aceitaPacto } from '@/ia/diplomacia/pactos';
-import { querPaz } from '@/ia/diplomacia/paz';
+import { aceitaPagarTributo, aceitaTributo } from '@/ia/diplomacia/tributos';
+import { querPaz, querPazComTributo } from '@/ia/diplomacia/paz';
 import { estiloDe } from '@/ia/estilo';
 import { virarTurno } from './virar-turno';
-import { vistaDoAlimento, vistaDoBalanco, vistaDaDiplomacia, vistaDoMercado } from './vistas/governo';
+import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
+import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
 
 export function ligarAcoes(jogo: Jogo): void {
   const { campanha, atlas, ajustes, cena, tela, selecao } = jogo;
@@ -181,6 +183,111 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.romperPacto(idPoder);
     tela.diplomacia.dizer(
       `Pacto rompido. ${campanha.poder(idPoder).nome} não esquece, e o mapa inteiro viu.`,
+    );
+  };
+
+  /**
+   * OFERECER tributo: o jogador paga, e o outro precisa ter um ano para vender.
+   *
+   * ⚠️ **A recusa aqui é a informação mais valiosa da tela.** "Não tenho nada contra você" diz
+   * ao jogador, de graça e sem custo nenhum, que daquele vizinho não vem invasão — e é o que
+   * impede o tesouro cheio de comprar o mapa inteiro no primeiro turno.
+   */
+  tela.diplomacia.aoPagarTributo = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const nome = campanha.poder(idPoder).nome;
+    const r = campanha.podeFirmarTributo(eu, idPoder, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    const ajustes = jogo.ajustes.jogo.diplomacia.tributo;
+    const ouro = campanha.valorDeUmTributoDe(eu, turnos);
+    // ⚠️ A quantia CONCRETA entra na pergunta, e não uma média: o prazo longo é a parcela
+    // barata, então o mesmo vizinho pode aceitar dez turnos e recusar quarenta.
+    if (!aceitaTributo(campanha, idPoder, eu, ouro, estiloDe(jogo.ia, idPoder), ajustes)) {
+      tela.diplomacia.dizer(
+        `${nome} recusou ${ouro} por turno: ou não tem ano nenhum para te vender, ou é troco perto do que ele arrecada.`,
+      );
+      return;
+    }
+    campanha.pagarTributoA(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `${nome} aceita o tributo: ${ouro} por turno durante ${turnos} turnos, e ele não marcha.`,
+    );
+  };
+
+  /** EXIGIR tributo: o jogador recebe, e o outro só paga a quem realmente o alcança. */
+  tela.diplomacia.aoExigirTributo = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const nome = campanha.poder(idPoder).nome;
+    const r = campanha.podeFirmarTributo(idPoder, eu, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    if (!aceitaPagarTributo(campanha, idPoder, eu, jogo.ajustes.jogo.diplomacia.tributo)) {
+      tela.diplomacia.dizer(`${nome} recusou: não teme o bastante o seu exército.`);
+      return;
+    }
+    campanha.exigirTributoDe(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `${nome} paga ${campanha.valorDeUmTributoDe(idPoder, turnos)} por turno durante ${turnos} turnos.`,
+    );
+  };
+
+  /**
+   * **COMPRAR A PAZ**: a saída de uma guerra que está sendo perdida.
+   *
+   * ⚠️ **Se ele já queria a paz, o jogador não paga.** `querPazComTributo` devolve `true` de
+   * graça nesse caso, e cobrar por uma coisa que sairia sozinha seria roubar o jogador com uma
+   * informação que só o jogo tinha. Assina-se a paz simples e diz-se o que aconteceu.
+   */
+  tela.diplomacia.aoPazComTributo = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const nome = campanha.poder(idPoder).nome;
+    const r = campanha.podeFazerPazComTributo(idPoder, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    const estilo = estiloDe(jogo.ia, idPoder);
+    const combate = jogo.ajustes.jogo.combate;
+    if (querPaz(campanha, idPoder, eu, estilo, combate)) {
+      campanha.fazerPaz(idPoder);
+      tela.diplomacia.dizer(`${nome} aceitou a paz sem cobrar nada. Guarde o ouro.`);
+      return;
+    }
+    const ouro = campanha.valorDeUmTributoDe(eu, turnos);
+    const aceita = querPazComTributo(
+      campanha,
+      idPoder,
+      eu,
+      ouro,
+      turnos,
+      estilo,
+      combate,
+      jogo.ajustes.jogo.diplomacia.tributo,
+    );
+    if (!aceita) {
+      tela.diplomacia.dizer(
+        `${nome} recusou: ${ouro} por turno é menos do que ele ainda pretende tomar de você.`,
+      );
+      return;
+    }
+    campanha.fazerPazComTributo(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `Paz comprada com ${nome}: ${ouro} por turno durante ${turnos} turnos.`,
+    );
+  };
+
+  tela.diplomacia.aoRomperTributo = (idPoder) => {
+    campanha.romperTributo(idPoder);
+    tela.diplomacia.dizer(
+      `Tributo rompido. ${campanha.poder(idPoder).nome} não esquece, e o mapa inteiro viu.`,
     );
   };
 

@@ -460,3 +460,139 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
     expect(comAcordo.length).toBeGreaterThan(0);
   });
 });
+
+describe('o tributo: o ano de sossego que se compra quando não há confiança', () => {
+  it('prazo longo custa MENOS por turno — é a lógica do aluguel', () => {
+    // ⚠️ Quem se compromete por quarenta turnos ganha desconto; quem quer poder sair em dez
+    // paga o preço da liberdade. E o desconto tem dono: assinar barato e depois ficar forte é
+    // estar preso, ou pagar a reputação para sair.
+    const c = nova();
+    const prazos = c.prazosDeTributo('atenas', 'argos');
+    expect(prazos.map((p) => p.turnos)).toEqual([10, 20, 40]);
+
+    const parcelas = prazos.map((p) => p.ouro);
+    expect(parcelas[0]).toBeGreaterThan(parcelas[1] ?? 0);
+    expect(parcelas[1]).toBeGreaterThan(parcelas[2] ?? 0);
+    // Mas o TOTAL sobe com o prazo: o desconto é por turno, não na conta final.
+    expect((parcelas[2] ?? 0) * 40).toBeGreaterThan((parcelas[0] ?? 0) * 10);
+  });
+
+  it('vale uma fatia da renda de QUEM PAGA, e não uma tabela fixa', () => {
+    const c = nova();
+    // Um número fixo seria esmola para o rico e ruína para o pobre.
+    expect(c.valorDeUmTributoDe('atenas', 20)).toBeGreaterThan(
+      c.valorDeUmTributoDe('plateia', 20),
+    );
+  });
+
+  it('assinado, o ouro sai de um cofre e entra no outro TODO turno', () => {
+    const c = nova();
+    const minha = c.rendaDe('atenas');
+    const dele = c.rendaDe('megara');
+    const ouro = c.valorDeUmTributoDe('atenas', 20);
+    expect(ouro).toBeGreaterThan(0);
+
+    c.pagarTributoA('megara', 20);
+    // ⚠️ Entra na RENDA dos dois lados, e é por isso que o número que o jogador lê não mente.
+    expect(c.rendaDe('atenas')).toBe(minha - ouro);
+    expect(c.rendaDe('megara')).toBe(dele + ouro);
+    expect(c.saldoDeTributosDe('atenas')).toBe(-ouro);
+    expect(c.saldoDeTributosDe('megara')).toBe(ouro);
+  });
+
+  it('o valor CONGELA na assinatura: é o que faz o calote existir', () => {
+    // ⚠️ Recalculado todo turno sobre a renda de quem paga, ele encolheria junto com o reino e
+    // ninguém jamais deixaria de pagar — o calote seria impossível e a decisão, morta.
+    const c = nova();
+    const ouro = c.valorDeUmTributoDe('atenas', 20);
+    c.pagarTributoA('megara', 20);
+
+    const tributo = c.tributoEntre('atenas', 'megara');
+    expect(tributo?.ouro).toBe(ouro);
+    expect(tributo?.pagador).toBe('atenas');
+  });
+
+  it('⚠️ enquanto ele corre, quem RECEBE não declara guerra — e quem paga continua livre', () => {
+    // É literalmente o que o ouro comprou. Prender também quem paga transformaria o tributo
+    // numa jaula que se compra com o próprio dinheiro.
+    const c = nova();
+    c.pagarTributoA('megara', 20);
+
+    const dele = c.podeDeclararGuerra('atenas', 'megara');
+    expect(dele.pode).toBe(false);
+    expect(dele.pode === false && dele.motivo).toContain('rompa antes');
+
+    expect(c.podeDeclararGuerra('megara', 'atenas').pode).toBe(true);
+  });
+
+  it('é um FATO na conta da opinião, como o pacto e o comércio', () => {
+    const c = nova();
+    c.pagarTributoA('megara', 20);
+    expect(c.parcelasDaRelacaoEntre('atenas', 'megara').map((p) => p.rotulo)).toContain(
+      'tributo em curso',
+    );
+  });
+
+  it('romper custa a opinião dele E a sua reputação com o mapa inteiro', () => {
+    const c = nova();
+    c.pagarTributoA('megara', 20);
+    const antes = c.relacaoEntre('atenas', 'megara');
+
+    c.romperTributo('megara');
+    expect(c.tributoEntre('atenas', 'megara')).toBeUndefined();
+    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(antes);
+    expect(c.reputacaoDe('atenas')).toBeLessThan(0);
+  });
+
+  it('⚠️ o pacto em pé BARRA o tributo: ninguém paga pelo que já tem de graça', () => {
+    const c = nova();
+    c.firmarPacto('megara', 10);
+    const r = c.podeFirmarTributo('atenas', 'megara', 20);
+    expect(r.pode).toBe(false);
+    expect(r.pode === false && r.motivo).toContain('já tem esse sossego');
+  });
+
+  it('e a guerra barra também: o que se pede em guerra é paz', () => {
+    const c = nova();
+    c.declararGuerra('megara');
+    expect(c.podeFirmarTributo('atenas', 'megara', 20).pode).toBe(false);
+  });
+
+  it('o tributo atravessa o salvamento', () => {
+    const c = nova();
+    c.pagarTributoA('megara', 20);
+    const ouro = c.tributoEntre('atenas', 'megara')?.ouro;
+
+    const d = novaCampanha();
+    d.restaurar(lerSalvamento(c.serializar()));
+    expect(d.tributoEntre('atenas', 'megara')?.ouro).toBe(ouro);
+    expect(d.tributoEntre('atenas', 'megara')?.pagador).toBe('atenas');
+  });
+});
+
+describe('a paz comprada: a saída de uma guerra que se está perdendo', () => {
+  it('⚠️ existe porque `querPaz` não tinha alavanca nenhuma', () => {
+    // Quem está perdendo com um inimigo que ainda tem alvo não podia oferecer NADA. Perder
+    // província a província até não sobrar prêmio não é uma decisão, é uma espera.
+    const c = nova();
+    c.declararGuerra('megara');
+    const prazos = c.prazosDePazComTributo('megara');
+    expect(prazos.map((p) => p.turnos)).toEqual([10, 20, 40]);
+    expect(prazos.some((p) => p.pode)).toBe(true);
+  });
+
+  it('assina a paz e o tributo no MESMO ato', () => {
+    const c = nova();
+    c.declararGuerra('megara');
+    expect(c.emGuerra('atenas', 'megara')).toBe(true);
+
+    c.fazerPazComTributo('megara', 20);
+    expect(c.emGuerra('atenas', 'megara')).toBe(false);
+    expect(c.tributoEntre('atenas', 'megara')?.pagador).toBe('atenas');
+  });
+
+  it('fora da guerra não há paz a comprar', () => {
+    const c = nova();
+    expect(c.podeFazerPazComTributo('megara', 20).pode).toBe(false);
+  });
+});

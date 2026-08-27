@@ -18,6 +18,7 @@ import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 
 import { capitaisIniciais } from '../capitais';
 import type { NivelDeImposto } from '../economia';
+import type { Tributo } from '../estado-campanha';
 import type { CatalogoDeConstrucoes, NucleoDaCampanha, Permissao, Recusa } from '../nucleo';
 import { serializarCampanha } from '../salvamento';
 import { Territorios } from '../territorios';
@@ -45,6 +46,14 @@ import {
   prazosDePacto,
   reputacaoDe,
   podeFazerPaz,
+  podeFirmarTributo,
+  tributoEntre,
+  podeFazerPazComTributo,
+  prazosDePazComTributo,
+  prazosDeTributo,
+  saldoDeTributosDe,
+  tributosDe,
+  valorDeUmTributoDe,
   relacaoEntre,
   tregoaAte,
   valorDoPresente,
@@ -292,6 +301,59 @@ export abstract class ConsultasDoReino {
   /** Até que turno o pacto de não-agressão segura. `undefined` quando não há. */
   pactoAte(a: string, b: string): number | undefined {
     return pactoAte(this.nucleo, a, b);
+  }
+
+  /** O tributo em pé entre estes dois, com quem paga, quanto e até quando. */
+  tributoEntre(a: string, b: string): Tributo | undefined {
+    return tributoEntre(this.nucleo, a, b);
+  }
+
+  /**
+   * O que um tributo pago por ESTE poder custaria por turno, se fosse assinado hoje.
+   *
+   * A tela mostra antes de qualquer assinatura, pelo mesmo motivo que ela cota o presente: um
+   * botão que tira do cofre sem dizer quanto é um botão que ninguém aperta duas vezes.
+   */
+  valorDeUmTributoDe(pagador: string, turnos: number): number {
+    return valorDeUmTributoDe(this.nucleo, pagador, turnos);
+  }
+
+  /** Os prazos de tributo que dá para assinar hoje, do mais curto ao mais longo, já cotados. */
+  prazosDeTributo(
+    pagador: string,
+    recebedor: string,
+  ): readonly { turnos: number; ouro: number; pode: boolean }[] {
+    return prazosDeTributo(this.nucleo, pagador, recebedor);
+  }
+
+  podeFirmarTributo(pagador: string, recebedor: string, turnos: number): Permissao {
+    return podeFirmarTributo(this.nucleo, pagador, recebedor, turnos);
+  }
+
+  /** Os prazos de paz-com-tributo que dá para assinar hoje, já cotados. A porta da guerra. */
+  prazosDePazComTributo(
+    com: string,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): readonly { turnos: number; ouro: number; pode: boolean }[] {
+    return prazosDePazComTributo(this.nucleo, porPoder, com);
+  }
+
+  podeFazerPazComTributo(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): Permissao {
+    return podeFazerPazComTributo(this.nucleo, porPoder, com, turnos);
+  }
+
+  /** Os tributos em pé deste poder, com quem está do outro lado de cada um. */
+  tributosDe(idPoder: string): readonly { com: string; tributo: Tributo }[] {
+    return tributosDe(this.nucleo, idPoder);
+  }
+
+  /** O que os tributos deste poder somam (recebe) ou tiram (paga) do cofre por turno. */
+  saldoDeTributosDe(idPoder: string): number {
+    return saldoDeTributosDe(this.nucleo, idPoder);
   }
 
   /** A reputação deste poder, de −100 a 0. Zero é quem nunca quebrou promessa. */

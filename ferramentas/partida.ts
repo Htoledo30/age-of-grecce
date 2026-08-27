@@ -81,6 +81,10 @@ let guerrasDeclaradas = 0;
 let pactos = 0;
 let presentes = 0;
 let acordos = 0;
+let tributos = 0;
+let ouroEmTributos = 0;
+let pazesCompradas = 0;
+let ouroEmPazes = 0;
 let ouroEmPresentes = 0;
 let pazes = 0;
 let emGuerraTurnos = 0;
@@ -149,11 +153,19 @@ for (let turno = 0; turno < TURNOS; turno++) {
     if (lance.guerra !== null) guerrasDeclaradas += 1;
     if (lance.pacto !== null) pactos += 1;
     if (lance.comercio !== null) acordos += 1;
+    if (lance.tributo !== null) {
+      tributos += 1;
+      ouroEmTributos += c.valorDeUmTributoDe(lance.poder, lance.tributo.turnos);
+    }
     if (lance.presente !== null) {
       presentes += 1;
       ouroEmPresentes += lance.presente.ouro;
     }
     pazes += lance.pazes.length;
+    if (lance.pazComprada !== null) {
+      pazesCompradas += 1;
+      ouroEmPazes += lance.pazComprada.ouro;
+    }
     if (!lance.obra) continue;
     const doPoder = obras.get(lance.poder) ?? new Map<string, number>();
     doPoder.set(lance.obra.construcao, (doPoder.get(lance.obra.construcao) ?? 0) + 1);
@@ -230,6 +242,11 @@ console.log(`  homens em armas no mapa: ${n(emArmas)}`);
 console.log(`
   ── A GUERRA ──`);
 console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pazes / 2}`);
+// ⚠️ Zero aqui quer dizer que o tributo de pós-guerra é botão que só o jogador aperta: duas
+// IAs em guerra iriam até alguém ser eliminado, que é o que acontecia antes desta linha existir.
+console.log(
+  `  pazes COMPRADAS com tributo: ${pazesCompradas} (${n(ouroEmPazes)} por turno prometido)`,
+);
 // ⚠️ Zero pactos quer dizer que a diplomacia entre computadores é mecânica morta: o jogador
 // veria uma tela cheia de botões que só ele aperta.
 console.log(
@@ -243,6 +260,16 @@ console.log(
 );
 console.log(
   `  renda de comércio no fim: ${n(poderes.reduce((s2, id) => s2 + c.rendaDeAcordos(id), 0))} por turno`,
+);
+// ⚠️ Zero tributos quer dizer que o fundo da régua de relação voltou a ser mecânica morta: o
+// jogador veria dois botões que só ele aperta. Muitos quer dizer que a guerra virou pedágio.
+const pagando = poderes.filter((id) =>
+  c.tributosDe(id).some((t) => t.tributo.pagador === id),
+).length;
+console.log(
+  `  tributos assinados: ${tributos} (${n(ouroEmTributos)} por turno no total) · de pé no fim: ${
+    poderes.reduce((s2, id) => s2 + c.tributosDe(id).length, 0) / 2
+  }, com ${pagando} poderes pagando`,
 );
 // ⚠️ Zero aqui quer dizer que a diplomacia virou uma paz eterna, que é o mapa parado de outro
 // jeito. O número saudável é a maior parte dos poderes em paz e alguns em guerra o tempo todo.

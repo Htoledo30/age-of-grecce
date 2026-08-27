@@ -145,6 +145,18 @@ const SalvamentoCampanha = z.object({
     pactos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     acordos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     reputacao: z.record(z.string().min(1), z.number().min(-100).max(0)).default({}),
+    // `default` pelo mesmo motivo de todos os outros: salvamento de antes do tributo carrega,
+    // e o mundo dele volta sem tributo nenhum — que é como toda campanha começa.
+    tributos: z
+      .record(
+        z.string().min(1),
+        z.object({
+          pagador: z.string().min(1),
+          ate: z.number().int().nonnegative(),
+          ouro: z.number().int().positive(),
+        }),
+      )
+      .default({}),
   }),
 });
 

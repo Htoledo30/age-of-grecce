@@ -227,6 +227,81 @@ export const Ajustes = z.object({
         /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
         reputacaoPorTurno: z.number().positive(),
       }),
+      /**
+       * O TRIBUTO: o ano de sossego que se compra quando não há confiança para pedi-lo de graça.
+       *
+       * ⚠️ **É o pacto pelo avesso, e é isso que o mantém honesto.** O pacto não custa moeda e
+       * exige opinião; o tributo não exige opinião nenhuma e custa ouro todo turno. Quem tem
+       * confiança para o pacto seria tolo de pagar por um — então os dois nunca competem pelo
+       * mesmo momento da partida, e o ouro entra exatamente onde a confiança não chega.
+       */
+      tributo: z.object({
+        /**
+         * Os prazos oferecidos, e o que cada um cobra por turno.
+         *
+         * ⚠️ **Prazo longo custa MENOS por turno, e é a lógica do aluguel.** Quem se compromete
+         * por quarenta turnos ganha desconto; quem quer poder sair em dez paga o preço da
+         * liberdade. Do lado de quem recebe a conta fecha igual: uma renda garantida por muito
+         * tempo vale aceitar uma parcela menor, e amarrar as próprias mãos por só dez turnos
+         * tem de ser bem pago para compensar a chance perdida de simplesmente invadir.
+         *
+         * ⚠️ E é o que dá peso ao rompimento: **assinar quarenta turnos barato e depois ficar
+         * forte é estar preso** — ou pagar a reputação para sair. O desconto tem dono.
+         *
+         * A fatia é medida no bolso do PAGADOR, como o presente é medido no de quem recebe: um
+         * número fixo seria esmola para o rico e ruína para o pobre.
+         */
+        prazos: z
+          .array(
+            z.object({
+              turnos: z.number().int().positive(),
+              fracaoDaRenda: z.number().positive(),
+            }),
+          )
+          .min(1),
+        /**
+         * Que fatia da renda de QUEM RECEBE o tributo precisa alcançar para ser aceito.
+         *
+         * ⚠️ **É o freio que impede o pequeno de comprar o gigante.** Sem ele, Plateia compraria
+         * Argos com troco e abriria mão de uma conquista por dezoito moedas. A consequência que
+         * interessa cai de graça: só se compra quem é da sua escala.
+         */
+        materialidade: z.number().positive(),
+        /**
+         * De quantas vezes o exército do outro o recebedor precisa ter antes de o tributo fazer
+         * sentido. Não se compra proteção de quem não te ameaça — seria ouro por nada.
+         */
+        vantagemMinima: z.number().positive(),
+        /**
+         * De quantos TURNOS de renda uma província conquistada vale, aos olhos da IA.
+         *
+         * ⚠️ **É a régua que compara ouro com terra**, e ela existe porque as duas coisas não
+         * têm a mesma unidade: o tributo é uma renda que ACABA, a província é uma renda que
+         * fica. Sem um horizonte escrito, comparar as duas seria comparar um pagamento com o
+         * infinito, e a IA jamais venderia paz nenhuma.
+         *
+         * Número baixo faz a IA vender a paz fácil demais e a guerra vira pedágio; número alto
+         * a faz recusar sempre e o tributo de pós-guerra morre. ⚠️ **Medir com `npm run
+         * partida` antes de mexer** — é um dial de IA, e a resposta dela é caótica.
+         */
+        turnosDePremio: z.number().positive(),
+        /**
+         * O que um tributo em pé vale na conta da opinião.
+         *
+         * ⚠️ **Pequeno de propósito, e menor que o do comércio.** Ouro que se paga por medo não
+         * é amizade: ele acalma o par o bastante para a opinião sair do fundo do poço com o
+         * tempo, e não o bastante para virar atalho até um pacto de quarenta turnos.
+         */
+        pontos: z.number(),
+        /** O tombo na opinião de quem foi traído por quem recebia e atacou assim mesmo. */
+        choqueDeRuptura: z.number(),
+        /** E o tombo na REPUTAÇÃO de quem rompeu. Vender o ano e invadir custa com todo mundo. */
+        reputacaoDaRuptura: z.number(),
+        /** O tombo na opinião quando o cofre do pagador não cobre o pagamento. */
+        choqueDoCalote: z.number(),
+        /** E o tombo na reputação do caloteiro. Prometer o que não se paga também é promessa. */
+        reputacaoDoCalote: z.number(),
+      }),
     }),
     /**
      * O acordo de comércio: a fonte de renda que a diplomacia abre.
@@ -261,8 +336,6 @@ export const Ajustes = z.object({
        * verdade, do tamanho de uma terra tomada, e não a implicância de dividir uma divisa.
        */
       opiniaoMinima: z.number().min(-100).max(100),
-      /** O que um acordo em pé vale na conta da opinião, enquanto durar. */
-      pontos: z.number(),
     }),
     /** Crescimento natural por província, aplicado uma vez ao passar o turno. */
     populacao: z.object({

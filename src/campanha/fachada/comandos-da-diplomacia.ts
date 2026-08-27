@@ -16,9 +16,12 @@ import {
   declararGuerra,
   desfazerAcordo,
   fazerPaz,
+  fazerPazComTributo,
   firmarPacto,
+  firmarTributo,
   presentear,
   romperPacto,
+  romperTributo,
 } from '../diplomacia/relacoes';
 import { ConsultasDeGuerra } from './consultas-de-guerra';
 
@@ -44,6 +47,26 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    */
   fazerPaz(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (!fazerPaz(this.nucleo, porPoder, com)) return;
+    this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'paz' });
+    this.aoMudar();
+  }
+
+  /**
+   * **Encerra a guerra PAGANDO por ela** — a paz que o inimigo recusaria de graça.
+   *
+   * ⚠️ É a porta principal do tributo. `querPaz` não tinha alavanca: quem estava perdendo com um
+   * inimigo que ainda tinha alvo não podia oferecer nada, e a única saída era perder província
+   * a província até não sobrar prêmio. Isso não é uma decisão, é uma espera.
+   *
+   * ⚠️ **Quem decide se a IA aceita é `querPazComTributo`**, como toda paz. E ela não cobra de
+   * quem já queria sair: a aplicação, vendo isso, assina a paz simples e não toca no cofre.
+   */
+  fazerPazComTributo(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): void {
+    if (!fazerPazComTributo(this.nucleo, porPoder, com, turnos)) return;
     this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'paz' });
     this.aoMudar();
   }
@@ -78,6 +101,48 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
   /** Desfaz o acordo. Sem preço de reputação: comércio não é promessa de paz. */
   desfazerAcordo(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (desfazerAcordo(this.nucleo, porPoder, com)) this.aoMudar();
+  }
+
+  /**
+   * Passa a PAGAR tributo a ele: ouro todo turno, e ele não te declara guerra enquanto durar.
+   *
+   * ⚠️ **É o pacto de quem não tem opinião para assinar um.** O pacto é de graça e exige
+   * confiança; este não exige confiança nenhuma e custa o cofre. Por isso os dois nunca
+   * competem — e `podeFirmarTributo` recusa quando já há pacto, para ninguém pagar pelo que
+   * já tem.
+   *
+   * ⚠️ **O prazo é escolhido, e prazo longo custa menos por turno** — a lógica do aluguel. Quem
+   * quer poder sair em dez turnos paga o preço da liberdade.
+   *
+   * ⚠️ **Quem decide se a IA aceita ser paga é `src/ia/diplomacia/tributos.ts`**, como na paz:
+   * a fachada registra o acordo, e a aplicação junta as duas metades.
+   */
+  pagarTributoA(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): void {
+    if (firmarTributo(this.nucleo, porPoder, com, turnos)) this.aoMudar();
+  }
+
+  /** Passa a RECEBER tributo dele. A mesma assinatura, lida do outro lado da mesa. */
+  exigirTributoDe(
+    de: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): void {
+    if (firmarTributo(this.nucleo, de, porPoder, turnos)) this.aoMudar();
+  }
+
+  /**
+   * Rompe o tributo antes do prazo — e custa, venha de que lado vier.
+   *
+   * ⚠️ Quem recebia vendeu um ano que não entregou; quem pagava deu o calote. Um preço só para
+   * as duas saídas, e a diferença que importa já está no mapa: quem parou de pagar vai ser
+   * invadido no turno seguinte.
+   */
+  romperTributo(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (romperTributo(this.nucleo, porPoder, com)) this.aoMudar();
   }
 
   /**
