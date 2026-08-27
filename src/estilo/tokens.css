@@ -54,9 +54,20 @@
   --bronze-escuro: var(--ui-bronze-escuro);
   --vazio: #050708;
 
-  --fonte-titulo: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
-  --fonte-corpo: 'Segoe UI', Tahoma, Arial, sans-serif;
-  --fonte-numero: Bahnschrift, 'Segoe UI Variable', 'Segoe UI', sans-serif;
+  /* ── AS QUATRO VOZES DA TIPOGRAFIA ──
+     ⚠️ Quatro e não três, e a divisão nova é a que faltava: TÍTULO e NOME faziam o mesmo
+     token e são trabalhos opostos. "DIPLOMACIA" é uma inscrição — caixa alta, espaçada, para
+     ser lida uma vez; "Elêusis" é um nome — caixa mista, 15px, lido cinquenta vezes por
+     partida numa lista. Uma capital romana esticada serve à primeira e cansa na segunda. */
+
+  /* A pedra: capitais inscricionais, para o que é gravado e não escrito. Só títulos. */
+  --fonte-titulo: Cinzel, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  /* O nome próprio: serifa clássica com caixa baixa de verdade, para reinos e províncias. */
+  --fonte-nome: 'Cormorant Garamond', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  /* A voz corrente: humanista, quente, e legível aos 11px em que metade da interface vive. */
+  --fonte-corpo: 'Alegreya Sans', 'Segoe UI', Tahoma, Arial, sans-serif;
+  /* O livro-caixa: algarismos de largura fixa, para coluna de número não dançar entre turnos. */
+  --fonte-numero: Inter, Bahnschrift, 'Segoe UI Variable', 'Segoe UI', sans-serif;
 
   --gap-1: 5px;
   --gap-2: 10px;

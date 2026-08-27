@@ -42,8 +42,19 @@ A mecânica funciona e está medida, mas o número que decide se ela fica como e
 (hoje 6) e `fracaoDaRenda` dos prazos em valores vizinhos antes de concluir qualquer coisa — este
 mesmo dial já deu 41 conquistas em 20 e 25 em 6, e a resposta é caótica.
 
-A pergunta de desenho que sobra, e é de Henrique: **o mapa no turno 100 deve ter poucos impérios
-grandes ou vários reinos ainda de pé?** O tributo empurra para o primeiro.
+**O ALVO, decidido por Henrique:** a curva desce até o turno 100, e lá **já tem de haver alguns
+impérios APARECENDO — mas não reinos imensos.** Cem turnos são rápidos: cerca de meia hora de
+partida. Não é um mapa que se consolidou, é um mapa em que já dá para apontar quem está
+ganhando.
+
+⚠️ **A leitura de hoje pode estar plana demais para esse alvo.** A configuração atual dá 7
+poderes eliminados de 18 e o maior reino saindo de 2 para 6 províncias — mas a distância entre
+o maior e o menor entre os SOBREVIVENTES cai para 3,2×, contra 6,2× no turno 1. O mundo termina
+mais igual do que começou, o que é o oposto de "impérios aparecendo". Antes do tributo eram
+12,4×, com um Argos destacado — longe demais para o outro lado.
+
+O número a perseguir fica entre os dois, e é ele que precisa de medição: **alguns poderes
+visivelmente maiores, sem um dono do mapa.**
 
 Depois disso, a próxima peça natural é a **aliança**, que é o topo da régua: acima de +45 ainda
 não há nada a comprar.
@@ -69,6 +80,15 @@ deixadas de fora de propósito e são decisão nova.
   comprar a saída de uma guerra perdida chega a tempo de salvar a partida?
 - **a mesa de diplomacia**: os dois cartões dizem o que precisam dizer? a régua com a linha do
   vizinho dá escala ao número da opinião? a resposta antes do clique tira ou põe graça?
+- **a janela de batalha**: o traço do limiar dá a tensão que ele promete? a fita se lê ou se
+  varre? o ritmo de 900 ms por round é bom nos dois extremos — batalha de 3 rounds e de 9?
+
+⚠️ **DEFEITO ACHADO E NÃO CORRIGIDO** (é do relatório de combate, não da janela): a composição
+por arma que a batalha reporta **não bate com o total de homens do lado**. Numa hoste de 2.400
+hoplitas a janela mostra 1.441 já no round zero — e 1.441 é exatamente o número de
+SOBREVIVENTES no fim. O relatório parece gravar a composição depois da batalha, e não antes.
+Ver `ladoNaTela` em `src/aplicacao/vistas/batalhas.ts` e quem preenche `composicao` no
+relatório. A janela apenas mostra o que recebe.
 
 Simulação mede relações e regressões; não substitui a sensação da partida.
 

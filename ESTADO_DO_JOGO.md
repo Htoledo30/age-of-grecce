@@ -98,6 +98,13 @@ fronteira que exército não atravessa.
 circular no seu reino — quem quer o bem toma a terra. É essa separação que mantém a conquista
 valendo mais que o comércio, num jogo de conquista.
 
+**A tipografia tem quatro vozes**, empacotadas com o jogo e não buscadas na rede: **Cinzel**
+nas inscrições (os títulos de janela, em capitais romanas), **Cormorant Garamond** nos nomes
+próprios de reino e província, **Alegreya Sans** no texto corrente e **Inter** nos números, com
+algarismos de largura fixa para uma coluna não dançar entre turnos. A divisão entre inscrição e
+nome é a que faltava: "DIPLOMACIA" é gravado e lido uma vez; "Elêusis" é lido cinquenta vezes
+por partida numa lista de 15px, e uma capital esticada cansa ali.
+
 **A janela é uma MESA, e não um menu** — refeita depois de "parece que nem estou negociando com
 outro reino". Dois cartões espelhados, você de um lado e ele do outro na mesma moldura; a fala
 com que ele abre a conversa; a barra de força; a opinião com **dois números** (onde está e para
@@ -484,6 +491,33 @@ são preservadas na restauração.
 - A janela de batalha desenha **uma faixa por arma** dentro da barra de cada lado e escreve a
   composição ao lado do nome; o painel de recrutamento mostra as quatro armas sempre, com as
   trancadas apagadas e o motivo no tooltip.
+
+### A janela de batalha
+
+O jogador **assiste, não comanda**: a regra resolve a batalha quando o turno vira e a janela
+reproduz a lista de rounds que ela produziu — não existe uma fórmula para decidir e outra para
+animar, e por isso a tela não consegue mentir.
+
+Refeita com o que as telas de resultado dos outros jogos ensinam:
+
+- **dois exércitos frente a frente**, em colunas espelhadas com os mesmos campos na mesma
+  ordem — duas barras empilhadas são uma lista, não um confronto;
+- ⚠️ **o LIMIAR DE QUEBRA desenhado na barra desde o round zero, nos dois lados.** É o suspense
+  inteiro e ele era invisível: a batalha não se decide no zero, se decide quando um lado passa
+  de 60% de baixas. Agora a barra desce rumo a um filete, e ao lado dele lê-se *faltam 481 para
+  quebrar*;
+- **uma régua só para os dois** — antes cada barra era normalizada pelo próprio total, e 2.400
+  contra 2.000 desenhavam a mesma largura: a diferença de tamanho dos exércitos estava apagada
+  pelo CSS;
+- **a firmeza em palavra** — firme, rangendo, vergando, cedeu — em degraus que são fração do
+  limiar, e não do exército, para não mentirem se o limiar mudar no JSON;
+- **barra é estado, número é delta, e o jogador precisa dos dois**: o segmento fantasma mostra a
+  fatia perdida NESTE round, e a fita escreve `1.736 → 1.621` em vez de `−115`;
+- **a fita ACUMULA** e rola sozinha, o round da quebra nasce em corpo maior, e cada fase tem
+  canal próprio de cor com palavra junto;
+- **o fecho separa o choque da debandada**: *"Elêusis perdeu 1.736: 1.340 no choque · 396 na
+  debandada"*. São contas diferentes de propósito — uma linha que cede perde na fuga muito mais
+  gente do que perdeu segurando, e é essa a lição que o jogador leva para a próxima marcha.
 
 ## Estrutura técnica
 

@@ -123,7 +123,7 @@
   color: var(--ui-bronze-claro);
 }
 .diplomacia__nome-texto {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 15px;
   letter-spacing: 0.02em;
 }
@@ -195,7 +195,7 @@
 .diplomacia__reino,
 .diplomacia__meu-reino {
   margin: 0;
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 20px;
   font-weight: 500;
   letter-spacing: 0.03em;
@@ -244,7 +244,7 @@
 .diplomacia__abertura {
   margin: 0;
   padding: 2px 0;
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 16px;
   font-style: italic;
   line-height: 1.4;

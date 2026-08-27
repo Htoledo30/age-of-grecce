@@ -80,30 +80,32 @@ test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu
   await expect(page.locator('.batalha__titulo')).toContainText('Atenas');
   // Os dois lados aparecem, cada um com o tamanho de partida.
   await expect(page.locator('.batalha__lado')).toHaveCount(2);
-  await expect(page.locator('.batalha__conta').first()).toContainText('900');
+  await expect(page.locator('.batalha__total').first()).toContainText('900');
 
-  // Round zero: ninguém perdeu ninguém ainda, e a narração apresenta os dois.
-  await expect(page.locator('.batalha__placar')).toContainText('round 0');
-  const contaInicial = await page.locator('.batalha__conta').first().textContent();
+  // Round zero: ninguém perdeu ninguém ainda, e a faixa da fase diz que as linhas se formam.
+  await expect(page.locator('.batalha__fase')).toContainText('linhas se formam');
+  const vivosInicial = await page.locator('.batalha__vivos').first().textContent();
 
-  // Avança um round: alguém encolheu.
+  // Avança um round: alguém encolheu, e a faixa passa a nomear a fase e o round.
   await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.locator('.batalha__placar')).toContainText('round 1');
-  expect(await page.locator('.batalha__conta').first().textContent()).not.toBe(contaInicial);
+  await expect(page.locator('.batalha__fase')).toContainText('round 1');
+  expect(await page.locator('.batalha__vivos').first().textContent()).not.toBe(vivosInicial);
 
   // Deixa correr até o fim.
   await page.getByRole('button', { name: 'Deixar correr' }).click();
   await expect(page.locator('.batalha__botao--fim')).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('.batalha__placar')).toContainText('fim');
+  // ⚠️ O canal e não a palavra: os três desfechos têm verbos diferentes de propósito
+  // ("A linha quebrou", "Retirada em ordem", "Ninguém cedeu"), e cravar um deles aqui seria
+  // cravar qual batalha a regra tinha de produzir — que é balanço, não interface.
+  await expect(page.locator('.batalha__fase')).toHaveAttribute('data-canal', 'fim');
 
   // ⚠️ **O teste que justifica a janela existir.** O último round da TELA tem que ser
   // exatamente o que sobrou no MAPA. Se divergirem, existem duas contas para a mesma batalha.
-  const naTela = await page.evaluate(() => {
-    const contas = [...document.querySelectorAll('.batalha__conta')].map(
-      (n) => Number((n.textContent ?? '').replace(/\D/g, '').slice(0, -3) || '0'),
-    );
-    return contas;
-  });
+  const naTela = await page.evaluate(() =>
+    [...document.querySelectorAll('.batalha__vivos')].map((n) =>
+      Number((n.textContent ?? '').replace(/\D/g, '') || '0'),
+    ),
+  );
   const naRegra = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return [i.forcaEm('atenas', 'atenas'), i.forcaEm('atenas', 'eleusis')];
@@ -152,6 +154,8 @@ test('a janela mostra as armas de cada lado, e as faixas encolhem com a barra', 
     i.plantarHoste('eleusis', 'eleusis', 800, 'hoplita');
     const deles = i.hostesEm('eleusis').find((h) => h.poder === 'eleusis');
     if (!deles) throw new Error('a hoste de Elêusis não subiu');
+    // A guerra que a marcha exige. Este teste é da JANELA; a diplomacia tem os testes dela.
+    i.declararGuerra('eleusis');
     i.ordenarMarcha(deles.id, 'atenas', 800, 'eleusis', 'assaltar');
   });
   await page.getByRole('button', { name: 'Passar o turno' }).click();
@@ -160,8 +164,8 @@ test('a janela mostra as armas de cada lado, e as faixas encolhem com a barra', 
   // Cada lado escreve a própria composição ao lado do nome. Sem depender da ORDEM: quem é o
   // lado A sai da força de cada um, e cravar isso aqui seria cravar balanço.
   await expect(page.locator('.batalha__armas')).toHaveCount(2);
-  await expect(page.locator('.batalha__barras')).toContainText('leves');
-  await expect(page.locator('.batalha__barras')).toContainText('hoplitas');
+  await expect(page.locator('.batalha__campo')).toContainText('leves');
+  await expect(page.locator('.batalha__campo')).toContainText('hoplitas');
 
   // E ela acompanha a batalha: depois de um round, os números da composição caem junto.
   const antes = await page.locator('.batalha__armas').first().textContent();

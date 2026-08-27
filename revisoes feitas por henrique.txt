@@ -4,7 +4,8 @@ mudar entre imposto baixo médio ou alto é uma mudança muito fraca, tinha que 
 humor das províncias continua muito esquisito, todo travado esses valores;
 problema diretamente ligado a humor, atualmente sempre que tento conquistar alguma província que o humor dela já esta baixo, a chance de eu conquistar aquela província e em duas rodadas ela já se revoltar é muito alta;
 ainda sinto que os valores de reparo das construções são baixos, tem que subir um pouco mais;
-a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta.
+a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta;
+no combate quando tem muito soldado porexemplo 2000x2000 ou 1000x1000 aparece 6 rodadas, mas na maioria das vezes todas as rodadas vai perdendo pouco soldado o que é divertido, você ve a luta desenrolado para um lado e para o outro ate algum ter uma vantagem e no ultimo round tem uma morte de soldados muito alta que quebra a diversão e imersão das batalhas, tem que ir tendo rounds ate um lado realmente perder por numero ou no meio da batalha decidir recuar, na troca de rounds devia ter um botão retirada, que o player clica e para IA algum tipo de sistema de moral de batalha, sla algo do tipo que dita o momento que talvez eles devam so se retirar dessa batalha ao invés de perder todos os soldados.
 
 
 

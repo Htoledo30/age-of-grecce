@@ -10,7 +10,7 @@
   backdrop-filter: blur(8px);
 }
 .ficha__nome {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 31px;
   font-weight: 500;
   line-height: 1;
@@ -66,7 +66,7 @@
   color: var(--ui-texto-tenue);
 }
 .ficha__subtitulo {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 17px;
   font-weight: 600;
   color: var(--ui-texto);

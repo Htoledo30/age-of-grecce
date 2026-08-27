@@ -1,9 +1,18 @@
-/*
- * A janela de batalha: um véu sobre o mapa e um cartão no centro, como o fim de jogo.
- *
- * Ela para o jogo enquanto está aberta de propósito — assistir à batalha é a tensão, e um
- * cartão de canto seria mais uma coisa piscando enquanto o jogador olha outra.
- */
+/* A JANELA DE BATALHA.
+
+   Um véu sobre o mapa e um cartão no centro, como o fim de jogo. Ela para o jogo enquanto está
+   aberta de propósito — assistir à batalha é a tensão, e um cartão de canto seria mais uma
+   coisa piscando enquanto o jogador olha outra.
+
+   ⚠️ DUAS COLUNAS ESPELHADAS, e não duas barras empilhadas. Campos idênticos, mesma ordem,
+   mesma altura: é a ficha de previsão que o gênero copia desde 1990 porque funciona — o olho
+   compara linha por linha e a assimetria salta sem legenda. Duas barras uma sobre a outra são
+   uma lista; duas colunas frente a frente são um confronto.
+
+   ⚠️ COR É CATEGORIA, TAMANHO É GRAVIDADE. Cada canal semântico tem uma classe — choque,
+   perseguicao, recuo, fim, baixas — e a cor mora só aqui. Nenhuma cor escrita por evento no
+   TypeScript: o léxico inteiro se muda neste arquivo. E cor nunca anda sozinha: todo canal tem
+   também uma palavra, porque monitor ruim e daltonismo não podem custar a leitura da tela. */
 #ui > .batalha {
   position: absolute;
   inset: 0;
@@ -17,141 +26,358 @@
 #ui > .batalha[hidden] {
   display: none;
 }
-.batalha > * {
-  width: 560px;
+.batalha__cartao {
+  display: flex;
+  flex-direction: column;
+  width: 720px;
+  max-width: calc(100vw - 48px);
+  max-height: min(700px, calc(100vh - 48px));
+  border: 1px solid var(--ui-borda);
+  border-radius: var(--raio-2);
+  background: linear-gradient(160deg, rgb(25 33 36 / 97%), rgb(10 15 17 / 96%));
+  color: var(--ui-texto);
+  box-shadow: 0 28px 80px var(--ui-sombra);
 }
 .batalha__titulo {
+  margin: 0;
+  padding: 22px 30px 16px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 26px 34px 0;
-  border: 1px solid var(--ui-borda);
-  border-bottom: 0;
-  background: linear-gradient(145deg, rgb(25 33 36 / 97%), rgb(10 15 17 / 95%));
-  color: var(--ui-texto);
-}
-.batalha__placar,
-.batalha__barras,
-.batalha__narracao,
-.batalha__botoes {
-  padding: 0 34px;
-  border: 1px solid var(--ui-borda);
-  border-top: 0;
-  border-bottom: 0;
-  background: linear-gradient(145deg, rgb(25 33 36 / 97%), rgb(10 15 17 / 95%));
-  color: var(--ui-texto);
-}
-.batalha__placar {
-  padding-top: 4px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
-  opacity: 0.6;
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-/* Um lado por linha: nome, barra que encolhe, e a conta em pé. */
-.batalha__barras {
+/* ── O CAMPO: os dois exércitos frente a frente ── */
+.batalha__campo {
   display: grid;
-  gap: 14px;
-  padding-top: 18px;
+  grid-template-columns: 1fr 64px 1fr;
+  align-items: start;
+  gap: 0;
+  padding: 18px 30px 6px;
 }
 .batalha__lado {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+/* O lado direito é o espelho do esquerdo: mesma ordem de campos, alinhamento invertido. */
+.batalha__lado[data-lado='b'] {
+  text-align: right;
 }
 .batalha__nome {
-  font-size: 15px;
+  margin: 0;
+  font-family: var(--fonte-nome);
+  font-size: 21px;
+  font-weight: 600;
   letter-spacing: 0.02em;
+  color: var(--ui-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-/* A muralha é modificador VISÍVEL: ela aparece ao lado de quem a tem. */
-.batalha__muro {
-  margin-left: 8px;
-  padding: 1px 6px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  border: 1px solid rgb(239 125 34 / 45%);
-  color: rgb(239 125 34);
+/* ⚠️ BARRA É ESTADO, NÚMERO É DELTA, e o jogador precisa dos dois. O número em pé fica grande
+   ao lado do total pequeno: "122" não significa nada, "1.640 de 2.000" significa tudo. */
+.batalha__estado {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
 }
-.batalha__conta {
+.batalha__lado[data-lado='b'] .batalha__estado {
+  justify-content: flex-end;
+}
+.batalha__vivos {
+  font-family: var(--fonte-numero);
+  font-size: 24px;
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
-  opacity: 0.8;
+  color: var(--ui-texto);
+}
+.batalha__total {
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+  font-variant-numeric: tabular-nums;
+}
+/* ⚠️ O TRAÇO DO LIMIAR: a barra não desce rumo ao zero, desce rumo a este filete. É o único
+   momento de suspense que a regra fabrica sozinha, e a tela que existe para mostrá-lo o
+   escondia. Fica nos dois lados — a virada é possível nas duas direções. */
+.batalha__limiar {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-inline: -1px;
+  background: var(--ui-bronze-claro);
+  cursor: help;
+  z-index: 2;
 }
 .batalha__trilho {
-  grid-column: 1 / -1;
-  height: 10px;
-  background: rgb(255 255 255 / 8%);
+  position: relative;
+  height: 14px;
+  overflow: visible;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 2px;
+  background: var(--ui-fundo);
   overflow: hidden;
 }
 .batalha__cheio {
   display: flex;
   height: 100%;
-  /* A largura anima sozinha: é o encolher que conta a batalha. */
   transition: width 260ms ease-out;
 }
-/* As armas dentro da barra. Só aparecem em exército misto — um só de leves fica liso. */
+.batalha__lado[data-lado='b'] .batalha__cheio {
+  margin-left: auto;
+}
 .batalha__faixa {
   height: 100%;
 }
-/* Na perseguição a barra despenca, e a cor avisa que aqui é onde morre gente. */
+/* Na perseguição a barra some depressa: a transição encurta para o encolhimento ser sentido. */
 .batalha__cheio[data-fase='perseguicao'] {
-  background: rgb(190 60 48) !important;
+  transition-duration: 120ms;
 }
-.batalha__cheio[data-fase='perseguicao'] .batalha__faixa {
-  background: rgb(190 60 48) !important;
+/* ⚠️ O SEGMENTO FANTASMA: a fatia perdida NESTE round, logo à direita do que sobrou. É o único
+   efeito desta tela e é um <div>. Faz o jogador ler o golpe como FRAÇÃO DO TODO, sem número
+   nenhum — a barra sozinha diz que ele está mal, o fantasma diz o quanto disso foi agora. */
+.batalha__fantasma {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(210 122 104 / 85%) 0 4px,
+    rgb(169 76 64 / 70%) 4px 8px
+  );
+  animation: batalha-fantasma 620ms ease-out forwards;
 }
-/* A composição, ao lado do nome: quantos de cada arma ainda estão em pé. */
+@keyframes batalha-fantasma {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.15;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .batalha__cheio {
+    transition: none;
+  }
+  .batalha__fantasma {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+/* A muralha é modificador VISÍVEL: aparece ao lado de quem a tem, em vez de sumir dentro do
+   número da defesa como um multiplicador escondido. */
+/* A firmeza em PALAVRA, e não em porcentagem: "45% de baixas" obriga a decorar a régua;
+   "vergando" responde a pergunta que o jogador está fazendo. Cor é categoria, e vem sempre
+   acompanhada da palavra — monitor ruim e daltonismo não podem custar a leitura. */
+.batalha__firmeza {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.batalha__firmeza[data-estado='rangendo'] {
+  color: var(--ui-fogo-claro);
+}
+.batalha__firmeza[data-estado='vergando'] {
+  color: var(--ui-fogo);
+}
+.batalha__firmeza[data-estado='cedeu'],
+.batalha__firmeza[data-estado='sem ninguém'] {
+  color: var(--ui-sangue-claro);
+  letter-spacing: 0.16em;
+}
+.batalha__muro {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+  cursor: help;
+}
 .batalha__armas {
-  margin-left: 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
   font-size: 12px;
-  font-weight: 400;
-  opacity: 0.72;
+  color: var(--ui-texto-tenue);
+}
+.batalha__armas li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 0;
+}
+.batalha__lado[data-lado='b'] .batalha__armas li {
+  flex-direction: row-reverse;
+}
+.batalha__marca-arma {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  flex: none;
+}
+.batalha__quantia {
+  margin-left: auto;
+  font-family: var(--fonte-numero);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto-fraco);
+}
+.batalha__lado[data-lado='b'] .batalha__quantia {
+  margin-left: 0;
+  margin-right: auto;
 }
 
-.batalha__narracao {
-  min-height: 3.2em;
-  padding-top: 18px;
-  font-size: 15px;
+.batalha__meio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 26px;
+  color: var(--ui-texto-tenue);
+}
+.batalha__cruzada {
+  font-size: 20px;
+  color: var(--ui-borda);
+}
+.batalha__round {
+  font-family: var(--fonte-numero);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── A FAIXA DA FASE: um canal por vez, com palavra e cor ── */
+.batalha__fase {
+  margin: 10px 30px 0;
+  padding: 7px 12px;
+  border-left: 3px solid var(--ui-borda);
+  background: var(--ui-fundo-suave);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ui-texto-fraco);
+}
+.batalha__fase[data-canal='perseguicao'] {
+  border-left-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
+}
+.batalha__fase[data-canal='recuo'] {
+  border-left-color: var(--ui-fogo);
+  color: var(--ui-fogo-claro);
+}
+.batalha__fase[data-canal='fim'] {
+  border-left-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+
+/* ── A FITA: a batalha ACUMULA, e não se apaga a cada round ──
+   ⚠️ Uma frase que se apaga não deixa a batalha ter história, e rolagem contínua é o inimigo
+   número um da tensão: o round que decide passa igual aos outros sete. Aqui a fita guarda tudo,
+   rola sozinha para o fim, e o round grave nasce em corpo maior — tamanho é ênfase, movimento
+   é ruído. A fita é conteúdo principal desta tela, não rodapé: por isso o corpo é 13px e não 10. */
+.batalha__fita {
+  flex: 1;
+  min-height: 120px;
+  margin: 10px 0 0;
+  padding: 4px 30px 8px;
+  list-style: none;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+.batalha__linha {
+  padding: 7px 0;
+  border-top: 1px solid var(--ui-borda-fraca);
+}
+.batalha__linha:first-child {
+  border-top: 0;
+}
+.batalha__frase {
+  display: block;
+  font-size: 13px;
   line-height: 1.45;
+  color: var(--ui-texto-fraco);
 }
-.batalha__narracao[data-fase='perseguicao'] {
-  color: rgb(226 128 116);
+.batalha__linha[data-grave='sim'] .batalha__frase {
+  font-size: 16px;
+  color: var(--ui-texto);
 }
-.batalha__narracao[data-fase='recuo'] {
-  color: rgb(214 198 140);
+.batalha__linha[data-canal='inicio'] .batalha__frase {
+  font-family: var(--fonte-nome);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ui-texto-tenue);
+}
+.batalha__linha[data-canal='perseguicao'] .batalha__frase {
+  color: var(--ui-sangue-claro);
+}
+.batalha__linha[data-canal='recuo'] .batalha__frase {
+  color: var(--ui-fogo-claro);
+}
+.batalha__linha[data-canal='fim'] .batalha__frase {
+  font-family: var(--fonte-nome);
+  font-size: 18px;
+  color: var(--ui-bronze-claro);
+}
+.batalha__linha[data-canal='baixas'] .batalha__frase {
+  font-size: 12px;
+  color: var(--ui-texto-tenue);
+}
+/* ⚠️ `1.762 → 1.640`, e nunca `−122` sozinho: um delta solto não diz se foi arranhão ou
+   catástrofe. Tabular por obrigação — sem isso os dígitos pulam a cada round e a coluna deixa
+   de ser varrível, que é um erro invisível num desenho parado e óbvio na reprodução. */
+.batalha__contas {
+  display: flex;
+  gap: 18px;
+  margin-top: 3px;
+  font-family: var(--fonte-numero);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto-tenue);
+}
+.batalha__conta[data-lado='a'] {
+  color: var(--ui-bronze-claro);
+}
+.batalha__conta[data-lado='b'] {
+  color: var(--ui-texto-fraco);
 }
 
 .batalha__botoes {
   display: flex;
   gap: 10px;
-  padding-top: 20px;
-  padding-bottom: 26px;
-  border-bottom: 1px solid var(--ui-borda);
+  padding: 14px 30px 20px;
+  border-top: 1px solid var(--ui-borda-fraca);
 }
 .batalha__botao {
-  flex: 1;
-  padding: 10px 14px;
   font: inherit;
   font-size: 14px;
-  letter-spacing: 0.03em;
-  color: var(--ui-texto);
-  background: rgb(255 255 255 / 6%);
-  border: 1px solid var(--ui-borda);
+  padding: 9px 20px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
   cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
 }
 .batalha__botao:hover:not(:disabled) {
-  background: rgb(255 255 255 / 12%);
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
 }
 .batalha__botao:disabled {
   opacity: 0.35;
   cursor: default;
 }
-.batalha__botao[hidden] {
-  display: none;
-}
 .batalha__botao--fim {
-  background: rgb(214 198 140 / 16%);
-  border-color: rgb(214 198 140 / 45%);
+  margin-left: auto;
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+.batalha__botao--fim[hidden] {
+  display: none;
 }

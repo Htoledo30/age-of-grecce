@@ -7,15 +7,37 @@
  *
  * ⚠️ **Ela não recalcula NADA.** Recebe a lista de rounds que a regra já produziu e a
  * reproduz. É por isso que ela não consegue mentir: não existe uma fórmula para decidir a
- * batalha e outra para animá-la, e a mesma batalha resolvida sem janela — a da IA, um dia —
- * dá exatamente o mesmo resultado. Se um número aqui divergir do mapa, o defeito está na
- * regra, nunca aqui.
+ * batalha e outra para animá-la, e a mesma batalha resolvida sem janela — a da IA — dá
+ * exatamente o mesmo resultado. Se um número aqui divergir do mapa, o defeito está na regra.
  *
- * ⚠️ **Abre só nas batalhas do jogador.** Assistir a guerra alheia seria transformar a
- * crônica numa fila de janelas.
+ * ⚠️ **Abre só nas batalhas do jogador.** Assistir à guerra alheia seria transformar a crônica
+ * numa fila de janelas.
  *
- * Segue o mesmo contrato da animação de marcha: a campanha JÁ resolveu a rodada, e isto só
- * põe diante do jogador o que aconteceu. Nenhum clique aqui muda o mapa.
+ * ## O que a refez, e de onde veio
+ *
+ * A primeira versão eram duas barras empilhadas que encolhiam e uma frase que se apagava a
+ * cada round. Três defeitos, e os três são conhecidos:
+ *
+ * 1. **Duas barras empilhadas não são dois exércitos frente a frente**, são uma lista. A ficha
+ *    de previsão do Fire Emblem resolve isso desde 1990 com DUAS COLUNAS ESPELHADAS, campos
+ *    idênticos na mesma ordem e na mesma altura — o olho compara sem legenda.
+ * 2. **A barra sozinha não conta o golpe.** A regra é do Raph Koster e é curta: *barra é
+ *    ESTADO, número é DELTA, e o jogador precisa dos dois.* Barra sozinha diz que você está
+ *    mal e não diz o que te acertou; número sozinho diz o golpe e não diz se sobra fôlego.
+ *    Daí o **segmento fantasma** — a fatia perdida NESTE round fica desenhada em tom claro por
+ *    um instante — e o **estado → estado** na fita: `1.762 → 1.640` em vez de `−122`, que
+ *    carrega golpe e acumulado numa leitura só e dispensa a subtração de cabeça.
+ * 3. **Uma frase que se apaga não deixa a batalha ter história.** A queixa número um contra
+ *    logs de combate é rolagem contínua: o round que decide passa igual aos outros sete. Aqui a
+ *    fita ACUMULA, o round da quebra vem em corpo maior, e cada fase tem canal próprio de cor.
+ *
+ * E o desfecho separa **choque** de **perseguição** na conta final, que é como os wargames de
+ * Antiguidade contam uma batalha antiga — porque são coisas diferentes: uma linha que cede
+ * perde na fuga muito mais gente do que perdeu segurando, e é essa a lição que o jogador
+ * precisa levar para a próxima marcha.
+ *
+ * ⚠️ **Cor é CATEGORIA, tamanho é GRAVIDADE**, e cor nunca anda sozinha: todo canal tem
+ * também uma palavra. Monitor ruim e daltonismo não podem custar a leitura da tela.
  */
 
 import type { Arma } from '@/combate/exercito';
@@ -50,18 +72,68 @@ export interface VistaDaBatalha {
   /** `null` só existe por segurança de tipo: a regra sempre elege um vencedor. */
   vencedor: 'a' | 'b' | null;
   desfecho: 'quebrou' | 'recuou' | 'barrado';
+  /**
+   * A fração de baixas em que uma linha cede.
+   *
+   * ⚠️ **É o suspense inteiro desta janela, e ele era invisível.** A batalha não se decide no
+   * zero — se decide aqui, e a barra descia rumo a um fim que nunca chega e não quer dizer
+   * nada. Com o limiar desenhado, o jogador vê Mégara com 903 de 2.000 e lê a única coisa que
+   * importa: **faltam 103 homens para a linha quebrar.** O jogo fabricava esse momento sozinho
+   * e a tela que existe para mostrá-lo o escondia.
+   */
+  limiarDeQuebra: number;
+}
+
+/**
+ * Como uma linha está, em palavra.
+ *
+ * ⚠️ **Os degraus são fração DO LIMIAR, e não do exército.** Se fossem absolutos, mudar
+ * `limiarDeQuebra` no JSON faria a tela mentir sem que ninguém percebesse — "vergando" a 45%
+ * de baixas continuaria escrito enquanto a linha já teria cedido. Presos ao limiar, os quatro
+ * nomes seguem a regra para onde ela for.
+ */
+function estadoDaLinha(homens: number, vivos: number, limiar: number): string {
+  if (homens <= 0) return 'sem ninguém';
+  const gasto = (homens - vivos) / (homens * limiar);
+  if (gasto >= 1) return 'cedeu';
+  if (gasto >= 0.75) return 'vergando';
+  if (gasto >= 0.4) return 'rangendo';
+  return 'firme';
 }
 
 /** Milissegundos entre um round e o seguinte quando o jogador manda deixar correr. */
 const RITMO = 900;
 
+/**
+ * O nome de cada fase, e ele é da Antiguidade de propósito.
+ *
+ * ⚠️ **Nunca sinônimos entre a ficha e a fita.** Se o cartão diz "aguento" e a narração diz
+ * "resistência", o jogador não fecha a conta e conclui que a tela está mentindo. Uma palavra
+ * por coisa, no jogo inteiro.
+ */
+const FASES: Record<string, string> = {
+  choque: 'Choque',
+  perseguicao: 'Perseguição',
+  recuo: 'Retirada',
+};
+
+/** Como cada desfecho se chama. Três verbos diferentes para três coisas diferentes. */
+const DESFECHOS: Record<string, string> = {
+  quebrou: 'A linha quebrou',
+  recuou: 'Retirada em ordem',
+  barrado: 'Ninguém cedeu',
+};
+
+const separarMilhar = (n: number) => n.toLocaleString('pt-BR');
+
 export class JanelaDeBatalha {
   readonly elemento = document.createElement('div');
 
+  private readonly cartao = document.createElement('section');
   private readonly titulo = document.createElement('h2');
-  private readonly placar = document.createElement('p');
-  private readonly barras = document.createElement('div');
-  private readonly narracao = document.createElement('p');
+  private readonly campo = document.createElement('div');
+  private readonly faixaDaFase = document.createElement('p');
+  private readonly fita = document.createElement('ol');
   private readonly botoes = document.createElement('div');
   private readonly seguir = document.createElement('button');
   private readonly correr = document.createElement('button');
@@ -77,10 +149,11 @@ export class JanelaDeBatalha {
   constructor(pai: HTMLElement) {
     this.elemento.className = 'batalha';
     this.elemento.hidden = true;
+    this.cartao.className = 'batalha__cartao';
     this.titulo.className = 'batalha__titulo';
-    this.placar.className = 'batalha__placar';
-    this.barras.className = 'batalha__barras';
-    this.narracao.className = 'batalha__narracao';
+    this.campo.className = 'batalha__campo';
+    this.faixaDaFase.className = 'batalha__fase';
+    this.fita.className = 'batalha__fita';
     this.botoes.className = 'batalha__botoes';
 
     this.seguir.type = 'button';
@@ -99,7 +172,8 @@ export class JanelaDeBatalha {
     this.fechar.addEventListener('click', () => this.encerrar());
 
     this.botoes.append(this.seguir, this.correr, this.fechar);
-    this.elemento.append(this.titulo, this.placar, this.barras, this.narracao, this.botoes);
+    this.cartao.append(this.titulo, this.campo, this.faixaDaFase, this.fita, this.botoes);
+    this.elemento.appendChild(this.cartao);
     pai.appendChild(this.elemento);
   }
 
@@ -156,26 +230,44 @@ export class JanelaDeBatalha {
     this.aoFechar();
   }
 
+  /** Quantos homens cada lado tinha ANTES do round pedido. Round 0 é a composição de entrada. */
+  private estadoEm(vista: VistaDaBatalha, round: number): { a: number; b: number } {
+    if (round <= 0) return { a: vista.lados[0].homens, b: vista.lados[1].homens };
+    const r = vista.rounds[round - 1];
+    return r ? { a: r.a, b: r.b } : { a: vista.lados[0].homens, b: vista.lados[1].homens };
+  }
+
   private desenhar(): void {
     const vista = this.vista;
     if (!vista) return;
     const [a, b] = vista.lados;
-    const agora = vista.rounds[this.round - 1];
-    const vivosA = agora?.a ?? a.homens;
-    const vivosB = agora?.b ?? b.homens;
+    const agora = this.estadoEm(vista, this.round);
+    const antes = this.estadoEm(vista, this.round - 1);
+    const fase = vista.rounds[this.round - 1]?.fase ?? null;
     const acabou = this.round >= vista.rounds.length;
 
-    this.placar.textContent = acabou
-      ? `${this.round} de ${vista.rounds.length} — fim`
-      : `round ${this.round} de ${vista.rounds.length}`;
-
-    this.barras.replaceChildren(
-      barraDoLado(a, vivosA, agora?.fase ?? null),
-      barraDoLado(b, vivosB, agora?.fase ?? null),
+    // ⚠️ **UMA RÉGUA SÓ PARA OS DOIS.** Antes cada barra era normalizada pelo próprio total, e
+    // 2.400 contra 2.000 desenhavam a mesma largura — o dado mais elementar de uma batalha, a
+    // diferença de tamanho dos exércitos, estava apagado pelo CSS. Com a régua comum, o maior
+    // desenha mais linha e a sobra fica à vista. Custa uma divisão.
+    const regua = Math.max(a.homens, b.homens, 1);
+    this.campo.replaceChildren(
+      colunaDoLado(a, 'a', agora.a, antes.a, fase, regua, vista.limiarDeQuebra),
+      cruzada(this.round, vista.rounds.length, acabou),
+      colunaDoLado(b, 'b', agora.b, antes.b, fase, regua, vista.limiarDeQuebra),
     );
 
-    this.narracao.textContent = narrar(vista, this.round, vivosA, vivosB);
-    this.narracao.dataset['fase'] = agora?.fase ?? 'inicio';
+    this.faixaDaFase.dataset['canal'] = acabou ? 'fim' : (fase ?? 'inicio');
+    this.faixaDaFase.textContent = acabou
+      ? `${DESFECHOS[vista.desfecho] ?? 'Fim'} · ${vista.rounds.length} ${vista.rounds.length === 1 ? 'round' : 'rounds'}`
+      : fase === null
+        ? 'As linhas se formam'
+        : `${FASES[fase] ?? fase} · round ${this.round} de ${vista.rounds.length}`;
+
+    this.fita.replaceChildren(...this.linhasDaFita(vista));
+    // ⚠️ Rolar sozinha para o fim é REQUISITO e não conveniência: uma fita que fica no topo
+    // enquanto o round novo entra embaixo é uma fita que o jogador para de ler no terceiro round.
+    this.fita.scrollTop = this.fita.scrollHeight;
 
     this.seguir.disabled = acabou;
     this.correr.disabled = acabou || this.temporizador !== undefined;
@@ -187,50 +279,203 @@ export class JanelaDeBatalha {
         'nada no mapa — o resultado já está lá.',
     });
   }
+
+  /**
+   * A fita inteira até o round atual, reconstruída do zero a cada desenho.
+   *
+   * ⚠️ **Reconstruir em vez de acrescentar** é o que a mantém honesta: não existe estado de
+   * fita a divergir do estado da batalha, e voltar ou reabrir dá exatamente a mesma leitura.
+   * São dez linhas de texto; o custo é nenhum e a classe de bug que isso elimina é inteira.
+   */
+  private linhasDaFita(vista: VistaDaBatalha): readonly HTMLElement[] {
+    const [a, b] = vista.lados;
+    const linhas: HTMLElement[] = [linhaDaFita('inicio', aberturaDe(vista), null)];
+
+    for (let i = 1; i <= this.round; i += 1) {
+      const antes = this.estadoEm(vista, i - 1);
+      const agora = this.estadoEm(vista, i);
+      const fase = vista.rounds[i - 1]?.fase ?? 'choque';
+      const perdaA = antes.a - agora.a;
+      const perdaB = antes.b - agora.b;
+      const contas: readonly Conta[] = [
+        { nome: a.nome, lado: 'a', de: antes.a, para: agora.a },
+        { nome: b.nome, lado: 'b', de: antes.b, para: agora.b },
+      ];
+      // ⚠️ O round da virada nasce MAIOR, e não piscando: tamanho é ênfase, movimento é ruído.
+      // É o round em que a linha cede — o único que o jogador precisa lembrar depois.
+      const grave = fase !== 'choque';
+      linhas.push(linhaDaFita(fase, narrarRound(vista, i, perdaA, perdaB), contas, grave));
+    }
+
+    if (this.round >= vista.rounds.length) linhas.push(...this.linhasDoFim(vista));
+    return linhas;
+  }
+
+  /**
+   * O fecho: quem venceu, como, e **o choque contado separado da perseguição.**
+   *
+   * ⚠️ É a lição inteira desta janela, e é a que os wargames de Antiguidade sempre contaram
+   * separada: uma linha que cede perde na fuga muito mais gente do que perdeu segurando. Somar
+   * as duas numa baixa única esconderia justamente o que o jogador precisa levar para a
+   * próxima marcha — que o preço não está em lutar, está em quebrar.
+   */
+  private linhasDoFim(vista: VistaDaBatalha): readonly HTMLElement[] {
+    const [a, b] = vista.lados;
+    const perdas = { a: { choque: 0, fuga: 0 }, b: { choque: 0, fuga: 0 } };
+    for (let i = 1; i <= vista.rounds.length; i += 1) {
+      const antes = this.estadoEm(vista, i - 1);
+      const agora = this.estadoEm(vista, i);
+      const onde = vista.rounds[i - 1]?.fase === 'choque' ? 'choque' : 'fuga';
+      perdas.a[onde] += antes.a - agora.a;
+      perdas.b[onde] += antes.b - agora.b;
+    }
+
+    const vencedor = vista.vencedor === 'a' ? a : vista.vencedor === 'b' ? b : null;
+    const fecho =
+      vista.desfecho === 'barrado'
+        ? 'Ninguém cedeu, e o dia acabou. O chão fica com quem não saiu.'
+        : vencedor
+          ? `${vencedor.nome} fica com o campo.`
+          : 'O dia acabou sem dono.';
+
+    const linhas = [linhaDaFita('fim', fecho, null, true)];
+    for (const [lado, dados] of [
+      ['a', { nome: a.nome, perda: perdas.a }],
+      ['b', { nome: b.nome, perda: perdas.b }],
+    ] as const) {
+      const total = dados.perda.choque + dados.perda.fuga;
+      const detalhe =
+        dados.perda.fuga > 0
+          ? `${separarMilhar(dados.perda.choque)} no choque · ${separarMilhar(dados.perda.fuga)} na debandada`
+          : `${separarMilhar(dados.perda.choque)} no choque`;
+      linhas.push(
+        linhaDaFita(
+          'baixas',
+          `${dados.nome} perdeu ${separarMilhar(total)}: ${detalhe}.`,
+          null,
+          false,
+          lado,
+        ),
+      );
+    }
+    return linhas;
+  }
 }
 
-/** Uma barra que encolhe: o nome, as armas, o número em pé, e a fatia do que era. */
-function barraDoLado(lado: LadoNaTela, vivos: number, fase: string | null): HTMLElement {
-  const linha = document.createElement('div');
-  linha.className = 'batalha__lado';
+interface Conta {
+  nome: string;
+  lado: 'a' | 'b';
+  de: number;
+  para: number;
+}
 
-  const nome = document.createElement('span');
+/**
+ * Uma linha da fita: o texto, e as contas `de → para` embaixo.
+ *
+ * ⚠️ **`1.762 → 1.640`, e nunca `−122` sozinho.** Um delta solto não diz se foi arranhão ou
+ * catástrofe; o estado ao lado diz as duas coisas de uma vez e poupa a subtração de cabeça.
+ * O canal vira `data-canal` e a cor mora no CSS: uma classe por canal semântico, jamais cor
+ * escrita por evento — assim o léxico inteiro se muda num arquivo só.
+ */
+function linhaDaFita(
+  canal: string,
+  texto: string,
+  contas: readonly Conta[] | null,
+  grave = false,
+  lado?: string,
+): HTMLElement {
+  const linha = document.createElement('li');
+  linha.className = 'batalha__linha';
+  linha.dataset['canal'] = canal;
+  if (grave) linha.dataset['grave'] = 'sim';
+  if (lado !== undefined) linha.dataset['lado'] = lado;
+
+  const frase = document.createElement('span');
+  frase.className = 'batalha__frase';
+  frase.textContent = texto;
+  linha.appendChild(frase);
+
+  if (contas) {
+    const conta = document.createElement('span');
+    conta.className = 'batalha__contas';
+    for (const c of contas) {
+      const item = document.createElement('span');
+      item.className = 'batalha__conta';
+      item.dataset['lado'] = c.lado;
+      const perdeu = c.de - c.para;
+      item.textContent =
+        perdeu > 0
+          ? `${c.nome} ${separarMilhar(c.de)} → ${separarMilhar(c.para)}`
+          : `${c.nome} ${separarMilhar(c.para)} intactos`;
+      conta.appendChild(item);
+    }
+    linha.appendChild(conta);
+  }
+  return linha;
+}
+
+/**
+ * Uma coluna do campo: um exército, de cima a baixo, na MESMA ordem dos dois lados.
+ *
+ * ⚠️ **Campos idênticos, mesma ordem, mesma altura** — a ficha de previsão do Fire Emblem, que
+ * o gênero inteiro copia desde 1990 porque funciona: o olho compara linha por linha e a
+ * assimetria salta sem que ninguém precise explicar. Sem isso, dois exércitos empilhados são
+ * uma lista, e não um confronto.
+ */
+function colunaDoLado(
+  lado: LadoNaTela,
+  qual: 'a' | 'b',
+  vivos: number,
+  antes: number,
+  fase: string | null,
+  regua: number,
+  limiar: number,
+): HTMLElement {
+  const coluna = document.createElement('div');
+  coluna.className = 'batalha__lado';
+  coluna.dataset['lado'] = qual;
+
+  const nome = document.createElement('h3');
   nome.className = 'batalha__nome';
   nome.textContent = lado.nome;
-  // A muralha é modificador VISÍVEL, e é esta a promessa: ela aparece ao lado de quem a tem,
-  // em vez de sumir dentro do número da defesa como um multiplicador escondido.
-  if (lado.aguento > 1) {
-    const muro = document.createElement('span');
-    muro.className = 'batalha__muro';
-    muro.textContent = `muralha ×${lado.aguento}`;
-    nome.appendChild(muro);
-  }
+  coluna.appendChild(nome);
 
-  const presentes = ARMAS.filter((arma) => (lado.composicao[arma] ?? 0) > 0);
-  if (presentes.length > 0) {
-    const armas = document.createElement('span');
-    armas.className = 'batalha__armas';
-    // Uma linha só, e em ordem fixa: quem olha precisa reconhecer a mesma leitura em toda
-    // batalha, não descobrir a ordem de cada uma.
-    armas.textContent = presentes
-      .map((arma) => {
-        const quantos = lado.composicao[arma] ?? 0;
-        const vivosDaArma = lado.homens > 0 ? Math.round((quantos * vivos) / lado.homens) : 0;
-        return `${vivosDaArma.toLocaleString('pt-BR')} ${NOME_DA_ARMA[arma].toLowerCase()}`;
-      })
-      .join(' · ');
-    nome.appendChild(armas);
-  }
+  const estado = document.createElement('p');
+  estado.className = 'batalha__estado';
+  const vivosTexto = document.createElement('span');
+  vivosTexto.className = 'batalha__vivos';
+  vivosTexto.textContent = separarMilhar(vivos);
+  const total = document.createElement('span');
+  total.className = 'batalha__total';
+  total.textContent = `de ${separarMilhar(lado.homens)}`;
+  estado.append(vivosTexto, total);
+  coluna.appendChild(estado);
+
+  // ⚠️ **A palavra, e não a porcentagem.** "45% de baixas" obriga a decorar a régua; "vergando"
+  // responde a pergunta que o jogador está fazendo, que é se aquela linha aguenta mais um
+  // empurrão. E é a palavra MUDANDO que vira o evento — duas escadas em velocidades diferentes
+  // contam a batalha inteira sem um número na tela.
+  const firmeza = document.createElement('p');
+  firmeza.className = 'batalha__firmeza';
+  const palavra = estadoDaLinha(lado.homens, vivos, limiar);
+  firmeza.dataset['estado'] = palavra;
+  const restam = Math.max(0, vivos - Math.ceil(lado.homens * (1 - limiar)));
+  firmeza.textContent =
+    palavra === 'cedeu' || palavra === 'sem ninguém'
+      ? palavra
+      : `${palavra} · faltam ${separarMilhar(restam)} para quebrar`;
+  coluna.appendChild(firmeza);
 
   const trilho = document.createElement('div');
   trilho.className = 'batalha__trilho';
   const cheio = document.createElement('div');
   cheio.className = 'batalha__cheio';
-  cheio.style.width = `${lado.homens > 0 ? (vivos / lado.homens) * 100 : 0}%`;
+  cheio.style.width = `${(vivos / regua) * 100}%`;
   // A cor do PODER pinta o fundo; as faixas das armas vão por cima. Um exército só de leves
-  // continua sendo uma barra lisa, como sempre foi — a divisão só aparece em quem misturou.
+  // continua sendo uma barra lisa — a divisão só aparece em quem misturou.
   cheio.style.background = lado.cor;
   if (fase === 'perseguicao') cheio.dataset['fase'] = 'perseguicao';
+  const presentes = ARMAS.filter((arma) => (lado.composicao[arma] ?? 0) > 0);
   if (presentes.length > 1) {
     for (const arma of presentes) {
       const faixa = document.createElement('div');
@@ -242,12 +487,92 @@ function barraDoLado(lado: LadoNaTela, vivos: number, fase: string | null): HTML
   }
   trilho.appendChild(cheio);
 
-  const conta = document.createElement('span');
-  conta.className = 'batalha__conta';
-  conta.textContent = `${vivos.toLocaleString('pt-BR')} de ${lado.homens.toLocaleString('pt-BR')}`;
+  // ⚠️ **O SEGMENTO FANTASMA**: a fatia perdida NESTE round, desenhada logo à direita do que
+  // sobrou. É o único efeito desta tela e é um `<div>` — e faz o jogador ler o golpe como
+  // FRAÇÃO DO TODO, sem número nenhum. A barra sozinha diz que ele está mal; o fantasma diz
+  // o quanto disso aconteceu agora.
+  const perdeuAgora = antes - vivos;
+  if (perdeuAgora > 0) {
+    const fantasma = document.createElement('div');
+    fantasma.className = 'batalha__fantasma';
+    fantasma.style.width = `${(perdeuAgora / regua) * 100}%`;
+    fantasma.style[qual === 'a' ? 'left' : 'right'] = `${(vivos / regua) * 100}%`;
+    trilho.appendChild(fantasma);
+  }
 
-  linha.append(nome, trilho, conta);
-  return linha;
+  // ⚠️ **O TRAÇO DO LIMIAR, desenhado desde o round zero e nos DOIS lados.** É o que transforma
+  // a barra numa contagem com destino: ela não desce rumo ao zero, desce rumo a este filete. E
+  // ele existe dos dois lados de propósito — a virada é possível nas duas direções, e ver a
+  // própria distância até o traço encolher é o que impede a tela de virar contagem regressiva
+  // de um lado só.
+  if (lado.homens > 0) {
+    const traco = document.createElement('div');
+    traco.className = 'batalha__limiar';
+    traco.style[qual === 'a' ? 'left' : 'right'] = `${((lado.homens * (1 - limiar)) / regua) * 100}%`;
+    definirTooltip(traco, {
+      titulo: 'Onde a linha cede',
+      corpo: `Passando de ${Math.round(limiar * 100)}% de baixas, esta linha quebra e corre — e é na fuga que morre gente.`,
+    });
+    trilho.appendChild(traco);
+  }
+  coluna.appendChild(trilho);
+
+  if (lado.aguento > 1) {
+    const muro = document.createElement('p');
+    muro.className = 'batalha__muro';
+    muro.textContent = `muralha ×${lado.aguento}`;
+    definirTooltip(muro, {
+      titulo: 'A muralha',
+      corpo: `Multiplica o que cada homem daqui aguenta antes de virar baixa. Ela é modificador VISÍVEL: não some dentro do número da defesa.`,
+    });
+    coluna.appendChild(muro);
+  }
+
+  if (presentes.length > 0) {
+    const armas = document.createElement('ul');
+    armas.className = 'batalha__armas';
+    // Ordem fixa: quem olha precisa reconhecer a mesma leitura em toda batalha, e não
+    // descobrir a ordem de cada uma.
+    for (const arma of presentes) {
+      const quantos = lado.composicao[arma] ?? 0;
+      const vivosDaArma = lado.homens > 0 ? Math.round((quantos * vivos) / lado.homens) : 0;
+      const item = document.createElement('li');
+      const rotulo = document.createElement('span');
+      rotulo.textContent = NOME_DA_ARMA[arma].toLowerCase();
+      const marca = document.createElement('span');
+      marca.className = 'batalha__marca-arma';
+      marca.style.background = COR_DA_ARMA[arma];
+      const quantia = document.createElement('span');
+      quantia.className = 'batalha__quantia';
+      quantia.textContent = separarMilhar(vivosDaArma);
+      item.append(marca, rotulo, quantia);
+      armas.appendChild(item);
+    }
+    coluna.appendChild(armas);
+  }
+
+  return coluna;
+}
+
+/** O meio do campo: as espadas cruzadas e o contador de rounds. */
+function cruzada(round: number, total: number, acabou: boolean): HTMLElement {
+  const meio = document.createElement('div');
+  meio.className = 'batalha__meio';
+  const marca = document.createElement('span');
+  marca.className = 'batalha__cruzada';
+  marca.textContent = acabou ? '·' : '⚔';
+  const conta = document.createElement('span');
+  conta.className = 'batalha__round';
+  conta.textContent = acabou ? 'fim' : `${round}/${total}`;
+  meio.append(marca, conta);
+  return meio;
+}
+
+/** A linha de abertura: quem trouxe quantos, e o que havia de pedra no caminho. */
+function aberturaDe(vista: VistaDaBatalha): string {
+  const [a, b] = vista.lados;
+  const muro = b.aguento > 1 ? ', atrás de muralha' : '';
+  return `${a.nome} traz ${separarMilhar(a.homens)}; ${b.nome} tem ${separarMilhar(b.homens)}${muro}.`;
 }
 
 /**
@@ -255,22 +580,29 @@ function barraDoLado(lado: LadoNaTela, vivos: number, fase: string | null): HTML
  *
  * Texto e não número solto: a barra já mostra quanto encolheu, e a frase existe para dizer o
  * que aquilo FOI — a linha segurando, a linha cedendo, a caçada, a saída ordenada.
+ *
+ * ⚠️ **Ator, verbo, alvo — nunca voz passiva.** A margem esquerda é o que o olho varre; se ela
+ * for ocupada pela vítima, o jogador lê a fita inteira sem saber quem bateu em quem.
+ *
+ * ⚠️ **E nenhum adjetivo que finja ser dado.** "Golpe devastador" que não corresponde a um
+ * estado do sistema é ruído, e ruído ensina o jogador a ignorar o texto.
  */
-function narrar(vista: VistaDaBatalha, round: number, vivosA: number, vivosB: number): string {
+function narrarRound(
+  vista: VistaDaBatalha,
+  round: number,
+  perdaA: number,
+  perdaB: number,
+): string {
   const [a, b] = vista.lados;
-  if (round === 0) {
-    const muro = b.aguento > 1 ? `, atrás de muralha` : '';
-    return `${a.nome} traz ${a.homens.toLocaleString('pt-BR')}; ${b.nome} tem ${b.homens.toLocaleString('pt-BR')}${muro}.`;
-  }
-
   const fase = vista.rounds[round - 1]?.fase;
+
   if (fase === 'recuo') {
     const quemSaiu = vista.vencedor === 'a' ? b.nome : a.nome;
     // Duas saídas usam a mesma fase e contam histórias diferentes: uma é ordem dada antes da
     // marcha, a outra é o dia que acabou sem ninguém ceder. Dizer "recuou" nas duas faria a
     // tela chamar de covardia uma linha que aguentou o dia inteiro.
     return vista.desfecho === 'barrado'
-      ? `Ninguém cedeu, e o dia acabou. ${quemSaiu} gastou o dia e não passou: sai de campo sem ser caçado, mas o chão fica com o outro.`
+      ? `${quemSaiu} gasta o dia e não passa: sai de campo sem ser caçado, mas o chão fica com o outro.`
       : `${quemSaiu} sai de campo antes de a linha ceder: paga o preço da retirada e escapa da perseguição.`;
   }
   if (fase === 'perseguicao') {
@@ -278,11 +610,7 @@ function narrar(vista: VistaDaBatalha, round: number, vivosA: number, vivosB: nu
     const vencedor = vista.vencedor === 'a' ? a.nome : b.nome;
     return `A linha de ${perdedor} cede e corre. ${vencedor} caça os fugitivos — é aqui que morre gente.`;
   }
-
-  const anterior = round === 1 ? { a: a.homens, b: b.homens } : vista.rounds[round - 2]!;
-  const perdeuA = anterior.a - vivosA;
-  const perdeuB = anterior.b - vivosB;
-  if (perdeuA > perdeuB * 1.3) return `${b.nome} leva a melhor no empurrão; ${a.nome} recua um passo.`;
-  if (perdeuB > perdeuA * 1.3) return `${a.nome} ganha terreno; a linha de ${b.nome} range.`;
+  if (perdaA > perdaB * 1.3) return `${b.nome} leva a melhor no empurrão; ${a.nome} recua um passo.`;
+  if (perdaB > perdaA * 1.3) return `${a.nome} ganha terreno; a linha de ${b.nome} range.`;
   return 'As duas linhas se seguram, e ninguém cede.';
 }

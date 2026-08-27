@@ -32,6 +32,11 @@ export function batalhasDoJogador(jogo: Jogo): readonly VistaDaBatalha[] {
         // aqui, porque é aqui que as duas linguagens se encontram.
         vencedor: b.vencedor === null ? null : b.vencedor === a.poder ? 'a' : 'b',
         desfecho: b.desfecho,
+        // ⚠️ **O limiar de quebra, e ele é o suspense inteiro desta janela.** A batalha não se
+        // decide no zero: se decide quando um lado passa desta fração em baixas. Sem o número
+        // aqui, a barra desce em direção a uma meta que nunca é atingida e não significa nada,
+        // e o jogador não tem como saber que faltam cento e três homens para a linha ceder.
+        limiarDeQuebra: jogo.ajustes.jogo.combate.batalha.limiarDeQuebra,
       } satisfies VistaDaBatalha;
     });
 }

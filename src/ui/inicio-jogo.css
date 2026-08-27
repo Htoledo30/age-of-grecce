@@ -142,7 +142,7 @@
   clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
 }
 .inicio-jogo__nome-poder {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 24px;
   font-weight: 500;
 }

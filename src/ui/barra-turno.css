@@ -65,7 +65,7 @@
 
 .barra-turno__poder {
   justify-content: flex-start;
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 20px;
   font-weight: 700;
   line-height: 1.1;

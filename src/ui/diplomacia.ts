@@ -385,8 +385,12 @@ export class Diplomacia {
     // ⚠️ Sem homens dos dois lados a barra fica NEUTRA e vazia, e não meio a meio: pintar
     // metade de bronze e metade de sangue afirmaria um equilíbrio de forças que não existe —
     // zero contra zero não é empate, é ausência de exército, e são coisas diferentes.
-    barra.dataset['vazia'] = total === 0 ? 'sim' : 'nao';
-    if (total > 0) {
+    // ⚠️ Sem homens dos dois lados a barra **não é desenhada**. Um trilho vazio na tela lê como
+    // controle quebrado, e meio a meio afirmaria um equilíbrio que não existe: zero contra zero
+    // não é empate, é ausência de exército. A frase embaixo diz isso melhor do que qualquer
+    // desenho — e é a única forma honesta de mostrar uma razão que não existe.
+    if (total === 0) barra.hidden = true;
+    else {
       const minha = document.createElement('span');
       minha.className = 'diplomacia__forca-minha';
       minha.style.width = `${Math.round((meu / total) * 100)}%`;
@@ -439,7 +443,9 @@ export class Diplomacia {
     const numero = document.createElement('p');
     numero.className = 'diplomacia__numero';
     numero.dataset['tom'] = vizinho.tomDaPostura;
-    const sinal = (n: number) => `${n > 0 ? '+' : ''}${n}`;
+    // ⚠️ Sinal de MENOS (U+2212) e não hífen: o hífen é estreito, fica alto demais e não alinha
+    // numa coluna de algarismos tabulares — numa lista de oito parcelas a diferença aparece.
+    const sinal = (n: number) => (n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '0');
     numero.textContent =
       vizinho.relacao === vizinho.alvo
         ? sinal(vizinho.relacao)

@@ -6,6 +6,9 @@
  * que o reset e as variáveis existam antes de qualquer componente usá-las.
  */
 
+// ⚠️ As faces vêm ANTES de qualquer folha: `base.css` já pede `--fonte-corpo` no body, e
+// declarar a fonte depois de usá-la faz o primeiro quadro sair na fonte de sistema.
+import '@/estilo/fontes.css';
 import '@/estilo/base.css';
 import '@/ui/icones-gregos.css';
 import '@/ui/painel-fps.css';

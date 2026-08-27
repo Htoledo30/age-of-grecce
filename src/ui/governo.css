@@ -99,7 +99,7 @@
   border-left: 0;
 }
 .balanco__poder {
-  font-family: var(--fonte-titulo);
+  font-family: var(--fonte-nome);
   font-size: 17px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
