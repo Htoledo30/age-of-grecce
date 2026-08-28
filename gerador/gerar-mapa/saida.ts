@@ -9,7 +9,6 @@ import { writeFileSync } from 'node:fs';
 import { PNG } from 'pngjs';
 
 import type { Hidrologia } from '../hidrologia/malha';
-import type { Ponto } from './geometria';
 import { RESOLUCAO_ALTURA, RESOLUCAO_TERRENO } from './moldura';
 
 export function escreverPng(caminho: string, pixels: Uint8Array, largura: number, altura: number): void {
@@ -21,28 +20,6 @@ export function escreverPng(caminho: string, pixels: Uint8Array, largura: number
 /** As linhas superiores são contíguas em memória; não há reamostragem nem deformação. */
 export function recortarRgba(pixels: Uint8Array): Uint8Array {
   return pixels.subarray(0, RESOLUCAO_TERRENO * RESOLUCAO_ALTURA * 4);
-}
-
-function distanciaSegmentoMundo(x: number, y: number, [ax, ay]: Ponto, [bx, by]: Ponto): number {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const quadrado = dx * dx + dy * dy;
-  const t =
-    quadrado === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / quadrado));
-  return Math.hypot(x - (ax + dx * t), y - (ay + dy * t));
-}
-
-/** Evita copas e troncos plantados dentro dos canais assados na textura. */
-export function longeDosRios(x: number, y: number, hidrologia: Hidrologia): boolean {
-  const folga = 17;
-  for (const rio of hidrologia.rios) {
-    for (let i = 1; i < rio.pontos.length; i++) {
-      if (distanciaSegmentoMundo(x, y, rio.pontos[i - 1]!, rio.pontos[i]!) < folga) {
-        return false;
-      }
-    }
-  }
-  return true;
 }
 
 

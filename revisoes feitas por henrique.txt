@@ -240,3 +240,35 @@ C:/AgeOfGrecce/src/ui/ficha-provincia/medidas.ts
 Click outside, press Esc key, or fix the code to dismiss.
 You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
 
+destroi essas arvores ai pelo amor de deus, e outra coisa, o que consegue fazer em relacao as
+linhas? que elas comecam a sumir e quebrar quando dou muito zoom
+   → AS DUAS FEITAS, e eram problemas separados.
+     ARVORES: foram embora inteiras. E eu tinha te contado errado no zoom: elas NAO estavam
+     pintadas no terreno.png, eram uma camada de sprites montada durante a partida a partir
+     de assets/mundo/detalhes.json. O teto de 0,4 ficava logo abaixo do limiar em que ela
+     acendia, entao era arte que custava memoria e quadro sem nunca chegar na tela. Sobrou
+     dela so o GRAO do chao (aquela textura fina que entra com o zoom e tira o achatado das
+     areas grandes de cor); o resto saiu — gerador, json, e o codigo que so ele usava.
+     LINHAS: o defeito nao era a linha ser fina, era a CONTA da distancia.
+     A fronteira nao e desenhada por geometria: ela sai do provincias.png dentro do
+     chuveirinho. Perto, monta-se um campo continuo que vale 1 dentro da provincia e 0 fora,
+     a fronteira e onde ele vale 0,5, e a espessura sai de quanto o campo muda por pixel —
+     a inclinacao. Essa inclinacao vinha de dFdx, a derivada de hardware, que compara dois
+     pixels VIZINHOS. E perto esses dois pixels caem em CELULAS diferentes da grade de
+     texels: cada um interpola quatro amostras diferentes, e a diferenca entre eles nao e
+     inclinacao nenhuma — e o degrau entre duas contas distintas. O numero sai grande, a
+     distancia ate a fronteira infla, e a linha SOME naquele pixel.
+     Isso explica exatamente o que tu viu: numa escada de 45 graus toda celula difere da
+     vizinha, entao o furo cai em todo degrau e a fronteira vira uma fileira de pontos; num
+     trecho mais raso a linha sai inteira com um furo em cada degrau. E explica por que so
+     apareceu agora — com o teto em 0,4 o mapa vivia no outro regime, o de longe, que usa
+     outra medida e nao passa por aqui. Subir para 1,0 pos o jogo num caminho que quase
+     nunca era usado.
+     Consertado calculando a derivada do campo NA MAO: ela tem forma fechada, sai das mesmas
+     quatro amostras que ja estao em maos, e e exata dentro da celula. Com um piso de
+     seguranca para o ponto de sela (o xadrez onde a inclinacao zera de verdade).
+     ⚠️ Um efeito colateral que tu vai notar: a linha ficou mais GROSSA. Nao engrossei nada —
+     a derivada inflada nao fazia so buracos, ela afinava a fronteira inteira, entao o
+     larguraDaLinha: 2.0 que esta em dados/ajustes.json vinha entregando um fio de cabelo.
+     Agora ele entrega 2. Se achar pesado, e esse numero, e da para calibrar sem recarregar.
+     Par de capturas da mesma cena: capturas/par-antes.png e capturas/par-depois.png

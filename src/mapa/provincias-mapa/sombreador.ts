@@ -101,6 +101,29 @@ float mesmoElemento(vec2 texel, bool souMar) {
   return ehMar(outro) == souMar ? 1.0 : 0.0;
 }
 
+/**
+ * Quanto o campo bilinear muda por PIXEL DE TELA, calculado em forma fechada.
+ *
+ * ⚠️ **Existe para nao usar dFdx aqui.** Ver o comentario longo dentro do main: perto, os
+ * dois pixels que a derivada de hardware compara caem em celulas diferentes da grade de
+ * texels, e a diferenca entre eles nao mede inclinacao nenhuma — mede o degrau entre duas
+ * interpolacoes distintas. O resultado eram furos na linha, um por degrau da escada.
+ *
+ * A derivada do bilinear sai das mesmas quatro amostras: em x ela interpola as duas
+ * diferencas horizontais pela fracao em y, e vice-versa. Depois vira pixel de tela.
+ *
+ * O piso de meia unidade por texel e a rede de seguranca do PONTO DE SELA — o xadrez em que
+ * as quatro amostras se alternam e a inclinacao zera de verdade. Sem ele a divisao estoura
+ * ali e o furo volta, agora nas quinas. Piso so pode ENGROSSAR a linha, nunca afina-la.
+ */
+float inclinacaoDoCampo(float a00, float a10, float a01, float a11, vec2 fracao, float texelsPorPixel) {
+  vec2 gradiente = vec2(
+    mix(a10 - a00, a11 - a01, fracao.y),
+    mix(a01 - a00, a11 - a10, fracao.x)
+  );
+  return max(length(gradiente), 0.5) * max(texelsPorPixel, 1e-6);
+}
+
 void main() {
   vec2 meus = bytesEm(vUV);
   float id = idDe(meus);
@@ -127,6 +150,16 @@ void main() {
   // texel na diagonal quando e diagonal o que existe ali. Marching squares por pixel. As
   // amostras ficam PRESAS a grade de texels, que e o que da a precisao sub-texel.
   //
+  // ⚠️ **E a inclinacao desse campo se calcula na mao, nunca com dFdx.** A derivada de
+  // hardware compara dois pixels VIZINHOS, e perto eles caem em CELULAS diferentes da
+  // grade: cada um interpola quatro amostras diferentes, e a diferenca entre os dois nao e
+  // inclinacao nenhuma. Ela sai grande e com o sinal trocado, a distancia ate a fronteira
+  // infla, e a linha SOME naquele pixel. Numa escada de 45 graus toda celula difere da
+  // vizinha e o furo cai em cada degrau: foi assim que a fronteira de Atenas virou uma
+  // fileira de pontos com o teto de zoom em 1,0. A derivada do campo bilinear e conhecida
+  // em forma fechada — sao as mesmas quatro amostras que ja estao em maos —, entao usa-se
+  // ela: exata dentro da celula, cega para o que acontece do lado de fora.
+  //
   // LONGE (um pixel cobre varios texels) o problema e continuidade. Ali a grade presa
   // vira armadilha: as amostras nao se mexem junto com o fragmento, o campo fica constante
   // por celula, a derivada zera dentro dela e a linha sai TRACEJADA. Entao conta-se quantas
@@ -149,8 +182,7 @@ void main() {
   float p01 = pertence(canto + vec2(0.0, 1.0), id);
   float p11 = pertence(canto + vec2(1.0, 1.0), id);
   float campo = mix(mix(p00, p10, fracao.x), mix(p01, p11, fracao.x), fracao.y);
-  float inclinacao = max(length(vec2(dFdx(campo), dFdy(campo))), 1e-6);
-  float distancia = abs(campo - 0.5) / inclinacao;
+  float distancia = abs(campo - 0.5) / inclinacaoDoCampo(p00, p10, p01, p11, fracao, texelsPorPixel);
   float linhaPerto = 1.0 - smoothstep(meiaLargura - 0.5, meiaLargura + 0.5, distancia);
 
   // --- longe: anel de amostras que anda junto com o fragmento ---------------
@@ -180,7 +212,7 @@ void main() {
   float t01 = mesmoElemento(canto + vec2(0.0, 1.0), souMar);
   float t11 = mesmoElemento(canto + vec2(1.0, 1.0), souMar);
   float terra = mix(mix(t00, t10, fracao.x), mix(t01, t11, fracao.x), fracao.y);
-  float inclinacaoTerra = max(length(vec2(dFdx(terra), dFdy(terra))), 1e-6);
+  float inclinacaoTerra = inclinacaoDoCampo(t00, t10, t01, t11, fracao, texelsPorPixel);
   float cobertura = clamp((terra - 0.5) / inclinacaoTerra + 0.5, 0.0, 1.0);
 
   // O destaque carrega cobertura propria: com as cores desligadas uOpacidade e zero, e

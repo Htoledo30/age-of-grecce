@@ -822,16 +822,75 @@ Henrique: *"consegue liberar o quanto eu consigo dar zoom in? pelo que me lembre
 em 0,40"*. Lembrava certo — `camera.zoomMaximo` estava em 0,4, e a faixa inteira ia de 0,156
 (o mapa todo na tela) a 0,4: **2,5× de ponta a ponta**.
 
-⚠️ **O terreno tinha mais detalhe do que o teto deixava ver.** Comparados lado a lado 0,4 /
-0,7 / 1,0 / 1,4, a vegetação pintada no `terreno.png` só começa a aparecer passando de 0,4 —
-havia uma camada de arte que o jogador não alcançava. Em **1,0** as árvores aparecem e o traço
-continua limpo; é em 1,4 que a textura começa a papar e as árvores a se repetir. O teto foi
-para 1,0, e subir mais custa nitidez, não desempenho.
+⚠️ **O que aparecia passando de 0,4 não estava pintado no terreno — era uma camada.**
+Comparados lado a lado 0,4 / 0,7 / 1,0 / 1,4, apareciam árvores que o jogador nunca tinha
+visto, e a leitura óbvia (*"há arte no `terreno.png` que o teto escondia"*) estava errada: elas
+vinham de `DetalhesDoMapa`, uma camada de sprites desenhada em tempo de partida, que só
+acendia acima de um limiar de zoom. O teto de 0,4 ficava logo abaixo do limiar, então a camada
+existia sem nunca ser vista. **O teto foi para 1,0** — e as árvores foram embora, ver a seção
+seguinte. Em 1,4 a textura do terreno começa a papar; subir mais custa nitidez, não desempenho.
 
 ⚠️ **E o passo da roda anda junto, o que é fácil esquecer.** O número de entalhes de ponta a
 ponta é `ln(máximo/mínimo) / ln(passo)`: com o teto em 1,0, o passo de 1,12 passaria de 8 para
 **16 voltas de roda** para atravessar a faixa. 1,18 devolve o percurso a 11 sem tornar o passo
 brusco.
+
+## As árvores, e a linha de fronteira que sumia
+
+Henrique, com o teto de zoom novo na mão: *"destrói essas árvores aí pelo amor de deus, e
+outra coisa, o que consegue fazer em relação às linhas? que elas começam a sumir e quebrar
+quando dou muito zoom"*. Duas queixas, dois defeitos independentes — e o segundo estava
+escondido pelo teto antigo.
+
+### As árvores
+
+Saíram inteiras. Elas **não estavam assadas no `terreno.png`**: eram uma camada de sprites
+montada em tempo de partida a partir de `assets/mundo/detalhes.json`, que o gerador espalhava
+pelo mapa. Como a leitura do zoom mostrou, o teto de 0,4 ficava logo abaixo do limiar em que
+ela acendia, então era arte que custava memória e quadro sem nunca chegar à tela.
+
+O que sobrou dessa camada é o **grão do chão** — a textura fina que entra com o zoom e tira o
+achatado das áreas grandes de cor. `src/mapa/detalhes.ts` virou `src/mapa/grao-do-mapa.ts`, com
+a classe `GraoDoMapa` e três números só (`graoInicio`, `graoFim`, `graoOpacidade`); saíram
+junto o gerador `gerador/pintar-terreno/detalhes.ts`, o `detalhes.json`, o `espalharDetalhes`
+do `gerar-mapa.ts` e o código que só ele usava (`longeDosRios`, `distanciaSegmentoMundo`).
+
+### A linha de fronteira
+
+⚠️ **O defeito não era a linha ser fina demais: era a conta da distância usar `dFdx`.**
+
+A fronteira do mapa político não é desenhada por geometria — ela sai do `provincias.png` no
+chuveirinho (`src/mapa/provincias-mapa/sombreador.ts`). Perto, monta-se um campo contínuo que
+vale 1 dentro da província e 0 fora, interpolado entre os quatro texels em volta do fragmento;
+a fronteira é a curva onde esse campo vale 0,5, e a largura da linha sai de **quanto o campo
+muda por pixel de tela** — a inclinação. Isso é *marching squares* por pixel, e é o que dá o
+traço liso em cima de uma máscara que é uma escada de texels.
+
+A inclinação vinha de `dFdx`/`dFdy`, as derivadas de hardware. Elas comparam **dois pixels
+vizinhos** — e, perto, esses dois pixels caem em **células diferentes** da grade de texels.
+Cada um interpola quatro amostras diferentes, e a diferença entre eles não mede inclinação
+nenhuma: mede o degrau entre duas interpolações distintas. O número sai grande e às vezes com
+o sinal trocado, a distância estimada até a fronteira infla, e **a linha some naquele pixel**.
+
+Isso explica o que se via, e explica por que era diagonal: numa escada de 45° toda célula
+difere da vizinha, então o furo cai em *todo* degrau e a fronteira vira uma fileira de pontos;
+num trecho raso as células se repetem em corridas longas e a linha sai inteira, com um furo em
+cada degrau. E explica por que só apareceu agora: com o teto em 0,4 o mapa vivia no regime
+LONGE, que usa outra medida (o anel de amostras) e não passa por aqui. Subir o teto para 1,0
+pôs o jogo dentro de um regime que quase nunca era exercitado.
+
+O conserto é `inclinacaoDoCampo`: a derivada do campo bilinear tem **forma fechada** — sai das
+mesmas quatro amostras que já estão em mãos, sem tocar em `dFdx` —, exata dentro da célula e
+cega para o que acontece fora dela. Com um piso de meia unidade por texel como rede de
+segurança do **ponto de sela** (o xadrez em que as quatro amostras se alternam e a inclinação
+zera de verdade); piso só pode engrossar a linha, nunca afiná-la. A mesma função passou a
+servir a máscara do litoral, que dividia pela mesma derivada.
+
+Efeito medido no par de capturas da mesma cena (`capturas/par-antes.png` e `par-depois.png`):
+a linha deixa de ter furos **e volta à espessura pedida**. A derivada inflada não fazia só
+buracos — ela afinava a fronteira inteira, então `larguraDaLinha: 2.0` vinha entregando um fio
+de cabelo. Se o traço ficar pesado demais para o teu olho, o número é esse, em
+`dados/ajustes.json`, e há `calibrarFronteira` no console para achar o valor sem recarregar.
 
 ## O nome de cada província, escrito nela
 

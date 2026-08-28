@@ -48,8 +48,8 @@ export function checarAjustes(): void {
     return;
   }
   const a = r.data;
-  if (a.detalhes.zoomInicio >= a.detalhes.zoomCheio) {
-    reclamar('ajustes.json: detalhes.zoomInicio precisa ser menor que zoomCheio');
+  if (a.detalhes.graoInicio >= a.detalhes.graoFim) {
+    reclamar('ajustes.json: detalhes.graoInicio precisa ser menor que graoFim');
   }
   console.log(`ajustes: zoom até ${a.camera.zoomMaximo}x, roda de ${a.camera.passoDaRoda}`);
 }

@@ -13,7 +13,6 @@ import { resolve } from 'node:path';
 
 import { gerarHidrologia } from './hidrologia/gerar-hidrologia';
 import { pintarHidrologia } from './hidrologia/pintar-hidrologia';
-import { espalharDetalhes } from './pintar-terreno/detalhes';
 import { pintarTerreno } from './pintar-terreno/pintar-terreno';
 import { BIOMAS } from './pintar-terreno/terreno';
 import { carregarCosta, carregarRecortes, extrairAneis, inventario } from './gerar-mapa/costa';
@@ -31,7 +30,6 @@ import { caminho } from './gerar-mapa/geometria';
 import {
   bloquearHidrologia,
   escreverPng,
-  longeDosRios,
   recortarRgba,
 } from './gerar-mapa/saida';
 import { svgMapa, svgNavegacao } from './gerar-mapa/svg';
@@ -160,18 +158,6 @@ async function main(): Promise<void> {
     ),
   );
   console.log(`terreno pintado em ${RESOLUCAO_TERRENO}px — biomas: ${BIOMAS.join(', ')}`);
-
-  const detalhes = espalharDetalhes(terreno, TAMANHO);
-  detalhes.arvores = detalhes.arvores.filter(
-    ([x, y]) => y < ALTURA_MAPA && longeDosRios(x, y, hidrologia),
-  );
-  writeFileSync(
-    resolve(PASTA_SAIDA, 'detalhes.json'),
-    JSON.stringify({ versao: 1, ...detalhes }) + '\n',
-  );
-  console.log(
-    `detalhes espalhados: ${detalhes.arvores.length} arvores, ${detalhes.rochas.length} rochas`,
-  );
 
   inventario(aneis, 25);
 }

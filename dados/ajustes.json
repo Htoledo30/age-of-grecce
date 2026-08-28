@@ -306,9 +306,6 @@
     "segundosDoPulsoDeChegada": 0.9
   },
   "detalhes": {
-    "alturaArvore": 24,
-    "zoomInicio": 0.45,
-    "zoomCheio": 1,
     "graoInicio": 0.6,
     "graoFim": 1.5,
     "graoOpacidade": 0.16

@@ -17,7 +17,7 @@ import type { Entrada } from '@/nucleo/entrada';
 import type { Relogio } from '@/nucleo/tempo';
 import { ALTURA_BASE, LARGURA_BASE, aoMudarEscala, densidadeEfetiva } from '@/estilo/escala';
 import type { Ajustes, Mundo, Provincias } from '@/dados/esquema';
-import { Detalhes } from './detalhes';
+import { GraoDoMapa } from './grao-do-mapa';
 import { ProvinciasMapa } from './provincias-mapa/provincias-mapa';
 
 /** Quanto o ponteiro pode andar entre apertar e soltar e a coisa ainda ser um clique. */
@@ -28,7 +28,7 @@ export class CenaMapa {
 
   private readonly app = new Application();
   private readonly mundo = new Container();
-  private detalhes!: Detalhes;
+  private grao!: GraoDoMapa;
   private camadaProvincias!: ProvinciasMapa;
 
   /**
@@ -95,7 +95,7 @@ export class CenaMapa {
     terreno.height = altura;
     this.mundo.addChild(terreno);
 
-    // A camada política entra ENTRE o terreno e os detalhes: as árvores continuam por
+    // A camada política entra ENTRE o terreno e o grão: o grão continua por
     // cima do preenchimento, senão a cor do dono achata a paisagem inteira.
     this.camadaProvincias = await ProvinciasMapa.criar(
       new URL('mundo/provincias.png', document.baseURI).href,
@@ -106,14 +106,13 @@ export class CenaMapa {
     );
     this.mundo.addChild(this.camadaProvincias.visual);
 
-    this.detalhes = await Detalhes.criar(
-      new URL('mundo/detalhes.json', document.baseURI).href,
+    this.grao = GraoDoMapa.criar(
       this.app.renderer,
       largura,
       altura,
       this.ajustes.detalhes,
     );
-    this.mundo.addChild(this.detalhes.visual);
+    this.mundo.addChild(this.grao.visual);
 
     // O mapa abre inteiro na tela: a primeira coisa que o jogador vê é a Grécia toda,
     // e é dela que ele escolhe onde entrar.
@@ -202,7 +201,7 @@ export class CenaMapa {
 
     // A paleta é drenada uma vez por quadro, depois de tudo que pôde sujá-la.
     this.camadaProvincias.aplicarPaleta();
-    this.detalhes.atualizar(this.camera.zoom);
+    this.grao.atualizar(this.camera.zoom);
 
     const centro = this.camera.mundoParaPalco(0, 0);
     this.mundo.position.set(centro.x, centro.y);

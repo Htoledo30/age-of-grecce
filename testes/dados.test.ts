@@ -34,9 +34,9 @@ describe('dados/ajustes.json', () => {
     expect(r.success, r.success ? '' : JSON.stringify(r.error.issues, null, 2)).toBe(true);
   });
 
-  it('a camada de detalhes entra antes de estar cheia', () => {
+  it('o grão do chão entra antes de estar cheio', () => {
     const a = Ajustes.parse(brutoAjustes);
-    expect(a.detalhes.zoomInicio).toBeLessThan(a.detalhes.zoomCheio);
+    expect(a.detalhes.graoInicio).toBeLessThan(a.detalhes.graoFim);
   });
 
   it('recusa passo de roda que não aproxima', () => {

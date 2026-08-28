@@ -936,11 +936,14 @@ export const Ajustes = z.object({
     /** Quanto o pulso de chegada dura depois que a peça assenta no destino. */
     segundosDoPulsoDeChegada: z.number().positive(),
   }),
+  /**
+   * O GRÃO DO CHÃO, e só ele.
+   *
+   * ⚠️ **Aqui moravam as ÁRVORES, e elas saíram a pedido de Henrique.** Eram sprites
+   * espalhados nas matas que acendiam ao aproximar — o truque do Mount & Blade. Num mapa
+   * político em que a cor do reino é a informação, elas competiam com o que importa.
+   */
   detalhes: z.object({
-    alturaArvore: z.number().positive(),
-    /** Faixa de zoom em que a camada de objetos entra. */
-    zoomInicio: z.number().positive(),
-    zoomCheio: z.number().positive(),
     /** Faixa de zoom em que o grão de chão entra. */
     graoInicio: z.number().positive(),
     graoFim: z.number().positive(),
