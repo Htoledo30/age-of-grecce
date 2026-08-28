@@ -15,7 +15,12 @@ export const ABAS_DO_EDITOR: readonly AbaDoEditor[] = [
     disponivel: true,
   },
   { id: 'economia', nome: 'Economia', descricao: 'Impostos, trânsito e corrupção.', disponivel: false },
-  { id: 'populacao', nome: 'População', descricao: 'Crescimento, faixas e mortalidade.', disponivel: false },
+  {
+    id: 'populacao',
+    nome: 'População',
+    descricao: 'Crescimento, faixas e consumo civil.',
+    disponivel: true,
+  },
   { id: 'construcoes', nome: 'Construções', descricao: 'Preço, duração, folha e efeitos.', disponivel: false },
   { id: 'ia', nome: 'IA', descricao: 'Economia, defesa e agressividade.', disponivel: false },
   { id: 'diplomacia', nome: 'Diplomacia', descricao: 'Relação, pactos, comércio e tributo.', disponivel: false },

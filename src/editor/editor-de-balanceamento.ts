@@ -3,10 +3,12 @@ import { ABAS_DO_EDITOR } from './abas';
 import { camposDaAlimentacao } from './catalogo-alimentacao';
 import { camposDoCombate } from './catalogo-combate';
 import { camposDoExercito } from './catalogo-exercito';
+import { camposDaPopulacao } from './catalogo-populacao';
 import { criarControleNumerico } from './campo-numerico';
 import type { ControleNumerico } from './campo-numerico';
 import { apagarPerfil, carregarPerfil, salvarPerfil } from './perfil-local';
 import type { AbaDoEditor, CampoNumerico, IdDaAba } from './tipos';
+import { erroNosValores } from './validacoes';
 
 type AjustesDoJogo = Ajustes['jogo'];
 
@@ -33,6 +35,7 @@ export class EditorDeBalanceamento {
       ...camposDoExercito(ajustes),
       ...camposDoCombate(ajustes),
       ...camposDaAlimentacao(ajustes),
+      ...camposDaPopulacao(ajustes),
     ];
     for (const campo of campos) this.padroes.set(campo.id, campo.ler());
 
@@ -228,10 +231,9 @@ export class EditorDeBalanceamento {
 
   private aplicar(): void {
     const valores = Object.fromEntries(this.controles.map((c) => [c.campo.id, c.valor()]));
-    const quebra = valores['combate.batalha.limiarDeQuebra'];
-    const recuo = valores['combate.batalha.limiarDeRecuo'];
-    if (quebra !== undefined && recuo !== undefined && recuo >= quebra) {
-      this.estado.textContent = 'O recuo precisa acontecer antes do limiar de quebra.';
+    const erro = erroNosValores(valores);
+    if (erro) {
+      this.estado.textContent = erro;
       this.estado.dataset['pendente'] = 'erro';
       return;
     }
