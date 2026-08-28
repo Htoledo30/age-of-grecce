@@ -54,7 +54,12 @@ de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com ac
 recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
 JSON e rodar `npm run partida`.
 
-⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está inteira riscada.** A
+⚠️ **PEDIDO ABERTO DELE, esperando a palavra: o NOME DE CADA PROVÍNCIA escrito no mapa,
+dentro dela.** Ele pediu junto com a queixa da ficha confusa e disse *"futuramente"* — não
+comece sem ele mandar. É trabalho de verdade: colocação do rótulo, nível de detalhe por zoom,
+colisão entre nomes e 244 províncias para desenhar.
+
+⚠️ **Fora isso, NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está riscada.** A
 nacionalidade no humor, que era a última, entrou. A peça natural seguinte é a **ASSIMILAÇÃO**:
 hoje o povo conquistado nunca deixa de ser quem é, e o preço da conquista é permanente. Ela é
 decisão nova — não comece sem ele dizer.

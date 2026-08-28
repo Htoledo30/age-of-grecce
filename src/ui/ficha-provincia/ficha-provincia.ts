@@ -35,9 +35,10 @@ export class FichaProvincia {
   private readonly raiz = document.createElement('div');
   private readonly topo = document.createElement('header');
   private readonly nome = document.createElement('h2');
-  private readonly dono = document.createElement('p');
+  private readonly bandeira = document.createElement('p');
   private readonly tinta = document.createElement('span');
-  private readonly procedencia = document.createElement('span');
+  private readonly reino = document.createElement('span');
+  private readonly regiao = document.createElement('span');
   private readonly producao = document.createElement('p');
   private readonly selos = document.createElement('div');
   private readonly avisos = document.createElement('div');
@@ -49,21 +50,31 @@ export class FichaProvincia {
 
     this.nome.className = 'ficha__nome';
     this.tinta.className = 'ficha__tinta';
-    this.procedencia.className = 'ficha__procedencia';
-    this.dono.className = 'ficha__dono';
-    this.dono.append(this.tinta, this.procedencia);
+    this.reino.className = 'ficha__reino';
+    this.regiao.className = 'ficha__regiao';
+    // ⚠️ **A BANDEIRA vem ACIMA do nome, e é a primeira coisa da ficha.** Henrique clicando:
+    // *"ainda está muito confuso — qual o nome da província, da região e do reino? o reino tem
+    // que ser o mais importante"*. E ele tinha razão pelo pior motivo: "ATENAS · MEGÁRIDA" saía
+    // numa linha só, mesma fonte, mesmo tamanho, mesma cor, separados por um ponto. Os dois
+    // nomes eram indistinguíveis, e o mais importante dos três era o mais fraco da tela.
+    //
+    // Agora são três tratamentos que não se confundem: o reino numa faixa própria com a tinta
+    // dele cheia, a região na outra ponta da MESMA faixa e em tom apagado, e o nome da
+    // província grande embaixo. Ninguém precisa de rótulo dizendo qual é qual.
+    this.bandeira.className = 'ficha__bandeira';
+    this.bandeira.append(this.tinta, this.reino, this.regiao);
     this.producao.className = 'ficha__producao';
     this.selos.className = 'ficha__selos';
 
     const identidade = document.createElement('div');
-    identidade.append(this.nome, this.dono, this.producao);
+    identidade.append(this.nome, this.producao);
     this.topo.className = 'ficha__topo';
     this.topo.append(identidade, this.selos);
 
     this.avisos.className = 'ficha__avisos';
     this.medidas.className = 'ficha__caixa-de-medidas';
 
-    this.raiz.append(this.topo, this.avisos, this.medidas);
+    this.raiz.append(this.bandeira, this.topo, this.avisos, this.medidas);
     pai.appendChild(this.raiz);
   }
 
@@ -82,9 +93,9 @@ export class FichaProvincia {
     // sem povo, sem renda e sem obra não há medida nenhuma a mostrar. O painel encolhe até o
     // que existe em vez de exibir quatro zeros — quatro zeros não são informação, são ruído.
     this.tinta.hidden = vista.mar;
-    this.procedencia.textContent = vista.mar
-      ? 'Zona marítima'
-      : `${vista.poder.nome} · ${vista.regiao}`;
+    this.tinta.style.background = vista.poder.cor;
+    this.reino.textContent = vista.mar ? 'Zona marítima' : vista.poder.nome;
+    this.regiao.textContent = vista.mar ? '' : vista.regiao;
     this.desenharProducao(vista);
     this.selos.replaceChildren(...this.selosDe(vista));
     this.avisos.replaceChildren(...this.avisosDe(vista));

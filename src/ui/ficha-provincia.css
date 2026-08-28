@@ -38,33 +38,59 @@
   letter-spacing: 0.01em;
   color: var(--ui-texto);
 }
-.ficha__dono {
+/* ── A BANDEIRA: a primeira linha da ficha, e a que responde "de quem é isto?" ────────────
+   ⚠️ Reino e região saíam numa linha só — "ATENAS · MEGÁRIDA" —, mesma fonte, mesmo tamanho,
+   mesma cor, separados por um ponto. Henrique jogando: *"ainda está muito confuso, qual o
+   nome da província, da região e do reino? o reino tem que ser o mais importante"*. Eram
+   dois nomes indistinguíveis, e o mais importante era o mais fraco da tela.
+   Agora as duas pontas da MESMA faixa: o reino à esquerda com a tinta dele cheia e contraste
+   alto; a região à direita, apagada. Nenhum rótulo dizendo qual é qual — a posição e o peso
+   já dizem. */
+.ficha__bandeira {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 7px;
-  font-size: 12px;
-  font-weight: 650;
+  gap: 9px;
+  margin: 0 0 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.ficha__reino {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ui-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A região é qualificação, não identidade: mesma faixa, metade do peso. */
+.ficha__regiao {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
+/* O escudo com a cor do reino, CHEIO. Ele era 14×18 com um anel escuro por dentro e lia-se
+   como um contorno vazio; agora a tinta é o que se vê. */
 .ficha__tinta {
   flex: none;
-  width: 14px;
-  height: 18px;
-  border: 1px solid var(--ui-texto-tenue);
+  width: 15px;
+  height: 19px;
+  border: 1px solid rgb(0 0 0 / 55%);
   border-radius: 5px 5px 8px 8px;
   clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
-  box-shadow: inset 0 0 0 1px var(--ui-fundo);
 }
 /* O que a terra dá, na terceira linha da identidade — texto, e não pastilha.
    ⚠️ Eram duas fileiras de caixinhas iguais, produtos em cima e construções embaixo, e o
    olho lia as duas como a mesma lista. Uma é o que a terra É; a outra é o que se ergueu
    nela. Só a primeira é identidade, e as construções saíram do painel. */
 .ficha__producao {
-  margin-top: 5px;
-  padding-left: 22px;
+  margin-top: 4px;
   font-family: var(--fonte-nome);
   font-size: 15px;
   font-style: italic;
@@ -135,6 +161,11 @@
   margin-top: 13px;
   padding-top: 12px;
   border-top: 1px solid var(--ui-borda-fraca);
+}
+/* Zona marítima não tem medida nenhuma, e um friso sozinho embaixo do nome parecia uma
+   caixa que faltou carregar. Sem filho, sem moldura. */
+.ficha__caixa-de-medidas:empty {
+  display: none;
 }
 .ficha__medidas {
   display: grid;

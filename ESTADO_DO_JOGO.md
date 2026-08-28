@@ -669,6 +669,18 @@ Refeita com o que as telas de resultado dos outros jogos ensinam:
 
 ## O painel da província
 
+⚠️ **A identidade é uma FAIXA de três coisas que não se confundem** — reino, região e nome.
+Henrique clicando: *"ainda está muito confuso, qual o nome da província, da região e do reino?
+o reino tem que ser o mais importante"*. Ele tinha razão pelo pior motivo: `ATENAS · MEGÁRIDA`
+saía numa linha só, mesma fonte, mesmo tamanho, mesma cor, separados por um ponto — os dois
+nomes eram indistinguíveis, e o mais importante dos três era o mais fraco da tela.
+
+Agora: o **reino** abre a ficha numa faixa própria, acima do nome, em maiúsculas fortes e com o
+escudo da tinta dele CHEIA (era um contorno vazio de 14 px); a **região** fica na outra ponta
+da mesma faixa, menor e apagada; o **nome da província** continua grande, logo abaixo. Nenhum
+rótulo dizendo qual é qual — a posição e o peso já dizem. Zona marítima usa a mesma faixa com
+"Zona marítima" no lugar do reino, sem escudo e sem região.
+
 Refeito por inteiro depois de Henrique jogar, com as telas de província de EU4, Total War, CK3
 e Civ como referência. O que havia eram **três caixas empilhadas numa coluna que rolava** —
 ficha, ações e recrutamento somavam mais de 800 px de altura, e levantar exército era a única

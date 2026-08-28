@@ -72,7 +72,7 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
   await page.waitForTimeout(300);
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Mégara');
-  await expect(page.locator('.ficha__dono')).toContainText('Atenas');
+  await expect(page.locator('.ficha__reino')).toContainText('Atenas');
 
   // Sendo dela, Mégara passa a aceitar ação — e como a Grécia central inteira tem
   // economia configurada, o painel abre com os slots e a lista de construções.

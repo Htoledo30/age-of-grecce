@@ -159,6 +159,22 @@ Novas Observacoes Por Henrique
 ═══════════════════════════════════════════════════════════════════════════════
 
    → problema encontrado, mas bem basico, quando clico numa provincia ainda esta muito consufo, qual o nome da provincia, da regiao e do reino, o reino tem que ser o mais importante, e futuramente o nome de cada provincia deve ser escrito diretamente no mapa dentro de cada provincia, saca?
+   → FEITO a primeira metade, e tu tinhas razao pelo pior motivo possivel: "ATENAS ·
+     MEGARIDA" saia numa linha so, MESMA fonte, MESMO tamanho, MESMA cor, separados por um
+     ponto. Os dois nomes eram literalmente indistinguiveis, e o reino — que e o que mais
+     importa — era a coisa mais fraca da ficha.
+     Agora sao tres tratamentos que nao se confundem: uma FAIXA no topo, acima do nome, com
+     o reino a esquerda em maiusculas fortes e o escudo dele com a tinta CHEIA (era um
+     contorno vazio de 14px), e a regiao na outra ponta da mesma faixa, menor e apagada. O
+     nome da provincia continua grande, logo abaixo. Nenhum rotulo dizendo qual e qual — a
+     posicao e o peso ja dizem. Comparativo em capturas/ficha-comparativo.png.
+     ⚠️ FALTA a segunda metade: o nome escrito DENTRO de cada provincia no mapa. Tu disseste
+     "futuramente", entao esta parada esperando tua palavra — e ela ajudaria bastante nessa
+     mesma confusao.
+
+crash do editor de balanceamento (medidas.ts) — CONSERTADO. Era bug meu: escrevi uma quebra
+de linha literal dentro de uma string ao editar o arquivo por script. O build e a suite ja
+passam; a versao empurrada esta correta.
 
 crash- [plugin:vite:oxc] Transform failed with 1 error:
 
