@@ -7,6 +7,30 @@ relevante de `GDD.md` quando a tarefa envolver design ou direção futura.
 O Git guarda o histórico. Não criar roadmap, backlog, changelog, diário de decisões ou
 outro documento de acompanhamento.
 
+## Duas máquinas, um repositório
+
+⚠️ **Henrique trabalha em DUAS máquinas — um notebook e um desktop — e cada uma tem a sua
+Claude.** O repositório em `https://github.com/Htoledo30/age-of-grecce` (privado) é o único
+ponto de encontro entre elas. Antes dele existir, o projeto viajava numa pasta dentro de um
+pendrive, e o resultado foi previsível: duas cópias divergentes e nenhuma forma de saber qual
+era a boa.
+
+**Duas obrigações, e as duas são suas, não do Henrique:**
+
+1. **`git pull` ANTES de começar qualquer trabalho.** O que vem de lá não é só código: é o
+   `AGENTS.md` e o `ESTADO_DO_JOGO.md` com as decisões que ele tomou na outra máquina. Começar
+   sem puxar é trabalhar sobre um mapa velho.
+2. **`git commit` e `git push` AO TERMINAR.** ⚠️ **O commit sozinho não basta e é aqui que o
+   erro acontece:** commit grava neste disco, push é o que entrega à outra máquina. Trabalho
+   commitado e não empurrado é trabalho que a outra Claude não vê — e é assim que nasce a
+   segunda versão divergente que este repositório existe para impedir.
+
+Se houver conflito no pull, **não escolha um lado sozinho**: mostre a Henrique o que as duas
+máquinas fizeram no mesmo arquivo e pergunte. Ele é quem sabe qual das duas intenções vale.
+
+E avise quando houver trabalho não empurrado ao fim de uma conversa. Ele não tem obrigação de
+lembrar; você tem.
+
 ## Fontes de verdade
 
 - comportamento atual: código e testes;
