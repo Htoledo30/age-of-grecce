@@ -185,13 +185,23 @@ describe('a cidade sitiada perde o campo e a estrada, nunca o imposto', () => {
     expect(c.disponivelParaLevaEm('eleusis')).toBeGreaterThan(0);
   });
 
-  it('levantado o cerco, a economia volta inteira', () => {
+  it('levantado o cerco, o campo e a estrada voltam na hora', () => {
+    // ⚠️ **O total NÃO volta inteiro no mesmo turno, e é assim que tem que ser.** As duas
+    // parcelas que o cerco corta — produção e trânsito — voltam no instante em que o
+    // sitiante sai. O imposto demora: a cidade sitiada azedou, e o humor sobe alguns pontos
+    // por turno até o alvo de antes. O cerco deixa cicatriz, e ela se lê no imposto.
     const c = contraEleusis(300);
-    const antes = c.economiaDe('eleusis')?.total ?? 0;
     ordenar(c, 'atenas', 'eleusis', 300, 'atenas');
     c.passarTurno();
     ordenar(c, 'eleusis', 'atenas', 300, 'atenas');
     c.passarTurno();
-    expect(c.economiaDe('eleusis')?.total).toBeGreaterThanOrEqual(antes);
+
+    const depois = c.economiaDe('eleusis');
+    expect(c.cercoEm('eleusis')).toBeUndefined();
+    // Zeradas durante o cerco, de volta ao mapa depois dele. O valor exato não volta no
+    // mesmo turno porque o humor azedou e sobe alguns pontos por vez — e é ele que
+    // multiplica as três parcelas.
+    expect(depois?.producao).toBeGreaterThan(0);
+    expect(depois?.transito).toBeGreaterThan(0);
   });
 });

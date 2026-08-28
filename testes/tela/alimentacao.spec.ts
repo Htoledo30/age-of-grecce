@@ -131,5 +131,7 @@ test('o Governo decompõe a mesma conta e mostra o papel de cada terra', async (
   await page.keyboard.press('Escape');
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
-  await expect(page.locator('dd.ficha__populacao')).toContainText('habitantes · Terra');
+  await expect(page.locator('.ficha__medida[data-medida="povo"]')).toContainText('Terra', {
+    ignoreCase: true,
+  });
 });

@@ -15,7 +15,7 @@ import type { Permissao } from '../nucleo';
 import { assaltoEm, cercoEm, cercos, impedeAssaltoImediatoEm } from '../guerra/cercos';
 import { podeRecrutar } from '../guerra/levas';
 import { armasEm, treinoEm } from '../provincia/armas-da-provincia';
-import { podeOrdenarMarcha, rotasDaHoste } from '../guerra/marchas';
+import { podeOrdenarMarcha, rotasDaHoste, rotasLongasDaHoste } from '../guerra/marchas';
 import { ordemDaHoste, ordens, surtidaDe } from '../guerra/ordens-da-rodada';
 import { podeSurtir, sitianteDaHosteDe } from '../guerra/surtidas';
 import { ConsultasDaProvincia } from './consultas-da-provincia';
@@ -165,11 +165,26 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
     return [...this.rotasDaHoste(idHoste).keys()];
   }
 
+  /**
+   * As rotas inteiras desta hoste, quantas rodadas elas levem — todos os destinos de uma vez.
+   *
+   * É a pergunta da TRAVESSIA: uma hoste anda um salto por rodada, e uma ilha do outro lado da
+   * água fica a três. Quem só pergunta "aonde chego hoje" nunca vê o outro lado do mar.
+   */
+  rotasLongasDaHoste(idHoste: string): ReadonlyMap<string, readonly string[]> {
+    return rotasLongasDaHoste(this.nucleo, idHoste);
+  }
+
+  /** Esta província é água? Zona marítima não se conquista, não rende e não tem dono. */
+  ehMar(idProvincia: string): boolean {
+    return this.nucleo.atlas.ehMar(idProvincia);
+  }
+
   ordemDaHoste(idHoste: string): OrdemDeMarcha | undefined {
     return ordemDaHoste(this.nucleo, idHoste);
   }
 
-  /** Todas as ordens da rodada, com a hoste de cada uma. É o que o mapa desenha. */
+  /** Todas as ordens ativas, com a hoste de cada uma. É o que o mapa desenha. */
   ordens(): readonly { idHoste: string; ordem: OrdemDeMarcha }[] {
     return ordens(this.nucleo);
   }

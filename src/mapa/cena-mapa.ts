@@ -133,9 +133,16 @@ export class CenaMapa {
    */
   pintarDonos(donoDe: (idProvincia: string) => string): void {
     this.camadaProvincias.pintarDonos(donoDe);
+    this.camadaProvincias.intensificar(false);
   }
 
   /** Liga e desliga a cor dos reinos. O recorte das províncias continua desenhado. */
+  /** Repinta com uma cor por província: é o modo de mapa. Ver `provincias-mapa.ts`. */
+  pintarCores(corDe: (idProvincia: string) => readonly [number, number, number] | null): void {
+    this.camadaProvincias.pintarCores(corDe);
+    this.camadaProvincias.intensificar(true);
+  }
+
   mostrarCoresDosPoderes(ligadas: boolean): void {
     this.camadaProvincias.mostrarCores(ligadas);
   }

@@ -33,11 +33,13 @@
  */
 
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
+import { rasgarAcessosEntre } from './acesso-militar';
 import type { Tributo } from '../estado-campanha';
 import { vivo } from '../governo/poderes';
 import { darOuro, gastar, tesouroDe } from '../governo/tesouro';
 import { rendaBaseDe, rendaDe } from '../provincia/renda';
 import { valorDoTributo } from './tributo';
+import { alcancaComercio, temPorto } from '../comercio/alcance';
 import {
   alvoDaRelacao,
   aproximarRelacao,
@@ -160,6 +162,7 @@ export function declararGuerra(
     nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
     delete nucleo.estado.tregoas[parDe(de, contra)];
     desfazerAcordo(nucleo, de, contra);
+    rasgarAcessosEntre(nucleo, de, contra);
     // Quem pega em armas contra o ocupante não consultou tratado nenhum — nem o que ele mesmo
     // estava pagando. E não há preço de reputação: não foi o governo quem quebrou a promessa.
     delete nucleo.estado.tributos[parDe(de, contra)];
@@ -167,6 +170,9 @@ export function declararGuerra(
   }
   if (!podeDeclararGuerra(nucleo, de, contra).pode) return false;
   nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
+  // ⚠️ A guerra rasga a passagem nos DOIS sentidos, e sem preço: quem declara guerra ao dono
+  // da estrada não continua andando por ela com licença dele. Ver `acesso-militar.ts`.
+  rasgarAcessosEntre(nucleo, de, contra);
   // ⚠️ A guerra desfaz o comércio na hora, e é isso que dá ao acordo um peso que não é só
   // dinheiro: quem declara vê a renda cair no mesmo turno em que ganha um inimigo.
   desfazerAcordo(nucleo, de, contra);
@@ -303,6 +309,17 @@ export function podeAcordarComercio(
   }
   if (emGuerra(nucleo, a, b)) return { pode: false, motivo: 'vocês estão em guerra' };
   if (temAcordo(nucleo, a, b)) return { pode: false, motivo: 'o acordo já está de pé' };
+  // ⚠️ **A mercadoria precisa de um caminho.** Por terra quando os dois se tocam; por mar
+  // quando os dois têm Porto — que é o que o catálogo já prometia no motivo da obra. Ver
+  // `comercio/alcance.ts` para a medição que levou a isto.
+  if (!alcancaComercio(nucleo, a, b)) {
+    return {
+      pode: false,
+      motivo: temPorto(nucleo, a)
+        ? 'longe demais: falta um Porto do lado dele'
+        : 'longe demais: sem fronteira, o comércio exige Porto nos dois lados',
+    };
+  }
   const minima = nucleo.ajustes.acordoDeComercio.opiniaoMinima;
   if (relacaoEntre(nucleo, a, b) < minima) {
     return { pode: false, motivo: `ele ainda não confia o bastante: exige opinião ${minima}` };

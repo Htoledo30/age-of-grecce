@@ -109,10 +109,12 @@ describe('propriedade: de quem é a província agora', () => {
     c.construir('sounion', 'mina');
     // Passa turnos até a Mina ficar pronta E dar pra erguer a Ágora — quantos são
     // exatamente é balanço, e cravar o número quebraria a cada ajuste de renda.
+    let turnos = 0;
     for (
-      let i = 0;
-      i < 20 && (!c.podeConstruir('atenas', 'agora').pode || c.obraEm('sounion') !== undefined);
-      i++
+      ;
+      turnos < 20 &&
+      (!c.podeConstruir('atenas', 'agora').pode || c.obraEm('sounion') !== undefined);
+      turnos++
     ) {
       c.passarTurno();
     }
@@ -136,8 +138,12 @@ describe('propriedade: de quem é a província agora', () => {
     // ⚠️ O controle tem que ter o MESMO dono, senão a comparação mede outra coisa: a
     // corrupção conta os saltos até a capital de quem manda, e Sunião mudou de mão. Sem
     // isto, o teste comparava Sunião-de-Atenas com Sunião-de-Mégara e culpava a Mina.
+    // ⚠️ E tem que ter a MESMA IDADE: desde que o humor multiplica as três parcelas da
+    // renda, duas campanhas paradas em turnos diferentes rendem diferente por si só, e a
+    // razão medida culparia a Mina por uma província que apenas envelheceu.
     const controle = nova();
     controle.comecar('atenas');
+    for (let i = 0; i < turnos; i++) controle.passarTurno();
     controle.trocarDono('sounion', 'megara');
     const semObra = controle.economiaDe('sounion')?.producao ?? 0;
     const mina = construcoes.construcoes['mina'];

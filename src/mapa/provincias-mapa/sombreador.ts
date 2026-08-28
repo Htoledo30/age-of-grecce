@@ -45,6 +45,10 @@ uniform float uOpacidade;
 uniform float uSelecionada;
 /** Cor do destaque; o alfa e a cobertura que o destaque garante sozinho. */
 uniform vec4 uCorSelecao;
+/** Primeiro indice que e ZONA MARITIMA. Daqui pra cima, o indice e agua. */
+uniform float uPrimeiroMar;
+/** Quanto da linha de fronteira sobra na divisa entre duas zonas de mar. */
+uniform float uForcaDoMar;
 
 /** Os dois bytes do indice, ainda como bytes: e assim que se endereca a paleta. */
 vec2 bytesEm(vec2 uv) {
@@ -60,24 +64,52 @@ float idEmTexel(vec2 texel) {
 }
 
 /**
- * Pertence a MESMA provincia? O mar conta como pertencendo.
+ * Este indice e agua?
  *
- * Contar o mar como "dentro" e o que impede a linha de fronteira de aparecer no litoral:
- * a costa ja esta desenhada no terreno, e repeti-la aqui engrossaria o contorno inteiro.
+ * ⚠️ **O mar tem indice alto, nao indice zero.** Desde que as zonas maritimas existem, "id
+ * igual a zero" deixou de significar mar: zero e so o que esta fora do recorte. Quem
+ * confundir os dois pinta o Egeu com a cor de um reino.
+ */
+bool ehMar(float id) {
+  return id >= uPrimeiroMar;
+}
+
+/**
+ * Pertence a MESMA provincia? **A costa nunca conta como fronteira.**
+ *
+ * A linha do litoral ja esta desenhada no terreno, e repeti-la aqui engrossaria o contorno
+ * inteiro — entao terra e agua se enxergam como "dentro", nos DOIS sentidos. O que sobra sao
+ * as divisas que importam: reino contra reino em terra, zona contra zona no mar.
  */
 float pertence(vec2 texel, float id) {
   float outro = idEmTexel(texel);
-  return (outro < 0.5 || outro == id) ? 1.0 : 0.0;
+  // Fora do recorte nao faz fronteira com ninguem.
+  if (outro < 0.5 || outro == id) return 1.0;
+  return ehMar(outro) == ehMar(id) ? 0.0 : 1.0;
+}
+
+/**
+ * Este texel e do mesmo elemento que eu — agua com agua, terra com terra?
+ *
+ * E daqui que sai a mascara que apara a camada politica no litoral. Ela precisa valer nos
+ * dois sentidos: a cor do reino nao pode vazar pro mar, e o destaque de uma zona maritima
+ * nao pode vazar pra praia.
+ */
+float mesmoElemento(vec2 texel, bool souMar) {
+  float outro = idEmTexel(texel);
+  if (outro < 0.5) return souMar ? 1.0 : 0.0;
+  return ehMar(outro) == souMar ? 1.0 : 0.0;
 }
 
 void main() {
   vec2 meus = bytesEm(vUV);
   float id = idDe(meus);
-  // indice 0 e mar (e a terra que ninguem reivindicou). A camada politica nao pinta la.
+  // Indice 0 e o fora-do-recorte: nem terra nem zona. Nada se pinta la.
   if (id < 0.5) {
     saida = vec4(0.0);
     return;
   }
+  bool souMar = ehMar(id);
 
   float destacada = abs(id - uSelecionada) < 0.5 ? 1.0 : 0.0;
   vec3 cor = texture(uPaleta, (meus + 0.5) / 256.0).rgb;
@@ -133,23 +165,33 @@ void main() {
 
   // A troca acontece em volta de um texel por pixel, com folga pra ninguem ver o degrau.
   float linha = mix(linhaPerto, linhaLonge, smoothstep(0.8, 1.6, texelsPorPixel));
-  float fronteira = linha * uCorFronteira.a;
+  // A divisa entre duas zonas de mar e a MESMA linha, so que fraca: ela existe pra o jogador
+  // saber onde uma zona acaba, e nao pra competir com a fronteira dos reinos. SELECIONADA,
+  // ela vai a linha cheia — no mar e o CONTORNO que destaca, porque uma zona tem o tamanho de
+  // meia dezena de provincias e um preenchimento forte nela cega o resto do mapa.
+  float forcaDaLinha = souMar ? mix(uForcaDoMar, 1.0, destacada) : 1.0;
+  float fronteira = linha * uCorFronteira.a * forcaDaLinha;
 
   // ------------------------------------------------------------------------
-  // Litoral: a mesma ideia, aplicada a pergunta "isto e terra?".
+  // Litoral: a mesma ideia, aplicada a pergunta "isto e do meu elemento?".
   // ------------------------------------------------------------------------
-  float t00 = idEmTexel(canto + vec2(0.0, 0.0)) > 0.5 ? 1.0 : 0.0;
-  float t10 = idEmTexel(canto + vec2(1.0, 0.0)) > 0.5 ? 1.0 : 0.0;
-  float t01 = idEmTexel(canto + vec2(0.0, 1.0)) > 0.5 ? 1.0 : 0.0;
-  float t11 = idEmTexel(canto + vec2(1.0, 1.0)) > 0.5 ? 1.0 : 0.0;
+  float t00 = mesmoElemento(canto + vec2(0.0, 0.0), souMar);
+  float t10 = mesmoElemento(canto + vec2(1.0, 0.0), souMar);
+  float t01 = mesmoElemento(canto + vec2(0.0, 1.0), souMar);
+  float t11 = mesmoElemento(canto + vec2(1.0, 1.0), souMar);
   float terra = mix(mix(t00, t10, fracao.x), mix(t01, t11, fracao.x), fracao.y);
   float inclinacaoTerra = max(length(vec2(dFdx(terra), dFdy(terra))), 1e-6);
   float cobertura = clamp((terra - 0.5) / inclinacaoTerra + 0.5, 0.0, 1.0);
 
   // O destaque carrega cobertura propria: com as cores desligadas uOpacidade e zero, e
   // sem esta garantia a provincia selecionada nao apareceria de jeito nenhum.
-  vec3 corBase = mix(cor, uCorSelecao.rgb, destacada * 0.5);
-  float alfaBase = max(uOpacidade, destacada * uCorSelecao.a);
+  // ⚠️ **Zona maritima nao recebe cor de dono**, porque nao tem dono: o preenchimento vai a
+  // zero e o mar desenhado por baixo aparece inteiro. Destacada, ela acende como qualquer
+  // outra — e e assim que o jogador ve pra onde a hoste pode navegar.
+  vec3 corBase = mix(cor, uCorSelecao.rgb, destacada * (souMar ? 1.0 : 0.5));
+  float destaqueNoMar = uCorSelecao.a * uForcaDoMar;
+  float alfaBase =
+    max(souMar ? 0.0 : uOpacidade, destacada * (souMar ? destaqueNoMar : uCorSelecao.a));
 
   vec3 pintura = mix(corBase, uCorFronteira.rgb, fronteira);
   float alfa = mix(alfaBase, 1.0, fronteira) * cobertura;

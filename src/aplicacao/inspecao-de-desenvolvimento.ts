@@ -111,6 +111,14 @@ export function instalarInspecao(jogo: Jogo): void {
     // vista e testada antes de existir exército.
     conquistar: (idProvincia: string, idPoder: string) =>
       campanha.trocarDono(idProvincia, idPoder),
+    // A mesa de propostas: é o único jeito de o teste de tela e a captura porem um pedido do
+    // outro lado em cima da mesa sem esperar a IA querer.
+    proporAoJogador: (de: string, tipo: 'pacto' | 'comercio' | 'acesso', turnos?: number) =>
+      campanha.proporAoJogador(turnos === undefined ? { de, tipo } : { de, tipo, turnos }),
+    propostas: () => campanha.propostas().map((p) => `${p.de}:${p.tipo}`),
+    concederAcesso: (para: string, turnos: number, porPoder?: string) =>
+      campanha.concederAcesso(para, turnos, porPoder),
+    acessosDe: (idPoder: string) => campanha.acessosDe(idPoder),
     // Diplomacia: o teste de tela confere contra a REGRA, e não contra o que a tela desenhou.
     emGuerra: (a: string, b: string) => campanha.emGuerra(a, b),
     guerrasDe: (idPoder: string) => [...campanha.guerrasDe(idPoder)],

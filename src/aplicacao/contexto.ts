@@ -35,12 +35,17 @@ import type { Diplomacia } from '@/ui/diplomacia';
 import type { Mercado } from '@/ui/mercado';
 import type { PainelFps } from '@/ui/painel-fps';
 import type { PainelLateral } from '@/ui/painel-lateral';
+import type { JanelaDeConstrucoes } from '@/ui/construcoes';
 import type { Recrutamento } from '@/ui/recrutamento';
+import type { MenuPausa } from '@/ui/menu-pausa';
 
 /** Todos os pedaços de interface em pé, montados por `montar-tela.ts`. */
 export interface Tela {
+  /** A moldura que segura ficha e comandos. Some inteira quando não há província escolhida. */
+  painelProvincia: HTMLElement;
   ficha: FichaProvincia;
   acoes: AcoesProvincia;
+  construcoes: JanelaDeConstrucoes;
   recrutamento: Recrutamento;
   exercitoFicha: ExercitoFicha;
   barraTurno: BarraTurno;
@@ -60,6 +65,7 @@ export interface Tela {
   animacaoDeMarcha: AnimacaoDeMarcha;
   painelFps: PainelFps;
   lateral: PainelLateral;
+  pausa: MenuPausa;
 }
 
 /** Em que pé o jogo está para quem desenha: menu, escolha de poder, ou campanha. */
@@ -71,6 +77,15 @@ export class SelecaoDaTela {
 
   /** O ID da província escolhida — não uma ficha montada, que envelheceria. */
   provincia: string | null = null;
+
+  /**
+   * De quem é o ponto de vista do MODO DE RELAÇÕES, ou `null` quando o mapa está político.
+   *
+   * ⚠️ **Estado de tela, e por isso não vai para o disco.** Modo de mapa é como o jogador
+   * está olhando, não o que o mundo é: salvar isto faria retomar uma partida devolver o mapa
+   * pintado de uma pergunta que ele já respondeu. Ver `vistas/mapa-de-relacoes.ts`.
+   */
+  relacoesDe: string | null = null;
 
   /**
    * O ID da HOSTE escolhida, ou `null`.

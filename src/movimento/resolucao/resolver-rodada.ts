@@ -17,7 +17,7 @@ import type { Ajustes } from '@/dados/esquema';
 import { naEstrada } from './choque-na-estrada';
 import { naProvincia } from './choque-na-provincia';
 import { resolverCidades } from './cidades';
-import { chegar, partir } from './forcas';
+import { chegar, partir, soma } from './forcas';
 import type { Forca } from './forcas';
 import { choqueObrigadoEm, posturasPorDestino, provinciasEmSurtida, quemLuta } from './posturas';
 import { pousar } from './pousar';
@@ -35,7 +35,13 @@ export function resolverRodada(
   // isto a cidade não saberia se quem chegou veio assaltar ou sentar.
   const posturas = posturasPorDestino(estado, mundo.donoDe);
   const querLutar = (forca: Forca): boolean =>
-    quemLuta(forca, mundo.donoDe(forca.posicao), posturas, estado.cercos);
+    quemLuta(
+      forca,
+      mundo.donoDe(forca.posicao),
+      posturas,
+      estado.cercos,
+      mundo.ehMar(forca.posicao),
+    );
 
   // ⚠️ Lido ANTES de `partir`, que esvazia o tabuleiro: depois dele não há mais como perguntar
   // onde a hoste que surtiu estava parada.
@@ -59,14 +65,49 @@ export function resolverRodada(
       mundo.emGuerra,
     );
   }
-  pousar(estado, forcas, relatorio.marchas);
+  const identidadeAoPousar = pousar(estado, forcas, relatorio.marchas);
   resolverCidades(estado, ajustes, mundo, posturas, relatorio);
 
-  // ⚠️ As ordens são da RODADA, não da partida. Se sobrevivessem à virada, executariam de novo,
-  // e o sintoma seria tropa andando sozinha. A surtida some pelo mesmo motivo: ela é a decisão
-  // de UMA rodada, e uma que ficasse guardada faria a cidade sair para o campo sozinha, todo
-  // turno, até morrer.
-  estado.ordens = {};
+  // Uma ordem distante é uma VIAGEM: anda os trechos permitidos nesta rodada e conserva o
+  // restante. Choque em província e recuo substituem `rota`; morte ou desvio também cancelam.
+  const continuacoes: EstadoDaResolucao['ordens'] = {};
+  const ambiguas = new Set<string>();
+  for (const forca of forcas) {
+    const ordem = forca.ordem;
+    const idHoste = identidadeAoPousar.get(forca);
+    if (!ordem?.continuar || !idHoste || !estado.hostes[idHoste]) continue;
+    if (forca.rota !== ordem.rota) continue;
+    const andou = Math.min(ajustes.saltosPorRodada, ordem.rota.length);
+    const ondeDeviaParar = ordem.rota[andou - 1];
+    const restante = ordem.rota.slice(andou);
+    if (ondeDeviaParar !== forca.posicao || restante.length === 0) continue;
+
+    const existente = continuacoes[idHoste];
+    if (existente) {
+      const mesmaViagem =
+        existente.rota.join('|') === restante.join('|') &&
+        existente.postura === ordem.postura &&
+        existente.recuarAos === ordem.recuarAos;
+      if (!mesmaViagem) {
+        ambiguas.add(idHoste);
+        delete continuacoes[idHoste];
+        continue;
+      }
+      existente.homens += soma(forca.contingentes);
+      continue;
+    }
+    if (ambiguas.has(idHoste)) continue;
+    continuacoes[idHoste] = {
+      origem: forca.posicao,
+      rota: restante,
+      homens: soma(forca.contingentes),
+      postura: ordem.postura,
+      recuarAos: ordem.recuarAos,
+      continuar: true,
+    };
+  }
+  estado.ordens = continuacoes;
+  // A surtida continua sendo uma decisão de UMA rodada.
   estado.surtidas = [];
   return relatorio;
 }

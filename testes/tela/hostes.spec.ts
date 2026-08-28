@@ -120,7 +120,7 @@ test('clicar no mapa solta a hoste, e dispensar tira o marcador do mundo', async
   // Sem hoste, sem marcador e sem ficha — e ninguém fica descrevendo tropa que não existe.
   await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveCount(0);
   await expect(page.locator('.exercito')).toBeHidden();
-  await expect(page.locator('dd.ficha__populacao')).toContainText(
+  await expect(page.locator('.ficha__medida[data-medida="povo"]')).toContainText(
     (populacaoAntesDeDispensar + 1000).toLocaleString('pt-BR'),
   );
   // E a manutenção some da barra junto com a tropa.

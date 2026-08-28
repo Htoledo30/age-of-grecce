@@ -36,28 +36,28 @@
   justify-content: flex-start;
 }
 
-.acoes__titulo .icone-grego,
-.recrutamento__titulo .icone-grego,
 .painel-lateral__titulo .icone-grego {
   color: var(--ui-bronze-claro);
 }
 
-.acoes__construcao.rotulo-com-icone {
+/* O botão da capital é o único do painel que ainda leva ícone junto do texto: os dois
+   portões desenham o seu por conta, maior e à esquerda. */
+.acoes__capital.rotulo-com-icone {
   justify-content: flex-start;
   text-align: left;
 }
 
-.acoes__construcao .icone-grego {
-  width: 17px;
-  height: 17px;
+.acoes__capital .icone-grego {
+  width: 16px;
+  height: 16px;
   color: var(--ui-bronze-claro);
 }
 
-.acoes__construcao:disabled .icone-grego {
+.acoes__capital:disabled .icone-grego {
   color: var(--ui-texto-tenue);
 }
 
-.acoes__construcao .icone-grego--quartel {
+.construcoes__icone--quartel {
   stroke-width: 1.85;
 }
 

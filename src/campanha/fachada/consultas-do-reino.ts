@@ -17,6 +17,7 @@ import { balancoAlimentar } from '@/producao/alimentacao';
 import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 
 import { capitaisIniciais } from '../capitais';
+import { temPorto } from '../comercio/alcance';
 import type { NivelDeImposto } from '../economia';
 import type { Tributo } from '../estado-campanha';
 import type { CatalogoDeConstrucoes, NucleoDaCampanha, Permissao, Recusa } from '../nucleo';
@@ -160,14 +161,28 @@ export abstract class ConsultasDoReino {
   }
 
   /**
-   * As províncias que fazem fronteira por TERRA com esta.
+   * As províncias que encostam nesta — **zonas marítimas incluídas.**
    *
    * ⚠️ Entra na fachada porque a IA precisou dela para saber se o inimigo está na porta — e a
    * regra da casa é que a pergunta entra aqui em vez de a IA abrir um caminho próprio pelo
    * atlas. O jogador já vê isso no mapa; agora as duas leem do mesmo lugar.
+   *
+   * ⚠️ **A água entrou nesta lista quando o mar virou zona**, e quem pergunta "quem é meu
+   * vizinho de terra?" tem de descartar as marítimas com `ehMar`. Antes disso uma ilha não
+   * tinha vizinho nenhum — era assim que o mapa dizia "daqui não se sai".
    */
   vizinhasDe(idProvincia: string): readonly string[] {
     return this.nucleo.atlas.vizinhasDe(idProvincia);
+  }
+
+  /** Este reino já tem Porto de pé em alguma terra? É a porta do mar dele, aberta ou não. */
+  temPorto(idPoder: string): boolean {
+    return temPorto(this.nucleo, idPoder);
+  }
+
+  /** Toda a TERRA do mapa, por id — sem as zonas marítimas. */
+  terras(): readonly string[] {
+    return this.nucleo.atlas.terras.map((p) => p.id);
   }
 
   provinciasDe(idPoder: string): readonly string[] {

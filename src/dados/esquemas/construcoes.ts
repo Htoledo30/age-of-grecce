@@ -208,8 +208,10 @@ export const Construcoes = z.object({
        * duas, mas um farol, um estaleiro ou uma feitoria futura podem fazer só uma. E ler a
        * regra pelo id `porto` amarraria a circulação a um id de conteúdo.
        *
-       * ⚠️ **Vale só para MERCADORIA.** Exército não embarca por aqui: hoste é peça concreta
-       * no mapa e mover uma por mar exige frota, que é o sistema naval.
+       * ⚠️ **Vale para MERCADORIA e para EXÉRCITO, por rotas diferentes.** A mercadoria pula
+       * de Porto a Porto — rota abstrata, sem navio no mapa. A hoste é peça concreta: ela
+       * ANDA pelas zonas de mar, um salto por rodada, e pode ser interceptada. O que esta
+       * bandeira diz nos dois casos é a mesma coisa — **daqui se embarca**.
        */
       ligaPorMar: z.boolean().optional(),
       /** Por que ela existe e onde ela vale. Documentação junto do dado. */

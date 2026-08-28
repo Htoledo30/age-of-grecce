@@ -26,6 +26,8 @@ export interface Destino {
   y: number;
   /** Terra de outro poder: clicar aqui é atacar, não apenas transferir. */
   hostil: boolean;
+  /** Quantas viradas a rota mais curta leva com o movimento atual. */
+  turnos: number;
 }
 
 export class DestinosMapa {
@@ -87,11 +89,12 @@ export class DestinosMapa {
       const nome = elemento.querySelector<HTMLElement>('.destinos__nome');
       if (nome) nome.textContent = destino.nome;
       const acao = destino.hostil ? 'Atacar' : 'Marchar para';
+      const prazo = `${destino.turnos} ${destino.turnos === 1 ? 'turno' : 'turnos'}`;
       definirTooltip(elemento, {
         titulo: `${acao} ${destino.nome}`,
         corpo: destino.hostil
-          ? 'A entrada neste território inicia um ataque.'
-          : 'Destino válido para esta marcha.',
+          ? `A entrada neste território inicia um ataque · ${prazo}.`
+          : `A hoste seguirá sozinha pela rota mais curta · ${prazo}.`,
         tom: destino.hostil ? 'perigo' : 'informacao',
       });
       elemento.setAttribute('aria-label', `${acao} ${destino.nome}`);

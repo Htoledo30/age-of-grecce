@@ -61,7 +61,18 @@ export function quemLuta(
   donoDaProvincia: string,
   posturas: Map<string, Postura>,
   cercos: Record<string, Cerco>,
+  /**
+   * Esta posição é ÁGUA? No mar todo encontro é batalha, e não há escolha a fazer.
+   *
+   * ⚠️ **É o desenho de Henrique:** *"caso se encontre no mar com outro exército em alguma
+   * zona, se for inimigo eles batalham sem conquistar nada, só se matam"*. E cai sozinho da
+   * mecânica: sitiar é declarar que se espera a cidade cair pela fome, e no mar não há
+   * cidade, não há despensa e não há o que esperar. Sem isto, duas frotas inimigas ficariam
+   * ancoradas lado a lado no mesmo golfo para sempre.
+   */
+  ehMar = false,
 ): boolean {
+  if (ehMar) return true;
   if (donoDaProvincia === forca.poder) return true;
   const pelaOrdem = posturas.get(forca.posicao);
   if (pelaOrdem) return pelaOrdem === 'assaltar';

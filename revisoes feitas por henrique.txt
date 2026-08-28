@@ -1,13 +1,134 @@
+═══════════════════════════════════════════════════════════════════════════════
+JÁ RESOLVIDO
+═══════════════════════════════════════════════════════════════════════════════
+
 estava sitiando uma cidade contra argos, ele tinha 3mil soldados contra os meus 3000 soldados, enquanto eu sitiava ele me atacou com os soldados deles, ele ganho a batalha, depois disso sobrou alguns soldados meus uns 308, e eles voltaram para minha terra, mas quando fui clicar nesses soldados eles diziam ser de argos, não entendi essa parada muito bem não, primeiro problema encontrado;
-outro problema atualmente comercio não rende quase nada não sei o porque;
-mudar entre imposto baixo médio ou alto é uma mudança muito fraca, tinha que ser um pouco mais forte, ou precisamos adicionar um tipo de imposto mais alto so que diminui bem mais a relação da província;
-humor das províncias continua muito esquisito, todo travado esses valores;
-problema diretamente ligado a humor, atualmente sempre que tento conquistar alguma província que o humor dela já esta baixo, a chance de eu conquistar aquela província e em duas rodadas ela já se revoltar é muito alta;
-ainda sinto que os valores de reparo das construções são baixos, tem que subir um pouco mais;
-a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta;
+   → CORRIGIDO. Não era bug de propriedade: a composição da janela de batalha era montada
+     DEPOIS das baixas e mostrava os sobreviventes do fim já no round zero (reproduzido: uma
+     hoste de 3.000 aparecia como 326). Os 308 nunca existiram como tropa — quem quebra
+     dispersa e volta para a população, e o único marcador que sobra ali é o do vencedor.
+     Consertado em travar-lados.ts, com teste guardando a soma da composição.
+
+muitos reinos escholhem desde o comeco mercado como primeira construcao, tem algum motivo para isso?
+   → RESPONDIDO, não é defeito. Para a IA, renda/corrupção/troca valem ZERO de preferência
+     nos quatro estilos: nesses casos ela decide só pelo retorno em ouro. E o Mercado é o
+     melhor investimento inicial (+52/turno, paga-se em 59) contra a Ágora (+45, 69 turnos),
+     porque é a única obra que multiplica a rede de trocas do REINO INTEIRO. Todos escolhem
+     igual porque a conta é a mesma para todos. Para dar variedade, o caminho é pôr peso de
+     gosto em "troca" e "renda" por estilo, como já existe para muralha e arma.
+
 no combate quando tem muito soldado porexemplo 2000x2000 ou 1000x1000 aparece 6 rodadas, mas na maioria das vezes todas as rodadas vai perdendo pouco soldado o que é divertido, você ve a luta desenrolado para um lado e para o outro ate algum ter uma vantagem e no ultimo round tem uma morte de soldados muito alta que quebra a diversão e imersão das batalhas, tem que ir tendo rounds ate um lado realmente perder por numero ou no meio da batalha decidir recuar, na troca de rounds devia ter um botão retirada, que o player clica e para IA algum tipo de sistema de moral de batalha, sla algo do tipo que dita o momento que talvez eles devam so se retirar dessa batalha ao invés de perder todos os soldados.
+   → FECHADO por Henrique jogando: "o combate esta perfeito por enquanto, nao precisa mais
+     mexer". A estranheza vinha junto com o defeito da composição — a janela mostrava os
+     números errados —, e o limiar de quebra subiu para 70% no meio do caminho, o que deixou
+     a linha ceder mais tarde. Duas coisas ficam ANOTADAS, não pedidas: recuar no meio da
+     batalha (a janela precisaria virar interativa; hoje só se decide antes da marcha, em
+     "Lutar até o fim" / "Poupar o exército") e moral de batalha para a IA (ela nunca manda
+     recuar — nenhuma ordem dela carrega recuarAos).
+
+outro problema atualmente comercio não rende quase nada não sei o porque;
+outra coisa atualmente se eu comeco como atenas, so posso ter diplomacia com 2 reinos, mesmo que eu consiga ver todos os reinos em guerra(futuramente adicionar fog of war) precisamos decidir algo melhor em relacao a diplomacia, pois IA ta conseguindo fazer comercio com qualquer outro reino mesmo que nao faca fronteira, temos que rever a situacao de distancia da diplomacia.
+   → OS DOIS ERAM O MESMO PROBLEMA, e nenhum era o valor do acordo. Medido: você alcançava
+     2 parceiros (a TELA só listava vizinhos) e a IA alcançava 17 (a regra nunca exigiu
+     fronteira). Pior: seus dois vizinhos são os poderes mais pobres da região — Elêusis
+     paga 23/turno, Argos pagaria 48. Agora o PORTO abre o mar: comércio alcança por terra
+     entre quem se toca, ou por mar entre quem tem Porto nos dois lados. E a mesa lista os
+     18 poderes com ficha, com a fronteira virando um SELO em vez do filtro da lista.
+
+═══════════════════════════════════════════════════════════════════════════════
+A FAZER
+═══════════════════════════════════════════════════════════════════════════════
+
+── economia ──
+
+mudar entre imposto baixo médio ou alto é uma mudança muito fraca, tinha que ser um pouco mais forte, ou precisamos adicionar um tipo de imposto mais alto so que diminui bem mais a relação da província;
+   → FEITO, e era pior do que fraco. Medido: o imposto é 13% a 48% da renda de uma
+     província (mediana 27%), e desde que o humor multiplica a arrecadação cada ponto de
+     humor vale 1% da renda INTEIRA. Então o alto de ×1,35 com −8 de humor era NEGATIVO no
+     equilíbrio em 6 das 25 províncias — um botão que prometia mais dinheiro e entregava
+     menos. Agora: baixo ×0,75 (+12 de humor), normal, alto ×1,8 (−10) e CONFISCO ×3 (−25).
+     Alto passou de +9% para +21% na virada seguinte e nenhuma província fica negativa.
+     O confisco é a tua "relação bem mais baixa": em Atenas são +214 por turno na hora, e
+     9 turnos até o levante — em toda província do mapa. A IA também o usa, numa condição
+     só: em guerra e com a renda sem cobrir a folha militar.
+     E a TELA mudou junto: cada botão agora diz quanto ESTA terra ganha na próxima virada e
+     quanto sobra quando o humor assentar. Quando o decreto acende levante, a segunda linha
+     vira o prazo — prometer um equilíbrio que nunca chega é pior que não prometer nada.
 
 
+── humor e revolta ──
 
+humor das províncias continua muito esquisito, todo travado esses valores;
+   → MEXIDO, falta o teu olho. A régua estava travada porque quase nada empurrava o alvo:
+     medido em 100 turnos, 50% das províncias ficavam na faixa do meio e NENHUMA chegava a
+     muito feliz. Entraram três parcelas novas de situação (reino em guerra −6, província
+     isolada da capital −10, tamanho da terra 0 a −15), o Templo subiu para +9/+15/+22, e o
+     humor passou a MEXER NO DINHEIRO: a arrecadação vira ×0,7 a ×1,3 numa linha contínua,
+     e não em degraus. Depois: 1,7 / 18,0 / 45,8 / 19,7 / 14,8% nas cinco faixas.
+
+problema diretamente ligado a humor, atualmente sempre que tento conquistar alguma província que o humor dela já esta baixo, a chance de eu conquistar aquela província e em duas rodadas ela já se revoltar é muito alta;
+   → MEXIDO. O prazo do levante passou a olhar para onde a província ESTÁ INDO, e não só
+     para onde ela está: ninguém se revolta enquanto o humor está subindo. Quem tomou a
+     cidade e já baixou o imposto tem tempo; quem tomou e não fez nada, não.
+
+a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta;
+   → MEXIDO. Templo de +5/+8/+12 para +9/+15/+22, com manutenção menor (5/8/12). E ele
+     deixou de pagar só em ordem: como o humor agora multiplica a arrecadação numa linha
+     contínua, cada ponto de felicidade vira moeda — o Templo passou a aparecer na conta de
+     retorno como qualquer obra de renda.
+
+── naval ──
+
+o mar está de pé: 47 zonas com nome, o exército anda por elas como em terra, embarcar exige
+Porto na origem, e todo encontro na água é batalha sem conquista. A IA atravessa também. O
+que sobrou anotado, não pedido: nenhum desgaste por FICAR no mar (hoje só a folha de
+campanha), bloqueio naval, e a IA não patrulha nem intercepta travessia alheia.
+
+── diplomacia ──
+
+outra coisa, nao sinto a IA tentando se conectar comigo para oferecer diplomacia, deveria acontecer isso, e aparecer que um reino ta querendo negociar comigo e eu ter opcao de aceitar ou recusar as propostas, e talvez no futuro ate negociar.
+   → FEITO. A IA já DECIDIA com quem assinar pacto e comércio; ela só não perguntava — tu
+     descobrias pela aba que tinha assinado alguma coisa. Agora, quando a outra ponta é o
+     jogador, a assinatura vira PEDIDO: marca "PEDE" na lista de reinos, contador na barra
+     ("DIPLOMACIA · 2") e, no topo do dossiê daquele reino, a frase dele com Aceitar e
+     Recusar. Recusar NÃO custa nada — um "não" que abalasse a opinião faria a resposta
+     certa ser nunca abrir a aba. A mesa é do turno: a virada limpa.
+     ⚠️ Um aviso honesto: jogador PARADO não recebe proposta nenhuma, e isso é a regra
+     funcionando. Medido, uma Atenas que não faz nada chega ao turno 20 com opinião média
+     −6 e comércio possível com ZERO reinos — sem Porto ela não alcança ninguém por mar, e
+     fronteira comum é parcela negativa de opinião. Um jogador que joga (ergue o Porto,
+     cultiva os vizinhos) recebeu 5 propostas de 5 reinos diferentes em 60 turnos.
+
+precio saber no futuro qual a relacao de um reino com outro reino. ter alguma tipo de menu, ou diretamente naquela janela na direita onde mostra as cores dos reinos ter uma opcao que mostra a cor de um reino que eu selecionar e em volta vermelho, amarelo ou verde para demostrar a relacao daquele reino com outros reinos sacou?
+   → FEITO, e foi onde tu pediste: no painel da direita, ao lado do interruptor de cores.
+     "Relações: ligadas" e o mapa inteiro se repinta pelo que os outros acham do ESCOLHIDO —
+     que começa sendo tu e troca com um clique em qualquer terra. A legenda aparece junto:
+     o escolhido em osso, em guerra em vermelho escuro, hostil / indiferente / amigo nas
+     tres faixas, e cinza para quem nao tem economia (esses nao tem opiniao nenhuma; pinta-
+     los de indiferente seria dar por resposta um numero que ninguem calculou).
+     Nao custou camada nova: o mapa politico ja e uma textura de indices contra uma paleta,
+     entao trocar o SIGNIFICADO da cor e reescrever a paleta. Ele so pinta mais forte no
+     modo de dados — a 55% duas faixas vizinhas somem sobre o terreno.
+
+═══════════════════════════════════════════════════════════════════════════════
+Novas Observacoes Por Henrique
+═══════════════════════════════════════════════════════════════════════════════
+
+Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do mar ela nao lembra que precisa ir para um territorio dela, ou de um inimigo, ela tenta ir em territorio que ela nao pode andar, para ela pdoer andar em territorio de reinos neutros precisamos criar algum sistema em diplomacia de liberar acesso militar, outra coisa, precisamos fazer a IA usar mais os sitemas de diplomacia!
+   → A METADE DO MAR ESTÁ CONSERTADA. O defeito era este: a IDA ganhou rota longa e a VOLTA
+     não — a retirada só perguntava "que terra minha eu alcanço nesta rodada", e no meio do
+     Egeu a resposta é nenhuma. Medido: 159 hoste-turnos parados na água em 100 turnos, e
+     uma delas passou 56 turnos boiando. Agora a volta usa a mesma rota longa da ida.
+     Depois do conserto: ZERO hostes paradas, e a mais demorada fica 1 turno na água.
+     (Ela nunca chegou a dar ordem ilegal — a marcha recusa isso —, o que tu viste foi o
+     exército encalhado.)
+   → ACESSO MILITAR: FEITO. É o único acordo do jogo que tem LADO — deixar alguém passar
+     não é poder passar, e os dois sentidos podem existir com prazos diferentes. Ele dá
+     passagem e só: a terra dele vira CAMINHO da rota, sem conquista, sem cerco, sem saque.
+     A guerra rasga a licença nos dois sentidos. Abrir a TUA estrada não pede licença de
+     ninguém (é tua decisão, inclusive a ruim); conseguir a dele é que pede confiança.
+     Na aba de Diplomacia há um grupo "Passagem" com os prazos, ao lado de Pacto e Tributo.
+     A IA pede por geografia e não por simpatia: só com guerra em curso, e só a quem
+     encosta no inimigo. Medido: 39 passagens concedidas em 100 turnos.
 
 

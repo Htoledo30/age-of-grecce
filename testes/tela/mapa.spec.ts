@@ -48,13 +48,12 @@ test('inicia uma campanha escolhendo Atenas no mapa', async ({ page }) => {
   // Diagnóstico continua disponível em F3, mas nunca suja a campanha por padrão.
   await expect(page.locator('.painel-diagnostico')).toBeHidden();
 
-  // Comandos provinciais só existem quando há uma província selecionada.
-  await expect(page.locator('.acoes')).toBeHidden();
-  await expect(page.locator('.recrutamento')).toBeHidden();
+  // O painel da província inteiro — moldura, ficha e comandos — só existe quando há uma
+  // província selecionada. Uma moldura vazia com friso no canto seria pior que nada.
+  await expect(page.locator('.painel-provincia')).toBeHidden();
   await page.locator('#mundo').click({ position: { x: 960, y: 540 } });
+  await expect(page.locator('.painel-provincia')).toBeVisible();
   await expect(page.locator('.acoes')).toBeVisible();
-  await expect(page.locator('.recrutamento')).toBeVisible();
   await page.locator('#mundo').click({ position: { x: 1500, y: 800 } });
-  await expect(page.locator('.acoes')).toBeHidden();
-  await expect(page.locator('.recrutamento')).toBeHidden();
+  await expect(page.locator('.painel-provincia')).toBeHidden();
 });

@@ -35,6 +35,13 @@ export interface VistaDoTurno {
   provincias: number;
   /** A capital caiu e o jogador ainda não escolheu outra: a virada fica travada. */
   capitalPerdida: boolean;
+  /**
+   * Quantos reinos estão te pedindo alguma coisa nesta virada.
+   *
+   * ⚠️ **Vai na barra e não só dentro da janela**, senão o jogador teria de abrir a aba de
+   * Diplomacia todo turno para descobrir se alguém falou com ele — e não abriria.
+   */
+  pedidos: number;
 }
 
 export class BarraTurno {
@@ -133,6 +140,12 @@ export class BarraTurno {
         'barra-turno__provincias',
         `${vista.provincias} ${vista.provincias === 1 ? 'província' : 'províncias'}`,
       ),
+    );
+    this.botaoDiplomacia.dataset['pedidos'] = vista.pedidos > 0 ? 'sim' : 'nao';
+    rotularComIcone(
+      this.botaoDiplomacia,
+      'coruja',
+      vista.pedidos > 0 ? `Diplomacia · ${vista.pedidos}` : 'Diplomacia',
     );
     this.cabecalhoNacao.replaceChildren(
       this.tinta,

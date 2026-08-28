@@ -9,19 +9,45 @@ sendo a prova final. A visão desejada, inclusive sistemas ainda ausentes, fica 
 Age of Grecce é um grand strategy por províncias no mundo grego de 700 a.C. A versão
 declarada pelo projeto é `0.0.4`.
 
-O mapa possui 196 províncias, 53 regiões e 139 poderes. A fatia autoral cobre a Grécia
+O mapa possui 196 províncias de terra, **48 zonas marítimas**, 53 regiões e 139 poderes. A fatia autoral cobre a Grécia
 central: 25 províncias com economia completa (Ática, Megáris, Coríntia, Beócia, Eubeia,
 Opunte, Siciônia e Argólida), 18 poderes inteiramente configurados — e todos eles são
 jogáveis (a regra é derivada: poder com todas as províncias configuradas aparece
 disponível na escolha). **Nenhuma cidade começa com tropa**: o mapa abre em paz e
 `exercitos.json` está deliberadamente vazio — o mecanismo continua de pé para cenários
-futuros. Salamina é ilha sem vizinhança terrestre e espera o sistema naval. As outras 171
-províncias seguem sem economia e sem simulação.
+futuros. Salamina continua ilha — nenhuma vizinha dela é chão —, mas deixou de estar fora do jogo:
+ela encosta no Estreito de Salamina, e uma hoste que embarque num Porto chega lá. As outras
+171 províncias seguem sem economia e sem simulação.
 
 As 12 antigas províncias microscópicas das Cíclades foram agrupadas em três arquipélagos:
-Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos e Amorgos) e
-Ocidentais (Melos, Sifnos e Tera). As ilhas continuam desenhadas e clicáveis; qualquer
-pedaço seleciona a província do arquipélago. A costa e o terreno não foram alterados.
+Norte (Andros, Tinos, Míconos, Ceos e Cítnos), Centrais (Naxos, Paros, Íos, Amorgos, **Tera e
+Anafi**) e Ocidentais (Melos, Sifnos, Sérifos e Cimolos). As ilhas continuam desenhadas e
+clicáveis; qualquer pedaço seleciona a província do arquipélago. A costa e o terreno não foram
+alterados.
+
+⚠️ **E cada arquipélago reivindica a água entre as ilhas dele** — 15 km de raio, com um canal
+de 4 km sempre aberto para o vizinho. Agrupar tinha resolvido a contagem e não a leitura: as
+Cíclades Ocidentais eram sete cacos preenchendo **3,3%** da caixa em que vivem (Atenas
+preenche 40,8%), e Henrique, olhando o mapa: *"parecem mais fragmentos do que reinos"*. Com a
+água, os cinco arquipélagos do mapa — as três Cíclades, as Espórades e Calimno — viram **uma
+mancha só cada um**, com borda própria. Tera e Anafi mudaram de grupo no caminho: elas ficam
+70 km a leste do resto do ocidental, e era por causa delas que aquele nunca fechava.
+
+Assado: 292.173 pixels de água (11.293 km²) em cinco províncias, **um componente conexo cada
+uma**. Uma zona nova de mar nasceu do corte — o **Canal de Ceos**, entre Sunião/Eubeia e as
+Cíclades do Norte —, e o gerador passou a RECUSAR assar se alguma zona sair partida em dois
+pedaços que não se tocam: província em dois pedaços é teleporte de graça, porque a hoste está
+"no Mar das Cíclades" nos dois lados. Caco abaixo de 400 km² ele costura na zona vizinha e diz
+em voz alta; acima disso, para e imprime a semente pronta para colar.
+
+⚠️ **A cor do arquipélago tem uma exigência a mais: não sumir dentro do mar.** Ela é a única
+que pinta sobre água, e as Cíclades Centrais estavam a 3,6 ΔE do azul do Egeu — o território
+existia e não se via. A régua contra a água é 11 ΔE, e ela custou nove poderes.
+
+O canal é a peça que impede isto de virar regra: sem ele a mancha de Andros encostaria na
+Eubeia, as duas seriam vizinhas por terra, e um exército andaria de uma à outra **sem Porto e
+sem embarcar**. Com ele, nenhuma vizinhança nova nasce — e um teste guarda isso. A área
+continua contando só o chão, porque é ela que escolhe a capital quando um reino perde a sede.
 
 **A IA entregue cuida da economia, se defende e ATACA.** Os 17 poderes jogáveis que não são o
 jogador constroem, decretam imposto, levantam tropa, socorrem terra ameaçada, fazem surtida,
@@ -31,9 +57,9 @@ mercador, cauteloso, equilibrado). "Tomar" e não "vencer": ela roda as mesmas f
 para prever o choque de campo e depois o assalto à muralha, com o que sobrou do primeiro.
 Ela joga em `virarTurno`, ANTES de a rodada resolver, porque as ordens são simultâneas — e
 fica FORA de `passarTurno` porque é um jogador e não uma regra da campanha. A ordem dentro do
-turno é imposto, obra, leva, defesa, ataque: **uma ordem por hoste por rodada**, e a casa
+turno é imposto, obra, leva, defesa, ataque: **uma decisão por hoste de cada vez**, e a casa
 decide primeiro. `npm run partida` roda a coisa toda e conta o que aconteceu, inclusive marchas,
-cercos e quantas províncias mudaram de dono. Diplomacia e naval continuam ausentes.
+cercos e quantas províncias mudaram de dono.
 
 **Ela REAGE, e é isso que faz os quatro estilos serem quatro jeitos de jogar.** Com exército
 alheio na fronteira, a obra de defesa passa a valer `defesaAmeacada` — a mesma ideia de
@@ -230,11 +256,30 @@ estava escrito com nível em toda província e valia zero); e a **corrupção pa
 três parcelas**, não só o imposto. `npm run economia` mede tudo isso do poder mais pobre ao
 mais rico, cedo, meio e fim de jogo.
 
-Cada província tem um **nível de imposto** decretável — baixo (×0,8, humor +6), normal e
-alto (×1,35, humor −8), números em `ajustes.json` — com efeito imediato na renda e
-gradual no humor; a conquista devolve a terra ao normal. É a alavanca do GDD (receita
-trocada por pressão social, referência Rome: Total War) e substituiu o antigo decreto de
-investimento, removido por ser redundante com as construções e de retorno ilegível.
+Cada província tem um **nível de imposto** decretável, e são **quatro**: baixo (×0,75, humor
++12), normal, alto (×1,8, humor −10) e **confisco** (×3, humor −25). Efeito imediato na renda,
+gradual no humor; a conquista devolve a terra ao normal.
+
+⚠️ **Os fatores são grandes porque o imposto é uma PARCELA e o humor cobra sobre o TODO.**
+Henrique jogando: *"mudar entre imposto baixo, médio ou alto é uma mudança muito fraca"*.
+Medido, era pior que fraco. O imposto é 13% a 48% da renda de uma província (mediana 27%),
+e desde que o humor multiplica a arrecadação **cada ponto de humor vale 1% da renda inteira**
+— então o ×1,35 com −8 de humor era **negativo no equilíbrio em 6 das 25 províncias**: um
+botão que prometia mais dinheiro e entregava menos. Com ×1,8 e −10, nenhuma fica negativa, e
+o alto passou de +9% para +21% na virada seguinte.
+
+⚠️ **O confisco é a alavanca de emergência, e ela se cobra sozinha.** ×3 paga a guerra de
+hoje — em Atenas são +214 por turno na virada seguinte — e derruba o alvo de humor para a
+faixa do levante: medido, **9 turnos até o levante em toda província do mapa**. Não é "alto,
+porém mais": é uma decisão com prazo. A IA a puxa numa condição só — em guerra e com a renda
+sem cobrir a folha militar — e larga assim que a conta fecha. Medido em 100 turnos: baixo 79
+decretos, normal 19, alto 70, confisco 19.
+
+⚠️ **E a tela passou a dizer a consequência EM MOEDA.** O tooltip dizia "135% da arrecadação ·
+humor −8", dois números que não se conversavam. Agora cada botão mostra o que ESTA terra
+ganha na próxima virada e o que sobra quando o humor assentar — e, quando o decreto acende um
+levante, a segunda linha vira o prazo dele, porque prometer um equilíbrio que nunca chega é
+pior do que não prometer nada. Ver `governo/previsao-de-imposto.ts`.
 
 A **rede de trocas** é a outra metade da renda, e ela é NACIONAL: cada bem distinto ao
 alcance do reino rende um valor por turno, **uma vez só** — duas províncias de azeite não
@@ -373,8 +418,8 @@ enfrentada no assalto; não existe outro multiplicador escondido.
 O humor de cada província é vivo: caminha alguns pontos por turno (`passoPorTurno`) rumo
 a um ALVO — base de 50, mais a comida do reino (fome −20 … abundante +10), cerco (−15),
 domínio estrangeiro (dono atual ≠ dono de 700 a.C., −12), a GUARNIÇÃO do dono (+12 na cheia,
-proporcional abaixo dela), o nível de imposto (baixo +6,
-alto −8) e Templo. A conquista dá um choque imediato (−25), único movimento não gradual.
+proporcional abaixo dela), o nível de imposto (baixo +12,
+alto −10, confisco −25) e Templo. A conquista dá um choque imediato (−25), único movimento não gradual.
 Números em `ajustes.json`. A conta é LEGÍVEL como a da comida: o tooltip do humor na
 ficha decompõe o alvo parcela a parcela ("base +50 · mesa farta +5 · imposto −8 · Templo
 +8 → caminhando para N").
@@ -412,6 +457,40 @@ crônica da rodada, relatório da fome — não são salvos. O índice de territ
 remontado por `reindexar()`; as referências vivas de `estado.dono` e do objeto de estado
 são preservadas na restauração.
 
+### Áudio
+
+A campanha possui trilha ambiente em loop e efeitos próprios para seleção, clique, abertura,
+fechamento, confirmação, recusa e passagem de turno. O navegador libera o áudio depois do
+primeiro gesto do jogador; perder o foco pausa a música.
+
+O controle provisório no canto foi removido. Durante a campanha, `Esc` abre o **menu de pausa**
+com Continuar, Opções, sair para o menu principal e sair para a área de trabalho. Opções possui
+volumes independentes de música e efeitos, de 0% a 100%, persistidos imediatamente. Voltar ao
+menu preserva o salvamento e oferece Continuar campanha; fechar o aplicativo usa a ponte segura
+do Electron. Se uma janela comum estiver aberta, o primeiro `Esc` fecha essa janela e o seguinte
+abre a pausa.
+
+Os efeitos são sintetizados em tempo real por `src/audio/motor-de-audio.ts`, sem samples
+externos. A faixa provisória `Ancient Mysteries` fica em `assets/audio/musica/`, volume baixo,
+loop contínuo e licença CC0 registrada em `assets/audio/LICENCA.txt`.
+
+⚠️ **A paleta é GREGA, e não genérica** — pedido de Henrique: *"tem que fazer sentido com o
+nosso jogo, e mundo grego"*. Os efeitos nasceram em seno e triângulo, que é som de painel de
+configurações. Dois instrumentos sintetizados respondem por tudo:
+
+- **a LIRA** (`corda`), dedilhada, para o que o jogador FAZ — clicar, escolher, abrir, fechar.
+  É uma onda periódica de harmônicos ímpares fortes e pares fracos, o perfil de uma corda
+  pinçada perto da ponta, com um filtro que fecha junto com o decaimento: a corda perde
+  BRILHO antes de perder volume, e é isso que o ouvido lê como dedilhado;
+- **o BRONZE** (`bronze`), batido, para o que o jogo ANUNCIA — a rodada que vira. Parciais
+  **inarmônicas** (1 · 2,76 · 5,40 · 8,93), como as de um sino de verdade: é a quebra da série
+  harmônica que faz o ouvido ouvir um objeto de metal em vez de uma nota afinada.
+
+⚠️ **As notas saem do modo dórico e os intervalos são os que a música grega usava**: a QUINTA
+sobe ao abrir uma janela e desce ao fechar (o intervalo que a lira afinava primeiro), toca
+junta ao confirmar, e o erro é a SEGUNDA MENOR — mi contra fá, a dissonância que a teoria
+grega evitava. Nenhuma frequência aqui é arbitrária.
+
 ### Guerra terrestre
 
 - **O mapa abre em paz.** `dados/exercitos.json` tem `guarnicoes` vazio de propósito. Cada
@@ -434,11 +513,28 @@ são preservadas na restauração.
 - Hostes têm identidade própria e preservam a origem provincial de cada soldado.
 - Ordens usam o id da hoste; mais de uma força pode ocupar a mesma província.
 - Movimento é simultâneo, determinístico e limitado inicialmente a uma fronteira por
-  rodada.
+  rodada. O jogador pode clicar no destino final: a rota mais curta fica guardada, a hoste
+  avança sozinha nas próximas viradas e pode ser cancelada em qualquer parada. Antes de cada
+  trecho o caminho é recalculado; batalha em província, recuo ou rota que deixou de ser
+  permitida encerram a viagem. A IA continua decidindo o próprio próximo trecho por turno.
 - Pode marchar apenas parte da hoste; forças do mesmo poder se fundem ao se encontrar.
 - **A batalha é choque + perseguição** (`combate/batalha.ts`), com quatro botões em
   `ajustes.json`: rodadas de choque, letalidade do choque, limiar de quebra e letalidade da
   perseguição. Substituiu `√(maior² − menor²)`, que aniquilava quem perdia.
+- ⚠️ **O limiar de quebra é 70%** — subiu de 60% por decisão de Henrique (27/08/2026), e o
+  efeito foi medido antes e depois na mesma versão. A linha cede mais tarde, e por isso o
+  derrotado leva **11% para casa em vez de 15%**; em 100 turnos de campanha inteira: 29
+  províncias trocando de dono contra 25, **9 poderes eliminados contra 7**, 32 guerras contra
+  24, e 13.355 homens vivos no mapa contra 18.653. **É um mundo mais violento e mais
+  concentrado.** Uma partida é uma amostra, não uma média — o jogo é determinístico, mas
+  mudar o botão muda a cadeia inteira de decisões da IA.
+- ⚠️ **A muralha deixou de salvar vidas na cidade que cai, e isso é consequência do 70%.**
+  Contra 1.000 atacantes, 400 defensores murados agora saem com 38 homens contra os 43 de
+  campo aberto: atrás do muro eles resistem até quase o fim, e resistir mais tempo contra um
+  exército inteiro custa MAIS vidas. O que a muralha promete continua de pé — ela vira a luta
+  em que o defensor tem chance (900 contra 1.000 e 2.500 contra 3.000 seguem vitórias do
+  defensor) — e o teste que guardava a promessa foi reescrito para guardar isso, e não o
+  número de sobreviventes de uma praça perdida.
 - **A batalha lê a COMPOSIÇÃO** (`combate/composicao.ts`). Cada lado chega com três números
   por homem — ataque, aguento e o multiplicador da caçada —, todos medidos em leves, e
   `batalha.ts` não conhece hoplita nem arqueiro. As baixas são proporcionais entre os
@@ -472,6 +568,14 @@ são preservadas na restauração.
   resolução faz e a campanha responde: vizinha própria por geografia e posse, ou `null` na
   última terra. Está LIGADO de ponta a ponta: a ficha da hoste alterna entre "Lutar até o
   fim" e "Poupar o exército", e a ordem de marcha carrega `recuarAos`.
+- ⚠️ **A composição do relatório é a ORDEM DE BATALHA, fotografada antes do primeiro golpe.**
+  Ela era montada depois das baixas, sobre as mesmas referências de contingente que a
+  resolução acabara de encolher, e por isso contava SOBREVIVENTES: numa hoste de 3.000 a
+  janela dizia 308 homens já no round zero. Henrique achou jogando — procurou os 308 no mapa
+  depois da derrota, achou só o marcador do inimigo e concluiu que os soldados dele tinham
+  trocado de dono. Não tinham: quem quebra dispersa e volta para a população, e o único
+  marcador que sobra ali é mesmo o do vencedor. Corrigido em `travar-lados.ts`, com teste que
+  guarda a soma da composição contra o total de homens.
 - **A janela de batalha** (`ui/batalha.ts`) abre só nas batalhas do jogador, depois da rodada
   resolvida, e reproduz a lista de rounds. Ela não recalcula nada e fechar não muda o mapa —
   um teste de tela confere que o último round bate com o que a regra deixou.
@@ -504,7 +608,7 @@ Refeita com o que as telas de resultado dos outros jogos ensinam:
   ordem — duas barras empilhadas são uma lista, não um confronto;
 - ⚠️ **o LIMIAR DE QUEBRA desenhado na barra desde o round zero, nos dois lados.** É o suspense
   inteiro e ele era invisível: a batalha não se decide no zero, se decide quando um lado passa
-  de 60% de baixas. Agora a barra desce rumo a um filete, e ao lado dele lê-se *faltam 481 para
+  do `limiarDeQuebra`. Agora a barra desce rumo a um filete, e ao lado dele lê-se *faltam 481 para
   quebrar*;
 - **uma régua só para os dois** — antes cada barra era normalizada pelo próprio total, e 2.400
   contra 2.000 desenhavam a mesma largura: a diferença de tamanho dos exércitos estava apagada
@@ -519,6 +623,355 @@ Refeita com o que as telas de resultado dos outros jogos ensinam:
   debandada"*. São contas diferentes de propósito — uma linha que cede perde na fuga muito mais
   gente do que perdeu segurando, e é essa a lição que o jogador leva para a próxima marcha.
 
+## O painel da província
+
+Refeito por inteiro depois de Henrique jogar, com as telas de província de EU4, Total War, CK3
+e Civ como referência. O que havia eram **três caixas empilhadas numa coluna que rolava** —
+ficha, ações e recrutamento somavam mais de 800 px de altura, e levantar exército era a única
+coisa do jogo que exigia rolar para achar. Nenhum jogo do gênero faz isso: o EU4 pendura as
+construções numa gaveta lateral, o Total War as manda para um navegador próprio, e o painel
+principal cabe inteiro na tela porque é ele que se lê a cada clique.
+
+Agora é **uma moldura só, sem `overflow`**, ancorada no canto de baixo à esquerda, e a ordem
+de leitura é a hierarquia:
+
+1. **quem é** — nome, reino, região, e os SELOS do que a torna especial. Capital era uma frase
+   de rodapé (*"0/4 slots ocupados · níveis I–III · capital do reino"*) e agora é a primeira
+   coisa que se vê;
+2. **o que está errado** — cerco, revolta, rota cortada e obra em andamento, cada um numa linha
+   de alarme com causa e prazo. Só aparecem quando existem;
+3. **as QUATRO MEDIDAS**, em número grande: **saldo · humor · povo · milícia**. São as quatro
+   perguntas que fazem alguém clicar numa província — quanto ela me dá, o povo aguenta, quanta
+   gente tem, ela se segura. Região e povo desceram para a linha de identidade e para o
+   tooltip: dizem o que a terra É, não o que ela vale;
+4. **a barra de comandos** — dois portões (Construções, Recrutar), os três níveis de imposto
+   e o botão de capital quando ele faz sentido.
+
+O que a terra dá — *Azeite IV · Grãos II* — é a **terceira linha da identidade**, em itálico,
+e não um bloco próprio. As construções ERGUIDAS saíram do painel: estavam logo abaixo dos
+produtos, com o mesmo desenho de pastilha, e as duas listas se confundiam — uma é o que a
+terra é, a outra é o que se construiu nela. O contador do portão ("1/4") diz quantas existem;
+a janela diz quais.
+
+Duas medidas ganharam MOVIMENTO, e pela mesma razão. O **humor** ganhou a seta (`62 ↓`): 45
+caindo para 12 e 45 subindo para 70 eram a mesma província na tela e são situações opostas na
+mesa. O **povo** ganhou o passo do próximo turno na régua (`+175 · terra grande`), no formato
+que o tesouro do reino já usava na barra — população parada e população derretendo eram o
+mesmo `35.000`. O jogo calculava os dois desde sempre; a tela mostrava metade.
+
+**Construir e recrutar viraram janelas próprias**, na mesma moldura de Governo e Diplomacia
+(`src/ui/janela.ts`, escrita quando a quarta cópia da mesma casca ia nascer). ⚠️ **Elas não
+trocam de cena**: véu leve e sem desfoque, tamanho proporcional ao conteúdo — a primeira
+versão escurecia e desfocava o mapa inteiro e parecia ter engolido o jogo.
+
+- **Construções** (980 px, larga e rasa): uma grade de cartões onde cada obra mostra o que
+  faz, o custo, o prazo, a manutenção, o que rende e em quantos turnos se paga — tudo
+  escrito, e não em tooltip. Numa faixa de 380 px cada construção cabia em uma linha, e uma
+  linha só comporta nome e preço: o jogador escolhia por preço porque era a única coisa
+  visível. Comparar É a decisão inteira;
+- **Recrutar** (620 px): as quatro armas em cartões de **nome e quatro números** — custo,
+  ataque, aguento, comida. As trancadas dizem o que falta em duas palavras.
+
+Tudo isso passou pela régua do **[princípio de menos tutorial](GDD.md)**: saíram as
+definições ao lado dos números, os "faltam 2.065 moedas", o teto de homens anunciado antes de
+alguém pedir, e a instrução para arrastar a barra.
+
+O nome da região também deixou de ser o id cru: `src/mundo/regioes.ts` traduz `atica` em
+**Ática** para a tela, sem tocar no dado.
+
+## O mar navegável — 48 zonas, e o exército anda nelas
+
+**O buraco que ele fechou**: das 196 províncias, **26 não tinham nenhuma vizinha** — Rodes,
+Naxos, Samos, Quios, Lemnos, Creta insular e outras. Nenhum exército do mapa, do jogador ou da
+IA, podia pisar em nenhuma delas. **Salamina era o caso gritante**: a 2 km da costa de Atenas,
+com economia autoral, população e produção — e território morto, intocável para sempre. Hoje
+são **0**.
+
+**Não existe frota.** Decisão de Henrique: *"o exército anda pela água (pelas zonas) como um
+exército normal"* — o modelo do Age of History 2. É barato porque o jogo já sabia quase tudo: a
+marcha anda por vizinhança, a batalha acontece sozinha quando duas forças se encontram, e a
+conquista é um passo separado que a zona de mar simplesmente não tem.
+
+**O mapa**: 48 zonas com nome histórico onde a antiguidade batizou (Helesponto, Euripo, Mar
+Mirtoo, Golfo Sarônico) e geográfico onde não (Estreito de Salamina, Mar de Rodes). Elas
+nascem de sementes em longitude e latitude reais (`dados/mares.json`) e crescem sobre a água
+pelo mesmo método das províncias. ⚠️ **O gerador é ADITIVO**: lê o `provincias.png` pronto,
+pinta só onde o índice é zero e o bioma é água, e numera a partir de 1000. Nenhum id de terra
+mudou, nenhum salvamento quebrou. Cobertura medida: **99,99% da água livre**.
+
+**As regras da água:**
+
+- zona de mar **não tem dono** (`donoDe` devolve string vazia), não se conquista, não se sitia,
+  não produz e não tem milícia;
+- **embarcar exige Porto** na província de onde se sai; desembarcar é livre em qualquer costa, e
+  navegar de zona em zona também. É a terceira razão de existir do Porto — depois do trânsito e
+  do alcance comercial — e o que impede exército nascendo no meio do Egeu;
+- **todo encontro no mar é batalha**: não há a quem declarar guerra na água, e não há praça a
+  tomar. Os dois lados se matam e a zona continua de ninguém;
+- **um salto por rodada**, como em terra. De Atenas a Andros são 3; a Rodes, 6; a Corcira, 8. A
+  distância virou tempo, e o caminho pode ser interceptado. Para o jogador, um único clique
+  no destino basta: a marcha continua automaticamente entre as viradas.
+
+**A IA atravessa**, e são duas peças pequenas que a fizeram enxergar:
+
+- **a rota longa** (`rotasLongasDaHoste`): a percepção dela lista o que ENCOSTA no reino, e nada
+  encosta em ninguém através da água. A rota longa responde *"por onde eu chegaria lá, um dia?"*
+  com as mesmas regras da marcha, e a expedição anda o primeiro trecho por virada.
+  `oportunidadesNoLitoral` é a lista de alvos correspondente — toda costa alheia do mapa, e não
+  só a vizinha. Perceber longe não é poder longe: quem peneira é o Porto;
+- **o preço da porta** (`valorDoMar`, por estilo): o Porto custa 2.500 e paga em trânsito, a
+  menor parcela da renda. Medido, **nenhum dos dezoito poderes erguia um em cem turnos** — o
+  mar existia, o exército sabia navegar, e nenhum reino chegava à porta. Só o PRIMEIRO Porto
+  vale isso; do segundo em diante a porta já está aberta e ele volta a valer o trânsito.
+
+⚠️ **A travessia é decidida ANTES da retirada**, e a ordem é a regra inteira: uma hoste no meio
+do mar está fora do próprio reino, e para a retirada isso basta para mandá-la voltar. Sem essa
+ordem, todo exército que zarpasse daria meia-volta na virada seguinte. Quem está a caminho não
+volta — e quando a guerra acaba, a expedição não se renova e a retirada o traz de volta da água.
+
+**Medido em 100 turnos, isolando cada peça:**
+
+| | conquistas | travessias | acordos de comércio de pé |
+|---|---|---|---|
+| antes | 20 | — | 23 |
+| só a porta (Porto valorizado) | 24 | 0 | 45 |
+| porta + travessia | **45** | **85** | 45 |
+
+O mar não faz ninguém disparar: a distância entre o maior e o menor reino **diminuiu** (8,0× →
+6,9×). Ele abre uma segunda frente para todo mundo ao mesmo tempo.
+
+**Na tela**: a zona pinta transparente — não tem dono, então não recebe cor de reino — e a
+divisa entre duas zonas é a mesma linha de fronteira a 40% (`provincias.forcaDoMar`), forte o
+bastante para se ver onde uma acaba e fraca o bastante para não competir com os reinos.
+Selecionada, ela acende **pelo contorno**: uma zona tem o tamanho de meia dezena de províncias,
+e preenchimento cheio nela cega o resto do mapa. A ficha dela é o nome e a palavra "Zona
+marítima", sem medida nenhuma, e a barra de comandos some — não há obra, leva nem imposto na
+água.
+
+**O que falta:**
+
+1. **o custo de FICAR no mar.** Hoje o exército embarcado paga a taxa de campanha (três vezes a
+   de casa) e come da mesa do reino — o que já é caro —, mas não há desgaste por estar na água.
+   Enquanto ficar parado no mar não COMPRA nada, ninguém tem motivo para morar no Egeu; a
+   pergunta fica de pé para o dia em que houver bloqueio;
+2. **bloqueio naval e proteção de rota** — exigem que uma força PARADA no mar faça alguma coisa
+   com o comércio que passa, e isso é sistema próprio;
+3. **a IA não defende o mar.** Ela zarpa e ela desembarca, mas ninguém patrulha uma zona nem
+   intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
+   cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
+
+## O mapa também responde "o que acham dele"
+
+Henrique: *"preciso saber qual a relação de um reino com outro reino (...) uma opção que
+mostra a cor de um reino que eu selecionar e em volta vermelho, amarelo ou verde"*.
+
+O painel da direita ganhou **Relações: ligadas/desligadas**. Com o modo ligado, o mapa deixa de
+pintar de quem é a terra e passa a pintar o que cada reino acha do ESCOLHIDO — que começa
+sendo o jogador e troca com um clique em qualquer terra do mapa, que era o pedido ao pé da
+letra. A legenda vive no painel, e some com o modo.
+
+Seis casos, e cada um responde uma pergunta diferente: **o escolhido** em osso — uma cor fora
+da régua, porque ele é a pergunta e não a resposta —, **em guerra** num vermelho próprio
+(guerra não é uma opinião muito ruim: é outra coisa), **hostil / indiferente / amigo** nas três
+faixas de opinião, e **sem relação** em cinza para os 121 poderes sem economia, cuja opinião
+nunca anda — pintá-los de indiferente daria por resposta um número que ninguém calculou.
+
+⚠️ **Nenhuma camada nova, e é o que fez isto custar um arquivo em vez de um sistema.** O mapa
+político já é uma textura de índices lida contra uma paleta de 256×256: trocar o SIGNIFICADO
+da cor é reescrever a paleta e mais nada — fronteira, litoral e seleção continuam iguais. A
+única coisa que muda além da cor é a opacidade: ela é baixa no mapa político de propósito, para
+o relevo aparecer, e num modo de DADOS a cor é a resposta — a 55% duas faixas vizinhas somem
+sobre um terreno que vai de verde a ocre. Ver `intensificar`.
+
+## O acesso militar, e a mesa que fala nos dois sentidos
+
+Henrique jogando, duas queixas na mesma anotação: *"para ela poder andar em território de
+reinos neutros precisamos criar algum sistema em diplomacia de liberar acesso militar"* e
+*"não sinto a IA tentando se conectar comigo para oferecer diplomacia (...) eu ter opção de
+aceitar ou recusar"*. Elas se encaixam: o acesso é justamente o acordo que **precisa** de um
+sim do outro lado.
+
+**O ACESSO MILITAR** é o único acordo do jogo que tem lado e não tem par. Guerra, trégua,
+pacto e comércio valem igual para os dois; Mégara deixar Atenas passar não deixa Mégara passar
+por Atenas. A chave no estado é `concedente>beneficiário`, e os dois sentidos podem existir ao
+mesmo tempo com prazos diferentes.
+
+Ele dá **passagem**, e só: a hoste entra, atravessa e sai, e a terra vira CAMINHO para a rota
+— não só destino. Não dá conquista, não dá cerco, não dá saque, porque nada disso existe sem
+guerra. Duas hostes em paz dividem a província sem se tocar, que é a mesma regra que já valia
+no mar. A guerra rasga a licença nos dois sentidos, sem preço: quem declara guerra ao dono da
+estrada não continua andando por ela com licença dele.
+
+⚠️ **A regra e a vontade são coisas separadas.** `podeConcederAcesso` responde só pelas regras
+— não estar em guerra, não haver licença aberta —, porque **a estrada é de quem a abre e
+ninguém precisa de licença para dar a própria**. Quem pergunta *"ele abriria para mim?"* é a
+IA, e a resposta dela é `aceitaAbrirAcesso`, com a opinião mínima do prazo. A opinião chegou a
+morar do lado errado, travando o jogador de tomar uma decisão que é dele — inclusive a decisão
+ruim, que é metade do jogo.
+
+**A IA pede passagem por geografia, não por simpatia**: só quando tem guerra em curso, e só a
+quem encosta no inimigo. Medido em 100 turnos: **39 passagens concedidas**.
+
+**A MESA DE PROPOSTAS** é a outra metade. A IA já decidia com quem assinar pacto e comércio; ela
+só não perguntava — o jogador descobria pela aba que tinha assinado alguma coisa. Agora, quando
+a outra ponta é o jogador, a assinatura vira **pedido**: aparece a marca `PEDE` na lista de
+reinos, um contador na barra (`DIPLOMACIA · 2`) e, no topo do dossiê daquele reino, a frase
+dele com **Aceitar** e **Recusar**.
+
+⚠️ **Recusar não custa nada**, de propósito: um "não" que abalasse a opinião faria a resposta
+certa ser nunca abrir a aba, e um sistema que pune quem o usa é um sistema que ninguém usa. A
+mesa é do TURNO — a virada a esvazia, para o jogador nunca responder a um mundo que já mudou.
+
+⚠️ **Jogador parado não recebe proposta nenhuma, e isso é a regra funcionando.** Medido: uma
+Atenas que não faz nada termina 20 turnos com opinião média −6 e **comércio possível com zero
+reinos** — sem Porto ela não alcança ninguém por mar, e a fronteira comum é uma parcela
+NEGATIVA de opinião. Um jogador que joga (ergue o Porto, cultiva os vizinhos) recebeu **5
+propostas de 5 reinos diferentes em 60 turnos**. A diplomacia é conquistada, não distribuída.
+
+## A cor dos reinos: dois que se veem juntos nunca são iguais
+
+Eram **139 poderes para 70 cores**, e o resultado se via a olho nu: **31 pares de reinos que
+fazem FRONTEIRA tinham a cor idêntica**. Tebas, Platéias e Téspias eram o mesmo verde — aquele
+borrão ao norte da Ática eram três reinos, não um. Atenas e Elêusis, o mesmo azul, logo no
+começo da partida do jogador. Contando também quem se vê do outro lado de um estreito, eram
+171 pares indistinguíveis.
+
+A régua é a cor **lavada**: o mapa político pinta a 55% sobre o terreno, então a diferença que
+importa é a que sobra depois da mistura, e não a do valor hexadecimal. Duas cores precisam de
+pelo menos 5 ΔE já lavadas, e a exigência vale entre vizinhos **e entre quaisquer dois poderes
+a menos de 120 km** — porque o que engana é o que aparece na mesma tela.
+
+75 dos 139 poderes mudaram de tom, com deslocamento médio de **5 ΔE** e máximo de 11: cada um
+recebeu a cor mais parecida possível com a que tinha, dentro da mesma família da paleta. O
+mapa continua com a mesma cara; some a confusão. Foram 171 pares indistinguíveis para **zero**.
+
+## O comércio ganhou ALCANCE, e a mesa deixou de ser a vizinhança
+
+Henrique jogando: *"comércio não rende quase nada, não sei o porquê"*. Medido, o porquê
+apareceu inteiro — e não era o valor do acordo:
+
+| | o jogador | a IA |
+|---|---|---|
+| parceiros possíveis | **2** | **17** |
+| acordos aos 100 turnos | 2 | 7 a 16 |
+| comércio na renda | ~4% | **18% a 40%** |
+
+⚠️ **A regra nunca exigiu fronteira; quem prendia era a TELA.** `podeDeclararGuerra` e
+`podeAcordarComercio` só olhavam pacto, trégua e opinião — mas a mesa diplomática listava só
+quem faz fronteira, e a IA não passa por tela nenhuma. E havia uma ironia no meio: os dois
+vizinhos de Atenas são os poderes mais pobres da região. Um acordo com Elêusis paga 23 por
+turno; um com Argos pagaria 48. O jogador ficava preso aos dois piores parceiros do mapa.
+
+**O PORTO passou a abrir o mar** (`campanha/comercio/alcance.ts`), e a regra já estava escrita
+no próprio catálogo desde antes — o motivo da obra diz: *"Com Porto nas duas pontas, mercadoria
+atravessa o mar — mas exército, não: isso é frota."* Faltava a regra cumprir o dado. Comércio
+alcança **por terra entre quem se toca, ou por mar entre quem tem Porto nos dois lados**.
+Distância passou a custar em vez de proibir, o Porto ganhou uma segunda razão de existir, e
+vale igual para os dois lados da mesa.
+
+**A mesa passou a listar os 18 poderes com ficha**, e não só os vizinhos — decisão de Henrique:
+*"temos que quebrar a ideia que só posso guerrear com quem faz fronteira, não faz sentido
+isso"*. Ele tem razão pela própria história: Atenas guerreou com Siracusa e com a Pérsia, não
+com o vizinho de muro. O balde continua sendo um balde (18, não 139), a fronteira virou um
+**selo** na lista em vez do filtro dela, e quem encosta em você aparece primeiro — porque é com
+quem a hoste pode marchar hoje.
+
+Medido depois, em 100 turnos: os acordos caíram de 111 abertos para 35, e os de pé no fim de 97
+para 21 — **e a renda de comércio SUBIU**, de 420 para 464 por turno. A saturação por parceiro
+punia quem assinava com meio mapa; com alcance, cada poder tem poucos acordos e bons.
+
+## O humor deixou de ser decorativo
+
+Henrique jogando: *"humor das províncias continua muito esquisito, todo travado esses
+valores"*, *"a escolha de fazer o templo está muito inútil ainda"* e *"sempre que tento
+conquistar alguma província que o humor dela já está baixo, a chance de em duas rodadas ela
+já se revoltar é muito alta"*. Medido antes de mexer, em 100 turnos e 2.500 amostras de
+província-turno: **metade das províncias vivia em "Neutra", seis valores concentravam 80% de
+tudo, e "Muito feliz" nunca acontecia.**
+
+⚠️ **A causa era uma só: o humor não fazia NADA.** A única consequência em todo o sistema era
+a greve fiscal da faixa revoltosa (≤19). Entre 20 e 100, 50 e 79 eram exatamente a mesma
+coisa para o jogo — por isso o Templo não se pagava, o imposto alto não doía e o número
+parecia travado. Três frentes:
+
+**1. O humor multiplica a RENDA da província** — uma reta, e não degraus (`felicidade.renda`:
+centro 50, 1% por ponto, entre 0,7 e 1,3). Faixa criava degrau invisível: o Templo subia o
+alvo de 50 para 55 e não mudava nada, porque os dois caem em "Neutra". E multiplica as **três
+parcelas**, não só o imposto — imposto é 13% da renda de Atenas, e preso a ele nenhum ajuste
+de humor competiria com um Mercado. A greve fiscal da faixa revoltosa continua sendo regra à
+parte, e zera só o coletor.
+
+**2. A régua ganhou três parcelas de situação**, e é o que tirou o humor do mesmo lugar em
+todo o mapa: **tamanho da cidade** (metrópole é mais difícil de governar que vila, −3 a −15
+por faixa de população), **reino em guerra** (−6, em toda a terra dele) e **sem estrada até a
+capital** (−10, a mesma pergunta que a corrupção e a rede de trocas já fazem). A base subiu
+de 50 para 56 para compensar.
+
+**3. Duas faixas fervem, em ritmos diferentes** — a revoltosa em 3 turnos, a insatisfeita em
+9 —, e ⚠️ **o pavio só corre para quem NÃO está melhorando**: o prazo sai da pior entre a
+faixa de hoje e a faixa do ALVO. Era essa a revolta em duas rodadas que Henrique via — o
+choque da queda joga a cidade para o fundo de uma vez, ela sobe quatro pontos por turno e o
+pavio queimava antes. Reproduzido: uma província tomada com humor 30 se levantava no turno 2,
+**com ou sem guarnição**. Agora não se levanta — e a que continua mal governada (imposto alto
+sob bandeira alheia) se levanta no turno 9, como deve.
+
+O Templo passou de +5/+8/+12 para **+9/+15/+22** e saiu do *"nunca se paga"* para **172
+turnos** em Atenas — ainda o dobro do Mercado, e é justo: ele também é a única obra que
+segura uma província contra a revolta.
+
+Medido depois, nos mesmos 100 turnos:
+
+| faixa | antes | depois |
+|---|---|---|
+| Revoltosa | 0,8% | 1,7% |
+| Insatisfeita | 16,8% | 18,0% |
+| Neutra | **50,4%** | 45,8% |
+| Satisfeita | 32,0% | 19,7% |
+| Muito feliz | **0,0%** | **14,8%** |
+
+O valor de humor mais comum caiu de 20,6% para 7,4% das amostras: a régua espalhou. Levantes
+em 100 turnos: 3 → 12, e todos de províncias que continuam mal governadas.
+
+⚠️ **A NACIONALIDADE fica para depois, por decisão de Henrique.** Povo eleusino sob bandeira
+ateniense infeliz por gerações, com assimilação que leva turnos, é o próximo degrau deste
+sistema — e o que vai dar peso histórico à conquista.
+
+## Tipografia e nitidez
+
+Henrique jogando: *"não sei o que acontece com as letras, elas são muito finas, quase não dá
+para ler, parece diferente dos jogos que eu estou acostumado."* Eram **três causas somadas**,
+e a principal não tinha nada a ver com a escolha das fontes.
+
+**1. `transform: scale()` desligava o antialiasing de subpixel.** O palco tem 1920x1080 fixos
+e era escalado com `transform` para caber na janela. Sob `transform`, o Chromium promove a
+camada para a GPU e o texto passa a ser rasterizado em escala de cinza — sem hinting e sem
+subpixel. Em fundo escuro isso come o traço: a letra fica magra e lavada. Trocado por `zoom`,
+que **refaz o layout** no tamanho final em vez de esticar um bitmap. O texto volta a ser
+rasterizado no corpo em que aparece. Ver `src/estilo/escala.ts`.
+
+**2. O palco quase nunca roda a 100%.** Numa tela de 1920x1080 com barra de tarefas e barra de
+título sobram ~1000 px de altura: a escala fica em ~0,93 e **toda** a tipografia encolhe
+junto. Um rótulo de 9 px virava 8,3 px reais. A ferramenta de captura ganhou `--tela=LxA` por
+causa disso — antes ela fotografava sempre a 1920x1080, a única situação em que a escala é 1,
+e por isso eu não conseguia ver o que ele estava vendo.
+
+**3. Piso tipográfico baixo demais, peso leve e contraste justo.** Corrigido:
+
+- **nada abaixo de 11 px** (eram 8 e 9 px em rótulos); a escada subiu tudo entre 8 e 12 px;
+- **corpo em peso 500**, e não 400 — o peso normal de uma humanista desaparece em corpo
+  pequeno sobre pedra escura, e o 500 do Alegreya Sans já estava empacotado;
+- **os dois tons secundários clareados** (`--ui-texto-fraco` e `--ui-texto-tenue`).
+
+⚠️ Os números dos MAPAS ficaram de fora da escada: etiqueta sobre a terra é outro problema —
+crescer ali atravanca o mapa em vez de ajudar.
+
+O que o gênero faz, pesquisado antes de mexer: as diretrizes de acessibilidade de jogos pedem
+**28 px a 1080p como mínimo** para texto lido de longe, e tratam isso como piso e não meta;
+para UI de mesa, a regra prática é **peso médio, nunca fino** — *"thin fonts may disappear on
+low-resolution screens"* — e afrouxar entrelinha e tracking no corpo pequeno. A Paradox usa
+faces proprietárias desenhadas para a tela, não fontes de texto adaptadas. Aqui as quatro
+faces continuam as mesmas; o que mudou foi corpo, peso, contraste e rasterização.
+
 ## Estrutura técnica
 
 - TypeScript, Pixi.js/WebGL, HTML/CSS, Vite, Electron e Zod.
@@ -527,6 +980,12 @@ Refeita com o que as telas de resultado dos outros jogos ensinam:
   `campanha.ts` mantêm tetos rígidos.
 - `src/main.ts` é só o ponto de entrada; o boot vive em `src/aplicacao/`, com um arquivo por
   etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
+- **O editor de balanceamento começou isolado em `src/editor/`.** F2 abre a ferramenta por
+  cima do jogo e Esc fecha. A casca já tem as dez abas planejadas, busca, alterações
+  pendentes, desfazer, restaurar e perfil persistido no navegador. A primeira aba funcional é
+  Exército: custo base, folha em casa/campanha, população protegida, milícia e multiplicadores
+  de custo/comida das quatro armas. Cada controle declara limites, passo, unidade, explicação
+  e quando passa a valer; nenhuma tela recebe acesso genérico ao JSON.
 - `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
   `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/` e
   `estado/`; as perguntas ficam nas camadas de `campanha/fachada/`.

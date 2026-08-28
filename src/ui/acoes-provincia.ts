@@ -1,60 +1,55 @@
 /**
- * O que dá pra FAZER com a província selecionada.
+ * A BARRA DE COMANDOS da província: o que dá pra fazer aqui, em quatro botões.
  *
- * Fica colado em cima da ficha, no canto de baixo à esquerda, porque ação e informação
- * sobre a mesma província pertencem ao mesmo canto da tela: o jogador clica no mapa e
- * encontra ali o que ela é e o que ele pode fazer com ela. O painel da direita continua
- * sendo só controle de MAPA — ele não fala de nenhuma província em particular.
+ * Era uma lista de oito construções em grade dupla, mais três botões de imposto, mais um de
+ * capital — o maior bloco visual da tela inteira, empurrando a ficha para cima e o
+ * recrutamento para fora do campo de visão. Erguer prédio é a coisa que se faz de vez em
+ * quando; **ler a província é a coisa que se faz a cada clique**, e o espaço estava
+ * distribuído ao contrário.
  *
- * O bloco é dividido em **Construções** e **Decretos**, e a divisão não é enfeite: são
- * dois gastos que disputam o mesmo tesouro. Construção é cara e permanente; decreto é
- * barato e temporário. É essa disputa que faz investir virar decisão em vez de rotina.
+ * Agora:
  *
- * Com uma província selecionada, nada some quando é impossível: a linha fica desabilitada
- * com o motivo escrito. Sem seleção, o painel inteiro some porque não existe decisão nem
- * contexto para mostrar.
+ * - **Construções** e **Recrutar** abrem janela própria, com espaço para comparar de
+ *   verdade — a solução do Total War (o navegador de construções) e do EU4 (a gaveta
+ *   lateral). Construções leva o contador de slots, que é ESTADO da província; Recrutar não
+ *   leva contador nenhum, porque "quantos homens dá para levantar" é resposta de uma
+ *   pergunta que só se faz com a barra na mão, dentro da janela.
+ * - **Imposto** fica aqui: são três botões que cabem numa linha e uma decisão que se muda
+ *   olhando a província, não olhando um catálogo.
+ * - **Capital** só aparece quando não é a atual — e grita quando o reino está sem sede.
+ *
+ * Com uma província selecionada, nada some quando é impossível: o botão fica desabilitado
+ * com o motivo escrito. Sem seleção, a barra inteira some junto com o painel.
  */
 
-import { definirTooltip } from './tooltip';
-import { iconeDaConstrucao, rotularComIcone } from './icones-gregos';
+import { definirTooltip, removerTooltip } from './tooltip';
+import { iconeGrego, rotularComIcone } from './icones-gregos';
 
-/** Uma construção oferecida nesta província, já avaliada. */
-export interface OpcaoDeConstrucao {
-  id: string;
-  nome: string;
-  custo: number;
-  /** Turnos de obra até render. */
-  turnos: number;
-  nivelAtual: number;
-  nivelAlvo: number;
-  nivelMaximo: number;
-  /** Turnos que ainda faltam, quando esta é a obra em andamento. */
-  emObra: number | null;
-  /** `null` quando dá pra construir; senão, o texto do impedimento. */
-  recusa: string | null;
-  /** Pra que ela serve, em uma frase. Vai pro tooltip. */
-  motivo: string;
-  ganhoPorTurno: number;
-  turnosParaPagar: number;
-  /** Ouro por turno para manter o nível alvo de pé, para sempre. */
-  manutencao: number;
-  /** O efeito desta construção é renda em moeda? Decide como falar de ganho negativo. */
-  rendeMoeda: boolean;
-  /**
-   * O benefício, escrito, quando não paga em ouro.
-   *
-   * `null` nas que rendem moeda. Capacidade e população não têm "paga-se em N turnos".
-   */
-  promessa: string;
+/**
+ * Os quatro decretos. Espelha `campanha/economia.ts` — a tela não importa da campanha, e a
+ * vista traduz; um nível novo mexe nos dois lugares de propósito.
+ */
+export type NivelDeImposto = 'baixo' | 'normal' | 'alto' | 'confisco';
+
+/** O que um decreto faz com a renda DESTA terra. Espelha `governo/previsao-de-imposto.ts`. */
+export interface PrevisaoDeImposto {
+  agora: number;
+  assentado: number;
+  /** Turnos até o levante sob este decreto, ou `null` quando ele não acende nenhum. */
+  levanteEm: number | null;
 }
 
-/** O que o bloco precisa saber pra oferecer — ou recusar com motivo — cada ação. */
+/** O que a barra precisa saber pra oferecer — ou recusar com motivo — cada comando. */
 export type VistaDeAcoes =
   | {
       pode: true;
       provincia: { id: string; nome: string };
-      construcoes: readonly OpcaoDeConstrucao[];
+      /** Slots de construção usados e totais. Vai no contador do botão. */
       slots: { usados: number; total: number };
+      /** Quantas construções dá pra pagar e erguer AGORA. Zero apaga o chamado à ação. */
+      disponiveis: number;
+      /** Por que não dá pra recrutar aqui. Vazio quando dá. */
+      recrutamentoBloqueado: string;
       /** A capital do reino, vista desta província: já é? pode virar? a que custo? */
       capital: {
         atual: boolean;
@@ -66,46 +61,55 @@ export type VistaDeAcoes =
       /**
        * O decreto de imposto desta província: o nível atual e o que cada um faz.
        *
-       * Substituiu o incentivo de investimento. Efeito imediato: a renda muda no clique
-       * e o humor passa a caminhar pro alvo novo — receita trocada por pressão social.
+       * Efeito imediato: a renda muda no clique e o humor passa a caminhar pro alvo novo —
+       * receita trocada por pressão social.
        */
       imposto: {
-        nivel: 'baixo' | 'normal' | 'alto';
-        niveis: Record<'baixo' | 'normal' | 'alto', { fator: number; humor: number }>;
+        nivel: NivelDeImposto;
+        niveis: Record<NivelDeImposto, { fator: number; humor: number }>;
+        /** O que cada decreto faz com a renda DESTA terra, em moedas por turno. */
+        previsao: Record<NivelDeImposto, PrevisaoDeImposto | null>;
       };
     }
   | { pode: false; motivo: string };
 
 export class AcoesProvincia {
   private readonly raiz = document.createElement('div');
-  private readonly titulo = document.createElement('h2');
-  private readonly alvo = document.createElement('p');
+  private readonly recusa = document.createElement('p');
+  private readonly principais = document.createElement('div');
+  private readonly botaoConstrucoes = document.createElement('button');
+  private readonly botaoRecrutar = document.createElement('button');
   private readonly botaoCapital = document.createElement('button');
-  private readonly tituloConstrucoes = document.createElement('h3');
-  private readonly listaConstrucoes = document.createElement('div');
-  private readonly tituloDecretos = document.createElement('h3');
-  private readonly blocoImposto = document.createElement('div');
-  private readonly botoesDeImposto = new Map<'baixo' | 'normal' | 'alto', HTMLButtonElement>();
+  private readonly linhaDeImposto = document.createElement('div');
+  private readonly botoesDeImposto = new Map<NivelDeImposto, HTMLButtonElement>();
   private vista: VistaDeAcoes | null = null;
 
   /** Chamado quando o jogador decreta um nível de imposto. */
-  aoDefinirImposto: (idProvincia: string, nivel: 'baixo' | 'normal' | 'alto') => void = () => {};
-  /** Chamado quando o jogador ergue uma construção. */
-  aoConstruir: (idProvincia: string, idConstrucao: string) => void = () => {};
+  aoDefinirImposto: (idProvincia: string, nivel: NivelDeImposto) => void = () => {};
   /** Chamado quando o jogador assenta a capital nesta província. */
   aoTornarCapital: (idProvincia: string) => void = () => {};
+  /** Abre a janela de construções desta província. */
+  aoAbrirConstrucoes: () => void = () => {};
+  /** Abre a janela de recrutamento desta província. */
+  aoAbrirRecrutamento: () => void = () => {};
 
   constructor(pai: HTMLElement) {
     this.raiz.className = 'acoes';
     this.raiz.hidden = true;
 
-    this.titulo.className = 'acoes__titulo';
-    rotularComIcone(this.titulo, 'martelo', 'Ações');
+    this.recusa.className = 'acoes__recusa';
 
-    this.alvo.className = 'acoes__alvo';
+    this.principais.className = 'acoes__principais';
+    this.montarPortao(this.botaoConstrucoes, 'martelo', 'Construções', () =>
+      this.aoAbrirConstrucoes(),
+    );
+    this.montarPortao(this.botaoRecrutar, 'capacete', 'Recrutar', () =>
+      this.aoAbrirRecrutamento(),
+    );
+    this.principais.append(this.botaoConstrucoes, this.botaoRecrutar);
 
     // A capital é UMA decisão, não uma lista: um botão que diz o que faria e por quanto.
-    this.botaoCapital.className = 'botao acoes__capital';
+    this.botaoCapital.className = 'acoes__capital';
     this.botaoCapital.type = 'button';
     this.botaoCapital.addEventListener('click', () => {
       const vista = this.vista;
@@ -114,21 +118,27 @@ export class AcoesProvincia {
       this.botaoCapital.blur();
     });
 
-    this.tituloConstrucoes.className = 'acoes__grupo';
-    this.tituloConstrucoes.textContent = 'Construções';
-    this.listaConstrucoes.className = 'acoes__lista';
-
-    this.tituloDecretos.className = 'acoes__grupo';
-    this.tituloDecretos.textContent = 'Decretos';
-
     // O imposto em três níveis: um botão por nível, o vigente marcado. A lição de Rome:
     // Total War — receita trocada por ordem pública — com o efeito escrito no tooltip.
-    this.blocoImposto.className = 'acoes__imposto';
-    for (const nivel of ['baixo', 'normal', 'alto'] as const) {
+    this.linhaDeImposto.className = 'acoes__imposto';
+    const rotulo = document.createElement('span');
+    rotulo.className = 'acoes__rotulo';
+    rotulo.textContent = 'Imposto';
+    this.linhaDeImposto.appendChild(rotulo);
+    const grupo = document.createElement('div');
+    grupo.className = 'acoes__niveis';
+    grupo.setAttribute('role', 'group');
+    grupo.setAttribute('aria-label', 'Nível de imposto');
+    for (const nivel of ['baixo', 'normal', 'alto', 'confisco'] as const) {
       const botao = document.createElement('button');
       botao.type = 'button';
       botao.className = 'acoes__nivel-imposto';
-      botao.textContent = { baixo: 'Baixo', normal: 'Normal', alto: 'Alto' }[nivel];
+      botao.textContent = {
+        baixo: 'Baixo',
+        normal: 'Normal',
+        alto: 'Alto',
+        confisco: 'Confisco',
+      }[nivel];
       botao.addEventListener('click', () => {
         const vista = this.vista;
         if (!vista?.pode || vista.imposto.nivel === nivel) return;
@@ -136,83 +146,139 @@ export class AcoesProvincia {
         botao.blur();
       });
       this.botoesDeImposto.set(nivel, botao);
-      this.blocoImposto.appendChild(botao);
+      grupo.appendChild(botao);
     }
+    this.linhaDeImposto.appendChild(grupo);
 
-    this.raiz.append(
-      this.titulo,
-      this.alvo,
-      this.botaoCapital,
-      this.tituloConstrucoes,
-      this.listaConstrucoes,
-      this.tituloDecretos,
-      this.blocoImposto,
-    );
+    this.raiz.append(this.recusa, this.principais, this.botaoCapital, this.linhaDeImposto);
     pai.appendChild(this.raiz);
   }
 
-  /** `null` esconde o bloco — fora da campanha ou sem província selecionada. */
+  /** Os dois portões grandes: ícone em cima, nome, e o contador que evita abrir à toa. */
+  private montarPortao(
+    botao: HTMLButtonElement,
+    icone: 'martelo' | 'capacete',
+    nome: string,
+    aoClicar: () => void,
+  ): void {
+    botao.type = 'button';
+    botao.className = 'acoes__portao';
+    const textos = document.createElement('span');
+    textos.className = 'acoes__portao-textos';
+    const titulo = document.createElement('span');
+    titulo.className = 'acoes__portao-nome';
+    titulo.textContent = nome;
+    const contador = document.createElement('span');
+    contador.className = 'acoes__portao-contador';
+    textos.append(titulo, contador);
+    botao.append(iconeGrego(icone, 'acoes__portao-icone'), textos);
+    botao.addEventListener('click', () => {
+      if (botao.disabled) return;
+      aoClicar();
+      botao.blur();
+    });
+  }
+
+  /** `null` esconde a barra — fora da campanha ou sem província selecionada. */
   mostrar(vista: VistaDeAcoes | null): void {
     this.vista = vista;
     this.raiz.hidden = vista === null;
     if (!vista) return;
 
     const disponivel = vista.pode;
-    for (const el of [
-      this.botaoCapital,
-      this.tituloConstrucoes,
-      this.listaConstrucoes,
-      this.tituloDecretos,
-      this.blocoImposto,
-    ]) {
-      el.hidden = !disponivel;
-    }
+    this.recusa.hidden = disponivel;
+    for (const el of [this.principais, this.linhaDeImposto]) el.hidden = !disponivel;
 
     if (!disponivel) {
-      this.alvo.textContent = vista.motivo;
+      this.botaoCapital.hidden = true;
+      this.recusa.textContent = vista.motivo;
       return;
     }
 
-    const marcaDeCapital = vista.capital.atual ? ' · capital do reino' : '';
-    this.alvo.textContent =
-      `${vista.slots.usados}/${vista.slots.total} slots ocupados · níveis I–III.` +
-      marcaDeCapital;
-
+    this.desenharPortoes(vista);
     this.desenharCapital(vista.capital);
-
-    this.listaConstrucoes.replaceChildren(
-      ...vista.construcoes.map((o) => this.linhaDeConstrucao(vista.provincia.id, o)),
-    );
     this.desenharImposto(vista.imposto);
   }
 
-  /** Os três níveis de imposto, com o vigente marcado e o efeito escrito no tooltip. */
+  /** Os contadores e os bloqueios dos dois portões. */
+  private desenharPortoes(vista: Extract<VistaDeAcoes, { pode: true }>): void {
+    // O contador de slots FICA: é estado da província, não promessa de compra.
+    const livres = vista.slots.total - vista.slots.usados;
+    marcarPortao(this.botaoConstrucoes, `${vista.slots.usados}/${vista.slots.total}`, {
+      chamando: livres > 0,
+    });
+    definirTooltip(this.botaoConstrucoes, {
+      titulo: 'Construções',
+      corpo: livres === 0 ? 'Slots cheios. Dá para subir de nível o que já existe.' : 'Slots ocupados.',
+    });
+
+    // ⚠️ **Sem contador de homens aqui.** O portão dizia "2.500 homens", e isso é a resposta
+    // de uma pergunta que só se faz DENTRO da janela, com a barra na mão. Anunciar o teto
+    // antes de o jogador querer levantar tropa é o painel decidindo por ele.
+    const bloqueado = vista.recrutamentoBloqueado !== '';
+    marcarPortao(this.botaoRecrutar, '', { chamando: false });
+    this.botaoRecrutar.disabled = bloqueado;
+    if (bloqueado) {
+      definirTooltip(this.botaoRecrutar, {
+        titulo: 'Recrutar',
+        corpo: vista.recrutamentoBloqueado,
+        tom: 'bloqueio',
+      });
+    } else {
+      removerTooltip(this.botaoRecrutar);
+    }
+  }
+
+  /**
+   * Os quatro decretos, com o vigente marcado e a consequência EM MOEDA no tooltip.
+   *
+   * ⚠️ **Antes saía daqui "135% da arrecadação · humor −8", e os dois números pareciam falar
+   * de coisas diferentes.** Não falavam: o fator incide sobre a PARCELA do imposto — 13% a
+   * 48% da renda —, e o humor cobra sobre o total. Medido, o imposto alto chegava a ser
+   * negativo em terra onde o imposto é pouco. A tela agora responde o que o jogador quer
+   * saber: quanto entra na próxima virada, e quanto sobra quando o povo terminar de reagir.
+   */
   private desenharImposto(imposto: {
-    nivel: 'baixo' | 'normal' | 'alto';
-    niveis: Record<'baixo' | 'normal' | 'alto', { fator: number; humor: number }>;
+    nivel: NivelDeImposto;
+    niveis: Record<NivelDeImposto, { fator: number; humor: number }>;
+    previsao: Record<NivelDeImposto, PrevisaoDeImposto | null>;
   }): void {
     for (const [nivel, botao] of this.botoesDeImposto) {
       const efeito = imposto.niveis[nivel];
       const vigente = imposto.nivel === nivel;
       botao.dataset['vigente'] = vigente ? 'sim' : 'nao';
       botao.disabled = vigente;
-      const arrecadacao =
-        efeito.fator === 1
-          ? 'arrecadação normal'
-          : `${Math.round(efeito.fator * 100)}% da arrecadação`;
       const humor =
         efeito.humor === 0
-          ? 'sem peso no humor'
+          ? 'humor inalterado'
           : efeito.humor > 0
             ? `humor +${efeito.humor}`
             : `humor −${-efeito.humor}`;
+      const conta = imposto.previsao[nivel];
+      // ⚠️ **Com levante marcado, o "assentado" é mentira e sai da tela.** A província não
+      // chega ao equilíbrio: ela pega em armas antes, e a arrecadação vai a zero. O que o
+      // jogador precisa comparar é o dinheiro de agora contra o prazo.
+      const segunda = !conta
+        ? humor
+        : conta.levanteEm !== null
+          ? `levante em ${conta.levanteEm} ${conta.levanteEm === 1 ? 'turno' : 'turnos'}`
+          : `${moeda(conta.assentado)} quando o humor assentar`;
+      const corpo =
+        vigente || !conta
+          ? `${Math.round(efeito.fator * 100)}% da arrecadação
+${humor}`
+          : `${moeda(conta.agora)} por turno já na próxima virada
+${segunda}
+${humor}`;
       definirTooltip(botao, {
         titulo: `Imposto ${botao.textContent ?? ''}`,
-        corpo: `${arrecadacao}\n${humor}`,
-        tom: vigente ? 'informacao' : 'custo',
+        corpo,
+        // Confisco é PERIGO e não custo: ele não cobra um preço, ele marca uma data.
+        tom: vigente ? 'informacao' : nivel === 'confisco' ? 'perigo' : 'custo',
       });
     }
   }
+
 
   /** O botão da capital: escondido na própria sede, urgente quando o reino está sem uma. */
   private desenharCapital(capital: {
@@ -229,7 +295,7 @@ export class AcoesProvincia {
     this.botaoCapital.disabled = !capital.resposta.pode;
     this.botaoCapital.dataset['urgente'] = capital.urgente ? 'sim' : 'nao';
     const rotulo = capital.urgente
-      ? 'Assentar capital aqui'
+      ? 'Assentar a capital aqui'
       : capital.custo > 0
         ? `Tornar capital · ${capital.custo.toLocaleString('pt-BR')} moedas`
         : 'Tornar capital';
@@ -244,85 +310,18 @@ export class AcoesProvincia {
       tom: capital.resposta.pode ? 'custo' : 'bloqueio',
     });
   }
-
-  /**
-   * Uma linha por construção, sempre visível.
-   *
-   * Custo e retorno na mesma linha é o que deixa comparar as opções de relance, sem abrir
-   * nada — a lição da referência do Age of History. O que muda aqui é que o número vem
-   * escrito por extenso, em vez de um `1.4` solto que só se entende consultando manual.
-   */
-  private linhaDeConstrucao(idProvincia: string, opcao: OpcaoDeConstrucao): HTMLElement {
-    const botao = document.createElement('button');
-    botao.type = 'button';
-    botao.className = 'acoes__construcao';
-    const noMaximo = opcao.nivelAtual >= opcao.nivelMaximo;
-    botao.disabled = noMaximo || opcao.emObra !== null || opcao.recusa !== null;
-    botao.dataset['estado'] = noMaximo ? 'erguida' : opcao.emObra !== null ? 'obra' : 'livre';
-
-    // Uma linha só: nome e o que ela custa AGORA. O que ela faz, quanto rende e em
-    // quantos turnos se paga vão pro tooltip — a lista tem que dar pra varrer com o olho,
-    // e quem quer conferir a conta passa o mouse.
-    let rotulo: string;
-    if (noMaximo) rotulo = `${opcao.nome} III · nível máximo`;
-    else if (opcao.emObra !== null) {
-      rotulo = `${opcao.nome} ${romano(opcao.nivelAlvo)} · em obra, ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
-    } else if (opcao.recusa) {
-      // O impedimento fica NO LUGAR do custo, não escondido: opção desabilitada sem
-      // explicação é exatamente o que não pode acontecer aqui.
-      const progresso =
-        opcao.nivelAtual > 0
-          ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}`
-          : romano(opcao.nivelAlvo);
-      rotulo = `${opcao.nome} ${progresso} · ${opcao.recusa}`;
-    } else {
-      const progresso = opcao.nivelAtual > 0 ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}` : 'I';
-      rotulo = `${opcao.nome} ${progresso} · ${opcao.custo.toLocaleString('pt-BR')} moedas`;
-    }
-    rotularComIcone(botao, iconeDaConstrucao(opcao.id), rotulo);
-
-    definirTooltip(botao, {
-      titulo: opcao.nome,
-      corpo: this.explicacao(opcao),
-      tom: opcao.recusa ? 'bloqueio' : noMaximo ? 'informacao' : 'custo',
-    });
-    botao.addEventListener('click', () => {
-      if (botao.disabled) return;
-      this.aoConstruir(idProvincia, opcao.id);
-      botao.blur();
-    });
-    return botao;
-  }
-
-  /** O tooltip da construção: pra que serve, prazo, manutenção, quanto rende e quando se paga. */
-  private explicacao(opcao: OpcaoDeConstrucao): string {
-    const efeito = opcao.promessa || opcao.motivo;
-    const linhas = efeito ? [efeito] : [];
-
-    if (opcao.nivelAtual >= opcao.nivelMaximo) return linhas.join('\n');
-    if (opcao.emObra !== null) {
-      linhas.push(`Pronta em ${opcao.emObra} ${opcao.emObra === 1 ? 'turno' : 'turnos'}.`);
-      return linhas.join('\n');
-    }
-
-    linhas.push(`${opcao.custo.toLocaleString('pt-BR')} moedas agora`);
-    if (opcao.manutencao > 0) {
-      linhas.push(`−${opcao.manutencao.toLocaleString('pt-BR')} por turno`);
-    }
-    linhas.push(`${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'} para concluir`);
-    if (opcao.ganhoPorTurno > 0) {
-      linhas.push(`+${opcao.ganhoPorTurno} por turno`);
-      if (Number.isFinite(opcao.turnosParaPagar)) {
-        linhas.push(`paga-se em ${Math.ceil(opcao.turnosParaPagar)} turnos`);
-      }
-    } else if (opcao.rendeMoeda && opcao.ganhoPorTurno < 0) {
-      linhas.push(`saldo local −${-opcao.ganhoPorTurno} por turno`);
-    }
-    return linhas.join('\n');
-  }
-
 }
 
-function romano(nivel: number): string {
-  return ['0', 'I', 'II', 'III'][nivel] ?? String(nivel);
+/** Escreve o contador do portão e acende o realce de "tem coisa pra fazer aqui". */
+function marcarPortao(botao: HTMLButtonElement, contador: string, estado: { chamando: boolean }): void {
+  const alvo = botao.querySelector('.acoes__portao-contador');
+  if (alvo) alvo.textContent = contador;
+  botao.dataset['chamando'] = estado.chamando ? 'sim' : 'nao';
+  botao.disabled = false;
+}
+
+/** Moedas por turno com o sinal na frente: é sempre uma DIFERENÇA que se lê aqui. */
+function moeda(valor: number): string {
+  const n = Math.round(valor);
+  return `${n >= 0 ? '+' : '−'}${Math.abs(n)}`;
 }

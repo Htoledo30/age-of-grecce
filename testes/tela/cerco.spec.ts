@@ -102,8 +102,10 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   // por isso o marcador não pode mais ser endereçado só pela província. Aqui interessa
   // abrir a ficha da CIDADE, então o clique vai na peça de quem mora nela.
   await page.locator('.hostes__marca[data-provincia="eleusis"][data-minha="nao"]').click();
-  // A classe vai no `dt` e no `dd`: o valor é o `dd`.
-  await expect(page.locator('dd.ficha__cerco')).toContainText('por Atenas');
+  // O sítio é a primeira linha de alarme do painel, acima das medidas.
+  await expect(page.locator('.ficha__aviso[data-tom="perigo"]')).toContainText(
+    'Sitiada por Atenas',
+  );
 
   // A cidade sitiada perde produção e comércio e mantém só o imposto.
   const sitiada = await page.evaluate(() => {
@@ -113,7 +115,9 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   expect(sitiada?.producao).toBe(0);
   expect(sitiada?.transito).toBe(0);
   expect(sitiada?.impostos).toBeGreaterThan(0);
-  await expect(page.locator('.ficha__renda')).toHaveText(/saldo [−+][\d.]+ por turno/);
+  await expect(page.locator('.ficha__medida[data-medida="saldo"]')).toHaveText(
+    /saldo[−+][\d.]+por turno/,
+  );
   expect(erros).toEqual([]);
 });
 

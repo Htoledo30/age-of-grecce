@@ -16,14 +16,51 @@ import { impedeAssaltoImediatoEm } from '../guerra/cercos';
 import { abalarRelacao, emGuerra } from '../diplomacia/relacoes';
 import { miliciaEm } from '../guerra/defesa-local';
 import { saquearProvincia } from '../guerra/saque';
+import { rotasLongasDaHoste } from '../guerra/marchas';
+
+/**
+ * Reconfere viagens antes de cada trecho. Uma conquista, uma paz ou a perda de um Porto pode
+ * invalidar o caminho que era verdadeiro quando a ordem foi dada; nesse caso a hoste para.
+ */
+function atualizarViagens(nucleo: NucleoDaCampanha): void {
+  for (const [idHoste, ordem] of Object.entries(nucleo.estado.ordens)) {
+    if (!ordem.continuar) continue;
+    const hoste = nucleo.mobilizacao.hoste(idHoste);
+    const destinoFinal = ordem.rota.at(-1);
+    if (!hoste || !destinoFinal) {
+      delete nucleo.estado.ordens[idHoste];
+      continue;
+    }
+    const donoDoDestino = donoDe(nucleo, destinoFinal);
+    const podeEntrar =
+      nucleo.atlas.ehMar(destinoFinal) ||
+      donoDoDestino === hoste.poder ||
+      emGuerra(nucleo, hoste.poder, donoDoDestino);
+    const rotaAtual = podeEntrar
+      ? rotasLongasDaHoste(nucleo, idHoste).get(destinoFinal)
+      : undefined;
+    if (!rotaAtual) {
+      delete nucleo.estado.ordens[idHoste];
+      continue;
+    }
+    nucleo.estado.ordens[idHoste] = {
+      ...ordem,
+      origem: hoste.posicao,
+      rota: rotaAtual,
+      homens: Math.min(ordem.homens, nucleo.mobilizacao.forcaDaHoste(idHoste)),
+    };
+  }
+}
 
 export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
+  atualizarViagens(nucleo);
   const ajustes = nucleo.ajustes.diplomacia.choque;
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
     batalha: nucleo.ajustes.combate.batalha,
     donoDe: (id) => donoDe(nucleo, id),
     emGuerra: (a, b) => emGuerra(nucleo, a, b),
     miliciaDe: (id) => miliciaEm(nucleo, id),
+    ehMar: (id) => nucleo.atlas.ehMar(id),
     impedeAssaltoImediato: (id) => impedeAssaltoImediatoEm(nucleo, id),
     // ⚠️ Quebrar custa o EXÉRCITO, não a geração: quem escapou da perseguição volta para a
     // terra natal e torna a pagar tributo e a poder ser recrutado. Sem isto, perder uma

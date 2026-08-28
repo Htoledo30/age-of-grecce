@@ -31,6 +31,30 @@ function nova(jogador = 'atenas'): Campanha {
   return c;
 }
 
+/**
+ * Uma província tomada e MAL GOVERNADA: sob bandeira alheia e com imposto alto, o alvo dela
+ * fica na faixa insatisfeita e lá continua.
+ *
+ * ⚠️ Existe porque o pavio deixou de correr para quem está MELHORANDO: uma cidade que caiu
+ * ontem e caminha para "Neutra" não pega em armas, por mais fundo que o choque da queda a
+ * tenha jogado. Quem ferve é quem vai ficar fervendo, e é isso que este cenário monta.
+ */
+function condenada(): Campanha {
+  const c = nova();
+  c.trocarDono('eleusis', 'atenas');
+  c.definirImposto('eleusis', 'alto');
+  return comHumor(c, 'eleusis', 5);
+}
+
+/** Turnos na faixa em que a condenada vive até o levante. */
+const prazoDaCondenada = felicidade.faixas[1]?.levanteEm ?? 0;
+
+/**
+ * Turnos na faixa mais infeliz até o levante — o pavio agora é da FAIXA, e não um número
+ * solto: a revoltosa ferve rápido, a insatisfeita ferve devagar, e as de cima não fervem.
+ */
+const prazoDaRevoltosa = felicidade.faixas[0]?.levanteEm ?? 0;
+
 /** Reescreve o humor de uma província pelo caminho oficial: salvar, editar, restaurar. */
 function comHumor(campanha: Campanha, idProvincia: string, humor: number): Campanha {
   const salvo = lerSalvamento(campanha.serializar());
@@ -40,6 +64,8 @@ function comHumor(campanha: Campanha, idProvincia: string, humor: number): Campa
 }
 
 describe('o alvo e o passo do humor', () => {
+  // Uma província em paz, de dono legítimo, sem tropa e do TAMANHO da menor faixa: é o
+  // único estado em que o alvo é a base pura, e é dele que os testes partem.
   const parada = {
     passaFome: false,
     sitiada: false,
@@ -47,6 +73,9 @@ describe('o alvo e o passo do humor', () => {
     construcoes: {},
     humorDoImposto: 0,
     guarnicao: 0,
+    reinoEmGuerra: false,
+    isoladaDaCapital: false,
+    tamanho: 1,
   };
 
   it('o alvo soma a situação sobre a base, e o Templo entra pelos pontos dele', () => {
@@ -72,6 +101,9 @@ describe('o alvo e o passo do humor', () => {
         construcoes: {},
         guarnicao: 0,
         humorDoImposto: -8,
+        reinoEmGuerra: true,
+        isoladaDaCapital: true,
+        tamanho: 5,
       },
       catalogo,
       felicidade,
@@ -97,6 +129,9 @@ describe('o alvo e o passo do humor', () => {
       construcoes: { templo: 1 },
       humorDoImposto: -8,
       guarnicao: 0.01,
+      reinoEmGuerra: true,
+      isoladaDaCapital: true,
+      tamanho: 3,
     };
     const parcelas = parcelasDoAlvo(situacao, catalogo, felicidade);
     const soma = parcelas.reduce((total, p) => total + p.pontos, 0);
@@ -167,14 +202,16 @@ describe('o humor dentro da campanha', () => {
   });
 
   it('sob bandeira alheia, a revolta arma um levante depois do pavio queimar', () => {
-    const c = nova();
-    c.trocarDono('eleusis', 'atenas');
-    comHumor(c, 'eleusis', 5);
-    const populacaoAntes = c.populacaoDe('eleusis');
+    const c = condenada();
 
-    // O pavio: um turno revoltoso por vez, até o limite do ajuste.
-    for (let i = 0; i < felicidade.revolta.turnos; i++) {
+    // O pavio: um turno descontente por vez, até o limite da faixa.
+    let populacaoAntes = c.populacaoDe('eleusis');
+    for (let i = 0; i < prazoDaCondenada; i++) {
       expect(c.hostesEm('eleusis').some((h) => h.poder === 'eleusis')).toBe(false);
+      // Medida na véspera, e não no começo do pavio: entre a primeira fagulha e o levante a
+      // província vive vários turnos, e o crescimento natural esconderia os rebeldes que
+      // saíram da população.
+      populacaoAntes = c.populacaoDe('eleusis');
       c.passarTurno();
     }
 
@@ -200,10 +237,8 @@ describe('o humor dentro da campanha', () => {
     // Sitiando, o resto do jogo já sabe o que fazer: a cidade para de produzir e de mandar o
     // trânsito ao tesouro, o dono pode esmagá-los com surtida ou socorro, e eles assaltam
     // quando a muralha permitir. A revolta virou a pergunta que devia ser: esmaga ou perde.
-    const c = nova();
-    c.trocarDono('eleusis', 'atenas');
-    comHumor(c, 'eleusis', 5);
-    for (let i = 0; i < felicidade.revolta.turnos; i++) c.passarTurno();
+    const c = condenada();
+    for (let i = 0; i < prazoDaCondenada; i++) c.passarTurno();
 
     const cerco = c.cercoEm('eleusis');
     expect(cerco).toBeDefined();
@@ -217,7 +252,7 @@ describe('o humor dentro da campanha', () => {
 
   it('província revoltosa de dono legítimo faz greve, mas não arma levante', () => {
     const c = comHumor(nova(), 'atenas', 5);
-    for (let i = 0; i < felicidade.revolta.turnos + 2; i++) c.passarTurno();
+    for (let i = 0; i < prazoDaRevoltosa + 2; i++) c.passarTurno();
     // Não há bandeira antiga contra a atual: ninguém pega em armas.
     expect(c.hostesEm('atenas').length).toBe(0);
   });
@@ -235,12 +270,18 @@ describe('vitória e derrota mínimas', () => {
     expect(c.resultado()).toBe('vitoria');
   });
 
-  it('a ilha inalcançável não trava a vitória: Salamina fica fora da régua até o naval', () => {
+  it('a vitória agora EXIGE Salamina: com o mar, ela deixou de ser inalcançável', () => {
+    // ⚠️ Este teste dizia o contrário até as zonas marítimas existirem — Salamina ficava
+    // fora da régua porque nenhum exército do mapa podia pisar nela. Hoje ela encosta no
+    // Estreito de Salamina, e quem tiver Porto na Ática chega lá: ilha intocável ao lado da
+    // capital era um buraco, não uma regra.
     const c = nova();
     for (const id of Object.keys(economia.provincias)) {
       if (id !== 'salamina') c.trocarDono(id, 'atenas');
     }
     expect(c.donoDe('salamina')).toBe('megara');
+    expect(c.resultado()).toBeNull();
+    c.trocarDono('salamina', 'atenas');
     expect(c.resultado()).toBe('vitoria');
   });
 
@@ -263,9 +304,7 @@ describe('vitória e derrota mínimas', () => {
 
 describe('as revoltas viajam no salvamento', () => {
   it('o pavio aceso vai e volta; salvamento antigo sem o campo ainda carrega', () => {
-    const c = nova();
-    c.trocarDono('eleusis', 'atenas');
-    comHumor(c, 'eleusis', 5);
+    const c = condenada();
     c.passarTurno(); // pavio 1
 
     const salvo = lerSalvamento(c.serializar());
@@ -287,6 +326,9 @@ describe('a guarnição é ordem pública', () => {
     construcoes: {},
     humorDoImposto: 0,
     guarnicao: 0,
+    reinoEmGuerra: false,
+    isoladaDaCapital: false,
+    tamanho: 1,
   };
 
   it('tropa do dono parada na terra acalma o povo, proporcional ao tamanho da cidade', () => {

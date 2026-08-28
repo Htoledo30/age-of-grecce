@@ -9,6 +9,7 @@
 import { forcaDe, retirar } from '@/combate/exercito';
 import type { Contingente } from '@/combate/exercito';
 import type { EstadoDaResolucao } from './relatorio';
+import type { OrdemDeMarcha } from '../ordens';
 
 /**
  * Uma força durante a resolução.
@@ -39,6 +40,8 @@ export interface Forca {
   partiuDe: string;
   /** Fração de baixas em que esta força sai de campo. `null` = luta até quebrar. */
   recuarAos: number | null;
+  /** A viagem que originou esta força. Ausente em quem ficou parado. */
+  ordem?: OrdemDeMarcha;
   /** Morreu num choque. Não some da lista: sair no meio da varredura muda o resultado. */
   viva: boolean;
 }
@@ -92,6 +95,7 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
           posicao: onde,
           partiuDe: onde,
           recuarAos: ordem.recuarAos,
+          ordem,
           viva: true,
         });
       }

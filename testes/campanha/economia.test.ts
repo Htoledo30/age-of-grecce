@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ajustes, economia, novaCampanha as nova, provincias } from '../apoio/mundo';
+import { fatorDeRendaDoHumor } from '../../src/campanha/felicidade';
 
 describe('economia da Ática', () => {
   it('cada parcela sai da sua própria fórmula, e o total é a soma das três', () => {
@@ -21,7 +22,15 @@ describe('economia da Ática', () => {
       // ⚠️ A corrupção come as TRÊS parcelas, não só o imposto: ela é o que se perde entre
       // a província e o tesouro, e o que se perde no caminho não pergunta de onde veio a
       // moeda. O teste guarda a fórmula, não os números dela.
-      const chega = (bruto: number): number => Math.round(bruto * (1 - c.corrupcaoEm(id).total));
+      // ⚠️ O HUMOR multiplica as três junto com a corrupção: povo contente lavra e comercia
+      // melhor, e não só paga melhor. Preso ao imposto — a menor das parcelas — ele não
+      // conseguiria pagar obra nenhuma.
+      const chega = (bruto: number): number =>
+        Math.round(
+          bruto *
+            (1 - c.corrupcaoEm(id).total) *
+            fatorDeRendaDoHumor(c.felicidadeEm(id), ajustes.felicidade),
+        );
 
       expect(r).toMatchObject({
         impostos: chega(ficha.populacao * eco.impostoPorHabitante),

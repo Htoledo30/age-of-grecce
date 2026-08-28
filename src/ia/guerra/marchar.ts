@@ -76,7 +76,7 @@ import type { Postura } from '@/combate/cerco';
 import type { Contingente, Exercito } from '@/combate/exercito';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
 import { ameacasDe, estaAmeacado, forcaTotalDe } from '../percepcao/ameaca';
-import { oportunidadesDe } from '../percepcao/oportunidade';
+import { oportunidadesDe, oportunidadesNoLitoral } from '../percepcao/oportunidade';
 import type { Oportunidade } from '../percepcao/oportunidade';
 import { prever, preverAssalto } from '../percepcao/prever';
 import type { Previsao } from '../percepcao/prever';
@@ -140,6 +140,7 @@ export function ataquesEscolhidos(
       naEstrada,
       (idHoste, quantos) =>
         campanha.podeOrdenarMarcha(idHoste, alvo.oportunidade.provincia, quantos, idPoder).pode,
+      (idHoste) => campanha.alcanceDaHoste(idHoste).includes(alvo.oportunidade.provincia),
     );
     if (escolhida === null) continue;
     usadas.add(escolhida.hoste);
@@ -147,6 +148,142 @@ export function ataquesEscolhidos(
     ordens.push({ ...escolhida, destino: alvo.oportunidade.provincia, valor: alvo.valor });
   }
   return ordens;
+}
+
+/**
+ * A TRAVESSIA — a marcha que leva mais de uma virada, e a única que usa o mar.
+ *
+ * ⚠️ **Sem isto o mar seria só do jogador.** A IA decide olhando `alcanceDaHoste`, que responde
+ * "aonde chego NESTA rodada" — e uma hoste anda um salto por rodada. Egina fica a três de
+ * Mégara: terra, água, ilha. Nenhum alcance de rodada nenhuma contém três saltos, então a ilha
+ * nunca aparecia como alvo e nenhum reino jamais embarcava. As ilhas do Egeu ficariam
+ * permanentemente seguras — não por serem difíceis, mas por serem invisíveis.
+ *
+ * A pergunta aqui é outra: *"que terra alheia eu tomaria, se eu andasse até lá?"* — e a
+ * resposta é uma ordem para o PRIMEIRO trecho da rota. Todo turno ela é refeita do zero, como
+ * tudo o que a IA decide: se a guerra acabar no meio da viagem, no turno seguinte não há alvo,
+ * a expedição não se renova, e `retiradasEscolhidas` traz o exército de volta da água.
+ *
+ * ⚠️ **Só rotas que cruzam o mar entram.** Caminho longo por terra já é assunto de
+ * `concentracoesEscolhidas`, que junta o exército perto do alvo antes de bater — e duas regras
+ * mandando a mesma hoste para lados diferentes é como se perde um exército.
+ *
+ * A conta de tomar é a mesma do ataque, com a mesma exigência de sobrar gente em casa: quem não
+ * tomaria a ilha depois de chegar não zarpa. Atravessar o mar com um exército que perde a
+ * batalha do outro lado é o jeito mais caro de perdê-lo.
+ */
+export function travessiasEscolhidas(
+  campanha: Campanha,
+  idPoder: string,
+  estilo: EstiloDeIa,
+  ajustes: AjustesDeCombate,
+  jaMandadas: ReadonlySet<string>,
+): readonly OrdemDeAtaque[] {
+  // A mesma trava do ataque, e pelo mesmo motivo — com uma razão a mais: quem embarca fica
+  // turnos longe de casa, e casa pegando fogo é o pior momento possível para zarpar.
+  if (estaAmeacado(campanha, idPoder)) return [];
+
+  // ⚠️ **A percepção aqui é a do LITORAL, e não a da vizinhança.** Nada encosta em ninguém
+  // através da água: a lista de vizinhos nunca conteria a ilha, e a travessia não teria para
+  // onde ir. Ver `oportunidadesNoLitoral`.
+  const alvos = porValor(oportunidadesNoLitoral(campanha, idPoder), estilo).filter((a) =>
+    campanha.emGuerra(idPoder, a.oportunidade.dono),
+  );
+  if (alvos.length === 0) return [];
+
+  const ordens: OrdemDeAtaque[] = [];
+  const usadas = new Set(jaMandadas);
+
+  // ── 1. Quem já está na água segue viagem ────────────────────────────────────────────
+  // ⚠️ **Sem gastar fatia nenhuma**, e isto não é generosidade: `fracaoQueMarcha` desconta
+  // quem já está fora de casa, e uma hoste no meio do Egeu desconta a si mesma. Cobrando dela
+  // de novo a cada virada, a conta zeraria no segundo turno da viagem, a expedição não se
+  // renovaria e a retirada a traria de volta — todo exército que zarpasse daria meia-volta no
+  // meio do mar, para sempre. Quem embarcou já pagou a passagem.
+  for (const hoste of campanha.hostes()) {
+    if (hoste.poder !== idPoder || usadas.has(hoste.id)) continue;
+    if (!campanha.ehMar(hoste.posicao)) continue;
+    const homens = campanha.forcaDaHoste(hoste.id);
+    if (homens <= 0) continue;
+    const passo = trechoDeHoje(campanha, idPoder, hoste, homens, alvos, estilo, ajustes);
+    if (passo === null) continue;
+    usadas.add(hoste.id);
+    ordens.push({ hoste: hoste.id, homens, postura: 'sitiar', ...passo });
+  }
+
+  // ── 2. Quem zarpa hoje gasta a fatia que pode sair de casa ──────────────────────────
+  let naEstrada =
+    Math.floor(forcaTotalDe(campanha, idPoder) * estilo.fracaoQueMarcha) -
+    emTerraAlheia(campanha, idPoder);
+  for (const hoste of campanha.hostes()) {
+    if (naEstrada <= 0) break;
+    if (hoste.poder !== idPoder || usadas.has(hoste.id)) continue;
+    if (campanha.donoDe(hoste.posicao) !== idPoder) continue;
+    const homens = Math.min(campanha.forcaDaHoste(hoste.id), naEstrada);
+    if (homens <= 0) continue;
+    const passo = trechoDeHoje(campanha, idPoder, hoste, homens, alvos, estilo, ajustes);
+    if (passo === null) continue;
+    usadas.add(hoste.id);
+    naEstrada -= homens;
+    ordens.push({ hoste: hoste.id, homens, postura: 'sitiar', ...passo });
+  }
+
+  return ordens;
+}
+
+/**
+ * Para onde esta hoste anda HOJE numa travessia, e o que ela vai buscar. `null` quando não vale.
+ *
+ * Percorre os alvos do mais valioso para o menos e para no primeiro que passa nas duas provas:
+ * existe uma rota até lá **que cruza o mar**, e a hoste TOMARIA a terra depois de chegar. A
+ * segunda prova é a mesma do ataque — quem não tomaria a ilha não zarpa, porque atravessar o
+ * mar com um exército que perde a batalha do outro lado é o jeito mais caro de perdê-lo.
+ *
+ * ⚠️ **Sempre `sitiar` no caminho.** A postura decidida vale para o ALVO, e ele está a rodadas
+ * dali: assaltar uma zona de mar não quer dizer nada, e assaltar a costa por onde se passa
+ * seria atacar quem não era o alvo.
+ */
+function trechoDeHoje(
+  campanha: Campanha,
+  idPoder: string,
+  hoste: Exercito,
+  homens: number,
+  alvos: readonly { oportunidade: Oportunidade; valor: number }[],
+  estilo: EstiloDeIa,
+  ajustes: AjustesDeCombate,
+): { destino: string; valor: number } | null {
+  // Todas as outras hostes ficam de fora da escolha: aqui a pergunta não é "qual delas vai",
+  // e sim "ESTA vai?". É a mesma conta de `hosteQueToma`, com uma candidata só.
+  const outras = new Set(campanha.hostes().map((h) => h.id));
+  outras.delete(hoste.id);
+  // Uma busca em largura por hoste, e não uma por alvo: as rotas saem todas juntas.
+  const rotas = campanha.rotasLongasDaHoste(hoste.id);
+
+  for (const alvo of alvos) {
+    const rota = rotas.get(alvo.oportunidade.provincia);
+    // Rota de um trecho só é o ataque de hoje, e ele já rodou. Rota sem água é marcha por
+    // terra, que é assunto da concentração — duas regras mandando a mesma hoste para lados
+    // diferentes é como se perde um exército.
+    if (rota === undefined || rota.length < 2) continue;
+    if (!rota.some((id) => campanha.ehMar(id))) continue;
+    const proximo = rota[0];
+    if (proximo === undefined) continue;
+    if (!campanha.podeOrdenarMarcha(hoste.id, proximo, homens, idPoder).pode) continue;
+    const toma = hosteQueToma(
+      campanha,
+      idPoder,
+      alvo.oportunidade,
+      estilo,
+      ajustes,
+      outras,
+      homens,
+      () => true,
+      () => true,
+    );
+    if (toma === null) continue;
+    return { destino: proximo, valor: alvo.valor };
+  }
+  return null;
 }
 
 /**
@@ -203,8 +340,9 @@ export function assaltosMaduros(
  * 3. **A casa está pegando fogo.** Com inimigo pisando em terra minha, o exército que está
  *    longe é o exército que está faltando. Larga o que estiver fazendo e volta.
  *
- * Volta para a província PRÓPRIA mais próxima que a hoste alcança nesta rodada. Quando não
- * alcança nenhuma, ela fica — e aí é o exílio se resolvendo sozinho pela deserção.
+ * Volta para a província PRÓPRIA mais próxima — e, quando ela está a mais de um salto, a hoste
+ * anda o primeiro trecho da rota e continua na virada seguinte. Ver `rumoDeCasa`. Quando não há
+ * caminho nenhum até casa, ela fica: aí é o exílio se resolvendo sozinho pela deserção.
  */
 export function retiradasEscolhidas(
   campanha: Campanha,
@@ -224,14 +362,43 @@ export function retiradasEscolhidas(
     const homens = campanha.forcaDaHoste(hoste.id);
     if (homens <= 0) continue;
     if (!voltaria(campanha, idPoder, hoste, dono, ajustes, casaEmChamas)) continue;
-    const casa = [...campanha.alcanceDaHoste(hoste.id)]
-      .filter((id) => campanha.donoDe(id) === idPoder)
-      .sort()[0];
+    const casa = rumoDeCasa(campanha, idPoder, hoste.id);
     if (casa === undefined) continue;
     if (!campanha.podeOrdenarMarcha(hoste.id, casa, homens, idPoder).pode) continue;
     ordens.push({ hoste: hoste.id, destino: casa, homens });
   }
   return ordens;
+}
+
+/**
+ * Para onde esta hoste anda HOJE se quer voltar para casa. `undefined` quando não há volta.
+ *
+ * ⚠️ **A volta precisa da mesma vista longa que a ida ganhou, e por um tempo não teve.** A
+ * retirada perguntava só "que terra minha eu alcanço nesta rodada"; no meio do Egeu a resposta
+ * é nenhuma, e a hoste ficava. Medido: **159 hoste-turnos parados na água em 100 turnos, e uma
+ * delas passou 56 turnos boiando** — pagando a folha de campanha, três vezes a de casa, sem
+ * fazer nada. Henrique viu isso jogando: *"ao sair do mar ela não lembra que precisa ir para um
+ * território dela"*.
+ *
+ * Chegar é melhor que caminhar: se alguma terra própria está a um salto, ela é o destino. Só
+ * quando não há é que se anda o primeiro trecho da rota mais curta até a mais perto.
+ */
+function rumoDeCasa(campanha: Campanha, idPoder: string, idHoste: string): string | undefined {
+  const agora = [...campanha.alcanceDaHoste(idHoste)]
+    .filter((id) => campanha.donoDe(id) === idPoder)
+    .sort()[0];
+  if (agora !== undefined) return agora;
+
+  let melhor: readonly string[] | undefined;
+  // Ordenado por destino antes de comparar: com duas casas à mesma distância ganha a de menor
+  // id, e a mesma partida decide igual em qualquer máquina.
+  for (const [destino, rota] of [...campanha.rotasLongasDaHoste(idHoste)].sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  )) {
+    if (campanha.donoDe(destino) !== idPoder) continue;
+    if (melhor === undefined || rota.length < melhor.length) melhor = rota;
+  }
+  return melhor?.[0];
 }
 
 /** Esta hoste, parada em terra alheia, tem motivo para voltar? Ver os três acima. */
@@ -304,6 +471,13 @@ function hosteQueToma(
    * por ainda não haver guerra. Sem separar, a IA nunca declararia guerra nenhuma.
    */
   podeIr: (idHoste: string, homens: number) => boolean,
+  /**
+   * Esta hoste CHEGA no alvo? Parâmetro pelo mesmo motivo que `podeIr`: são duas perguntas.
+   *
+   * Quem ataca hoje quer "chego nesta rodada". Quem atravessa o mar quer "chego um dia" — a
+   * ilha fica a três saltos e nenhuma rodada alcança três. Ver `travessiasEscolhidas`.
+   */
+  alcanca: (idHoste: string) => boolean,
 ): { hoste: string; homens: number; postura: Postura } | null {
   const deles = campanha.hostesEm(alvo.provincia).filter((h) => h.poder !== idPoder);
   // A muralha decide se o assalto pode ser HOJE. Ela não impede a marcha: impede o assalto.
@@ -318,7 +492,7 @@ function hosteQueToma(
     // ordem de marcha já faz com os homens que ficam.
     const homens = Math.min(emPe, naEstrada);
     if (homens <= 0) continue;
-    if (!campanha.alcanceDaHoste(hoste.id).includes(alvo.provincia)) continue;
+    if (!alcanca(hoste.id)) continue;
     if (!podeIr(hoste.id, homens)) continue;
     // O destacamento leva uma parcela de cada contingente — `retirar` tira proporcionalmente
     // de cada terra natal e de cada arma —, e por isso encolher todos pela mesma fração é

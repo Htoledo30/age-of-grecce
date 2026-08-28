@@ -88,6 +88,8 @@ const Ordem = z.object({
   // `default` pelo mesmo motivo das revoltas: salvamento de antes do recuo ainda carrega, e
   // a ordem dele simplesmente é a de lutar até a linha ceder.
   recuarAos: z.number().gt(0).max(1).nullable().default(null),
+  // Ausente nos salvamentos antigos e nas ordens de uma única rodada da IA.
+  continuar: z.literal(true).optional(),
 });
 
 const Cerco = z.object({
@@ -143,6 +145,20 @@ const SalvamentoCampanha = z.object({
     // dele volta com todo mundo indiferente — que é onde uma campanha começa.
     relacoes: z.record(z.string().min(1), z.number().min(-100).max(100)).default({}),
     pactos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    // A chave aqui é DIRECIONAL — `concedente>beneficiário` —, e é o único registro do
+    // arquivo que não usa o par ordenado: dar passagem não é receber passagem.
+    acessos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    // Propostas que a IA fez ao jogador e que esperam resposta. `default` como todos os
+    // outros: salvamento de antes delas volta sem nenhuma na mesa, que é o começo de tudo.
+    propostas: z
+      .array(
+        z.object({
+          de: z.string().min(1),
+          tipo: z.enum(['pacto', 'comercio', 'acesso']),
+          turnos: z.number().int().positive().optional(),
+        }),
+      )
+      .default([]),
     acordos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     reputacao: z.record(z.string().min(1), z.number().min(-100).max(0)).default({}),
     // `default` pelo mesmo motivo de todos os outros: salvamento de antes do tributo carrega,

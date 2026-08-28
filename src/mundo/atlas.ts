@@ -65,7 +65,9 @@ export class Atlas {
     // vizinha inexistente são erro de geração, e têm que estourar na carga com o nome do
     // culpado em vez de virar `undefined` no meio de uma regra.
     for (const p of dados.provincias) {
-      if (!this.porIdPoder.has(p.dono)) {
+      // ⚠️ Zona de mar não tem dono e é assim que tem que ser: água não se governa. O
+      // esquema já garante a outra metade — terra sem dono continua sendo erro de geração.
+      if (p.mar !== true && !this.porIdPoder.has(p.dono)) {
         throw new Error(`província "${p.nome}" tem dono inexistente: ${p.dono}`);
       }
       for (const vizinha of p.vizinhas) {
@@ -94,7 +96,11 @@ export class Atlas {
    */
   private mapearComponentes(): number {
     let atual = 0;
-    for (const inicio of this.provincias) {
+    // ⚠️ **Só o CHÃO entra.** Desde que as zonas marítimas existem, contar a água aqui
+    // fundiria o mapa inteiro num componente só — a Ática e Rodes ficariam "no mesmo pedaço
+    // de terra" porque um golfo encosta nas duas. Componente é terra contínua, e é isso que
+    // faz a pergunta "isto é uma ilha?" continuar tendo resposta.
+    for (const inicio of this.terras) {
       if (this.componente.has(inicio.id)) continue;
       const fila = [inicio.id];
       this.componente.set(inicio.id, atual);
@@ -102,7 +108,7 @@ export class Atlas {
         const id = fila.pop();
         if (id === undefined) break;
         for (const vizinha of this.provincia(id).vizinhas) {
-          if (this.componente.has(vizinha)) continue;
+          if (this.componente.has(vizinha) || this.ehMar(vizinha)) continue;
           this.componente.set(vizinha, atual);
           fila.push(vizinha);
         }
@@ -155,9 +161,30 @@ export class Atlas {
     return this.provincia(a).vizinhas.includes(b);
   }
 
-  /** Nenhuma vizinha por terra: só se chega aqui pelo mar. São 26 das 196. */
+  /**
+   * Isto é uma ZONA MARÍTIMA?
+   *
+   * ⚠️ **A pergunta que separa os dois tabuleiros.** Água não tem dono, não se conquista, não
+   * produz, não tem milícia e não sofre cerco — e cada uma dessas regras pergunta isto antes
+   * de agir. Ver `gerador/gerar-mares.ts` para como as zonas nascem.
+   */
+  ehMar(idProvincia: string): boolean {
+    return this.provincia(idProvincia).mar === true;
+  }
+
+  /** Só o chão: as 196 terras, sem as zonas de água. */
+  get terras(): readonly Provincia[] {
+    return this.provincias.filter((p) => p.mar !== true);
+  }
+
+  /**
+   * Nenhuma vizinha por TERRA: só se chega aqui pelo mar.
+   *
+   * ⚠️ Desde que as zonas marítimas existem, "não ter vizinha" deixou de servir: a ilha
+   * passou a encostar na água. A pergunta agora é se alguma vizinha é chão.
+   */
   semVizinhaPorTerra(idProvincia: string): boolean {
-    return this.provincia(idProvincia).vizinhas.length === 0;
+    return !this.provincia(idProvincia).vizinhas.some((v) => !this.ehMar(v));
   }
 
   /** Duas províncias no mesmo pedaço de terra contínuo. */

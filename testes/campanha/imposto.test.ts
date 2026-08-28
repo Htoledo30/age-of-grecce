@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { lerSalvamento } from '../../src/campanha/salvamento';
 import { ajustes, construcoes, novaCampanha as nova } from '../apoio/mundo';
+import { fatorDeRendaDoHumor } from '../../src/campanha/felicidade';
 
 describe('o decreto de imposto: receita trocada por pressão social', () => {
   it('toda terra abre no normal, e o fator do nível entra na fórmula do imposto', () => {
@@ -22,8 +23,9 @@ describe('o decreto de imposto: receita trocada por pressão social', () => {
       Math.round(
         c.populacaoDe('atenas') *
           ajustes.economia.impostoPorHabitante *
+          ajustes.economia.imposto.niveis.alto.fator *
           (1 - c.corrupcaoEm('atenas').total) *
-          ajustes.economia.imposto.niveis.alto.fator,
+          fatorDeRendaDoHumor(c.felicidadeEm('atenas'), ajustes.felicidade),
       ),
     );
     // Só a parcela do imposto muda: produção e comércio não são do coletor.
@@ -79,8 +81,9 @@ describe('o decreto de imposto: receita trocada por pressão social', () => {
       Math.round(
         c.populacaoDe('atenas') *
           ajustes.economia.impostoPorHabitante *
+          ajustes.economia.imposto.niveis.alto.fator *
           (1 - c.corrupcaoEm('atenas').total) *
-          ajustes.economia.imposto.niveis.alto.fator,
+          fatorDeRendaDoHumor(c.felicidadeEm('atenas'), ajustes.felicidade),
       ),
     );
     expect(c.economiaDe('atenas')!.impostos).toBeGreaterThan(

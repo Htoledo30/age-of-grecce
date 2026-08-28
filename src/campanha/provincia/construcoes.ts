@@ -18,6 +18,7 @@ import { custoDaObra } from '../custo-de-obra';
 import { fatorDeMercadoAtual, rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { alivioDasObras } from '../corrupcao';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
+import { fatorDoAlvoEm } from '../sociedade/humor';
 
 /** A obra em andamento nesta província, se houver. */
 export function obraEm(nucleo: NucleoDaCampanha, idProvincia: string): Obra | undefined {
@@ -76,7 +77,15 @@ export function retornoDaConstrucaoEm(
 ): RetornoDaConstrucao | null {
   const ficha = fichaDe(nucleo, idProvincia);
   if (!ficha) return null;
-  const base = baseDe(nucleo, idProvincia);
+  // ⚠️ **A conta é entre dois REGIMES ESTÁVEIS, e não entre hoje e hoje.**
+  //
+  // O humor anda quatro pontos por turno rumo ao alvo, e obra que mexe no humor — o Templo —
+  // não muda nada no instante em que fica pronta: muda o ALVO, e a renda só sobe quando a
+  // província chega lá. Comparando o hoje com o hoje, o Templo aparecia como "nunca se paga",
+  // que foi exatamente a queixa de Henrique — *"a escolha de fazer o templo está muito
+  // inútil ainda"*. Aqui o antes é a província assentada no alvo de agora, e o depois é ela
+  // assentada no alvo COM a obra: é a diferença que a obra realmente entrega.
+  const base = { ...baseDe(nucleo, idProvincia), fatorDoHumor: fatorDoAlvoEm(nucleo, idProvincia) };
   const local = retornoDaConstrucao(
     ficha,
     nucleo.economia.produtos,
@@ -85,6 +94,7 @@ export function retornoDaConstrucaoEm(
     base,
     idConstrucao,
     corrupcaoComAObra(nucleo, idProvincia, idConstrucao, base),
+    fatorDoAlvoEm(nucleo, idProvincia, { comObra: idConstrucao }),
   );
   // ⚠️ **A praça tem duas pernas, e a ficha tem que somar as duas.** A perna local já veio
   // acima, dentro da renda da província; a nacional é a rede do reino, que não cabe em

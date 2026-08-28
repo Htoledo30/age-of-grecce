@@ -17,6 +17,7 @@
  *    nem engrossar uma hoste que já recebeu ordem.
  */
 
+import { limparAcessosVencidos } from '../diplomacia/acesso-militar';
 import { avancarAno } from '../estado-campanha';
 import type { NucleoDaCampanha } from '../nucleo';
 import type { EfemerosDaCampanha } from '../estado/efemeros';
@@ -71,6 +72,12 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   // Depois de o turno andar, e não antes: a trégua que vence NESTE turno já não segura mais.
   // Sem esta limpeza o registro cresceria para sempre com pares que não significam mais nada.
   limparTregoas(nucleo);
+  // A licença de passagem vence como a trégua, e some pela mesma razão.
+  limparAcessosVencidos(nucleo);
+  // ⚠️ **E a mesa de propostas é limpa toda virada.** Proposta é do turno em que foi feita:
+  // acumular pedidos velhos faria o jogador responder a um mundo que já mudou — e faria a
+  // mesma oferta reaparecer empilhada dez vezes.
+  nucleo.estado.propostas = [];
   // A opinião anda um passo por turno, como o humor do povo — e pelos mesmos motivos.
   andarRelacoes(nucleo, poderesComFicha(nucleo));
   // A reputação volta devagar para zero e os pactos vencidos somem.

@@ -129,6 +129,20 @@ export interface VizinhoNaMesa {
   pacto: number;
   temAcordo: boolean;
   rendaDoAcordo: number;
+  /**
+   * O que ELE está te pedindo nesta virada, e que espera um sim ou um não.
+   *
+   * ⚠️ **É a metade da diplomacia que faltava.** Todo o resto desta tela é o jogador
+   * propondo; isto é o outro lado abrindo a boca. Henrique: *"não sinto a IA tentando se
+   * conectar comigo (...) e eu ter opção de aceitar ou recusar"*. `null` quando ele não pediu
+   * nada — que é o caso da esmagadora maioria das viradas, e por isso o bloco só aparece
+   * quando existe.
+   */
+  pedido: { tipo: 'pacto' | 'comercio' | 'acesso'; frase: string } | null;
+  /** Turnos que faltam da passagem que VOCÊ deu a ele, ou 0. */
+  passagemConcedida: number;
+  /** Turnos que faltam da passagem que ELE te deu, ou 0. */
+  passagemRecebida: number;
   /** Os grupos de proposta, na ordem em que a tela os empilha. */
   grupos: readonly GrupoDaMesa[];
 }

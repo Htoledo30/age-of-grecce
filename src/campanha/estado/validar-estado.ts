@@ -20,12 +20,12 @@ export function validarSalvamento(nucleo: NucleoDaCampanha, salvo: EstadoCampanh
   };
 
   // A tabela de donos tem que ser CHEIA e exata — é a regra escrita no estado.
-  for (const p of atlas.provincias) {
+  for (const p of atlas.terras) {
     const dono = salvo.dono[p.id];
     if (dono === undefined) falhar(`província sem dono: ${p.id}`);
     else if (!atlas.existePoder(dono)) falhar(`dono inexistente: ${dono} em ${p.id}`);
   }
-  if (Object.keys(salvo.dono).length !== atlas.provincias.length) {
+  if (Object.keys(salvo.dono).length !== atlas.terras.length) {
     falhar('a tabela de donos tem províncias que o atlas não conhece');
   }
 

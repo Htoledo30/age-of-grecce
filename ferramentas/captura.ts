@@ -5,7 +5,7 @@
  * Sobe o servidor, abre um navegador em 1920x1080, espera a cena desenhar,
  * salva o PNG em capturas/ e relata qualquer erro de console.
  *
- * uso: npm run capturar -- [nome] [--espera=1000] [--visivel] [--afastar]
+ * uso: npm run capturar -- [nome] [--espera=1000] [--visivel] [--afastar] [--tela=1600x900]
  *      [--andar=tecla:milissegundos] [--executar='<javascript>']
  *
  * Sem --visivel o navegador roda oculto e renderiza por SOFTWARE (SwiftShader), o que
@@ -21,11 +21,25 @@ import type { ViteDevServer } from 'vite';
 
 const PORTA = 5173;
 const URL_DEV = `http://localhost:${PORTA}`;
-const LARGURA = 1920;
-const ALTURA = 1080;
+const LARGURA_PADRAO = 1920;
+const ALTURA_PADRAO = 1080;
 
 const argumentos = process.argv.slice(2);
 const nome = argumentos.find((a) => !a.startsWith('--')) ?? 'prova';
+/**
+ * --tela=1920x1000 : o tamanho da JANELA, que não é o tamanho do palco.
+ *
+ * ⚠️ Existe porque a captura padrão mentia. O palco tem 1920x1080 fixos e é escalado para
+ * caber na janela; numa captura de 1920x1080 exatos a escala é 1, e é a única situação em
+ * que o texto sai do tamanho em que foi desenhado. Na tela do Henrique — 1920x1080 com
+ * barra de tarefas e barra de título — sobra menos de 1010 px de altura, a escala cai para
+ * ~0,93 e TODA a tipografia encolhe junto. Sem este parâmetro eu não conseguia ver o que
+ * ele estava vendo.
+ */
+const tela = argumentos.find((a) => a.startsWith('--tela='))?.split('=')[1];
+const [LARGURA = LARGURA_PADRAO, ALTURA = ALTURA_PADRAO] = tela
+  ? tela.split('x').map(Number)
+  : [];
 const espera = Number(argumentos.find((a) => a.startsWith('--espera='))?.split('=')[1] ?? 800);
 const visivel = argumentos.includes('--visivel');
 const afastar = argumentos.includes('--afastar');

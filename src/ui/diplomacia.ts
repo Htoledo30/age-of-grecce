@@ -105,6 +105,9 @@ export class Diplomacia {
   aoFirmarPacto: (idPoder: string, turnos: number) => void = () => {};
   aoAcordarComercio: (idPoder: string) => void = () => {};
   aoDesfazerAcordo: (idPoder: string) => void = () => {};
+  aoConcederAcesso: (idPoder: string, turnos: number) => void = () => {};
+  aoRevogarAcesso: (idPoder: string) => void = () => {};
+  aoResponderPedido: (idPoder: string, tipo: string, aceita: boolean) => void = () => {};
   aoRomperPacto: (idPoder: string) => void = () => {};
   aoPagarTributo: (idPoder: string, turnos: number) => void = () => {};
   aoExigirTributo: (idPoder: string, turnos: number) => void = () => {};
@@ -221,8 +224,8 @@ export class Diplomacia {
 
     this.resumo.textContent =
       vista.guerras === 0
-        ? `em paz com o mundo · ${vista.vizinhos.length} vizinhos`
-        : `${vista.guerras} ${vista.guerras === 1 ? 'guerra em curso' : 'guerras em curso'} · ${vista.vizinhos.length} vizinhos`;
+        ? `em paz com o mundo · ${vista.vizinhos.length} reinos na mesa`
+        : `${vista.guerras} ${vista.guerras === 1 ? 'guerra em curso' : 'guerras em curso'} · ${vista.vizinhos.length} reinos na mesa`;
 
     this.lista.replaceChildren(...vista.vizinhos.map((v) => this.linhaDe(v)));
     const escolhido = vista.vizinhos.find((v) => v.id === this.escolhido);
@@ -254,6 +257,17 @@ export class Diplomacia {
     estado.className = 'diplomacia__nome-estado';
     estado.textContent = vizinho.emGuerra ? 'em guerra' : vizinho.postura.toLowerCase();
 
+    // ⚠️ **A fronteira virou um SELO, e não mais o filtro da lista.** Desde que a mesa abriu
+    // para os 18 poderes com ficha, quem encosta em você deixou de ser "quem aparece" e
+    // passou a ser "com quem a hoste pode marchar hoje" — que é outra coisa, e é a que
+    // importa na hora de declarar guerra.
+    if (vizinho.fronteira.length > 0) {
+      const marca = document.createElement('span');
+      marca.className = 'diplomacia__nome-fronteira';
+      marca.textContent = 'fronteira';
+      nome.appendChild(marca);
+    }
+
     const forca = document.createElement('span');
     forca.className = 'diplomacia__nome-forca';
     forca.textContent = vizinho.cartao.exercito.toLocaleString('pt-BR');
@@ -263,6 +277,15 @@ export class Diplomacia {
     baixo.append(estado, forca);
 
     botao.append(nome, baixo);
+    // ⚠️ **A marca do pedido fica na LISTA**, e não só dentro do dossiê: sem ela, o jogador só
+    // descobriria que alguém quer falar com ele clicando reino por reino.
+    if (vizinho.pedido) {
+      const marca = document.createElement('span');
+      marca.className = 'diplomacia__nome-pedido';
+      marca.textContent = 'pede';
+      botao.dataset['pedido'] = 'sim';
+      baixo.appendChild(marca);
+    }
     botao.addEventListener('click', () => {
       this.escolhido = vizinho.id;
       // Trocar de interlocutor apaga a resposta do anterior: ela era daquela conversa.
@@ -274,16 +297,55 @@ export class Diplomacia {
 
   /** A mesa inteira: os dois lados, a opinião, o que ele quer, e o que dá para propor. */
   private mesaDe(eu: CartaoDoPoder, vizinho: VizinhoNaMesa): readonly HTMLElement[] {
-    const partes: HTMLElement[] = [
-      this.cartoes(eu, vizinho),
+    const partes: HTMLElement[] = [this.cartoes(eu, vizinho)];
+    // ⚠️ **O pedido dele vem ANTES da fala de abertura**, e a ordem é a mensagem: quando o
+    // outro lado pede alguma coisa, é isso que está em cima da mesa — não o que você ia
+    // propor. Só aparece quando existe.
+    if (vizinho.pedido) partes.push(this.pedido(vizinho));
+    partes.push(
       this.abertura(vizinho),
       this.barraDeForca(eu, vizinho),
       this.opiniao(vizinho),
       this.intencao(vizinho),
-    ];
+    );
     if (vizinho.lacos.length > 0) partes.push(this.lacos(vizinho));
     partes.push(this.propostas(vizinho));
     return partes;
+  }
+
+  /**
+   * O PEDIDO DELE: a metade da diplomacia em que quem fala é o outro.
+   *
+   * ⚠️ **Aceitar e recusar lado a lado, e recusar não custa nada.** Um "não" que abalasse a
+   * opinião faria a resposta certa ser nunca abrir a aba — e um sistema que pune quem o usa é
+   * um sistema que ninguém usa.
+   */
+  private pedido(vizinho: VizinhoNaMesa): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__pedido';
+    caixa.dataset['tipo'] = vizinho.pedido?.tipo ?? '';
+    const frase = document.createElement('p');
+    frase.className = 'diplomacia__pedido-fala';
+    frase.textContent = vizinho.pedido?.frase ?? '';
+    const botoes = document.createElement('div');
+    botoes.className = 'diplomacia__pedido-botoes';
+    for (const [rotulo, aceita] of [
+      ['Aceitar', true],
+      ['Recusar', false],
+    ] as const) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'diplomacia__pedido-botao';
+      botao.dataset['acao'] = aceita ? 'aceitar-pedido' : 'recusar-pedido';
+      botao.textContent = rotulo;
+      botao.addEventListener('click', () => {
+        const tipo = vizinho.pedido?.tipo;
+        if (tipo) this.aoResponderPedido(vizinho.id, tipo, aceita);
+      });
+      botoes.appendChild(botao);
+    }
+    caixa.append(frase, botoes);
+    return caixa;
   }
 
   /**
@@ -677,6 +739,10 @@ export class Diplomacia {
         return this.aoAcordarComercio(id);
       case 'desfazer-acordo':
         return this.aoDesfazerAcordo(id);
+      case 'acesso':
+        return this.aoConcederAcesso(id, proposta.valor);
+      case 'revogar-acesso':
+        return this.aoRevogarAcesso(id);
       case 'pacto':
         return this.aoFirmarPacto(id, proposta.valor);
       case 'romper':

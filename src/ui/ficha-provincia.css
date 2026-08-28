@@ -1,7 +1,20 @@
-.ficha {
-  position: relative;
-  flex: 0 0 auto;
-  padding: 20px;
+/* O PAINEL DA PROVÍNCIA — uma moldura só, ancorada no canto de baixo à esquerda.
+
+   ⚠️ **Sem `overflow`, e é a regra inteira desta reforma.** Eram três caixas empilhadas numa
+   coluna com `overflow-y: auto`: ficha, ações e recrutamento somavam mais de 800 px e o
+   jogador tinha que ROLAR para chegar no botão de levantar exército. O painel agora é curto
+   por construção — quatro medidas de altura fixa, duas linhas de terra, uma barra de
+   comandos — e o que não cabe aqui virou janela: construir e recrutar.
+
+   Ancorado embaixo, e não em cima: o painel senta no canto e cresce para cima conforme os
+   alarmes aparecem, em vez de empurrar os comandos para fora da tela. */
+.painel-provincia {
+  position: absolute;
+  bottom: 22px;
+  left: 22px;
+  z-index: 16;
+  width: 416px;
+  padding: 19px 20px 17px;
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
   background: var(--ui-vidro);
@@ -9,9 +22,17 @@
   box-shadow: var(--sombra-painel);
   backdrop-filter: blur(8px);
 }
+
+/* ── quem é ───────────────────────────────────────────────────────────────────────── */
+.ficha__topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
 .ficha__nome {
   font-family: var(--fonte-nome);
-  font-size: 31px;
+  font-size: 32px;
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -20,120 +41,180 @@
 .ficha__dono {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin: 10px 0 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
+  gap: 8px;
+  margin-top: 7px;
   font-size: 12px;
   font-weight: 650;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--ui-texto-fraco);
+  color: var(--ui-texto-tenue);
 }
 .ficha__tinta {
   flex: none;
-  width: 16px;
-  height: 21px;
-  border: 1px solid var(--ui-texto-fraco);
-  border-radius: 6px 6px 9px 9px;
+  width: 14px;
+  height: 18px;
+  border: 1px solid var(--ui-texto-tenue);
+  border-radius: 5px 5px 8px 8px;
   clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
   box-shadow: inset 0 0 0 1px var(--ui-fundo);
 }
-.ficha__lista {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 5px 18px;
-  font-size: 12px;
+/* O que a terra dá, na terceira linha da identidade — texto, e não pastilha.
+   ⚠️ Eram duas fileiras de caixinhas iguais, produtos em cima e construções embaixo, e o
+   olho lia as duas como a mesma lista. Uma é o que a terra É; a outra é o que se ergueu
+   nela. Só a primeira é identidade, e as construções saíram do painel. */
+.ficha__producao {
+  margin-top: 5px;
+  padding-left: 22px;
+  font-family: var(--fonte-nome);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--ui-bronze-claro);
+  cursor: help;
 }
-.ficha__lista dt {
-  color: var(--ui-texto-tenue);
+
+/* Os selos: uma palavra cada, e a cor só acompanha a palavra — nunca a substitui. */
+.ficha__selos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-top: 3px;
+}
+.ficha__selo {
+  padding: 3px 8px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.055em;
+  color: var(--ui-texto-tenue);
 }
-.ficha__lista dd {
-  font-family: var(--fonte-numero);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+.ficha__selo[data-tom='ouro'] {
+  border-color: var(--ui-bronze);
+  background: var(--ui-pressionado);
+  color: var(--ui-bronze-claro);
+}
+.ficha__selo[data-tom='perigo'] {
+  border-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
+}
+
+/* ── o que está errado ────────────────────────────────────────────────────────────── */
+.ficha__avisos:not(:empty) {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+}
+.ficha__aviso {
+  padding: 6px 9px;
+  border-left: 2px solid var(--ui-borda);
+  background: var(--ui-fundo-suave);
+  font-size: 12.5px;
+  line-height: 1.35;
   color: var(--ui-texto-fraco);
 }
-.ficha__economia {
-  margin-top: 14px;
-  padding-top: 13px;
+.ficha__aviso[data-tom='perigo'] {
+  border-left-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
+}
+.ficha__aviso[data-tom='atencao'] {
+  border-left-color: var(--ui-fogo);
+  color: var(--ui-fogo-claro);
+}
+.ficha__aviso[data-tom='obra'] {
+  border-left-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+
+/* ── quanto vale: as quatro medidas ───────────────────────────────────────────────── */
+.ficha__caixa-de-medidas {
+  margin-top: 13px;
+  padding-top: 12px;
   border-top: 1px solid var(--ui-borda-fraca);
 }
-.ficha__sem-economia {
-  font-size: 12px;
+.ficha__medidas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ficha__medida {
+  padding: 0 8px;
+  border-left: 1px solid var(--ui-borda-fraca);
+  cursor: help;
+}
+.ficha__medida:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ficha__medida dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
-.ficha__subtitulo {
-  font-family: var(--fonte-nome);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--ui-texto);
-}
-.ficha__renda {
+.ficha__valor {
   margin-top: 3px;
   font-family: var(--fonte-numero);
-  font-size: 13px;
-  color: var(--ui-bronze-claro);
-  cursor: help;
+  font-size: 21px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ui-texto);
 }
-.ficha__renda[data-tom='negativo'] {
-  color: var(--ui-sangue-claro);
-  font-weight: 700;
-}
-.ficha__total {
-  padding-top: 5px;
-  border-top: 1px solid var(--ui-borda-fraca);
-  font-weight: 700;
-}
-.ficha__lista dd.ficha__total {
-  color: var(--ui-bronze-claro);
-}
-/* O secundário mora junto da produção porque responde à mesma pergunta: o que esta terra
-   dá. Tênue de propósito — ele é identidade da terra, não decisão a tomar, e a
-   contabilidade da comida vive no Governo. */
-.ficha__secundario {
-  margin-top: 2px;
+/* O passo do próximo turno, colado no número — o mesmo formato do tesouro na barra. */
+.ficha__delta {
+  margin-left: 4px;
   font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
   color: var(--ui-texto-tenue);
-  cursor: help;
 }
-.ficha__construcoes {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--ui-borda-fraca);
-  font-size: 11px;
-  color: var(--ui-verde-claro);
+.ficha__medida[data-tom='ruim'] .ficha__delta {
+  color: var(--ui-sangue-claro);
 }
-.ficha__obra {
-  margin-top: 8px;
-  font-size: 11px;
+/* Duas linhas SEMPRE reservadas: a régua do povo — "+175 · terra grande" — não cabe numa
+   coluna de 95 px, e uma medida que cresce sozinha desalinha as outras três. */
+.ficha__nota {
+  display: block;
+  min-height: 2.5em;
+  white-space: pre-line;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--ui-texto-tenue);
+}
+.ficha__medida[data-tom='bom'] .ficha__valor {
   color: var(--ui-bronze-claro);
 }
+.ficha__medida[data-tom='ruim'] .ficha__valor,
+.ficha__medida[data-tom='ruim'] .ficha__nota {
+  color: var(--ui-sangue-claro);
+}
 
+/* Telas baixas: o painel encolhe pelas margens e pelo nome, nunca pelas medidas — elas são
+   a razão de ele existir. */
 @media (max-height: 820px) {
-  .ficha {
-    padding: 15px;
+  .painel-provincia {
+    bottom: 14px;
+    left: 14px;
+    width: 392px;
+    padding: 15px 16px 14px;
   }
-
   .ficha__nome {
-    font-size: 26px;
+    font-size: 27px;
   }
-
-  .ficha__dono {
-    margin: 8px 0 10px;
-    padding-bottom: 9px;
-  }
-
-  .ficha__economia {
+  .ficha__caixa-de-medidas {
     margin-top: 10px;
     padding-top: 9px;
   }
 }
-
-/* Sitiada: a causa da renda que minguou, escrita onde o jogador vai procurar. */
-dd.ficha__cerco {
-  color: var(--sangue);
-  font-weight: bold;
+@media (max-width: 1100px) {
+  .painel-provincia {
+    width: 366px;
+  }
 }

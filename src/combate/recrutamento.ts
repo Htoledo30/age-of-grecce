@@ -106,15 +106,14 @@ export function manutencaoDe(homens: number, taxa: number): number {
  * elas discordariam sobre o que é preciso construir.
  */
 export function motivoDaArmaTrancada(arma: Arma): string {
-  if (arma === 'hoplita') {
-    return 'esta terra não tem Armaria: sem ela só se levantam soldados leves';
-  }
-  if (arma === 'arqueiro') {
-    return 'esta terra não tem Acampamento de arqueiro — e ele só nasce onde há madeira';
-  }
-  if (arma === 'cavalaria') {
-    return 'esta terra não tem Treinamento de cavaleiros — e ele só nasce onde há cavalos';
-  }
+  // ⚠️ **O que FALTA, e nada mais.** Cada motivo era uma frase de ensino — "esta terra não
+  // tem Armaria: sem ela só se levantam soldados leves" — e quatro dessas lado a lado no
+  // painel viravam um parágrafo onde deviam estar quatro palavras. Por que aquela
+  // construção só nasce em certas terras é assunto do catálogo de construções, não do
+  // cartão da arma.
+  if (arma === 'hoplita') return 'falta Armaria';
+  if (arma === 'arqueiro') return 'falta Acampamento de arqueiro';
+  if (arma === 'cavalaria') return 'falta Treinamento de cavaleiros';
   // O leve nunca chega aqui: ele é a linha de base e toda província o levanta.
   return 'esta terra não levanta esta arma';
 }

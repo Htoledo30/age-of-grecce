@@ -29,6 +29,16 @@ export function medirProvincias(
   const { largura: L, altura: A, celulas } = grade;
   const total = sementes.length + 1;
   const pixels = new Int32Array(total);
+  /**
+   * Só o CHÃO conta para a área.
+   *
+   * ⚠️ Desde que o arquipélago reivindica a água em volta das ilhas dele, "quantos pixels são
+   * meus" deixou de responder "que tamanho tem esta terra": as Cíclades Centrais passariam de
+   * 900 km² para quase 6.000 sem uma ilha nova. E a área não é enfeite — é ela que escolhe a
+   * capital quando um reino perde a sede. Um arquipélago virando capital por ter mar em volta
+   * seria uma regra decidida por engano de medição.
+   */
+  const pixelsDeTerra = new Int32Array(total);
   const somaX = new Float64Array(total);
   const somaY = new Float64Array(total);
   const vizinhas: Array<Set<number>> = Array.from({ length: total }, () => new Set<number>());
@@ -39,6 +49,7 @@ export function medirProvincias(
     const x = i % L;
     const y = (i - x) / L;
     pixels[d]!++;
+    if (grade.custo[i]! > 0) pixelsDeTerra[d]!++;
     somaX[d]! += x;
     somaY[d]! += y;
     if (x + 1 < L) {
@@ -65,7 +76,7 @@ export function medirProvincias(
       nome: semente.nome,
       regiao: semente.regiao,
       dono: semente.dono,
-      areaKm2: Math.round(n * grade.km2PorPixel),
+      areaKm2: Math.round(pixelsDeTerra[indice]! * grade.km2PorPixel),
       centro:
         n > 0
           ? {

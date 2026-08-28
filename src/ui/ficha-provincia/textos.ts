@@ -1,28 +1,20 @@
 /**
- * As frases e os formatos da ficha: tooltips, romanos, moeda e sinal.
+ * As frases e os formatos do painel de província: tooltips, romanos, moeda e sinal.
  *
  * Ficam separados da montagem porque são DECISÕES DE TEXTO, não de layout — e é aqui que
  * mora o cuidado de não escrever "+0 por turno" onde o certo é "estável".
  */
 
-import type { PerfilDaProvincia } from '@/campanha/perfil-da-provincia';
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
-import { definirTooltip } from '../tooltip';
 import type { ConteudoDeTooltip } from '../tooltip';
 import type { VistaDaProvincia } from './vista';
 
-/**
- * A composição da população numa linha: "Eleusina 85% · Ateniense 15%".
- *
- * Povo único sai sem porcentagem — "Ateniense 100%" é ruído, e a maioria das províncias
- * é assim. A porcentagem só aparece quando ela significa alguma coisa.
- */
 /**
  * O crescimento como frase, e não como sinal grudado num número.
  *
  * ⚠️ **Zero é ESTÁVEL, não "+0".** A alimentação criou uma faixa em que o povo nem cresce
  * nem mingua — é onde o reino descansa — e escrever "+0 por turno" ali parecia defeito.
- * Negativo também não pode virar "+-24": míngua é outra notícia, e a ficha diz isso.
+ * Negativo também não pode virar "+-24": míngua é outra notícia, e o painel diz isso.
  */
 export function tooltipDaPopulacao(
   populacao: CrescimentoPopulacional & { limitadoPelaAlimentacao: boolean },
@@ -54,7 +46,7 @@ export function tooltipDaPopulacao(
 
 export function tooltipDoHumor(
   atual: number,
-  humor: VistaDaProvincia['humor'] & {},
+  humor: NonNullable<VistaDaProvincia['humor']>,
 ): ConteudoDeTooltip {
   const alvo = humor.alvo;
   const movimento = atual < alvo ? 'subindo' : atual > alvo ? 'caindo' : 'mantido';
@@ -68,9 +60,10 @@ export function tooltipDoHumor(
   };
 }
 
-export function tooltipDoCerco(
-  cerco: { mantimentosRestantes: number; fomeAtiva: boolean },
-): ConteudoDeTooltip {
+export function tooltipDoCerco(cerco: {
+  mantimentosRestantes: number;
+  fomeAtiva: boolean;
+}): ConteudoDeTooltip {
   if (cerco.fomeAtiva) {
     return {
       titulo: 'Mantimentos esgotados',
@@ -84,12 +77,6 @@ export function tooltipDoCerco(
     }`,
     corpo: 'Sem crescimento enquanto o cerco durar.',
   };
-}
-
-export function povos(perfil: PerfilDaProvincia): string {
-  const fatias = perfil.nacionalidades;
-  if (fatias.length === 1) return fatias[0]?.nome ?? '';
-  return fatias.map((f) => `${f.nome} ${Math.round(f.fracao * 100)}%`).join(' · ');
 }
 
 /** Grau de 1 a 5 em algarismo romano. A tabela é o mapa inteiro: não existe nível 6. */
@@ -111,25 +98,4 @@ export function faseDoCerco(cerco: { mantimentosRestantes: number; fomeAtiva: bo
   return `mantimentos para ${cerco.mantimentosRestantes} ${
     cerco.mantimentosRestantes === 1 ? 'turno' : 'turnos'
   }`;
-}
-
-export function campo(
-  rotulo: string,
-  valor: string,
-  classe?: string,
-  extra?: ConteudoDeTooltip,
-): [HTMLElement, HTMLElement] {
-  const dt = document.createElement('dt');
-  dt.textContent = rotulo;
-  const dd = document.createElement('dd');
-  dd.textContent = valor;
-  if (classe) {
-    dt.className = classe;
-    dd.className = classe;
-  }
-  if (extra) {
-    definirTooltip(dt, extra);
-    definirTooltip(dd, extra);
-  }
-  return [dt, dd];
 }

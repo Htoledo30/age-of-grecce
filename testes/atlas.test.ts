@@ -13,14 +13,30 @@ const provincias = Provincias.parse(
 const atlas = new Atlas(provincias);
 
 describe('atlas: o mundo assado e indexado', () => {
-  it('conhece o recorte inteiro', () => {
-    expect(atlas.provincias).toHaveLength(196);
+  it('conhece o recorte inteiro: 196 terras e 48 zonas de mar', () => {
+    // ⚠️ O atlas guarda os DOIS tabuleiros na mesma lista, e `terras` separa. As zonas de
+    // água entraram para o exército poder atravessar o Egeu; elas não têm dono, não se
+    // conquistam e não contam como território de ninguém.
+    expect(atlas.terras).toHaveLength(196);
+    expect(atlas.provincias.filter((p) => p.mar === true)).toHaveLength(48);
+    expect(atlas.provincias).toHaveLength(244);
     expect(atlas.poderes).toHaveLength(139);
     expect(atlas.impressaoDigital).toEqual({
       epoca: provincias.epoca,
-      provincias: 196,
+      provincias: 244,
       poderes: 139,
     });
+  });
+
+  it('a água é água, e o chão é chão', () => {
+    expect(atlas.ehMar('golfo-saronico')).toBe(true);
+    expect(atlas.ehMar('atenas')).toBe(false);
+    // ⚠️ Salamina deixou de ser inalcançável: ela encosta no Estreito de Salamina, e uma
+    // hoste que embarque num Porto ateniense chega lá. Continua sendo ILHA — nenhuma
+    // vizinha dela é chão —, e é essa a diferença que `semVizinhaPorTerra` guarda.
+    expect(atlas.semVizinhaPorTerra('salamina')).toBe(true);
+    expect(atlas.vizinhasDe('salamina').length).toBeGreaterThan(0);
+    expect(atlas.vizinhasDe('rodes').every((v) => atlas.ehMar(v))).toBe(true);
   });
 
   it('acha província por id e por índice, e o índice 0 é o mar', () => {
@@ -82,7 +98,9 @@ describe('atlas: o mundo assado e indexado', () => {
     // arquipélago, mesmo sem fingirem ser nove reinos separados.
     expect(atlas.provincia('andros').areaKm2).toBeGreaterThan(900);
     expect(atlas.provincia('naxos').areaKm2).toBeGreaterThan(900);
-    expect(atlas.provincia('melos').areaKm2).toBeGreaterThan(400);
+    // ⚠️ As Ocidentais encolheram de propósito: Tera e Anafi passaram para as Centrais, que é
+    // o que fez aquele grupo virar UMA mancha em vez de duas. Ver `agua-do-arquipelago.ts`.
+    expect(atlas.provincia('melos').areaKm2).toBeGreaterThan(250);
     for (const antiga of ['miconos', 'tinos', 'keos', 'citnos', 'paros', 'ios', 'amorgos', 'sifnos', 'tera']) {
       expect(atlas.existe(antiga)).toBe(false);
       expect(atlas.existePoder(antiga)).toBe(false);

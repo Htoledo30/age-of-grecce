@@ -42,8 +42,16 @@ import {
   retornoDaConstrucaoEm,
 } from '../provincia/construcoes';
 import { podeAgirEm, podeMobilizarEm, podeRecrutarEm } from '../provincia/permissoes';
+import type { NivelDeImposto } from '../economia';
+import { previsaoDeImpostoEm } from '../governo/previsao-de-imposto';
+import type { PrevisaoDeImposto } from '../governo/previsao-de-imposto';
 import { economiaDe, saldoDaProvincia } from '../provincia/renda';
-import { alvoDeFelicidadeEm, emRevoltaEm, parcelasDeFelicidadeEm } from '../sociedade/humor';
+import {
+  alvoDeFelicidadeEm,
+  emRevoltaEm,
+  fatorDoHumorEm as fatorDoHumorNoNucleo,
+  parcelasDeFelicidadeEm,
+} from '../sociedade/humor';
 import { ConsultasDoReino } from './consultas-do-reino';
 
 export abstract class ConsultasDaProvincia extends ConsultasDoReino {
@@ -86,6 +94,16 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
    */
   felicidadeEm(idProvincia: string): number {
     return perfilDe(this.nucleo, idProvincia)?.felicidade.valor ?? 0;
+  }
+
+  /**
+   * Quanto o humor desta província multiplica a renda dela. 1 é o normal.
+   *
+   * Na fachada porque a TELA precisa dizer onde a felicidade vira dinheiro: sem esta linha
+   * no painel, o jogador vê o número mexer e não descobre o que ele faz.
+   */
+  fatorDoHumorEm(idProvincia: string): number {
+    return fatorDoHumorNoNucleo(this.nucleo, idProvincia);
   }
 
   /** O humor desta província está na faixa revoltosa? É a que não paga imposto. */
@@ -134,6 +152,16 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
     idConstrucao: string,
   ): RetornoDaConstrucao | null {
     return retornoDaConstrucaoEm(this.nucleo, idProvincia, idConstrucao);
+  }
+
+  /**
+   * O que este decreto de imposto faria com a renda desta terra — agora e assentado.
+   *
+   * A mesma ideia de `retornoDaConstrucaoEm`, e pelo mesmo motivo: o jogador precisa ver a
+   * consequência em MOEDA, e não em porcentagem de uma parcela que ele não enxerga.
+   */
+  previsaoDeImpostoEm(idProvincia: string, nivel: NivelDeImposto): PrevisaoDeImposto | null {
+    return previsaoDeImpostoEm(this.nucleo, idProvincia, nivel);
   }
 
   /**
@@ -216,6 +244,16 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
    */
   efeitoDaObra(idConstrucao: string): TipoDeEfeito | null {
     return this.nucleo.catalogo[idConstrucao]?.efeito.tipo ?? null;
+  }
+
+  /**
+   * Esta obra ABRE O MAR? É a porta por onde a mercadoria e o exército embarcam.
+   *
+   * Pergunta pelo dado (`ligaPorMar`), e não por um id escrito na regra: o dia em que houver
+   * uma segunda obra que abra o mar, ela abre sem ninguém lembrar de mexer aqui.
+   */
+  abreOMar(idConstrucao: string): boolean {
+    return this.nucleo.catalogo[idConstrucao]?.ligaPorMar === true;
   }
 
   /** O nome que a obra tem na tela, ou o próprio id se ela sumir do catálogo. */

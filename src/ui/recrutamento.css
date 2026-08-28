@@ -1,88 +1,191 @@
-.recrutamento {
-  position: relative;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border: 1px solid var(--ui-borda);
-  border-radius: var(--raio-2);
-  background: var(--ui-vidro);
-  color: var(--ui-texto);
-  box-shadow: var(--sombra-painel);
-  backdrop-filter: blur(8px);
+/* A janela de recrutamento. A moldura vem de `janela.css`; aqui está só o miolo. */
+.recrutamento__recusa {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ui-texto-tenue);
 }
-.recrutamento__cabecalho {
+.recrutamento__conteudo {
+  display: grid;
+  gap: 18px;
+}
+
+/* A reserva: os números que limitam a leva antes de qualquer escolha. */
+/* Só existe quando há o que dizer: formação em curso e treino da terra. Vazio, some. */
+.recrutamento__resumo:not(:empty) {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 14px 18px;
-  border: 0;
-  background: transparent;
-  color: var(--ui-texto);
-  cursor: pointer;
-  text-align: left;
-}
-.recrutamento[data-aberto='sim'] .recrutamento__cabecalho {
+  flex-wrap: wrap;
+  gap: 0;
+  padding-bottom: 13px;
   border-bottom: 1px solid var(--ui-borda-fraca);
 }
-.recrutamento__cabecalho:hover,
-.recrutamento__cabecalho:focus-visible {
-  background: var(--ui-hover);
+.recrutamento__dado {
+  display: grid;
+  padding: 0 18px;
+  border-left: 1px solid var(--ui-borda-fraca);
 }
-.recrutamento__titulo {
-  font-family: var(--fonte-titulo);
-  font-size: 14px;
+.recrutamento__dado:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.recrutamento__dado-rotulo {
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ui-bronze-claro);
+  color: var(--ui-texto-tenue);
 }
-.recrutamento__indicador {
+.recrutamento__dado strong {
+  margin-top: 2px;
   font-family: var(--fonte-numero);
   font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto);
+}
+
+/* AS QUATRO ARMAS: nome e quatro números, e mais nada.
+   ⚠️ Cada cartão trazia um parágrafo descrevendo o papel da arma, e escolher entre quatro
+   botões virava ler quatro textos. O papel foi para o tooltip; aqui ficou o que se compara. */
+.recrutamento__armas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.recrutamento__arma {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 10px 11px 11px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
+  font-family: var(--fonte-corpo);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease;
+}
+.recrutamento__arma:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  background: var(--ui-fundo-claro);
+}
+.recrutamento__arma:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.recrutamento__arma[data-escolhida='sim'] {
+  border-color: var(--ui-bronze);
+  background: var(--ui-pressionado);
+}
+.recrutamento__arma-nome {
+  font-family: var(--fonte-nome);
+  font-size: 19px;
+  font-weight: 600;
   line-height: 1;
+  color: var(--ui-texto);
+}
+.recrutamento__arma[data-escolhida='sim'] .recrutamento__arma-nome {
   color: var(--ui-bronze-claro);
 }
-.recrutamento__corpo {
-  padding: 12px 18px 18px;
-}
-.recrutamento__alvo {
+.recrutamento__arma-numeros {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 8px;
   font-size: 12px;
-  line-height: 1.45;
+}
+.recrutamento__arma-numeros dt {
+  color: var(--ui-texto-tenue);
+}
+.recrutamento__arma-numeros dd {
+  font-family: var(--fonte-numero);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
   color: var(--ui-texto-fraco);
 }
-.recrutamento__valor {
-  width: 100%;
-  margin-top: 8px;
+.recrutamento__arma[data-escolhida='sim'] .recrutamento__arma-numeros dd {
+  color: var(--ui-texto);
+}
+/* O que falta para levantar esta arma. Vazio quando ela está liberada — e um elemento
+   vazio não ocupa linha, então o cartão liberado é mais curto por si. */
+.recrutamento__arma-trava:not(:empty) {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--ui-sangue-claro);
+}
+
+/* A escolha da leva: quanto, e o que isso custa. */
+.recrutamento__escolha {
+  display: grid;
+  gap: 9px;
 }
 .recrutamento__quantidade {
-  margin-top: 8px;
   font-family: var(--fonte-numero);
-  font-size: 14px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
   color: var(--ui-texto);
+}
+/* A barra: alta o bastante para se arrastar sem mira. O padrão do navegador tem 4 px de
+   trilho e um punho de 12, o que num painel escuro some. */
+.recrutamento__valor {
+  width: 100%;
+  height: 22px;
+  accent-color: var(--ui-bronze);
+  cursor: pointer;
+}
+.recrutamento__valor:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.recrutamento__atalhos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.recrutamento__atalho {
+  min-height: 30px;
+  padding: 5px 2px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto-fraco);
+  font-family: var(--fonte-numero);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.recrutamento__atalho:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-bronze-claro);
+}
+.recrutamento__atalho:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 .recrutamento__previsao {
   min-height: 18px;
-  margin-top: 7px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--ui-texto-tenue);
+  font-family: var(--fonte-numero);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ui-texto-fraco);
 }
 .recrutamento__previsao[data-pode='nao'] {
   color: var(--ui-sangue-claro);
 }
+.recrutamento__previsao[data-pode='espera'] {
+  color: var(--ui-texto-tenue);
+}
 .recrutamento__botao {
-  display: block;
   width: 100%;
-  margin-top: 10px;
+  padding: 11px;
   text-align: center;
 }
-
-@media (max-height: 820px) {
-  .recrutamento__cabecalho {
-    padding: 11px 14px;
-  }
-
-  .recrutamento__corpo {
-    padding: 10px 14px 14px;
-  }
+/* Desabilitado tem que PARECER desabilitado: em bronze cheio, o botão de reunir leva
+   convidava ao clique que ele mesmo recusava. */
+.recrutamento__botao:disabled {
+  border-color: var(--ui-borda-fraca);
+  background: transparent;
+  color: var(--ui-texto-tenue);
+  cursor: not-allowed;
 }

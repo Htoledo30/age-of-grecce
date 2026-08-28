@@ -65,12 +65,19 @@ describe('a batalha: choque, quebra e perseguição', () => {
     expect(folgada.sobreviventesA / 1000).toBeGreaterThan(0.8);
   });
 
-  it('a MURALHA muda o resultado, e o defensor menor passa a ter chance', () => {
+  it('a MURALHA faz a linha durar e o atacante pagar caro', () => {
     const aberta = batalha(1000, 400);
     const murada = batalha(1000, 400, 3);
-    // Aguentando o triplo, o defensor sangra menos e o atacante sangra mais tempo.
-    expect(murada.sobreviventesB).toBeGreaterThan(aberta.sobreviventesB);
+    // Aguentando o triplo, a linha do defensor demora muito mais para ceder...
+    expect(murada.rounds.length).toBeGreaterThan(aberta.rounds.length);
+    // ...e o atacante sangra o tempo todo em que ela durou.
     expect(murada.sobreviventesA).toBeLessThan(aberta.sobreviventesA);
+    // ⚠️ **O que a muralha NÃO promete é salvar mais gente numa cidade que cai.** O teste
+    // pedia isso e passou a falhar quando o limiar de quebra subiu para 70%: contra 1.000,
+    // 400 defensores perdem de qualquer jeito, e atrás do muro eles resistem até quase o
+    // fim — resistir mais tempo contra um exército inteiro custa MAIS vidas, não menos. A
+    // promessa da muralha é virar a luta em que o defensor tem chance, e isso o teste
+    // abaixo guarda com 900 contra 1.000.
   });
 
   it('o ATACANTE também quebra: a muralha VIRA a luta que ele ganharia', () => {

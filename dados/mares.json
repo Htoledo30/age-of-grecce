@@ -1,0 +1,294 @@
+{
+  "versao": 1,
+  "comentario": "As ZONAS MARITIMAS: o mar recortado em lugares com nome, para o exercito atravessar. Cada zona nasce de uma semente em longitude e latitude reais, exatamente como as provincias de terra — e cresce sobre a agua ate esbarrar na vizinha. Zona de mar nao tem dono, nao se conquista e nao produz nada: ela existe para ser atravessada e disputada. Nomes historicos onde existem; nomes geograficos onde a antiguidade nao batizou. As sementes ficam em AGUA LIVRE: desde que os arquipelagos reivindicam a agua entre as ilhas deles, o meio das Cicladas deixou de ser mar de ninguem, e uma semente plantada la seria puxada para longe sem ninguem notar.",
+  "mares": [
+    {
+      "id": "mar-jonio-norte",
+      "nome": "Jônio Setentrional",
+      "lon": 19.4,
+      "lat": 39.6
+    },
+    {
+      "id": "canal-de-corcira",
+      "nome": "Canal de Corcira",
+      "lon": 19.92,
+      "lat": 39.52
+    },
+    {
+      "id": "golfo-ambracico",
+      "nome": "Golfo Ambrácico",
+      "lon": 20.95,
+      "lat": 39.02
+    },
+    {
+      "id": "mar-de-leucade",
+      "nome": "Mar de Lêucade",
+      "lon": 20.55,
+      "lat": 38.75
+    },
+    {
+      "id": "mar-de-itaca",
+      "nome": "Mar de Ítaca",
+      "lon": 20.48,
+      "lat": 38.32
+    },
+    {
+      "id": "mar-de-zacinto",
+      "nome": "Mar de Zacinto",
+      "lon": 20.75,
+      "lat": 37.7
+    },
+    {
+      "id": "golfo-de-patras",
+      "nome": "Golfo de Patras",
+      "lon": 21.55,
+      "lat": 38.28
+    },
+    {
+      "id": "corinto-ocidental",
+      "nome": "Corinto Ocidental",
+      "lon": 22.25,
+      "lat": 38.3
+    },
+    {
+      "id": "corinto-oriental",
+      "nome": "Corinto Oriental",
+      "lon": 22.9,
+      "lat": 38.15
+    },
+    {
+      "id": "mar-cilenio",
+      "nome": "Mar Cilênio",
+      "lon": 21.1,
+      "lat": 37.6
+    },
+    {
+      "id": "mar-de-pilos",
+      "nome": "Mar de Pilos",
+      "lon": 21.4,
+      "lat": 36.85
+    },
+    {
+      "id": "golfo-messenio",
+      "nome": "Golfo Messênio",
+      "lon": 22.1,
+      "lat": 36.75
+    },
+    {
+      "id": "golfo-laconico",
+      "nome": "Golfo Lacônico",
+      "lon": 22.65,
+      "lat": 36.5
+    },
+    {
+      "id": "mar-de-citera",
+      "nome": "Mar de Citera",
+      "lon": 23.1,
+      "lat": 36.1
+    },
+    {
+      "id": "golfo-argolico",
+      "nome": "Golfo Argólico",
+      "lon": 23.0,
+      "lat": 37.25
+    },
+    {
+      "id": "golfo-saronico",
+      "nome": "Golfo Sarônico",
+      "lon": 23.45,
+      "lat": 37.72
+    },
+    {
+      "id": "estreito-de-salamina",
+      "nome": "Estreito de Salamina",
+      "lon": 23.54,
+      "lat": 37.97
+    },
+    {
+      "id": "mar-de-egina",
+      "nome": "Mar de Egina",
+      "lon": 23.46,
+      "lat": 37.5
+    },
+    {
+      "id": "euripo",
+      "nome": "Euripo",
+      "lon": 23.63,
+      "lat": 38.53
+    },
+    {
+      "id": "golfo-maliaco",
+      "nome": "Golfo Maliaco",
+      "lon": 22.84,
+      "lat": 38.86
+    },
+    {
+      "id": "golfo-pagasetico",
+      "nome": "Golfo Pagasético",
+      "lon": 23.1,
+      "lat": 39.25
+    },
+    {
+      "id": "mar-de-esciros",
+      "nome": "Mar de Esciros",
+      "lon": 24.44,
+      "lat": 38.9
+    },
+    {
+      "id": "mar-mirtoo",
+      "nome": "Mar Mirtoo",
+      "lon": 24.0,
+      "lat": 37.0
+    },
+    {
+      "id": "mar-das-cicladas",
+      "nome": "Mar das Cíclades",
+      "lon": 24.95,
+      "lat": 37.3
+    },
+    {
+      "id": "canal-de-ceos",
+      "nome": "Canal de Ceos",
+      "lon": 25.02,
+      "lat": 37.91
+    },
+    {
+      "id": "mar-de-naxos",
+      "nome": "Mar de Naxos",
+      "lon": 25.88,
+      "lat": 37.07
+    },
+    {
+      "id": "mar-icario",
+      "nome": "Mar Icário",
+      "lon": 26.35,
+      "lat": 37.55
+    },
+    {
+      "id": "estreito-de-samos",
+      "nome": "Estreito de Samos",
+      "lon": 27.02,
+      "lat": 37.78
+    },
+    {
+      "id": "egeu-setentrional",
+      "nome": "Egeu Setentrional",
+      "lon": 24.9,
+      "lat": 39.4
+    },
+    {
+      "id": "mar-tracio",
+      "nome": "Mar Trácio",
+      "lon": 24.9,
+      "lat": 40.5
+    },
+    {
+      "id": "golfo-termaico",
+      "nome": "Golfo Termaico",
+      "lon": 22.95,
+      "lat": 40.2
+    },
+    {
+      "id": "mar-de-tasos",
+      "nome": "Mar de Tasos",
+      "lon": 24.5,
+      "lat": 40.65
+    },
+    {
+      "id": "mar-de-lemnos",
+      "nome": "Mar de Lemnos",
+      "lon": 25.4,
+      "lat": 39.85
+    },
+    {
+      "id": "estreito-de-lesbos",
+      "nome": "Estreito de Lesbos",
+      "lon": 26.29,
+      "lat": 39.18
+    },
+    {
+      "id": "mar-de-tenedos",
+      "nome": "Mar de Tênedos",
+      "lon": 25.95,
+      "lat": 39.75
+    },
+    {
+      "id": "helesponto",
+      "nome": "Helesponto",
+      "lon": 26.42,
+      "lat": 40.23
+    },
+    {
+      "id": "propontide",
+      "nome": "Propôntide",
+      "lon": 27.9,
+      "lat": 40.7
+    },
+    {
+      "id": "mar-de-quios",
+      "nome": "Mar de Quios",
+      "lon": 25.98,
+      "lat": 38.39
+    },
+    {
+      "id": "golfo-de-esmirna",
+      "nome": "Golfo de Esmirna",
+      "lon": 26.85,
+      "lat": 38.5
+    },
+    {
+      "id": "mar-de-cos",
+      "nome": "Mar de Cós",
+      "lon": 27.31,
+      "lat": 36.85
+    },
+    {
+      "id": "mar-de-rodes",
+      "nome": "Mar de Rodes",
+      "lon": 28.11,
+      "lat": 36.19
+    },
+    {
+      "id": "mar-carpatico",
+      "nome": "Mar Cárpatio",
+      "lon": 27.2,
+      "lat": 35.6
+    },
+    {
+      "id": "mar-licio",
+      "nome": "Mar Lício",
+      "lon": 29.6,
+      "lat": 36.1
+    },
+    {
+      "id": "mar-panfilio",
+      "nome": "Mar Panfílio",
+      "lon": 31.0,
+      "lat": 36.2
+    },
+    {
+      "id": "mar-de-creta",
+      "nome": "Mar de Creta",
+      "lon": 25.0,
+      "lat": 35.75
+    },
+    {
+      "id": "mar-de-cidonia",
+      "nome": "Mar de Cidônia",
+      "lon": 23.9,
+      "lat": 35.7
+    },
+    {
+      "id": "mar-libio",
+      "nome": "Mar Líbio",
+      "lon": 24.6,
+      "lat": 34.8
+    },
+    {
+      "id": "mar-de-cipro",
+      "nome": "Mar de Chipre",
+      "lon": 32.0,
+      "lat": 35.1
+    }
+  ]
+}

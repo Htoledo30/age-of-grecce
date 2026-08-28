@@ -1,74 +1,33 @@
-.coluna-provincia {
-  position: absolute;
-  top: 104px;
-  bottom: 22px;
-  left: 22px;
-  z-index: 16;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: stretch;
-  gap: 8px;
-  width: 380px;
-  max-height: calc(100% - 126px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-right: 3px;
-}
-
+/* A BARRA DE COMANDOS da província: dois portões, o imposto e a capital.
+   Mora dentro da moldura do painel (`ficha-provincia.css`), separada por um filete. */
 .acoes {
-  position: relative;
-  flex: 0 0 auto;
-  padding: 18px;
-  border: 1px solid var(--ui-borda);
-  border-radius: var(--raio-2);
-  background: var(--ui-vidro);
-  color: var(--ui-texto);
-  box-shadow: var(--sombra-painel);
-  backdrop-filter: blur(8px);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ui-borda-fraca);
 }
-.acoes__titulo {
-  margin-bottom: 10px;
-  padding-bottom: 9px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
-  font-family: var(--fonte-titulo);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--ui-bronze-claro);
-}
-.acoes__alvo {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--ui-texto-fraco);
-}
-.acoes__grupo {
-  margin: 15px 0 7px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.acoes__recusa {
+  font-size: 12.5px;
+  line-height: 1.4;
   color: var(--ui-texto-tenue);
 }
-.acoes__lista {
+
+/* Os dois portões: ícone à esquerda, nome, e o contador embaixo. São a coisa mais clicável
+   do painel e por isso os únicos elementos com peso de botão de verdade. */
+.acoes__principais {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
+  gap: 7px;
 }
-.acoes__construcao {
-  display: block;
-  width: 100%;
-  min-height: 34px;
-  padding: 8px 10px;
+.acoes__portao {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-corpo);
-  font-size: 12px;
   text-align: left;
   cursor: pointer;
   transition:
@@ -76,170 +35,122 @@
     background 110ms ease,
     color 110ms ease;
 }
-.acoes__construcao:hover:not([disabled]) {
+.acoes__portao:hover:not(:disabled) {
   border-color: var(--ui-bronze);
   background: var(--ui-fundo-claro);
   color: var(--ui-texto);
 }
-.acoes__construcao[disabled] {
-  cursor: default;
-  color: var(--ui-texto-tenue);
+.acoes__portao:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
-.acoes__construcao[data-estado='erguida'] {
-  border-color: var(--ui-verde);
-  background: var(--ui-sucesso-fundo);
-  color: var(--ui-verde-claro);
+.acoes__portao-icone {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  color: var(--ui-bronze);
 }
-.acoes__construcao[data-estado='obra'] {
-  border-color: var(--ui-bronze);
-  border-style: dashed;
-  background: var(--ui-pressionado);
-  color: var(--ui-bronze-claro);
+.acoes__portao-textos {
+  display: grid;
+  min-width: 0;
 }
-.acoes__valor {
-  width: 100%;
-  margin-top: 5px;
-}
-.acoes__quantidade {
-  margin-top: 8px;
-  font-family: var(--fonte-numero);
-  font-size: 14px;
+.acoes__portao-nome {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
   color: var(--ui-texto);
 }
-.acoes__atalhos,
-.recrutamento__atalhos,
-.exercito__atalhos {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-top: 5px;
-}
-.acoes__atalho,
-.recrutamento__atalho,
-.exercito__atalho {
-  min-height: 28px;
-  padding: 4px 2px;
-  border: 1px solid var(--ui-borda-fraca);
-  border-radius: var(--raio-1);
-  background: var(--ui-fundo-suave);
-  color: var(--ui-texto-fraco);
+.acoes__portao-contador {
+  overflow: hidden;
   font-family: var(--fonte-numero);
-  font-size: 10px;
-  font-weight: 650;
-  cursor: pointer;
-}
-.acoes__atalho:hover:not(:disabled),
-.recrutamento__atalho:hover:not(:disabled),
-.exercito__atalho:hover:not(:disabled) {
-  border-color: var(--ui-bronze);
-  color: var(--ui-bronze-claro);
-}
-.acoes__atalho:disabled,
-.recrutamento__atalho:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
-.acoes__previsao {
-  min-height: 18px;
-  margin-top: 7px;
-  font-size: 11px;
-  line-height: 1.4;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: var(--ui-texto-tenue);
 }
-.acoes__previsao[data-vale='nao'] {
-  color: var(--ui-sangue-claro);
+/* "Tem coisa pra fazer aqui": bronze no contador, sem piscar nem badge — o painel avisa,
+   não cobra. */
+.acoes__portao[data-chamando='sim'] .acoes__portao-contador {
+  color: var(--ui-bronze-claro);
 }
-.acoes__botao {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  text-align: center;
-}
-
-@media (max-height: 820px) {
-  .coluna-provincia {
-    top: 94px;
-    bottom: 14px;
-    left: 14px;
-    width: 350px;
-    max-height: calc(100% - 108px);
-  }
-
-  .acoes {
-    padding: 14px;
-  }
-
-  .acoes__grupo {
-    margin-top: 10px;
-  }
+.acoes__portao[data-chamando='sim'] {
+  border-color: var(--ui-bronze-escuro);
 }
 
-@media (max-width: 1100px) {
-  .coluna-provincia {
-    width: 330px;
-  }
-}
-
-/* O botão da capital: uma decisão só, acima da lista de construções. Urgente quando o
-   reino está sem sede e a virada está travada esperando a escolha. */
-.acoes__capital {
-  width: 100%;
-  margin: 6px 0 2px;
-}
-.acoes__capital[data-urgente='sim'] {
-  border-color: var(--ui-perigo, #a33);
-  box-shadow: 0 0 0 1px var(--ui-perigo, #a33) inset;
-}
-
-/* O decreto de imposto: três níveis lado a lado, o vigente marcado. */
+/* O imposto: rótulo à esquerda, três níveis à direita, o vigente aceso. */
 .acoes__imposto {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.acoes__rotulo {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.acoes__niveis {
+  display: flex;
+  flex: 1;
+  gap: 4px;
 }
 .acoes__nivel-imposto {
   flex: 1;
   padding: 6px 0;
-  border: 1px solid var(--ui-borda);
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
   background: transparent;
-  color: var(--ui-texto);
+  color: var(--ui-texto-fraco);
+  font-size: 12.5px;
   cursor: pointer;
 }
+.acoes__nivel-imposto:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-texto);
+}
 .acoes__nivel-imposto[data-vigente='sim'] {
-  background: var(--ui-bronze-claro, #b08d57);
-  color: var(--ui-fundo, #10181a);
+  border-color: var(--ui-bronze);
+  background: var(--ui-bronze-claro);
+  color: var(--ui-fundo);
+  font-weight: 650;
   cursor: default;
 }
 
-/* As quatro armas da leva. As trancadas ficam na tela, apagadas: é assim que o painel
-   ensina que existe cavalaria e o que ela exige. */
-.recrutamento__armas {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-top: 6px;
-}
-.recrutamento__arma {
-  min-height: 26px;
-  padding: 4px 2px;
+/* A capital: uma decisão só, e ela grita quando o reino está sem sede. */
+.acoes__capital {
+  width: 100%;
+  margin-top: 7px;
+  padding: 8px 10px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
-  font-size: 10px;
-  font-weight: 650;
-  letter-spacing: 0.02em;
+  font-family: var(--fonte-corpo);
+  font-size: 13px;
   cursor: pointer;
 }
-.recrutamento__arma:hover:not(:disabled) {
+.acoes__capital:hover:not(:disabled) {
   border-color: var(--ui-bronze);
-  color: var(--ui-bronze-claro);
+  color: var(--ui-texto);
 }
-.recrutamento__arma[data-escolhida='sim'] {
-  border-color: var(--ui-bronze);
-  background: var(--ui-bronze-fosco, var(--ui-fundo-suave));
-  color: var(--ui-bronze-claro);
-}
-.recrutamento__arma:disabled {
+.acoes__capital:disabled {
   cursor: not-allowed;
-  opacity: 0.35;
+  opacity: 0.5;
+}
+.acoes__capital[data-urgente='sim'] {
+  border-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+  color: var(--ui-sangue-claro);
+  font-weight: 650;
+}
+
+@media (max-height: 820px) {
+  .acoes {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
 }

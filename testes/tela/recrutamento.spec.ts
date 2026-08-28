@@ -46,22 +46,21 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  // Recrutamento é básico: abrir o bloco já mostra população e disponibilidade.
-  await expect(page.locator('.recrutamento')).toBeVisible();
-  const abrir = page.getByRole('button', { name: 'Recrutar' });
-  await expect(abrir).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.locator('.recrutamento__corpo')).toBeHidden();
-  await abrir.click();
-  await expect(abrir).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('.recrutamento__alvo')).toContainText('disponíveis para recrutar');
-  await expect(page.locator('.recrutamento__valor')).toBeVisible();
+  // ⚠️ Recrutar é uma JANELA desde a reforma do painel: era um bloco recolhido no fim de
+  // uma coluna que rolava, e por isso a única parte do jogo que exigia rolar para achar.
+  // O portão fica no painel da província e NÃO anuncia teto nenhum — quantos homens dá para
+  // levantar é resposta que só se pede com a barra na mão, dentro da janela.
+  await expect(page.locator('.painel-provincia')).toBeVisible();
+  const abrir = page.getByRole('button', { name: /^Recrutar/ });
+  await expect(abrir).toHaveText('Recrutar');
+  await expect(page.locator('.recrutamento__conteudo')).toBeHidden();
 
-  // A população aparece na ficha, e é ela que decide se a Ágora vale a pena.
+  // A população aparece no painel, e é ela que decide se a Ágora vale a pena.
   const inicial = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { populacao: i.populacaoDe('atenas'), crescimento: i.crescimentoDe('atenas') };
   });
-  const populacaoNaFicha = page.locator('dd.ficha__populacao');
+  const populacaoNaFicha = page.locator('.ficha__medida[data-medida="povo"]');
   await expect(populacaoNaFicha).toContainText(comoNaTela(inicial.populacao));
   if (inicial.crescimento === 0) {
     await expect(populacaoNaFicha).toHaveAttribute(
@@ -80,11 +79,12 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { populacao: i.populacaoDe('atenas'), disponivel: i.disponivelParaLevaEm('atenas') };
   });
-  await expect(page.locator('.recrutamento__alvo')).toContainText(
+  await abrir.click();
+  await expect(page.locator('.recrutamento__conteudo')).toBeVisible();
+  // A população mora na LEGENDA da janela: é o contexto dela, e uma faixa só para esse
+  // número custava 55 px. O teto da leva não aparece em lugar nenhum antes da barra.
+  await expect(page.locator('.janela__legenda').last()).toContainText(
     `${comoNaTela(comQuartel.populacao)} habitantes`,
-  );
-  await expect(page.locator('.recrutamento__alvo')).toContainText(
-    `${comoNaTela(comQuartel.disponivel)} disponíveis`,
   );
   const seletor = page.getByRole('slider', { name: 'Quantidade de soldados para recrutar' });
   await expect(seletor).toHaveAttribute('type', 'range');
@@ -92,7 +92,8 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
     () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().tesouro,
   );
   await expect(seletor).toHaveAttribute('max', String(Math.floor(tesouro / 3)));
-  await expect(page.locator('.recrutamento__previsao')).toContainText('Arraste a barra');
+  // Sem homens escolhidos não há previsão nenhuma escrita — nem instrução de arrastar.
+  await expect(page.locator('.recrutamento__previsao')).toHaveText('');
   await expect(page.getByRole('button', { name: 'Reunir leva' })).toBeDisabled();
 
   // O teste move a barra como o jogador faria; nenhum campo numérico digitável existe.
@@ -141,9 +142,9 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   });
   // Os mil recrutas saíram da população, e os painéis contam a mesma história.
   expect(aposLeva.populacao).toBe(comQuartel.populacao - 1000);
-  await expect(page.locator('dd.ficha__populacao')).toContainText(comoNaTela(aposLeva.populacao));
-  await expect(page.locator('.recrutamento__alvo')).toContainText(
-    `${comoNaTela(aposLeva.disponivel)} disponíveis`,
+  await expect(populacaoNaFicha).toContainText(comoNaTela(aposLeva.populacao));
+  await expect(page.locator('.janela__legenda').last()).toContainText(
+    `${comoNaTela(aposLeva.populacao)} habitantes`,
   );
   await expect(seletor).toHaveValue('0');
   await expect(page.locator('.barra-turno__ouro')).toContainText(`+${aposLeva.renda}`);
@@ -163,11 +164,11 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
   // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.
-  await expect(page.locator('.recrutamento')).not.toContainText('Dispensar');
+  await expect(page.locator('.recrutamento__conteudo')).not.toContainText('Dispensar');
 
-  // Pode ser recolhido outra vez sem esconder a existência da ação.
-  await abrir.click();
-  await expect(page.locator('.recrutamento__corpo')).toBeHidden();
+  // Esc fecha a janela e devolve o mapa, sem esconder a existência da ação.
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.recrutamento__conteudo')).toBeHidden();
   await expect(abrir).toBeVisible();
 
   expect(erros, erros.join('\n')).toHaveLength(0);
@@ -191,25 +192,29 @@ test('as quatro armas aparecem no painel, e as trancadas dizem o que falta', asy
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  await page.getByRole('button', { name: 'Recrutar' }).click();
+  await page.getByRole('button', { name: /^Recrutar/ }).click();
   const armas = page.locator('.recrutamento__arma');
   await expect(armas).toHaveCount(4);
 
   // ⚠️ As trancadas ficam na tela, apagadas: é assim que o painel ensina que existe
   // cavalaria e o que ela exige. Esconder o que ainda não dá para fazer esconderia
   // justamente a decisão de construir.
-  await expect(page.getByRole('button', { name: 'Leves', exact: true })).toBeEnabled();
+  const leves = page.locator('.recrutamento__arma', { hasText: 'Leves' });
+  await expect(leves).toBeEnabled();
   for (const nome of ['Hoplitas', 'Arqueiros', 'Cavalaria']) {
-    await expect(page.getByRole('button', { name: nome, exact: true })).toBeDisabled();
+    const arma = page.locator('.recrutamento__arma', { hasText: nome });
+    await expect(arma).toBeDisabled();
+    // ⚠️ O que FALTA fica escrito no cartão, em duas palavras: "falta Armaria". Por que
+    // aquela construção só nasce em certas terras é assunto do catálogo, não do cartão.
+    await expect(arma).toContainText('falta ');
   }
-  await expect(page.getByRole('button', { name: 'Leves', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(leves).toHaveAttribute('aria-pressed', 'true');
 
   // E o Quartel está à venda de novo — ele não promete mais nada: ele carimba treino na leva.
-  await expect(page.locator('.acoes__construcao', { hasText: 'Quartel' })).toHaveCount(1);
-  await expect(page.locator('.acoes__construcao', { hasText: 'Armaria' })).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Construções/ }).click();
+  await expect(page.locator('.construcoes__cartao', { hasText: 'Quartel' })).toHaveCount(1);
+  await expect(page.locator('.construcoes__cartao', { hasText: 'Armaria' })).toHaveCount(1);
 });
 
 /**

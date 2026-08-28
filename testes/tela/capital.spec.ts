@@ -30,7 +30,7 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
 
   // Atenas nasce como sede, e o painel de ações diz isso em vez de oferecer o botão.
   await page.mouse.click(960, 540);
-  await expect(page.locator('.acoes__alvo')).toContainText('capital do reino');
+  await expect(page.locator('.ficha__selo[data-tom="ouro"]')).toHaveText('capital');
   await expect(page.locator('.acoes__capital')).toBeHidden();
 
   // Tanagra toma Atenas: a barra trava a virada e diz por quê.
@@ -58,7 +58,7 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   // Destravou, de graça — a escolha forçada não é castigo.
   await expect(passar).toBeEnabled();
   await expect(page.locator('.barra-turno')).toHaveAttribute('data-capital-perdida', 'nao');
-  await expect(page.locator('.acoes__alvo')).toContainText('capital do reino');
+  await expect(page.locator('.ficha__selo[data-tom="ouro"]')).toHaveText('capital');
   const estadoFinal = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
     return { capital: i.capitalDe('atenas'), tesouro: i.campanha().tesouro };

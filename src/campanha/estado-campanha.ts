@@ -116,13 +116,11 @@ export interface EstadoCampanha {
    */
   formacoes: Record<string, LevaEmFormacao>;
   /**
-   * Ordens de marcha registradas nesta RODADA, pelo id da hoste que as recebeu.
+   * Ordens de marcha ativas, pelo id da hoste que as recebeu.
    *
    * Uma por hoste. Mover não muda o mapa no clique: a ordem fica aqui, revisável e
-   * cancelável, e só acontece quando o turno vira — junto com as de todo mundo.
-   *
-   * ⚠️ **Esvaziado no fim da resolução.** Se uma ordem sobrevivesse à virada, executaria
-   * de novo, e o sintoma seria tropa andando sozinha.
+   * cancelável, e só avança quando o turno vira — junto com as de todo mundo. Uma viagem
+   * distante do jogador conserva os trechos restantes; ordens comuns acabam na resolução.
    */
   ordens: Record<string, OrdemDeMarcha>;
   /**
@@ -219,6 +217,27 @@ export interface EstadoCampanha {
    */
   pactos: Record<string, number>;
   /**
+   * Acessos militares em curso, por `concedente>beneficiário`, guardando o turno em que vencem.
+   *
+   * ⚠️ **A única chave DIRECIONAL do arquivo.** Guerra, trégua, pacto e comércio valem igual
+   * para os dois lados; deixar Atenas passar por Mégara não deixa Mégara passar por Atenas. Os
+   * dois sentidos podem existir ao mesmo tempo, cada um com o seu prazo.
+   */
+  acessos: Record<string, number>;
+  /**
+   * O que a IA está PEDINDO ao jogador, e que espera um sim ou um não.
+   *
+   * ⚠️ **Existe porque a IA assinava com o jogador sem perguntar.** Pacto e comércio eram
+   * decisão dela e fato consumado dele — Henrique: *"não sinto a IA tentando se conectar
+   * comigo para oferecer diplomacia, deveria acontecer isso, e aparecer que um reino está
+   * querendo negociar comigo e eu ter opção de aceitar ou recusar"*. A decisão da IA continua
+   * a mesma; o que mudou é que, quando a outra ponta é o jogador, ela vira pedido.
+   *
+   * Some sozinha na virada: proposta é do turno em que foi feita. Uma mesa que acumulasse
+   * pedidos velhos faria o jogador responder a um mundo que não existe mais.
+   */
+  propostas: Proposta[];
+  /**
    * A reputação de cada poder, de −100 a 0. Zero é quem nunca quebrou promessa.
    *
    * ⚠️ **É o que faz um pacto valer o papel.** Sem ela, assinar e trair na virada seguinte
@@ -245,6 +264,15 @@ export interface EstadoCampanha {
    * — o lado mora no valor, e não numa segunda tabela.
    */
   tributos: Record<string, Tributo>;
+}
+
+/** O que um reino está pedindo ao jogador nesta virada. */
+export interface Proposta {
+  /** Quem pede. */
+  de: string;
+  tipo: 'pacto' | 'comercio' | 'acesso';
+  /** O prazo pedido, quando o acordo tem prazo. */
+  turnos?: number | undefined;
 }
 
 /** Um tributo em curso: quem sangra, quanto, e até quando. */

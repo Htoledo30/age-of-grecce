@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { guerraEscolhida } from '../src/ia/diplomacia/declarar';
 import { querPaz } from '../src/ia/diplomacia/paz';
 import { lerSalvamento } from '../src/campanha/salvamento';
+import type { Campanha } from '../src/campanha/campanha';
 import { estiloDe } from '../src/ia/estilo';
 import { ajustes, correrIA, ia, novaCampanha } from './apoio/mundo';
 
@@ -382,6 +383,22 @@ describe('o pacto de não-agressão: o prazo se compra com CONFIANÇA', () => {
   });
 });
 
+/**
+ * Planta um Porto de pé numa província, pelo caminho oficial do salvamento.
+ *
+ * ⚠️ Existe porque o comércio ganhou ALCANCE: por terra entre quem se toca, por mar entre
+ * quem tem Porto nas duas pontas. Os testes de acordo precisavam de parceiros distantes, e
+ * distante sem Porto não fecha negócio nenhum — que é justamente a regra sendo guardada.
+ */
+function comPortoEm(c: Campanha, ...provincias: readonly string[]): Campanha {
+  const salvo = lerSalvamento(c.serializar());
+  for (const id of provincias) {
+    salvo.construcoes[id] = { ...(salvo.construcoes[id] ?? {}), porto: 1 };
+  }
+  c.restaurar(salvo);
+  return c;
+}
+
 describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () => {
   it('rende o mesmo para os dois, e o teto é o MENOR dos dois', () => {
     // ⚠️ Decisão de Henrique, e ela reescreveu o desenho: pagar só pelo bem que falta ao outro
@@ -400,7 +417,8 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
   });
 
   it('assinado, o ouro entra todo turno para os dois', () => {
-    const c = nova();
+    // Atenas e Mégara não se tocam: quem abre a rota é o Porto dos dois lados.
+    const c = comPortoEm(nova(), 'atenas', 'megara');
     const antes = c.rendaDe('atenas');
     const dele = c.rendaDe('megara');
     const valor = c.rendaDeUmAcordoCom('megara');
@@ -417,7 +435,7 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
   });
 
   it('⚠️ a guerra desfaz o comércio na hora — é a razão de DINHEIRO para não atacar', () => {
-    const c = nova();
+    const c = comPortoEm(nova(), 'atenas', 'megara');
     c.acordarComercio('megara');
     const comComercio = c.rendaDe('atenas');
 
@@ -429,8 +447,14 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
   it('o quinto parceiro rende menos que o primeiro', () => {
     // Sem saturação a diplomacia vira um concurso de assinaturas, e comerciar passa a pagar
     // melhor que administrar.
+    // Porto em todo mundo: aqui o que se mede é a SATURAÇÃO, não o alcance.
     const c = nova();
     const parceiros = c.poderesComFicha().filter((id) => id !== 'atenas').slice(0, 5);
+    comPortoEm(
+      c,
+      'atenas',
+      ...parceiros.flatMap((p) => c.provinciasDe(p).slice(0, 1)),
+    );
     const ganhos: number[] = [];
     let anterior = c.rendaDe('atenas');
     for (const parceiro of parceiros) {

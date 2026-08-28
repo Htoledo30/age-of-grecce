@@ -23,6 +23,21 @@ import {
   romperPacto,
   romperTributo,
 } from '../diplomacia/relacoes';
+import {
+  acessoAte,
+  acessosDe,
+  concederAcesso,
+  podeConcederAcesso,
+  revogarAcesso,
+} from '../diplomacia/acesso-militar';
+import {
+  aceitarProposta,
+  proporAoJogador,
+  propostasAoJogador,
+  recusarProposta,
+} from '../diplomacia/propostas';
+import type { Proposta } from '../estado-campanha';
+import type { Permissao } from '../nucleo';
 import { ConsultasDeGuerra } from './consultas-de-guerra';
 
 export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
@@ -156,5 +171,60 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     const pontos = presentear(this.nucleo, porPoder, para, ouro);
     if (pontos !== 0) this.aoMudar();
     return pontos;
+  }
+
+  // ── Acesso militar ──────────────────────────────────────────────────────────────────
+  /** Este poder pode abrir a estrada dele para aquele, por este prazo? */
+  podeConcederAcesso(a: string, para: string, turnos: number): Permissao {
+    return podeConcederAcesso(this.nucleo, a, para, turnos);
+  }
+
+  /** Abre a estrada. O concedente é quem dá a passagem pela terra DELE. */
+  concederAcesso(
+    para: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): void {
+    if (concederAcesso(this.nucleo, porPoder, para, turnos)) this.aoMudar();
+  }
+
+  /** Fecha a estrada antes do prazo. Custa opinião — ver `acesso-militar.ts`. */
+  revogarAcesso(para: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (revogarAcesso(this.nucleo, porPoder, para)) this.aoMudar();
+  }
+
+  /** Até que turno esta passagem vale. `undefined` quando ela não existe. */
+  acessoAte(concedente: string, beneficiario: string): number | undefined {
+    return acessoAte(this.nucleo, concedente, beneficiario);
+  }
+
+  /** A quem este poder abriu a estrada, e quem a abriu para ele. */
+  acessosDe(idPoder: string): { concedidos: readonly string[]; recebidos: readonly string[] } {
+    return acessosDe(this.nucleo, idPoder);
+  }
+
+  // ── A mesa de propostas ─────────────────────────────────────────────────────────────
+  /** O que os outros reinos estão pedindo ao jogador nesta virada. */
+  propostas(): readonly Proposta[] {
+    return propostasAoJogador(this.nucleo);
+  }
+
+  /** A IA põe um pedido na mesa do jogador. Devolve `false` quando ele não caberia. */
+  proporAoJogador(proposta: Proposta): boolean {
+    const pos = proporAoJogador(this.nucleo, proposta);
+    if (pos) this.aoMudar();
+    return pos;
+  }
+
+  /** O jogador aceita. A recusa vem com motivo quando o mundo mudou desde o pedido. */
+  aceitarProposta(de: string, tipo: Proposta['tipo']): Permissao {
+    const r = aceitarProposta(this.nucleo, de, tipo);
+    this.aoMudar();
+    return r;
+  }
+
+  /** O jogador recusa. Não custa nada — ver `propostas.ts`. */
+  recusarProposta(de: string, tipo: Proposta['tipo']): void {
+    if (recusarProposta(this.nucleo, de, tipo)) this.aoMudar();
   }
 }

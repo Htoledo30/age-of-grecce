@@ -32,7 +32,7 @@
       "id": "adramitio",
       "nome": "Adramítio",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#5c65a6"
     },
     {
       "id": "agrianes",
@@ -44,7 +44,7 @@
       "id": "almopes",
       "nome": "Almopes",
       "povo": "macedonio",
-      "cor": "#8f647f"
+      "cor": "#80618a"
     },
     {
       "id": "amantes",
@@ -56,7 +56,7 @@
       "id": "andros",
       "nome": "Andros",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#6d81a3"
     },
     {
       "id": "apsintios",
@@ -80,7 +80,7 @@
       "id": "astas",
       "nome": "Astas",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#6f5b90"
     },
     {
       "id": "astipaleia",
@@ -98,13 +98,13 @@
       "id": "bisaltas",
       "nome": "Bisaltas",
       "povo": "trace",
-      "cor": "#646c8f"
+      "cor": "#537598"
     },
     {
       "id": "bistones",
       "nome": "Bístones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#6e5ca6"
     },
     {
       "id": "bitinos",
@@ -134,7 +134,7 @@
       "id": "calimno",
       "nome": "Calimno",
       "povo": "dorio",
-      "cor": "#ab6d65"
+      "cor": "#ab7f65"
     },
     {
       "id": "caones",
@@ -152,7 +152,7 @@
       "id": "caristo",
       "nome": "Cáristo",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#8c8cae"
     },
     {
       "id": "carpatos",
@@ -164,13 +164,13 @@
       "id": "cefalenia",
       "nome": "Cefalênia",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#ba9d80"
     },
     {
       "id": "cicones",
       "nome": "Cícones",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#81659d"
     },
     {
       "id": "cidonia",
@@ -212,13 +212,13 @@
       "id": "cnido",
       "nome": "Cnido",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#a26e7b"
     },
     {
       "id": "cnossos",
       "nome": "Cnossos",
       "povo": "cretense",
-      "cor": "#ab7e65"
+      "cor": "#ab8865"
     },
     {
       "id": "colofao",
@@ -242,19 +242,19 @@
       "id": "cos",
       "nome": "Cós",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#8a6b61"
     },
     {
       "id": "crestones",
       "nome": "Crestones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#6e5ca6"
     },
     {
       "id": "dassaretios",
       "nome": "Dassarétios",
       "povo": "ilirio",
-      "cor": "#8f5c7c"
+      "cor": "#7b618a"
     },
     {
       "id": "delfos",
@@ -266,7 +266,7 @@
       "id": "dolonces",
       "nome": "Dolonces",
       "povo": "trace",
-      "cor": "#8381b9"
+      "cor": "#808fba"
     },
     {
       "id": "dorios",
@@ -284,37 +284,37 @@
       "id": "efeso",
       "nome": "Éfeso",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#61618a"
     },
     {
       "id": "egina",
       "nome": "Egina",
       "povo": "dorio",
-      "cor": "#9d6865"
+      "cor": "#ab7665"
     },
     {
       "id": "eleusis",
       "nome": "Elêusis",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#6e81a2"
     },
     {
       "id": "eleuterna",
       "nome": "Eleuterna",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#8f6469"
     },
     {
       "id": "elide",
       "nome": "Élide",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#a6785c"
     },
     {
       "id": "elimeia",
       "nome": "Elimeia",
       "povo": "macedonio",
-      "cor": "#8f5c6d"
+      "cor": "#945e6c"
     },
     {
       "id": "enqueleos",
@@ -332,19 +332,19 @@
       "id": "epidauro",
       "nome": "Epidauro",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#a36d7b"
     },
     {
       "id": "eretria",
       "nome": "Erétria",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#5c94a6"
     },
     {
       "id": "eritras",
       "nome": "Eritras",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#56689d"
     },
     {
       "id": "esciros",
@@ -356,25 +356,25 @@
       "id": "esmirna",
       "nome": "Esmirna",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#8ca1ae"
     },
     {
       "id": "esparta",
       "nome": "Esparta",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#985353"
     },
     {
       "id": "esporades",
       "nome": "Espórades",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#8096ba"
     },
     {
       "id": "etolos",
       "nome": "Etolos",
       "povo": "etolio",
-      "cor": "#658f5c"
+      "cor": "#7d9d73"
     },
     {
       "id": "farsalo",
@@ -392,7 +392,7 @@
       "id": "festo",
       "nome": "Festo",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#ab6e65"
     },
     {
       "id": "figalia",
@@ -404,13 +404,13 @@
       "id": "foceia",
       "nome": "Foceia",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#657fab"
     },
     {
       "id": "focida",
       "nome": "Focida",
       "povo": "focio",
-      "cor": "#659d6a"
+      "cor": "#5ca681"
     },
     {
       "id": "frigia",
@@ -422,31 +422,31 @@
       "id": "gortina",
       "nome": "Górtina",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#b38787"
     },
     {
       "id": "hereia",
       "nome": "Hereia",
       "povo": "arcadio",
-      "cor": "#aba065"
+      "cor": "#9da65c"
     },
     {
       "id": "hermione",
       "nome": "Hermíone",
       "povo": "dorio",
-      "cor": "#8f695c"
+      "cor": "#906f5b"
     },
     {
       "id": "icaria",
       "nome": "Icária",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#5c94a6"
     },
     {
       "id": "ilion",
       "nome": "Ílion",
       "povo": "eolio",
-      "cor": "#9781b9"
+      "cor": "#9d80ba"
     },
     {
       "id": "imbros",
@@ -458,31 +458,31 @@
       "id": "iolco",
       "nome": "Iolco",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#80baab"
     },
     {
       "id": "itaca",
       "nome": "Ítaca",
       "povo": "aqueu",
-      "cor": "#9d8365"
+      "cor": "#97816b"
     },
     {
       "id": "lampsaco",
       "nome": "Lampsaco",
       "povo": "jonio",
-      "cor": "#64808f"
+      "cor": "#61858a"
     },
     {
       "id": "larissa",
       "nome": "Larissa",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#5ca694"
     },
     {
       "id": "lemnos",
       "nome": "Lemnos",
       "povo": "pelasgo",
-      "cor": "#5c638f"
+      "cor": "#5c81a6"
     },
     {
       "id": "licaones",
@@ -518,7 +518,7 @@
       "id": "locros-opuntios",
       "nome": "Locros Opuntios",
       "povo": "locrio",
-      "cor": "#6e9d65"
+      "cor": "#81a26e"
     },
     {
       "id": "locros-ozolios",
@@ -548,19 +548,19 @@
       "id": "mariandinos",
       "nome": "Mariandinos",
       "povo": "bitinio",
-      "cor": "#6c659d"
+      "cor": "#656eab"
     },
     {
       "id": "medos",
       "nome": "Medos",
       "povo": "trace",
-      "cor": "#8381b9"
+      "cor": "#9887b3"
     },
     {
       "id": "megara",
       "nome": "Mégara",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#985353"
     },
     {
       "id": "melos",
@@ -572,37 +572,37 @@
       "id": "messenia",
       "nome": "Messenia",
       "povo": "dorio",
-      "cor": "#8f695c"
+      "cor": "#97766b"
     },
     {
       "id": "metimna",
       "nome": "Metimna",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#5c5398"
     },
     {
       "id": "migdones",
       "nome": "Migdones",
       "povo": "trace",
-      "cor": "#646c8f"
+      "cor": "#61758a"
     },
     {
       "id": "mileto",
       "nome": "Mileto",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#657fab"
     },
     {
       "id": "misos",
       "nome": "Misos",
       "povo": "misio",
-      "cor": "#805c8f"
+      "cor": "#875e94"
     },
     {
       "id": "mitilene",
       "nome": "Mitilene",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#6c5e94"
     },
     {
       "id": "molossos",
@@ -614,19 +614,19 @@
       "id": "naxos",
       "nome": "Naxos",
       "povo": "jonio",
-      "cor": "#64808f"
+      "cor": "#87adb3"
     },
     {
       "id": "odomantes",
       "nome": "Odomantes",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#81659d"
     },
     {
       "id": "odrisas",
       "nome": "Odrisas",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#656eab"
     },
     {
       "id": "orcomeno",
@@ -638,13 +638,13 @@
       "id": "orcomeno-arcadio",
       "nome": "Orcomeno Arcadio",
       "povo": "arcadio",
-      "cor": "#b9b481"
+      "cor": "#b3b387"
     },
     {
       "id": "orestis",
       "nome": "Orestis",
       "povo": "macedonio",
-      "cor": "#8f647f"
+      "cor": "#9d7378"
     },
     {
       "id": "panfilios",
@@ -656,7 +656,7 @@
       "id": "partinos",
       "nome": "Partinos",
       "povo": "ilirio",
-      "cor": "#9d6595"
+      "cor": "#98739d"
     },
     {
       "id": "penestas",
@@ -674,13 +674,13 @@
       "id": "perrebos",
       "nome": "Perrebos",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#5b8990"
     },
     {
       "id": "pisa",
       "nome": "Pisa",
       "povo": "aqueu",
-      "cor": "#8f825c"
+      "cor": "#aea68c"
     },
     {
       "id": "pisidas",
@@ -692,13 +692,13 @@
       "id": "pitane",
       "nome": "Pitane",
       "povo": "eolio",
-      "cor": "#9781b9"
+      "cor": "#8d87b3"
     },
     {
       "id": "plateia",
       "nome": "Plateia",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#648f69"
     },
     {
       "id": "praisos",
@@ -710,13 +710,13 @@
       "id": "priene",
       "nome": "Priene",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#8c8cae"
     },
     {
       "id": "quios",
       "nome": "Quios",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#8caeae"
     },
     {
       "id": "rodes",
@@ -746,7 +746,7 @@
       "id": "sicion",
       "nome": "Sícion",
       "povo": "dorio",
-      "cor": "#9d6865"
+      "cor": "#b3878d"
     },
     {
       "id": "sinti",
@@ -758,55 +758,55 @@
       "id": "sitones",
       "nome": "Sitones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#8080ba"
     },
     {
       "id": "tanagra",
       "nome": "Tanagra",
       "povo": "beocio",
-      "cor": "#5c8f84"
+      "cor": "#5b9089"
     },
     {
       "id": "tasos",
       "nome": "Tasos",
       "povo": "trace",
-      "cor": "#656b9d"
+      "cor": "#64698f"
     },
     {
       "id": "taulantios",
       "nome": "Taulântios",
       "povo": "ilirio",
-      "cor": "#b981a9"
+      "cor": "#ae8cae"
     },
     {
       "id": "tebas",
       "nome": "Tebas",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#8cae94"
     },
     {
       "id": "tegeia",
       "nome": "Tegeia",
       "povo": "arcadio",
-      "cor": "#aba065"
+      "cor": "#8fa26e"
     },
     {
       "id": "tenedos",
       "nome": "Tenedos",
       "povo": "eolio",
-      "cor": "#745c8f"
+      "cor": "#835b90"
     },
     {
       "id": "teos",
       "nome": "Teos",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#5e948e"
     },
     {
       "id": "tespias",
       "nome": "Téspias",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#5ca69d"
     },
     {
       "id": "tesprotos",
@@ -824,19 +824,19 @@
       "id": "trezena",
       "nome": "Trezena",
       "povo": "dorio",
-      "cor": "#b98c81"
+      "cor": "#ae998c"
     },
     {
       "id": "trica",
       "nome": "Trica",
       "povo": "tessalio",
-      "cor": "#648f89"
+      "cor": "#618a7b"
     },
     {
       "id": "trifilia",
       "nome": "Trifília",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#9d8873"
     },
     {
       "id": "zacinto",
@@ -859,6 +859,7 @@
       },
       "vizinhas": [
         "eleusis",
+        "estreito-de-salamina",
         "maratona",
         "sounion",
         "tanagra"
@@ -877,6 +878,7 @@
       },
       "vizinhas": [
         "atenas",
+        "golfo-saronico",
         "sounion",
         "tanagra"
       ]
@@ -894,6 +896,8 @@
       },
       "vizinhas": [
         "atenas",
+        "estreito-de-salamina",
+        "golfo-saronico",
         "maratona"
       ]
     },
@@ -910,6 +914,7 @@
       },
       "vizinhas": [
         "atenas",
+        "estreito-de-salamina",
         "megara",
         "plateia",
         "tanagra"
@@ -928,7 +933,9 @@
       },
       "vizinhas": [
         "corinto",
+        "corinto-oriental",
         "eleusis",
+        "estreito-de-salamina",
         "plateia"
       ]
     },
@@ -943,7 +950,9 @@
         "x": 4303,
         "y": 4306
       },
-      "vizinhas": []
+      "vizinhas": [
+        "estreito-de-salamina"
+      ]
     },
     {
       "indice": 7,
@@ -956,7 +965,9 @@
         "x": 4313,
         "y": 4542
       },
-      "vizinhas": []
+      "vizinhas": [
+        "golfo-saronico"
+      ]
     },
     {
       "indice": 8,
@@ -971,6 +982,7 @@
       },
       "vizinhas": [
         "calcis",
+        "euripo",
         "opunte",
         "plateia",
         "tanagra",
@@ -992,6 +1004,7 @@
         "atenas",
         "calcis",
         "eleusis",
+        "golfo-saronico",
         "maratona",
         "plateia",
         "tebas"
@@ -1009,6 +1022,7 @@
         "y": 3900
       },
       "vizinhas": [
+        "corinto-oriental",
         "opunte",
         "orcomeno",
         "plateia",
@@ -1028,6 +1042,7 @@
         "y": 4030
       },
       "vizinhas": [
+        "corinto-oriental",
         "eleusis",
         "megara",
         "tanagra",
@@ -1048,6 +1063,7 @@
       },
       "vizinhas": [
         "elateia",
+        "golfo-maliaco",
         "opunte",
         "queroneia",
         "tespias"
@@ -1065,6 +1081,7 @@
         "y": 3778
       },
       "vizinhas": [
+        "corinto-oriental",
         "delfos",
         "elateia",
         "orcomeno",
@@ -1084,7 +1101,10 @@
       },
       "vizinhas": [
         "eretria",
+        "euripo",
+        "golfo-saronico",
         "histiea",
+        "mar-de-esciros",
         "tanagra",
         "tebas"
       ]
@@ -1101,7 +1121,11 @@
         "y": 3242
       },
       "vizinhas": [
-        "calcis"
+        "calcis",
+        "euripo",
+        "golfo-maliaco",
+        "golfo-pagasetico",
+        "mar-de-esciros"
       ]
     },
     {
@@ -1117,7 +1141,9 @@
       },
       "vizinhas": [
         "calcis",
-        "caristo"
+        "caristo",
+        "golfo-saronico",
+        "mar-de-esciros"
       ]
     },
     {
@@ -1132,7 +1158,10 @@
         "y": 4117
       },
       "vizinhas": [
-        "eretria"
+        "canal-de-ceos",
+        "eretria",
+        "golfo-saronico",
+        "mar-de-esciros"
       ]
     },
     {
@@ -1148,6 +1177,8 @@
       },
       "vizinhas": [
         "anfissa",
+        "corinto-ocidental",
+        "corinto-oriental",
         "doride",
         "elateia",
         "queroneia"
@@ -1167,6 +1198,7 @@
       "vizinhas": [
         "delfos",
         "doride",
+        "golfo-maliaco",
         "lamia",
         "orcomeno",
         "queroneia"
@@ -1184,6 +1216,8 @@
         "y": 3595
       },
       "vizinhas": [
+        "euripo",
+        "golfo-maliaco",
         "orcomeno",
         "tebas",
         "tespias"
@@ -1202,6 +1236,7 @@
       },
       "vizinhas": [
         "calidao",
+        "corinto-ocidental",
         "delfos",
         "doride",
         "termo"
@@ -1240,7 +1275,9 @@
       "vizinhas": [
         "anfissa",
         "astaco",
+        "corinto-ocidental",
         "estrato",
+        "golfo-de-patras",
         "termo"
       ]
     },
@@ -1280,6 +1317,7 @@
         "astaco",
         "calidao",
         "cassopia",
+        "golfo-ambracico",
         "termo"
       ]
     },
@@ -1297,7 +1335,10 @@
       "vizinhas": [
         "calidao",
         "estrato",
-        "leucade"
+        "golfo-ambracico",
+        "golfo-de-patras",
+        "leucade",
+        "mar-de-leucade"
       ]
     },
     {
@@ -1316,6 +1357,7 @@
         "elateia",
         "farsalo",
         "feras",
+        "golfo-maliaco",
         "iolco",
         "termo",
         "trica"
@@ -1352,6 +1394,7 @@
       },
       "vizinhas": [
         "farsalo",
+        "golfo-termaico",
         "iolco",
         "lamia",
         "larissa",
@@ -1413,6 +1456,9 @@
       },
       "vizinhas": [
         "feras",
+        "golfo-maliaco",
+        "golfo-pagasetico",
+        "golfo-termaico",
         "lamia"
       ]
     },
@@ -1485,8 +1531,10 @@
       },
       "vizinhas": [
         "butroto",
+        "canal-de-corcira",
         "cassopia",
         "dodona",
+        "mar-de-leucade",
         "passarao"
       ]
     },
@@ -1504,6 +1552,8 @@
       "vizinhas": [
         "dodona",
         "estrato",
+        "golfo-ambracico",
+        "mar-de-leucade",
         "termo",
         "tesprotia",
         "trica"
@@ -1522,6 +1572,7 @@
       },
       "vizinhas": [
         "amantes",
+        "canal-de-corcira",
         "caonia",
         "passarao",
         "tesprotia"
@@ -1559,7 +1610,10 @@
         "x": 1066,
         "y": 2383
       },
-      "vizinhas": []
+      "vizinhas": [
+        "canal-de-corcira",
+        "mar-jonio-norte"
+      ]
     },
     {
       "indice": 41,
@@ -1572,7 +1626,10 @@
         "x": 1715,
         "y": 3984
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-itaca",
+        "mar-de-zacinto"
+      ]
     },
     {
       "indice": 42,
@@ -1585,7 +1642,9 @@
         "x": 1815,
         "y": 3786
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-itaca"
+      ]
     },
     {
       "indice": 43,
@@ -1598,7 +1657,10 @@
         "x": 1895,
         "y": 4482
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-cilenio",
+        "mar-de-zacinto"
+      ]
     },
     {
       "indice": 44,
@@ -1612,7 +1674,9 @@
         "y": 3345
       },
       "vizinhas": [
-        "astaco"
+        "astaco",
+        "golfo-ambracico",
+        "mar-de-leucade"
       ]
     },
     {
@@ -1629,7 +1693,9 @@
       "vizinhas": [
         "bulinos",
         "butroto",
-        "caonia"
+        "canal-de-corcira",
+        "caonia",
+        "mar-jonio-norte"
       ]
     },
     {
@@ -1646,6 +1712,7 @@
       "vizinhas": [
         "amantes",
         "caonia",
+        "mar-jonio-norte",
         "partinos"
       ]
     },
@@ -1665,6 +1732,7 @@
         "caonia",
         "dassaretios",
         "enqueleos",
+        "mar-jonio-norte",
         "taulantios"
       ]
     },
@@ -1681,6 +1749,7 @@
       },
       "vizinhas": [
         "enqueleos",
+        "mar-jonio-norte",
         "partinos",
         "penestas"
       ]
@@ -1738,6 +1807,7 @@
         "derriopo",
         "enqueleos",
         "lincestis",
+        "mar-jonio-norte",
         "taulantios"
       ]
     },
@@ -1756,6 +1826,7 @@
         "almopia",
         "elimeia",
         "eordaia",
+        "golfo-termaico",
         "migdonia",
         "orestis",
         "pieria"
@@ -1776,6 +1847,7 @@
         "egas",
         "elimeia",
         "feras",
+        "golfo-termaico",
         "larissa",
         "olooson"
       ]
@@ -1895,7 +1967,8 @@
         "agrianes",
         "almopia",
         "crestonia",
-        "derriopo"
+        "derriopo",
+        "mar-jonio-norte"
       ]
     },
     {
@@ -1912,6 +1985,7 @@
       "vizinhas": [
         "almopia",
         "lincestis",
+        "mar-jonio-norte",
         "penestas",
         "peonia"
       ]
@@ -1932,7 +2006,8 @@
         "bisaltia",
         "botica",
         "crestonia",
-        "egas"
+        "egas",
+        "golfo-termaico"
       ]
     },
     {
@@ -1971,6 +2046,7 @@
         "botica",
         "crestonia",
         "edones",
+        "mar-de-tasos",
         "migdonia",
         "odomantes",
         "sintice",
@@ -2028,6 +2104,7 @@
       },
       "vizinhas": [
         "bisaltia",
+        "golfo-termaico",
         "migdonia",
         "palene",
         "sitonia"
@@ -2045,7 +2122,8 @@
         "y": 1940
       },
       "vizinhas": [
-        "botica"
+        "botica",
+        "golfo-termaico"
       ]
     },
     {
@@ -2062,7 +2140,9 @@
       "vizinhas": [
         "acte",
         "bisaltia",
-        "botica"
+        "botica",
+        "golfo-termaico",
+        "mar-de-tasos"
       ]
     },
     {
@@ -2078,6 +2158,7 @@
       },
       "vizinhas": [
         "bisaltia",
+        "mar-de-tasos",
         "sitonia"
       ]
     },
@@ -2094,6 +2175,7 @@
       },
       "vizinhas": [
         "bisaltia",
+        "mar-de-tasos",
         "odomantes",
         "pieres"
       ]
@@ -2111,6 +2193,7 @@
       },
       "vizinhas": [
         "edones",
+        "mar-de-tasos",
         "medos",
         "odomantes",
         "sapeus"
@@ -2129,6 +2212,7 @@
       },
       "vizinhas": [
         "bistones",
+        "mar-de-tasos",
         "medos",
         "pieres"
       ]
@@ -2146,6 +2230,8 @@
       },
       "vizinhas": [
         "cicones",
+        "mar-de-tasos",
+        "mar-tracio",
         "medos",
         "sapeus"
       ]
@@ -2164,6 +2250,8 @@
       "vizinhas": [
         "apsintios",
         "bistones",
+        "mar-jonio-norte",
+        "mar-tracio",
         "medos",
         "odrisas"
       ]
@@ -2183,6 +2271,9 @@
         "astas",
         "cicones",
         "dolonces",
+        "helesponto",
+        "mar-de-tenedos",
+        "mar-tracio",
         "odrisas",
         "perinto"
       ]
@@ -2200,7 +2291,9 @@
       },
       "vizinhas": [
         "apsintios",
-        "perinto"
+        "helesponto",
+        "perinto",
+        "propontide"
       ]
     },
     {
@@ -2217,7 +2310,8 @@
       "vizinhas": [
         "apsintios",
         "astas",
-        "cicones"
+        "cicones",
+        "mar-jonio-norte"
       ]
     },
     {
@@ -2235,6 +2329,7 @@
         "agrianes",
         "bistones",
         "cicones",
+        "mar-jonio-norte",
         "odomantes",
         "pieres",
         "sapeus"
@@ -2253,6 +2348,7 @@
       },
       "vizinhas": [
         "crestonia",
+        "mar-jonio-norte",
         "medos",
         "odomantes",
         "peonia",
@@ -2272,6 +2368,7 @@
       },
       "vizinhas": [
         "apsintios",
+        "mar-jonio-norte",
         "odrisas",
         "perinto",
         "tinos-tracios"
@@ -2291,6 +2388,7 @@
       "vizinhas": [
         "astas",
         "bizantes",
+        "mar-jonio-norte",
         "perinto"
       ]
     },
@@ -2307,7 +2405,10 @@
       },
       "vizinhas": [
         "calcedonia",
+        "mar-jonio-norte",
+        "mar-panfilio",
         "perinto",
+        "propontide",
         "tinos-tracios"
       ]
     },
@@ -2327,6 +2428,7 @@
         "astas",
         "bizantes",
         "dolonces",
+        "propontide",
         "tinos-tracios"
       ]
     },
@@ -2341,7 +2443,10 @@
         "x": 5346,
         "y": 1192
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-tasos",
+        "mar-tracio"
+      ]
     },
     {
       "indice": 85,
@@ -2354,7 +2459,9 @@
         "x": 6170,
         "y": 1454
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-tracio"
+      ]
     },
     {
       "indice": 86,
@@ -2367,7 +2474,10 @@
         "x": 6399,
         "y": 1788
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-lemnos",
+        "mar-de-tenedos"
+      ]
     },
     {
       "indice": 87,
@@ -2380,7 +2490,10 @@
         "x": 5842,
         "y": 2090
       },
-      "vizinhas": []
+      "vizinhas": [
+        "egeu-setentrional",
+        "mar-de-lemnos"
+      ]
     },
     {
       "indice": 88,
@@ -2393,7 +2506,9 @@
         "x": 6576,
         "y": 2176
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-tenedos"
+      ]
     },
     {
       "indice": 89,
@@ -2403,10 +2518,14 @@
       "dono": "esporades",
       "areaKm2": 207,
       "centro": {
-        "x": 4538,
-        "y": 2893
+        "x": 4598,
+        "y": 2858
       },
-      "vizinhas": []
+      "vizinhas": [
+        "egeu-setentrional",
+        "golfo-pagasetico",
+        "mar-de-esciros"
+      ]
     },
     {
       "indice": 90,
@@ -2419,7 +2538,9 @@
         "x": 5256,
         "y": 3255
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-esciros"
+      ]
     },
     {
       "indice": 91,
@@ -2433,7 +2554,10 @@
         "y": 4338
       },
       "vizinhas": [
+        "corinto-oriental",
         "epidauro",
+        "estreito-de-salamina",
+        "golfo-saronico",
         "megara",
         "micenas",
         "sicion"
@@ -2452,6 +2576,8 @@
       },
       "vizinhas": [
         "corinto",
+        "corinto-ocidental",
+        "corinto-oriental",
         "egio",
         "micenas",
         "orcomeno-arcadio"
@@ -2469,6 +2595,7 @@
         "y": 4132
       },
       "vizinhas": [
+        "corinto-ocidental",
         "hereia",
         "orcomeno-arcadio",
         "patras",
@@ -2487,9 +2614,11 @@
         "y": 4104
       },
       "vizinhas": [
+        "corinto-ocidental",
         "dime",
         "egio",
         "elide",
+        "golfo-de-patras",
         "hereia"
       ]
     },
@@ -2506,6 +2635,7 @@
       },
       "vizinhas": [
         "elide",
+        "golfo-de-patras",
         "patras"
       ]
     },
@@ -2522,7 +2652,9 @@
       },
       "vizinhas": [
         "dime",
+        "golfo-de-patras",
         "hereia",
+        "mar-cilenio",
         "olimpia",
         "patras"
       ]
@@ -2541,6 +2673,7 @@
       "vizinhas": [
         "elide",
         "hereia",
+        "mar-cilenio",
         "trifilia"
       ]
     },
@@ -2558,6 +2691,7 @@
       "vizinhas": [
         "figalia",
         "hereia",
+        "mar-cilenio",
         "olimpia"
       ]
     },
@@ -2575,6 +2709,7 @@
       "vizinhas": [
         "cinuria",
         "epidauro",
+        "golfo-argolico",
         "mantineia",
         "micenas",
         "tegeia"
@@ -2615,6 +2750,7 @@
         "argos",
         "esparta",
         "gitio",
+        "golfo-argolico",
         "maleia",
         "tegeia"
       ]
@@ -2633,6 +2769,8 @@
       "vizinhas": [
         "argos",
         "corinto",
+        "golfo-argolico",
+        "golfo-saronico",
         "hermione",
         "micenas",
         "trezena"
@@ -2651,7 +2789,9 @@
       },
       "vizinhas": [
         "epidauro",
-        "hermione"
+        "golfo-saronico",
+        "hermione",
+        "mar-de-egina"
       ]
     },
     {
@@ -2667,6 +2807,8 @@
       },
       "vizinhas": [
         "epidauro",
+        "golfo-argolico",
+        "mar-de-egina",
         "trezena"
       ]
     },
@@ -2766,6 +2908,8 @@
       "vizinhas": [
         "hereia",
         "itome",
+        "mar-cilenio",
+        "mar-de-pilos",
         "pilos",
         "tegeia",
         "trifilia"
@@ -2785,6 +2929,7 @@
       "vizinhas": [
         "cinuria",
         "gitio",
+        "golfo-messenio",
         "itome",
         "tegeia"
       ]
@@ -2803,6 +2948,8 @@
       "vizinhas": [
         "cinuria",
         "esparta",
+        "golfo-laconico",
+        "golfo-messenio",
         "maleia"
       ]
     },
@@ -2819,7 +2966,10 @@
       },
       "vizinhas": [
         "cinuria",
-        "gitio"
+        "gitio",
+        "golfo-argolico",
+        "golfo-laconico",
+        "mar-de-citera"
       ]
     },
     {
@@ -2836,6 +2986,7 @@
       "vizinhas": [
         "esparta",
         "figalia",
+        "golfo-messenio",
         "pilos",
         "tegeia"
       ]
@@ -2853,7 +3004,9 @@
       },
       "vizinhas": [
         "figalia",
-        "itome"
+        "golfo-messenio",
+        "itome",
+        "mar-de-pilos"
       ]
     },
     {
@@ -2867,7 +3020,10 @@
         "x": 3871,
         "y": 6237
       },
-      "vizinhas": []
+      "vizinhas": [
+        "golfo-laconico",
+        "mar-de-citera"
+      ]
     },
     {
       "indice": 116,
@@ -2884,7 +3040,8 @@
         "eleuterna",
         "festo",
         "gortina",
-        "lito"
+        "lito",
+        "mar-de-creta"
       ]
     },
     {
@@ -2901,7 +3058,9 @@
       "vizinhas": [
         "cnossos",
         "gortina",
-        "ierapitna"
+        "ierapitna",
+        "mar-de-creta",
+        "mar-libio"
       ]
     },
     {
@@ -2918,7 +3077,8 @@
       "vizinhas": [
         "cnossos",
         "festo",
-        "lito"
+        "lito",
+        "mar-libio"
       ]
     },
     {
@@ -2935,7 +3095,8 @@
       "vizinhas": [
         "cnossos",
         "eleuterna",
-        "gortina"
+        "gortina",
+        "mar-libio"
       ]
     },
     {
@@ -2952,7 +3113,10 @@
       "vizinhas": [
         "cidonia",
         "cnossos",
-        "festo"
+        "festo",
+        "mar-de-cidonia",
+        "mar-de-creta",
+        "mar-libio"
       ]
     },
     {
@@ -2967,7 +3131,9 @@
         "y": 7209
       },
       "vizinhas": [
-        "eleuterna"
+        "eleuterna",
+        "mar-de-cidonia",
+        "mar-libio"
       ]
     },
     {
@@ -2982,7 +3148,10 @@
         "y": 7493
       },
       "vizinhas": [
-        "ierapitna"
+        "ierapitna",
+        "mar-carpatico",
+        "mar-de-creta",
+        "mar-libio"
       ]
     },
     {
@@ -2998,6 +3167,8 @@
       },
       "vizinhas": [
         "lito",
+        "mar-de-creta",
+        "mar-libio",
         "praisos"
       ]
     },
@@ -3009,10 +3180,16 @@
       "dono": "andros",
       "areaKm2": 912,
       "centro": {
-        "x": 5522,
-        "y": 4623
+        "x": 5499,
+        "y": 4681
       },
-      "vizinhas": []
+      "vizinhas": [
+        "canal-de-ceos",
+        "golfo-saronico",
+        "mar-das-cicladas",
+        "mar-de-egina",
+        "mar-mirtoo"
+      ]
     },
     {
       "indice": 125,
@@ -3020,12 +3197,16 @@
       "nome": "Cíclades Centrais",
       "regiao": "cicladas",
       "dono": "naxos",
-      "areaKm2": 913,
+      "areaKm2": 1009,
       "centro": {
-        "x": 6034,
-        "y": 5412
+        "x": 6074,
+        "y": 5558
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-das-cicladas",
+        "mar-de-creta",
+        "mar-de-naxos"
+      ]
     },
     {
       "indice": 126,
@@ -3033,12 +3214,15 @@
       "nome": "Cíclades Ocidentais",
       "regiao": "cicladas",
       "dono": "melos",
-      "areaKm2": 419,
+      "areaKm2": 323,
       "centro": {
-        "x": 5439,
-        "y": 5644
+        "x": 5250,
+        "y": 5492
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-das-cicladas",
+        "mar-mirtoo"
+      ]
     },
     {
       "indice": 127,
@@ -3051,7 +3235,10 @@
         "x": 8254,
         "y": 6285
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-cos",
+        "mar-de-rodes"
+      ]
     },
     {
       "indice": 128,
@@ -3064,7 +3251,9 @@
         "x": 7554,
         "y": 5596
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-cos"
+      ]
     },
     {
       "indice": 129,
@@ -3074,10 +3263,15 @@
       "dono": "calimno",
       "areaKm2": 188,
       "centro": {
-        "x": 7312,
-        "y": 5259
+        "x": 7243,
+        "y": 5174
       },
-      "vizinhas": []
+      "vizinhas": [
+        "estreito-de-samos",
+        "mar-de-cos",
+        "mar-de-naxos",
+        "mar-icario"
+      ]
     },
     {
       "indice": 130,
@@ -3090,7 +3284,10 @@
         "x": 6856,
         "y": 5859
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-cos",
+        "mar-de-naxos"
+      ]
     },
     {
       "indice": 131,
@@ -3103,7 +3300,9 @@
         "x": 7538,
         "y": 7005
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-carpatico"
+      ]
     },
     {
       "indice": 132,
@@ -3116,7 +3315,9 @@
         "x": 12194,
         "y": 7672
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-cipro"
+      ]
     },
     {
       "indice": 133,
@@ -3129,7 +3330,10 @@
         "x": 7256,
         "y": 4548
       },
-      "vizinhas": []
+      "vizinhas": [
+        "estreito-de-samos",
+        "mar-icario"
+      ]
     },
     {
       "indice": 134,
@@ -3142,7 +3346,9 @@
         "x": 6544,
         "y": 3773
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-de-quios"
+      ]
     },
     {
       "indice": 135,
@@ -3155,7 +3361,9 @@
         "x": 6676,
         "y": 4698
       },
-      "vizinhas": []
+      "vizinhas": [
+        "mar-icario"
+      ]
     },
     {
       "indice": 136,
@@ -3169,6 +3377,9 @@
         "y": 3001
       },
       "vizinhas": [
+        "estreito-de-lesbos",
+        "golfo-de-esmirna",
+        "mar-de-tenedos",
         "metimna"
       ]
     },
@@ -3184,6 +3395,8 @@
         "y": 2834
       },
       "vizinhas": [
+        "estreito-de-lesbos",
+        "mar-de-tenedos",
         "mitilene"
       ]
     },
@@ -3200,6 +3413,8 @@
       },
       "vizinhas": [
         "alabanda",
+        "estreito-de-samos",
+        "mar-de-cos",
         "milasa",
         "priene"
       ]
@@ -3218,6 +3433,7 @@
       "vizinhas": [
         "alabanda",
         "efeso",
+        "estreito-de-samos",
         "mileto"
       ]
     },
@@ -3235,6 +3451,7 @@
       "vizinhas": [
         "alabanda",
         "colofao",
+        "estreito-de-samos",
         "hipepa",
         "priene"
       ]
@@ -3253,6 +3470,7 @@
       "vizinhas": [
         "efeso",
         "esmirna",
+        "estreito-de-samos",
         "hipepa",
         "teos"
       ]
@@ -3272,7 +3490,9 @@
         "clazomenas",
         "colofao",
         "eritras",
-        "esmirna"
+        "esmirna",
+        "estreito-de-samos",
+        "mar-icario"
       ]
     },
     {
@@ -3289,6 +3509,7 @@
       "vizinhas": [
         "eritras",
         "esmirna",
+        "golfo-de-esmirna",
         "teos"
       ]
     },
@@ -3305,6 +3526,9 @@
       },
       "vizinhas": [
         "clazomenas",
+        "golfo-de-esmirna",
+        "mar-de-quios",
+        "mar-icario",
         "teos"
       ]
     },
@@ -3323,6 +3547,7 @@
         "cime",
         "clazomenas",
         "colofao",
+        "golfo-de-esmirna",
         "hipepa",
         "magnesia-sipilo",
         "sardes",
@@ -3341,7 +3566,8 @@
         "y": 3514
       },
       "vizinhas": [
-        "cime"
+        "cime",
+        "golfo-de-esmirna"
       ]
     },
     {
@@ -3358,6 +3584,7 @@
       "vizinhas": [
         "esmirna",
         "foceia",
+        "golfo-de-esmirna",
         "magnesia-sipilo",
         "pergamo",
         "pitane"
@@ -3377,6 +3604,7 @@
       "vizinhas": [
         "adramitio",
         "cime",
+        "golfo-de-esmirna",
         "pergamo"
       ]
     },
@@ -3395,8 +3623,10 @@
         "assos",
         "cizico",
         "dascilio",
+        "golfo-de-esmirna",
         "ilion",
         "lampsaco",
+        "mar-de-tenedos",
         "pergamo",
         "pitane",
         "tiatira"
@@ -3415,7 +3645,8 @@
       },
       "vizinhas": [
         "adramitio",
-        "ilion"
+        "ilion",
+        "mar-de-tenedos"
       ]
     },
     {
@@ -3433,7 +3664,9 @@
         "abido",
         "adramitio",
         "assos",
-        "lampsaco"
+        "helesponto",
+        "lampsaco",
+        "mar-de-tenedos"
       ]
     },
     {
@@ -3448,6 +3681,7 @@
         "y": 1846
       },
       "vizinhas": [
+        "helesponto",
         "ilion",
         "lampsaco"
       ]
@@ -3467,7 +3701,9 @@
         "abido",
         "adramitio",
         "cizico",
-        "ilion"
+        "helesponto",
+        "ilion",
+        "propontide"
       ]
     },
     {
@@ -3486,7 +3722,8 @@
         "cios",
         "dascilio",
         "lampsaco",
-        "miletopolis"
+        "miletopolis",
+        "propontide"
       ]
     },
     {
@@ -3559,7 +3796,9 @@
       },
       "vizinhas": [
         "astaco-bitinia",
-        "bizantes"
+        "bizantes",
+        "mar-panfilio",
+        "propontide"
       ]
     },
     {
@@ -3577,6 +3816,7 @@
         "astaco-bitinia",
         "cizico",
         "miletopolis",
+        "propontide",
         "prusa"
       ]
     },
@@ -3615,6 +3855,8 @@
         "cios",
         "cotieu",
         "dorileu",
+        "mar-panfilio",
+        "propontide",
         "prusa"
       ]
     },
@@ -3632,6 +3874,7 @@
       "vizinhas": [
         "astaco-bitinia",
         "dorileu",
+        "mar-panfilio",
         "mariandinos",
         "pessinunte"
       ]
@@ -3650,6 +3893,7 @@
       "vizinhas": [
         "bitinia-leste",
         "gordio",
+        "mar-panfilio",
         "pessinunte"
       ]
     },
@@ -3843,6 +4087,7 @@
         "y": 2102
       },
       "vizinhas": [
+        "mar-panfilio",
         "mariandinos",
         "pessinunte"
       ]
@@ -3864,6 +4109,7 @@
         "dorileu",
         "gordio",
         "licaonia",
+        "mar-panfilio",
         "mariandinos",
         "mideu"
       ]
@@ -3922,6 +4168,7 @@
       },
       "vizinhas": [
         "apameia",
+        "mar-panfilio",
         "pessinunte",
         "sagalasso",
         "selge",
@@ -3940,6 +4187,7 @@
         "y": 5305
       },
       "vizinhas": [
+        "mar-de-cos",
         "milasa"
       ]
     },
@@ -3958,6 +4206,7 @@
         "alabanda",
         "estratoniceia",
         "halicarnasso",
+        "mar-de-cos",
         "mileto"
       ]
     },
@@ -3997,6 +4246,7 @@
         "afrodisias",
         "alabanda",
         "caunos",
+        "mar-de-cos",
         "milasa"
       ]
     },
@@ -4015,6 +4265,8 @@
         "afrodisias",
         "cnido",
         "estratoniceia",
+        "mar-de-cos",
+        "mar-de-rodes",
         "telmesso"
       ]
     },
@@ -4054,7 +4306,9 @@
         "y": 5691
       },
       "vizinhas": [
-        "caunos"
+        "caunos",
+        "mar-de-cos",
+        "mar-de-rodes"
       ]
     },
     {
@@ -4071,6 +4325,8 @@
       "vizinhas": [
         "afrodisias",
         "caunos",
+        "mar-de-rodes",
+        "mar-licio",
         "tlos",
         "xanto"
       ]
@@ -4088,6 +4344,7 @@
       },
       "vizinhas": [
         "limira",
+        "mar-licio",
         "mira",
         "telmesso",
         "tlos"
@@ -4126,6 +4383,7 @@
       },
       "vizinhas": [
         "limira",
+        "mar-licio",
         "xanto"
       ]
     },
@@ -4142,6 +4400,8 @@
       },
       "vizinhas": [
         "faselis",
+        "mar-licio",
+        "mar-panfilio",
         "mira",
         "termesso",
         "tlos",
@@ -4162,6 +4422,7 @@
       "vizinhas": [
         "faselis",
         "limira",
+        "mar-panfilio",
         "perge",
         "sagalasso",
         "selge",
@@ -4222,6 +4483,7 @@
       },
       "vizinhas": [
         "limira",
+        "mar-panfilio",
         "termesso"
       ]
     },
@@ -4238,6 +4500,7 @@
       },
       "vizinhas": [
         "aspendo",
+        "mar-panfilio",
         "selge",
         "termesso"
       ]
@@ -4254,6 +4517,7 @@
         "y": 5385
       },
       "vizinhas": [
+        "mar-panfilio",
         "perge",
         "selge",
         "side"
@@ -4273,8 +4537,1140 @@
       "vizinhas": [
         "aspendo",
         "licaonia",
+        "mar-panfilio",
         "selge"
       ]
+    },
+    {
+      "indice": 1000,
+      "id": "mar-jonio-norte",
+      "nome": "Jônio Setentrional",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 34517,
+      "centro": {
+        "x": 1283,
+        "y": 1614
+      },
+      "vizinhas": [
+        "agrianes",
+        "amantes",
+        "astas",
+        "bizantes",
+        "bulinos",
+        "canal-de-corcira",
+        "cicones",
+        "corcira",
+        "derriopo",
+        "mar-de-itaca",
+        "mar-de-leucade",
+        "mar-panfilio",
+        "medos",
+        "odrisas",
+        "partinos",
+        "penestas",
+        "peonia",
+        "taulantios",
+        "tinos-tracios"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1001,
+      "id": "canal-de-corcira",
+      "nome": "Canal de Corcira",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3021,
+      "centro": {
+        "x": 1212,
+        "y": 2611
+      },
+      "vizinhas": [
+        "amantes",
+        "butroto",
+        "corcira",
+        "mar-de-leucade",
+        "mar-jonio-norte",
+        "tesprotia"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1002,
+      "id": "golfo-ambracico",
+      "nome": "Golfo Ambrácico",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 592,
+      "centro": {
+        "x": 2017,
+        "y": 3125
+      },
+      "vizinhas": [
+        "astaco",
+        "cassopia",
+        "estrato",
+        "leucade",
+        "mar-de-leucade"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1003,
+      "id": "mar-de-leucade",
+      "nome": "Mar de Lêucade",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 6580,
+      "centro": {
+        "x": 1391,
+        "y": 3330
+      },
+      "vizinhas": [
+        "astaco",
+        "canal-de-corcira",
+        "cassopia",
+        "golfo-ambracico",
+        "golfo-de-patras",
+        "leucade",
+        "mar-de-itaca",
+        "mar-jonio-norte",
+        "tesprotia"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1004,
+      "id": "mar-de-itaca",
+      "nome": "Mar de Ítaca",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 11606,
+      "centro": {
+        "x": 888,
+        "y": 3950
+      },
+      "vizinhas": [
+        "cefalenia",
+        "golfo-de-patras",
+        "itaca",
+        "mar-de-leucade",
+        "mar-de-zacinto",
+        "mar-jonio-norte"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1005,
+      "id": "mar-de-zacinto",
+      "nome": "Mar de Zacinto",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 20170,
+      "centro": {
+        "x": 996,
+        "y": 4817
+      },
+      "vizinhas": [
+        "cefalenia",
+        "golfo-de-patras",
+        "mar-cilenio",
+        "mar-de-itaca",
+        "mar-de-pilos",
+        "zacinto"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1006,
+      "id": "golfo-de-patras",
+      "nome": "Golfo de Patras",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 2368,
+      "centro": {
+        "x": 2308,
+        "y": 3953
+      },
+      "vizinhas": [
+        "astaco",
+        "calidao",
+        "corinto-ocidental",
+        "dime",
+        "elide",
+        "mar-cilenio",
+        "mar-de-itaca",
+        "mar-de-leucade",
+        "mar-de-zacinto",
+        "patras"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1007,
+      "id": "corinto-ocidental",
+      "nome": "Corinto Ocidental",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 1130,
+      "centro": {
+        "x": 3269,
+        "y": 3912
+      },
+      "vizinhas": [
+        "anfissa",
+        "calidao",
+        "corinto-oriental",
+        "delfos",
+        "egio",
+        "golfo-de-patras",
+        "patras",
+        "sicion"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1008,
+      "id": "corinto-oriental",
+      "nome": "Corinto Oriental",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 1244,
+      "centro": {
+        "x": 3724,
+        "y": 4086
+      },
+      "vizinhas": [
+        "corinto",
+        "corinto-ocidental",
+        "delfos",
+        "megara",
+        "plateia",
+        "queroneia",
+        "sicion",
+        "tespias"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1009,
+      "id": "mar-cilenio",
+      "nome": "Mar Cilênio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 4577,
+      "centro": {
+        "x": 2219,
+        "y": 4731
+      },
+      "vizinhas": [
+        "elide",
+        "figalia",
+        "golfo-de-patras",
+        "mar-de-pilos",
+        "mar-de-zacinto",
+        "olimpia",
+        "trifilia",
+        "zacinto"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1010,
+      "id": "mar-de-pilos",
+      "nome": "Mar de Pilos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 77450,
+      "centro": {
+        "x": 1373,
+        "y": 6772
+      },
+      "vizinhas": [
+        "figalia",
+        "golfo-messenio",
+        "mar-cilenio",
+        "mar-de-zacinto",
+        "pilos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1011,
+      "id": "golfo-messenio",
+      "nome": "Golfo Messênio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 12324,
+      "centro": {
+        "x": 2946,
+        "y": 6785
+      },
+      "vizinhas": [
+        "esparta",
+        "gitio",
+        "golfo-laconico",
+        "itome",
+        "mar-de-citera",
+        "mar-de-pilos",
+        "mar-libio",
+        "pilos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1012,
+      "id": "golfo-laconico",
+      "nome": "Golfo Lacônico",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3401,
+      "centro": {
+        "x": 3532,
+        "y": 6032
+      },
+      "vizinhas": [
+        "citera",
+        "gitio",
+        "golfo-messenio",
+        "maleia",
+        "mar-de-citera"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1013,
+      "id": "mar-de-citera",
+      "nome": "Mar de Citera",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 17605,
+      "centro": {
+        "x": 3770,
+        "y": 6848
+      },
+      "vizinhas": [
+        "citera",
+        "golfo-argolico",
+        "golfo-laconico",
+        "golfo-messenio",
+        "maleia",
+        "mar-de-cidonia",
+        "mar-libio",
+        "mar-mirtoo"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1014,
+      "id": "golfo-argolico",
+      "nome": "Golfo Argólico",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3271,
+      "centro": {
+        "x": 3988,
+        "y": 5216
+      },
+      "vizinhas": [
+        "argos",
+        "cinuria",
+        "epidauro",
+        "hermione",
+        "maleia",
+        "mar-de-citera",
+        "mar-de-egina",
+        "mar-mirtoo"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1015,
+      "id": "golfo-saronico",
+      "nome": "Golfo Sarônico",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3356,
+      "centro": {
+        "x": 4554,
+        "y": 4406
+      },
+      "vizinhas": [
+        "andros",
+        "calcis",
+        "canal-de-ceos",
+        "caristo",
+        "corinto",
+        "egina",
+        "epidauro",
+        "eretria",
+        "estreito-de-salamina",
+        "mar-de-egina",
+        "maratona",
+        "sounion",
+        "tanagra",
+        "trezena"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1016,
+      "id": "estreito-de-salamina",
+      "nome": "Estreito de Salamina",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 738,
+      "centro": {
+        "x": 4302,
+        "y": 4350
+      },
+      "vizinhas": [
+        "atenas",
+        "corinto",
+        "eleusis",
+        "golfo-saronico",
+        "megara",
+        "salamina",
+        "sounion"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1017,
+      "id": "mar-de-egina",
+      "nome": "Mar de Egina",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 2286,
+      "centro": {
+        "x": 4527,
+        "y": 4880
+      },
+      "vizinhas": [
+        "andros",
+        "golfo-argolico",
+        "golfo-saronico",
+        "hermione",
+        "mar-mirtoo",
+        "trezena"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1018,
+      "id": "euripo",
+      "nome": "Euripo",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 501,
+      "centro": {
+        "x": 4251,
+        "y": 3562
+      },
+      "vizinhas": [
+        "calcis",
+        "golfo-maliaco",
+        "histiea",
+        "opunte",
+        "tebas"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1019,
+      "id": "golfo-maliaco",
+      "nome": "Golfo Maliaco",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 888,
+      "centro": {
+        "x": 3858,
+        "y": 3319
+      },
+      "vizinhas": [
+        "elateia",
+        "euripo",
+        "golfo-pagasetico",
+        "histiea",
+        "iolco",
+        "lamia",
+        "opunte",
+        "orcomeno"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1020,
+      "id": "golfo-pagasetico",
+      "nome": "Golfo Pagasético",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3361,
+      "centro": {
+        "x": 4203,
+        "y": 2797
+      },
+      "vizinhas": [
+        "egeu-setentrional",
+        "esporades",
+        "golfo-maliaco",
+        "golfo-termaico",
+        "histiea",
+        "iolco",
+        "mar-de-esciros"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1021,
+      "id": "mar-de-esciros",
+      "nome": "Mar de Esciros",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 9578,
+      "centro": {
+        "x": 5119,
+        "y": 3333
+      },
+      "vizinhas": [
+        "calcis",
+        "canal-de-ceos",
+        "caristo",
+        "egeu-setentrional",
+        "eretria",
+        "esciros",
+        "esporades",
+        "golfo-pagasetico",
+        "histiea",
+        "mar-de-quios"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1022,
+      "id": "mar-mirtoo",
+      "nome": "Mar Mirtoo",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 9694,
+      "centro": {
+        "x": 4762,
+        "y": 5550
+      },
+      "vizinhas": [
+        "andros",
+        "golfo-argolico",
+        "mar-das-cicladas",
+        "mar-de-cidonia",
+        "mar-de-citera",
+        "mar-de-creta",
+        "mar-de-egina",
+        "melos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1023,
+      "id": "mar-das-cicladas",
+      "nome": "Mar das Cíclades",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 4675,
+      "centro": {
+        "x": 5605,
+        "y": 5213
+      },
+      "vizinhas": [
+        "andros",
+        "canal-de-ceos",
+        "mar-de-creta",
+        "mar-de-naxos",
+        "mar-icario",
+        "mar-mirtoo",
+        "melos",
+        "naxos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1024,
+      "id": "canal-de-ceos",
+      "nome": "Canal de Ceos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 8115,
+      "centro": {
+        "x": 5684,
+        "y": 4199
+      },
+      "vizinhas": [
+        "andros",
+        "caristo",
+        "golfo-saronico",
+        "mar-das-cicladas",
+        "mar-de-esciros",
+        "mar-de-quios",
+        "mar-icario"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1025,
+      "id": "mar-de-naxos",
+      "nome": "Mar de Naxos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 8923,
+      "centro": {
+        "x": 6610,
+        "y": 5633
+      },
+      "vizinhas": [
+        "astipaleia",
+        "calimno",
+        "mar-carpatico",
+        "mar-das-cicladas",
+        "mar-de-cos",
+        "mar-de-creta",
+        "mar-icario",
+        "naxos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1026,
+      "id": "mar-icario",
+      "nome": "Mar Icário",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 6786,
+      "centro": {
+        "x": 6784,
+        "y": 4653
+      },
+      "vizinhas": [
+        "calimno",
+        "canal-de-ceos",
+        "eritras",
+        "estreito-de-samos",
+        "icaria",
+        "mar-das-cicladas",
+        "mar-de-naxos",
+        "mar-de-quios",
+        "samos",
+        "teos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1027,
+      "id": "estreito-de-samos",
+      "nome": "Estreito de Samos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3690,
+      "centro": {
+        "x": 7368,
+        "y": 4521
+      },
+      "vizinhas": [
+        "calimno",
+        "colofao",
+        "efeso",
+        "mar-de-cos",
+        "mar-icario",
+        "mileto",
+        "priene",
+        "samos",
+        "teos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1028,
+      "id": "egeu-setentrional",
+      "nome": "Egeu Setentrional",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 11326,
+      "centro": {
+        "x": 5410,
+        "y": 2614
+      },
+      "vizinhas": [
+        "esporades",
+        "estreito-de-lesbos",
+        "golfo-pagasetico",
+        "golfo-termaico",
+        "lemnos",
+        "mar-de-esciros",
+        "mar-de-lemnos",
+        "mar-de-quios",
+        "mar-de-tasos",
+        "mar-de-tenedos",
+        "mar-tracio"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1029,
+      "id": "mar-tracio",
+      "nome": "Mar Trácio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 8600,
+      "centro": {
+        "x": 5825,
+        "y": 1386
+      },
+      "vizinhas": [
+        "apsintios",
+        "bistones",
+        "cicones",
+        "egeu-setentrional",
+        "mar-de-lemnos",
+        "mar-de-tasos",
+        "mar-de-tenedos",
+        "samotracia",
+        "tasos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1030,
+      "id": "golfo-termaico",
+      "nome": "Golfo Termaico",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 8107,
+      "centro": {
+        "x": 4051,
+        "y": 1989
+      },
+      "vizinhas": [
+        "botica",
+        "egas",
+        "egeu-setentrional",
+        "feras",
+        "golfo-pagasetico",
+        "iolco",
+        "mar-de-tasos",
+        "migdonia",
+        "palene",
+        "pieria",
+        "sitonia"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1031,
+      "id": "mar-de-tasos",
+      "nome": "Mar de Tasos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 6747,
+      "centro": {
+        "x": 4985,
+        "y": 1527
+      },
+      "vizinhas": [
+        "acte",
+        "bisaltia",
+        "bistones",
+        "edones",
+        "egeu-setentrional",
+        "golfo-termaico",
+        "mar-tracio",
+        "pieres",
+        "sapeus",
+        "sitonia",
+        "tasos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1032,
+      "id": "mar-de-lemnos",
+      "nome": "Mar de Lemnos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 4671,
+      "centro": {
+        "x": 6024,
+        "y": 2063
+      },
+      "vizinhas": [
+        "egeu-setentrional",
+        "imbros",
+        "lemnos",
+        "mar-de-tenedos",
+        "mar-tracio"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1033,
+      "id": "estreito-de-lesbos",
+      "nome": "Estreito de Lesbos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 2947,
+      "centro": {
+        "x": 6493,
+        "y": 3124
+      },
+      "vizinhas": [
+        "egeu-setentrional",
+        "golfo-de-esmirna",
+        "mar-de-quios",
+        "mar-de-tenedos",
+        "metimna",
+        "mitilene"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1034,
+      "id": "mar-de-tenedos",
+      "nome": "Mar de Tênedos",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 6455,
+      "centro": {
+        "x": 6596,
+        "y": 2256
+      },
+      "vizinhas": [
+        "adramitio",
+        "apsintios",
+        "assos",
+        "egeu-setentrional",
+        "estreito-de-lesbos",
+        "golfo-de-esmirna",
+        "helesponto",
+        "ilion",
+        "imbros",
+        "mar-de-lemnos",
+        "mar-tracio",
+        "metimna",
+        "mitilene",
+        "tenedos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1035,
+      "id": "helesponto",
+      "nome": "Helesponto",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 2517,
+      "centro": {
+        "x": 6967,
+        "y": 1507
+      },
+      "vizinhas": [
+        "abido",
+        "apsintios",
+        "dolonces",
+        "ilion",
+        "lampsaco",
+        "mar-de-tenedos",
+        "propontide"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1036,
+      "id": "propontide",
+      "nome": "Propôntide",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 11491,
+      "centro": {
+        "x": 8544,
+        "y": 1185
+      },
+      "vizinhas": [
+        "astaco-bitinia",
+        "bizantes",
+        "calcedonia",
+        "cios",
+        "cizico",
+        "dolonces",
+        "helesponto",
+        "lampsaco",
+        "perinto"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1037,
+      "id": "mar-de-quios",
+      "nome": "Mar de Quios",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 7024,
+      "centro": {
+        "x": 6319,
+        "y": 3758
+      },
+      "vizinhas": [
+        "canal-de-ceos",
+        "egeu-setentrional",
+        "eritras",
+        "estreito-de-lesbos",
+        "golfo-de-esmirna",
+        "mar-de-esciros",
+        "mar-icario",
+        "quios"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1038,
+      "id": "golfo-de-esmirna",
+      "nome": "Golfo de Esmirna",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3567,
+      "centro": {
+        "x": 7116,
+        "y": 3376
+      },
+      "vizinhas": [
+        "adramitio",
+        "cime",
+        "clazomenas",
+        "eritras",
+        "esmirna",
+        "estreito-de-lesbos",
+        "foceia",
+        "mar-de-quios",
+        "mar-de-tenedos",
+        "mitilene",
+        "pitane"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1039,
+      "id": "mar-de-cos",
+      "nome": "Mar de Cós",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 11297,
+      "centro": {
+        "x": 7644,
+        "y": 5729
+      },
+      "vizinhas": [
+        "astipaleia",
+        "calimno",
+        "caunos",
+        "cnido",
+        "cos",
+        "estratoniceia",
+        "estreito-de-samos",
+        "halicarnasso",
+        "mar-carpatico",
+        "mar-de-naxos",
+        "mar-de-rodes",
+        "milasa",
+        "mileto",
+        "rodes"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1040,
+      "id": "mar-de-rodes",
+      "nome": "Mar de Rodes",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 18993,
+      "centro": {
+        "x": 8672,
+        "y": 6901
+      },
+      "vizinhas": [
+        "caunos",
+        "cnido",
+        "mar-carpatico",
+        "mar-de-cos",
+        "mar-licio",
+        "rodes",
+        "telmesso"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1041,
+      "id": "mar-carpatico",
+      "nome": "Mar Cárpatio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 28206,
+      "centro": {
+        "x": 7522,
+        "y": 7284
+      },
+      "vizinhas": [
+        "carpatos",
+        "mar-de-cos",
+        "mar-de-creta",
+        "mar-de-naxos",
+        "mar-de-rodes",
+        "mar-libio",
+        "praisos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1042,
+      "id": "mar-licio",
+      "nome": "Mar Lício",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 26289,
+      "centro": {
+        "x": 9682,
+        "y": 7180
+      },
+      "vizinhas": [
+        "limira",
+        "mar-de-cipro",
+        "mar-de-rodes",
+        "mar-panfilio",
+        "mira",
+        "telmesso",
+        "xanto"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1043,
+      "id": "mar-panfilio",
+      "nome": "Mar Panfílio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 41351,
+      "centro": {
+        "x": 10909,
+        "y": 3599
+      },
+      "vizinhas": [
+        "aspendo",
+        "astaco-bitinia",
+        "bitinia-leste",
+        "bizantes",
+        "calcedonia",
+        "faselis",
+        "gordio",
+        "licaonia",
+        "limira",
+        "mar-de-cipro",
+        "mar-jonio-norte",
+        "mar-licio",
+        "mariandinos",
+        "perge",
+        "pessinunte",
+        "side",
+        "termesso"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1044,
+      "id": "mar-de-creta",
+      "nome": "Mar de Creta",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 18254,
+      "centro": {
+        "x": 5915,
+        "y": 6646
+      },
+      "vizinhas": [
+        "cnossos",
+        "eleuterna",
+        "ierapitna",
+        "lito",
+        "mar-carpatico",
+        "mar-das-cicladas",
+        "mar-de-cidonia",
+        "mar-de-naxos",
+        "mar-mirtoo",
+        "naxos",
+        "praisos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1045,
+      "id": "mar-de-cidonia",
+      "nome": "Mar de Cidônia",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 9513,
+      "centro": {
+        "x": 4640,
+        "y": 6821
+      },
+      "vizinhas": [
+        "cidonia",
+        "eleuterna",
+        "mar-de-citera",
+        "mar-de-creta",
+        "mar-libio",
+        "mar-mirtoo"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1046,
+      "id": "mar-libio",
+      "nome": "Mar Líbio",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 22708,
+      "centro": {
+        "x": 5074,
+        "y": 7935
+      },
+      "vizinhas": [
+        "cidonia",
+        "eleuterna",
+        "festo",
+        "golfo-messenio",
+        "gortina",
+        "ierapitna",
+        "lito",
+        "mar-carpatico",
+        "mar-de-cidonia",
+        "mar-de-citera",
+        "praisos"
+      ],
+      "mar": true
+    },
+    {
+      "indice": 1047,
+      "id": "mar-de-cipro",
+      "nome": "Mar de Chipre",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 24778,
+      "centro": {
+        "x": 11431,
+        "y": 7565
+      },
+      "vizinhas": [
+        "mar-licio",
+        "mar-panfilio",
+        "pafos"
+      ],
+      "mar": true
     }
   ]
 }

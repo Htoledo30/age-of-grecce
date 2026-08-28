@@ -55,6 +55,9 @@ export class InicioJogo {
   }
 
   mostrarMenu(): void {
+    // `encerrar` esconde a raiz inteira ao entrar na campanha; voltar pelo menu de pausa
+    // precisa reabrir a cena do menu, não apenas trocar qual painel interno está oculto.
+    this.raiz.hidden = false;
     this.raiz.dataset['tela'] = 'menu';
     this.telaMenu.hidden = false;
     this.painelEscolha.hidden = true;

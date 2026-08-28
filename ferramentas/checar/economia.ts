@@ -52,6 +52,7 @@ export function checarEconomia(): void {
       corrupcao: 0,
       fatorDeImposto: 1,
       revoltosa: false,
+    fatorDoHumor: 1,
       sitiada: false,
       ligada: true,
     });

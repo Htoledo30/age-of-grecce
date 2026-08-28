@@ -7,7 +7,7 @@
  * atrás de outro.
  */
 
-import type { Construcoes } from '@/dados/esquema';
+import { FAIXAS_DE_RELACAO } from './vistas/mapa-de-relacoes';
 import { AcoesProvincia } from '@/ui/acoes-provincia';
 import { AnimacaoDeMarcha } from '@/ui/animacao-de-marcha';
 import { Balanco } from '@/ui/balanco';
@@ -28,31 +28,31 @@ import { Diplomacia } from '@/ui/diplomacia';
 import { Mercado } from '@/ui/mercado';
 import { PainelFps } from '@/ui/painel-fps';
 import { PainelLateral } from '@/ui/painel-lateral';
+import { JanelaDeConstrucoes } from '@/ui/construcoes';
 import { Recrutamento } from '@/ui/recrutamento';
+import { MenuPausa } from '@/ui/menu-pausa';
+import type { MotorDeAudio } from '@/audio/motor-de-audio';
 import type { Tela } from './contexto';
 
 export function montarTela(
   ui: HTMLElement,
   coresDosPoderes: boolean,
-  catalogo: Construcoes['construcoes'],
+  audio: MotorDeAudio,
 ): Tela {
   const painelFps = new PainelFps(ui);
-  const lateral = new PainelLateral(ui, coresDosPoderes);
+  const lateral = new PainelLateral(ui, coresDosPoderes, FAIXAS_DE_RELACAO);
 
-  // Identidade primeiro, decisões depois: a província selecionada abre a coluna e as ações
-  // seguem abaixo. É a ordem de leitura de uma interface de estratégia, não a ordem em que
-  // os sistemas foram implementados.
-  const colunaProvincia = document.createElement('div');
-  colunaProvincia.className = 'coluna-provincia';
-  ui.appendChild(colunaProvincia);
-  const ficha = new FichaProvincia(colunaProvincia);
-  const acoes = new AcoesProvincia(colunaProvincia);
-  // Recrutar é outra mecânica de investir e construir: mexe em gente, não em dinheiro. Por
-  // isso permanece num bloco próprio, recolhível, depois das ações da província.
-  const recrutamento = new Recrutamento(colunaProvincia);
-  ficha.usarCatalogo(
-    Object.fromEntries(Object.entries(catalogo).map(([id, c]) => [id, c.nome])),
-  );
+  // ⚠️ **Uma moldura só, e ela NÃO rola.** Eram três caixas empilhadas numa coluna com
+  // `overflow-y: auto` — o jogador tinha que rolar para achar o botão de levantar exército.
+  // Identidade primeiro, comandos depois, dentro do mesmo painel; o que não cabe aqui virou
+  // janela. É a ordem de leitura de uma interface de estratégia, não a ordem em que os
+  // sistemas foram implementados.
+  const painelProvincia = document.createElement('div');
+  painelProvincia.className = 'painel-provincia';
+  painelProvincia.hidden = true;
+  ui.appendChild(painelProvincia);
+  const ficha = new FichaProvincia(painelProvincia);
+  const acoes = new AcoesProvincia(painelProvincia);
 
   // As rotas ficam atrás das peças: possibilidade tracejada, ordem registrada cheia.
   const marchasMapa = new MarchasMapa(ui);
@@ -96,10 +96,19 @@ export function montarTela(
   // sem guerra declarada a ordem de marcha recusa, e o jogador precisa de um lugar óbvio onde
   // declarar. Decisão de Henrique.
   const diplomacia = new Diplomacia(ui);
+  // As duas janelas da província. Saíram da coluna da esquerda porque lá não cabiam: oito
+  // construções numa faixa de 380 px viram oito botões de uma linha, e uma linha não
+  // comporta a conta que a escolha exige. Recrutar estava pior — recolhido, embaixo delas.
+  const construcoes = new JanelaDeConstrucoes(ui);
+  const recrutamento = new Recrutamento(ui);
+  // Última camada: o Esc precisa cobrir mapa, janelas e batalha sem pertencer a nenhuma delas.
+  const pausa = new MenuPausa(ui, audio);
 
   return {
+    painelProvincia,
     ficha,
     acoes,
+    construcoes,
     recrutamento,
     exercitoFicha,
     barraTurno,
@@ -119,5 +128,6 @@ export function montarTela(
     animacaoDeMarcha,
     painelFps,
     lateral,
+    pausa,
   };
 }

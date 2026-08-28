@@ -3,6 +3,7 @@
   "entry": [
     "electron/main.cjs",
     "electron/preload.cjs",
+    "gerador/*.ts",
     "ferramentas/*.ts",
     "ferramentas/*.mjs",
     "testes/**/*.{test,spec}.ts"

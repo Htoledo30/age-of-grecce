@@ -16,10 +16,13 @@ import {
   ordensNoMapa,
   previsaoDaMarcha,
 } from './vistas/mapa';
-import { vistaDaProvincia, vistaDeAcoes, vistaDeRecrutamento } from './vistas/provincia';
+import {
+  vistaDaProvincia,
+  vistaDeAcoes,
+  vistaDeConstrucoes,
+  vistaDeRecrutamento,
+} from './vistas/provincia';
 import { vistaDoExercito } from './vistas/exercito';
-
-const ALGARISMOS = ['0', 'I', 'II', 'III'];
 
 export function atualizarInterface(jogo: Jogo): void {
   const { campanha, tela, selecao } = jogo;
@@ -40,15 +43,14 @@ export function atualizarInterface(jogo: Jogo): void {
           provincias: campanha.provinciasDe(jogador.id).length,
           // Espelha a regra da virada: o exilado sem chão não tem o que assentar, e o botão
           // não pode travar o único caminho dele — jogar até reconquistar.
+          pedidos: campanha.propostas().length,
           capitalPerdida:
             campanha.capitalPerdida(jogador.id) &&
             campanha.provinciasDe(jogador.id).length > 0,
         },
   );
 
-  desenharFicha(jogo);
-  tela.acoes.mostrar(vistaDeAcoes(jogo));
-  tela.recrutamento.mostrar(vistaDeRecrutamento(jogo));
+  desenharProvincia(jogo);
 
   // A hoste selecionada pode ter deixado de existir (dispensada, desertada). Limpar ANTES de
   // montar a vista é o que impede a ficha de descrever um exército que já não está no mapa.
@@ -94,35 +96,23 @@ export function atualizarInterface(jogo: Jogo): void {
 }
 
 /**
- * A ficha e o painel de ações saem da MESMA seleção, sempre juntos: assim não existe estado
- * em que um mostra uma província e o outro, outra.
+ * O painel da província inteiro — moldura, ficha e comandos — sai da MESMA seleção, sempre
+ * junto: assim não existe estado em que um pedaço mostra uma província e o outro, outra.
+ *
+ * ⚠️ **A moldura some com o conteúdo.** Ficha e comandos escondidos dentro de um painel
+ * visível deixariam uma caixa vazia com friso no canto da tela, e um jogo de estratégia não
+ * pode ter moldura sem nada dentro: quem vê procura o que está lá.
  */
-function desenharFicha(jogo: Jogo): void {
-  const { campanha, tela, selecao } = jogo;
+function desenharProvincia(jogo: Jogo): void {
+  const { tela, selecao } = jogo;
   const alvo = selecao.provincia;
-  if (alvo === null) {
-    tela.ficha.mostrar(null);
-    return;
-  }
-  const renda = campanha.economiaDe(alvo);
-  const obra = campanha.obraEm(alvo);
-  tela.ficha.mostrar(
-    vistaDaProvincia(jogo, alvo),
-    // A tropa de origem entra na vista da ficha: é conta da CAMPANHA (origem dos soldados),
-    // não da economia pura da terra.
-    renda ? { ...renda, tropaDeOrigem: campanha.custoDaTropaDe(alvo) } : null,
-    obra
-      ? {
-          nome:
-            `${campanha.construcoesDisponiveis[obra.construcao]?.nome ?? ''} ` +
-            `${ALGARISMOS[obra.nivelAlvo] ?? String(obra.nivelAlvo)}`,
-          turnosRestantes: obra.turnosRestantes,
-        }
-      : null,
-    campanha.crescimentoDe(alvo),
-    campanha.perfilDe(alvo),
-    Object.fromEntries(
-      campanha.construcoesEm(alvo).map((id) => [id, campanha.nivelDaConstrucaoEm(alvo, id)]),
-    ),
-  );
+  tela.painelProvincia.hidden = alvo === null || selecao.fase !== 'campanha';
+  tela.ficha.mostrar(alvo === null ? null : vistaDaProvincia(jogo, alvo));
+  tela.acoes.mostrar(vistaDeAcoes(jogo));
+
+  // As janelas só se redesenham abertas: montar a grade de construções a cada virada com
+  // ela fechada é trabalho jogado fora. Vista nula fecha a janela — a província deixou de
+  // ser do jogador enquanto ele lia.
+  if (tela.construcoes.visivel) tela.construcoes.desenhar(vistaDeConstrucoes(jogo));
+  if (tela.recrutamento.visivel) tela.recrutamento.mostrar(vistaDeRecrutamento(jogo));
 }

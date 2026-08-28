@@ -96,7 +96,7 @@
   color: var(--ui-texto);
 }
 .batalha__total {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-tenue);
   font-variant-numeric: tabular-nums;
 }
@@ -175,7 +175,7 @@
    acompanhada da palavra — monitor ruim e daltonismo não podem custar a leitura. */
 .batalha__firmeza {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -193,7 +193,7 @@
 }
 .batalha__muro {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-bronze-claro);
@@ -203,7 +203,7 @@
   margin: 2px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-tenue);
 }
 .batalha__armas li {
@@ -246,7 +246,7 @@
 }
 .batalha__round {
   font-family: var(--fonte-numero);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -256,7 +256,7 @@
   padding: 7px 12px;
   border-left: 3px solid var(--ui-borda);
   background: var(--ui-fundo-suave);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ui-texto-fraco);
@@ -324,7 +324,7 @@
   color: var(--ui-bronze-claro);
 }
 .batalha__linha[data-canal='baixas'] .batalha__frase {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-tenue);
 }
 /* ⚠️ `1.762 → 1.640`, e nunca `−122` sozinho: um delta solto não diz se foi arranhão ou
@@ -335,7 +335,7 @@
   gap: 18px;
   margin-top: 3px;
   font-family: var(--fonte-numero);
-  font-size: 12px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto-tenue);
 }

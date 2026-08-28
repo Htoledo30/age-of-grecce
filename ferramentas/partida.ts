@@ -76,7 +76,25 @@ let ameacados = 0;
 let conquistas = 0;
 let primeiraConquista = 0;
 let cercoTurnos = 0;
+/** Decretos de imposto por nível. Zero num nível quer dizer alavanca morta do lado da IA. */
+const decretosPorNivel = new Map<string, number>();
+/**
+ * Hostes paradas em ZONA DE MAR, somadas por turno — e a mais demorada delas.
+ *
+ * ⚠️ **É o alarme do naufrágio.** Uma hoste no meio do Egeu paga a folha de campanha, três
+ * vezes a de casa, e não faz nada. Se ela não souber voltar, ela mora lá — e o número cresce
+ * sozinho até o exército do reino inteiro estar boiando. Henrique viu isto jogando.
+ */
+let marTurnos = 0;
+let marExilado = 0;
+let marParado = 0;
+let maiorEstadaNoMar = 0;
+const ondeEstavaNoMar = new Map<string, string>();
+const desdeQuandoNoMar = new Map<string, number>();
 let marchas = 0;
+let travessias = 0;
+let acessos = 0;
+let propostasAoJogador = 0;
 let guerrasDeclaradas = 0;
 let pactos = 0;
 let presentes = 0;
@@ -150,6 +168,12 @@ for (let turno = 0; turno < TURNOS; turno++) {
     socorros += lance.defesas.filter((d) => d.tipo === 'socorro').length;
     surtidas += lance.defesas.filter((d) => d.tipo === 'surtida').length;
     marchas += lance.ataques.length;
+    for (const d of lance.decretos) {
+      decretosPorNivel.set(d.nivel, (decretosPorNivel.get(d.nivel) ?? 0) + 1);
+    }
+    travessias += lance.travessias.length;
+    if (lance.acesso !== null) acessos += 1;
+    propostasAoJogador += lance.propostas.length;
     if (lance.guerra !== null) guerrasDeclaradas += 1;
     if (lance.pacto !== null) pactos += 1;
     if (lance.comercio !== null) acordos += 1;
@@ -195,6 +219,20 @@ for (let turno = 0; turno < TURNOS; turno++) {
   if (c.rodada.conquistas.length > 0 && conquistas === 0) primeiraConquista = turno;
   conquistas += c.rodada.conquistas.length;
   cercoTurnos += c.cercos().length;
+  const noMar = new Set<string>();
+  for (const h of c.hostes()) {
+    if (!c.ehMar(h.posicao)) continue;
+    noMar.add(h.id);
+    marTurnos += 1;
+    if (c.provinciasDe(h.poder).length === 0) marExilado += 1;
+    else if (ondeEstavaNoMar.get(h.id) === h.posicao) marParado += 1;
+    ondeEstavaNoMar.set(h.id, h.posicao);
+    const desde = desdeQuandoNoMar.get(h.id) ?? turno;
+    desdeQuandoNoMar.set(h.id, desde);
+    maiorEstadaNoMar = Math.max(maiorEstadaNoMar, turno - desde + 1);
+  }
+  for (const id of [...desdeQuandoNoMar.keys()]) if (!noMar.has(id)) desdeQuandoNoMar.delete(id);
+  for (const id of [...ondeEstavaNoMar.keys()]) if (!noMar.has(id)) ondeEstavaNoMar.delete(id);
   emGuerraTurnos += poderesDaIa(c).filter((id) => c.guerrasDe(id).length > 0).length;
   tomadas += Math.max(0, c.provinciasDe('atenas').length - antesDaRodada);
   if (c.fome.provincias.length > 0) turnosComFome += 1;
@@ -277,12 +315,40 @@ console.log(
   `  poder-turnos em guerra: ${emGuerraTurnos} de ${TURNOS * 17} (${((100 * emGuerraTurnos) / (TURNOS * 17)).toFixed(0)}%)`,
 );
 console.log(`  marchas que a IA ordenou sobre terra alheia: ${marchas}`);
+console.log(`  trechos de travessia pelo mar: ${travessias}`);
+console.log(
+  `  passagens militares concedidas: ${acessos}` +
+    ` · propostas feitas ao jogador: ${propostasAoJogador}`,
+);
+{
+  // ⚠️ Zero propostas pode ser mecânica morta OU jogador impopular. A diferença importa, e
+  // só este recorte a mostra: com quem ele está em guerra, e o que os outros acham dele.
+  const outros = poderesDaIa(c);
+  const opinioes = outros.map((id) => c.relacaoEntre('atenas', id));
+  const media = opinioes.reduce((a, b) => a + b, 0) / Math.max(1, opinioes.length);
+  console.log(
+    `  o jogador na mesa: em guerra com ${c.guerrasDe('atenas').length} de ${outros.length}` +
+      ` · opinião média ${media.toFixed(0)} (de ${Math.min(...opinioes)} a ${Math.max(...opinioes)})` +
+      ` · comércio possível com ${outros.filter((id) => c.podeAcordarComercio(id, 'atenas').pode).length}`,
+  );
+}
 console.log(
   `  províncias que mudaram de dono: ${conquistas} (${(conquistas / TURNOS).toFixed(2)} por turno)`,
 );
 // ⚠️ Cerco é a metade da guerra que a IA só aprendeu na segunda volta. Zero aqui quer dizer que
 // ela voltou a conhecer um golpe só — tomar hoje ou desistir.
+console.log(
+  `  decretos de imposto: ` +
+    (['baixo', 'normal', 'alto', 'confisco'] as const)
+      .map((n) => `${n} ${decretosPorNivel.get(n) ?? 0}`)
+      .join(' · '),
+);
 console.log(`  cercos em pé, somados por turno: ${cercoTurnos}`);
+console.log(
+  `  hostes paradas no mar, somadas por turno: ${marTurnos}` +
+    ` (${marExilado} de reino sem terra, ${marParado} sem sair do lugar)` +
+    ` · a mais demorada ficou ${maiorEstadaNoMar} turnos na água`,
+);
 console.log(`  primeira conquista no turno: ${conquistas > 0 ? primeiraConquista : '—'}`);
 console.log(
   `  poderes que perderam tudo: ${poderes.filter((id) => c.provinciasDe(id).length === 0).length} de ${poderes.length}`,

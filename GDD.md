@@ -41,6 +41,17 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
 - Mapa fixo por províncias, com dados autorais e relações plausíveis entre regiões.
 - Ilhas pequenas próximas podem formar uma única província de arquipélago: continuam
   desenhadas e clicáveis, mas não fingem ser vários reinos microscópicos ilegíveis.
+- ⚠️ **E o arquipélago reivindica a ÁGUA entre as ilhas dele.** Agrupar resolveu a contagem e
+  não a leitura: as Cíclades Ocidentais são sete cacos que preenchem 3,3% da caixa em que
+  vivem, contra 40,8% de Atenas — Henrique, olhando: *"parecem mais fragmentos do que
+  reinos"*. Com um anel de água em volta, o grupo vira uma mancha só, com borda própria. **A
+  costa continua verdadeira**: o terreno desenha água ali; o que muda é de quem ela é.
+  Sempre sobra um canal de mar aberto entre dois territórios, e é ele que garante que isto
+  seja desenho e não regra — nenhuma vizinhança nova por terra nasce daqui.
+- **Dois reinos que se veem na mesma tela nunca têm a mesma cor.** Eram 139 poderes para 70
+  cores: Tebas, Platéias e Téspias eram o mesmo verde, Atenas e Elêusis o mesmo azul. A régua
+  é a cor LAVADA — a que sobra depois da opacidade do mapa político —, e a distância mínima
+  vale entre vizinhos e entre quaisquer dois poderes a menos de 120 km.
 - Um turno/rodada representa aproximadamente um ano.
 - A validação começa em Atenas, Maratona, Sunião, Elêusis e Tanagra; o restante do mundo é
   preenchido gradualmente depois que as regras provarem seu valor.
@@ -109,7 +120,8 @@ ferida. É consequência econômica de guerra sem precisar de diplomacia nenhuma
 - **Diplomacia**, que dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que
   a guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
   sem disparar flecha.
-- **Mar e zonas marítimas**, que dão o bloqueio: fechar o Euripo e Cálcis sente.
+- **Mar e zonas marítimas**, que dão o alcance — feito — e um dia o bloqueio: fechar o Euripo
+  e Cálcis sente.
 
 ⚠️ A cadeia de dependência é **IA → diplomacia → comércio externo**, e ela é o inverso da
 ordem em que os itens foram planejados. Por isso o item 4 foi partido em dois, como o 3 foi:
@@ -177,9 +189,11 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
 - **O Porto liga por mar, e precisa de porto nos DOIS lados.** Navio mercante atraca em algum
   lugar: uma ponta sozinha é um cais olhando para o horizonte. É o que tira Salamina de fora
   do jogo, e o que faz "onde ergo o segundo Porto?" ser pergunta de mapa.
-- ⚠️ **Mercadoria embarca; exército não.** Mercadoria aqui é abstrata — sem inventário, sem
-  caravana, sem navio no mapa —, então rota de mar abstrata cabe. Hoste é peça concreta, com
-  posição e batalha: movê-la por mar exige frota, que é o sistema naval.
+- ⚠️ **Mercadoria e exército embarcam pela MESMA porta, e por rotas diferentes.** A
+  mercadoria é abstrata — sem inventário, sem caravana, sem navio no mapa —, então a rota dela
+  é abstrata: Porto nas duas pontas e pronto. A hoste é peça concreta, com posição e batalha,
+  e por isso ela ANDA — zona de mar por zona de mar, um salto por rodada, podendo ser
+  interceptada no caminho. Ver **Naval**.
 - O produto SECUNDÁRIO da província entra por aqui — é o que ele sempre esperou para servir
   a alguma coisa. Ele continua fora da renda da terra, que é do principal.
 - Escassez é distribuída de forma compreensível, com prioridade limitada da capital.
@@ -209,6 +223,16 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
   campo e o tesouro. Ver a seção de dinheiro.
 
 ## Dinheiro e impostos
+
+⚠️ **O nível de imposto tem QUATRO degraus, e o último tem prazo.** Baixo, normal, alto e
+**confisco**. O confisco não é "alto, porém mais": ele triplica a arrecadação e derruba a
+província para a faixa do levante em poucas viradas. É a alavanca de quem precisa pagar a
+guerra de hoje e aceita a conta de amanhã — e é a única do jogo que se cobra sozinha.
+
+⚠️ **A régua do imposto tem de contar com o humor, porque os dois se cruzam.** O fator incide
+sobre a PARCELA do imposto; o humor multiplica a renda INTEIRA. Um decreto cujo custo social
+seja maior que o ganho fiscal é um botão que mente, e o jogo já teve um: mexer nestes números
+sem refazer a conta dos dois lados o traz de volta.
 
 - Tesouro pertence ao poder, nunca à província.
 - Impostos devem possuir níveis baixo, normal e alto, trocando receita por pressão social.
@@ -312,8 +336,9 @@ paga a encruzilhada; a nacional paga o império.**
 - Treinamento de cavaleiros: libera a cavalaria, e só nasce onde há cavalos;
 - Muralha: fortalece milícia e impede assalto imediato;
 - Templo: aumenta a felicidade; cultura ou estabilidade só entram se ganharem função própria;
-- Porto: liga esta terra ao reino POR MAR (precisa de porto nos dois lados) e aumenta o
-  trânsito local; base do futuro sistema naval;
+- Porto: **a porta do mar do reino** — liga esta terra ao reino por mar (precisa de porto nos
+  dois lados), põe a mercadoria ao alcance de quem não faz fronteira, deixa o exército
+  embarcar daqui, e aumenta o trânsito local;
 - Estradas: reduzem a corrupção por distância; movimento e logística continuam possibilidades;
 - construções de exploração são liberadas pelos produtos principal e secundário: Fazenda
   para Grãos, Pastagem para Gado, Porto pesqueiro para Peixe, Lagar para Azeite, Vinhedo
@@ -419,6 +444,10 @@ exército de graça. Só a Muralha a fortalece — obra de defesa, não obra de 
   guarnição e o custo cair no mesmo turno. A comida diz quantos homens você pode ter; o
   ouro diz por quanto tempo pode mantê-los fora.
 - Ordens são planejadas sobre o mesmo mundo e resolvidas simultaneamente.
+- **O jogador escolhe o destino final, não a próxima fronteira.** A rota mais curta fica
+  desenhada e a hoste anda sozinha a cada virada, respeitando o limite de movimento, até
+  chegar. É possível cancelar durante qualquer parada; batalha, recuo ou perda de um caminho
+  permitido interrompem a viagem. A IA continua refazendo a própria decisão a cada turno.
 - Movimento pode gerar encontros na estrada e múltiplas batalhas na mesma rodada.
 - Milícia é defesa automática derivada da população.
 - Província vazia pode cair ao primeiro ingresso; cidade defendida exige combate ou cerco.
@@ -445,11 +474,44 @@ O visor de batalha pode inicialmente reproduzir visualmente um resultado já cal
 
 ## Naval
 
-O mar deve ser dividido em zonas navegáveis conectadas, não tratado como teleporte entre
-portos. Frotas se movem entre zonas, transportam, protegem rotas e realizam bloqueios.
+O mar é dividido em **zonas navegáveis com nome**, e não tratado como teleporte entre portos.
 
-Portos podem ter função econômica antes disso. Guerra naval completa só faz sentido depois
-da base terrestre e da IA mínima estarem estáveis.
+⚠️ **NÃO existe frota, e a decisão é de Henrique (28/08/2026):** *"não precisa criar frota, o
+exército anda pela água (pelas zonas) como um exército normal; caso se encontre no mar com
+outro exército em alguma zona, se for inimigo eles batalham sem conquistar nada, só se matam;
+se for amigo ou neutro eles ficam na mesma zona"*. É o modelo do Age of History 2, e ele é
+muito mais barato do que frota **porque o jogo já sabe quase tudo**: a marcha anda por
+vizinhança, a batalha acontece sozinha quando duas forças se encontram, e a conquista é um
+passo separado que a zona de mar simplesmente não tem.
+
+As regras da água:
+
+- **zona de mar não tem dono, não se conquista, não produz e não tem milícia.** Ela existe
+  para ser atravessada e disputada;
+- **embarcar exige Porto**: o exército só entra no mar a partir de uma província SUA com
+  Porto. Desembarcar é livre, em qualquer costa. É a terceira razão de existir do Porto —
+  depois do trânsito e do alcance comercial — e o que impede exército nascendo no meio do
+  Egeu;
+- **48 zonas**, pequenas o bastante para a posição importar: atravessar de Atenas a Rodes
+  custa vários turnos, e o caminho pode ser interceptado.
+
+**A IA atravessa pela mesma porta.** Ela não tinha como: a percepção dela lista o que ENCOSTA
+no reino, e nada encosta em ninguém através da água — a ilha fica a três saltos e a lista de
+vizinhos nunca a conteria. Duas peças resolvem, e as duas são pequenas:
+
+- **a rota longa** (`rotasLongasDaHoste`) responde *"por onde eu chegaria lá, um dia?"* com as
+  mesmas regras da marcha, e a expedição anda o primeiro trecho dela por virada;
+- **o preço da porta** (`valorDoMar` no estilo): o Porto custa 2.500 e paga em trânsito, a
+  menor parcela da renda. Medido, nenhum dos dezoito poderes erguia um em cem turnos — o mar
+  existia, o exército sabia navegar, e nenhum reino chegava à porta. Só o PRIMEIRO Porto vale
+  isso; do segundo em diante a porta já está aberta.
+
+Medido em 100 turnos: sem o mar, 24 províncias mudaram de dono; com ele, 45 — e a distância
+entre o maior e o menor reino DIMINUIU (8,0× → 6,9×). O mar não faz ninguém disparar: ele
+abre uma segunda frente para todo mundo ao mesmo tempo.
+
+Bloqueio naval e proteção de rota continuam adiados: eles exigem que uma força PARADA no mar
+faça alguma coisa com o comércio que passa, e isso é sistema próprio.
 
 ## IA e diplomacia
 
@@ -461,6 +523,18 @@ da base terrestre e da IA mínima estarem estáveis.
   primeira versão.
 - Diplomacia começa depois da IA mínima e contém apenas o necessário para a campanha
   funcionar; sistemas diplomáticos profundos são evolução posterior.
+- ⚠️ **O ACESSO MILITAR existe, e é o único acordo com LADO.** Guerra, trégua, pacto e comércio
+  valem igual para os dois; deixar alguém atravessar a sua terra não deixa você atravessar a
+  dele. Ele dá passagem e só passagem — nada de conquista, cerco ou saque, que não existem sem
+  guerra. A guerra rasga a licença nos dois sentidos. Sem ele, num istmo cheio de vizinhos, a
+  única maneira de chegar ao inimigo do outro lado era declarar guerra a quem estava no meio.
+- ⚠️ **Abrir a própria estrada é decisão de quem a abre; conseguir a do outro pede confiança.**
+  A regra e a vontade são coisas separadas em toda a mesa, e aqui também: o jogo não trava o
+  jogador de tomar uma decisão que é dele — inclusive a ruim.
+- ⚠️ **A IA PEDE ao jogador o que assinaria com outro reino.** Pacto, comércio e passagem
+  chegam como proposta na aba de Diplomacia, com Aceitar e Recusar, e **recusar não custa
+  nada** — um "não" que abalasse a opinião faria a resposta certa ser nunca abrir a aba. A
+  mesa é do turno: a virada a esvazia, para o jogador nunca responder a um mundo que já mudou.
 
 ### Espionagem futura: sabotagem sem personagem no mapa
 
@@ -502,19 +576,59 @@ novos sistemas podem ser julgados jogando, não apenas imaginando.
 
 - Mesa de comando helênica contemporânea: pedra escura, bronze, marfim e ornamentação
   grega discreta.
-- O mapa é o protagonista; painéis devem informar sem cobri-lo demais.
+- **O mapa tem MODOS.** Ele responde "de quem é esta terra" por padrão e "o que acham deste
+  reino" no modo de relações — mesma textura, mesma fronteira, só o significado da cor muda.
+  Modo de dados pinta mais forte que o político: ali a cor é a resposta, e não enfeite sobre o
+  relevo. Modo de mapa é estado de TELA e nunca vai para o disco.
+- O mapa é o protagonista; painéis devem informar sem cobri-lo demais. **Janela que abre
+  não troca de cena**: véu leve, sem desfoque, e tamanho proporcional ao que ela mostra — o
+  mundo continua atrás dela.
+- **Painel de decisão não rola.** Rolagem só onde há texto corrido ou lista longa de
+  consulta; o que se lê a cada clique cabe inteiro na tela.
 - Interface usa texto curto, números verificáveis, ícones consistentes e tooltips próprios.
 - Batalhas e acontecimentos importantes precisam ser legíveis mesmo sem grande quantidade
   de assets.
 
-⚠️ **As tooltips estão longas demais, e isso é dívida assumida.** Henrique (25/08/2026):
-*"nunca vi em jogo nenhum tooltip explicar tudo, HAHAHA — vamos ter que ver isso em algum
-patch, mas por enquanto deixa como ajuda para entender."* Elas cresceram porque o jogo não
-tem tutorial e cada regra nova precisava caber em algum lugar; enquanto os sistemas ainda
-estão sendo desenhados, ensinar vale mais que enxugar. **A limpeza é um patch próprio**, e o
-alvo é o padrão do gênero: uma linha do que o número É, e no máximo uma do que ele custa. O
-porquê da regra migra para a crônica, para o painel de Governo ou some — não é a tooltip que
-tem de carregar o manual.
+### ⚠️ Menos tutorial — princípio de interface
+
+Decisão de Henrique (27/08/2026), olhando o painel da província refeito: *"parece que ta
+fazendo jogo para uma criança explicando tudo, ajudando em tudo — isso é péssimo, polui
+muito as coisas."*
+
+**A interface mostra números e estados; ela não ensina o jogo.** As regras, em ordem:
+
+- **nada de definição ao lado do número.** "MILÍCIA 420" não leva "só ela defende", nem
+  "POVO" leva "podem pegar em armas". Quem lê o rótulo já sabe o que ele é;
+- **nada de fazer a conta do jogador.** Um botão nunca diz "faltam 2.065 moedas": o preço
+  está no cartão e o tesouro está no alto da janela. O botão só apaga;
+- **nada de anunciar teto antes de ele ser pedido.** "Recrutar · 2.500 homens" respondia uma
+  pergunta que só se faz com a barra na mão, dentro da janela;
+- **nada de instrução de manuseio.** "Arraste a barra ou escolha uma porcentagem" ao lado de
+  uma barra é o jogo duvidando de quem joga;
+- **quando algo é impossível, bloqueie e diga o motivo em poucas palavras** — "falta
+  Armaria" —, em vez de explicar a mecânica inteira em cada lugar onde ela aparece;
+- **prosa descritiva vira número.** Os cartões de arma traziam um parágrafo sobre o papel de
+  cada tropa; hoje trazem custo, ataque, aguento e comida. O papel escrito ficou no tooltip.
+
+⚠️ **As tooltips ainda estão longas demais, e isso é dívida assumida.** Henrique
+(25/08/2026): *"nunca vi em jogo nenhum tooltip explicar tudo, HAHAHA — vamos ter que ver
+isso em algum patch, mas por enquanto deixa como ajuda para entender."* Elas cresceram
+porque o jogo não tem tutorial e cada regra nova precisava caber em algum lugar. **A limpeza
+é um patch próprio**, e o alvo é o padrão do gênero: uma linha do que o número É, e no
+máximo uma do que ele custa. Nem a tooltip carrega o manual — ela também não pode
+over-explicar. O porquê da regra migra para a crônica, para o painel de Governo ou some.
+
+## Direção sonora
+
+- A música da campanha é ambiente e discreta: acompanha decisões longas sem disputar atenção.
+- Faixas precisam aceitar loop ou transição limpa. Uma playlist maior pode substituir a faixa
+  provisória sem mudar o motor.
+- Efeitos são curtos e táteis: pedra, madeira e bronze, com respostas diferentes para
+  selecionar, abrir, fechar, confirmar, recusar e passar o turno.
+- Não sonorizar hover nem repetir efeitos em avalanche. Som informa ação e consequência, não
+  cada movimento do cursor.
+- Música e efeitos têm volumes separados no menu de pausa. Zero cumpre o papel de mute sem
+  acrescentar outro botão para representar o mesmo estado.
 
 ## Questões abertas
 

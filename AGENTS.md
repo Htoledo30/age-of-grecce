@@ -22,7 +22,7 @@ antiga da ideia.
 ## Trabalho atual
 
 A campanha básica, a economia provincial, a alimentação, as construções, o save/load, a
-capital, a corrupção, a felicidade, as revoltas, a guerra terrestre e a IA econômica,
+capital, a corrupção, a felicidade, as revoltas, a guerra terrestre, o áudio e a IA econômica,
 defensiva e **ofensiva** já existem. O resumo completo está em `ESTADO_DO_JOGO.md`.
 
 A IA ataca, reage e desiste; a diplomacia básica existe. O ritmo dela vive em `dados/ia.json`
@@ -63,9 +63,13 @@ não há nada a comprar.
 vira bola de neve, e andar na mesma direção de um dial já deu 20 conquistas numa configuração e
 105 na vizinha. `npm run partida 100` é barato e é o corte.
 
-Não começar espionagem, naval, migração, governadores, vassalagem ou suserania sem uma nova
-decisão de Henrique. **A IA não EXIGE tributo nem rompe o que recebe** — as duas coisas foram
-deixadas de fora de propósito e são decisão nova.
+Não começar espionagem, migração, governadores, vassalagem ou suserania sem uma nova decisão
+de Henrique. **A IA não EXIGE tributo nem rompe o que recebe** — as duas coisas foram deixadas
+de fora de propósito e são decisão nova.
+
+⚠️ **O naval JÁ COMEÇOU, e com decisão dele (28/08/2026): não existe frota.** O exército anda
+pelas zonas de mar como anda por terra. O que continua fora, e é decisão nova: bloqueio naval,
+desgaste por ficar na água, e a IA patrulhar ou interceptar travessia alheia.
 
 ## O que depende de Henrique testar
 
@@ -82,13 +86,20 @@ deixadas de fora de propósito e são decisão nova.
   vizinho dá escala ao número da opinião? a resposta antes do clique tira ou põe graça?
 - **a janela de batalha**: o traço do limiar dá a tensão que ele promete? a fita se lê ou se
   varre? o ritmo de 900 ms por round é bom nos dois extremos — batalha de 3 rounds e de 9?
+- **o painel da província refeito**: as quatro medidas são as quatro certas? tirar as
+  construções do painel e pô-las em janela custa cliques demais em partida longa? o contador
+  do portão ("0/4", "2.500 homens") evita abrir a janela à toa?
 
-⚠️ **DEFEITO ACHADO E NÃO CORRIGIDO** (é do relatório de combate, não da janela): a composição
-por arma que a batalha reporta **não bate com o total de homens do lado**. Numa hoste de 2.400
-hoplitas a janela mostra 1.441 já no round zero — e 1.441 é exatamente o número de
-SOBREVIVENTES no fim. O relatório parece gravar a composição depois da batalha, e não antes.
-Ver `ladoNaTela` em `src/aplicacao/vistas/batalhas.ts` e quem preenche `composicao` no
-relatório. A janela apenas mostra o que recebe.
+⚠️ **NUNCA use `transform: scale()` no palco.** Ele desliga o antialiasing de subpixel de
+toda a interface e deixa o texto fino e lavado. A escala vive em `src/estilo/escala.ts` e usa
+`zoom`, que refaz o layout em vez de esticar um bitmap. E ao julgar tipografia, capture com
+`npm run capturar -- nome --tela=1920x1000`: a 1920x1080 a escala é 1 e a captura mente.
+
+⚠️ **DEFEITO DE FONTE, não de código**: o glifo **ê** da Cormorant Garamond — a face dos nomes
+próprios — desenha o circunflexo alto e deslocado à esquerda. Não é fallback (a largura é a
+mesma de `e` e `é`), é o desenho da face nesse peso. Atinge 15 nomes de província, sendo
+*Elêusis* o mais visto. Cinzel, Alegreya e Inter escrevem o mesmo `ê` corretamente. Conserto
+possível: trocar a face dos nomes, ou empacotar outra versão do Cormorant.
 
 Simulação mede relações e regressões; não substitui a sensação da partida.
 

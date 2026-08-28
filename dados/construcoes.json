@@ -212,18 +212,18 @@
       ],
       "manutencao": [
         5,
-        10,
-        16
+        8,
+        12
       ],
       "efeito": {
         "tipo": "felicidade",
         "pontos": [
-          5,
-          8,
-          12
+          9,
+          15,
+          22
         ]
       },
-      "promessa": "Eleva a felicidade da província em +5/+8/+12 — o remédio contra o povo revoltoso.",
+      "promessa": "Eleva a felicidade da província em +9/+15/+22 — e felicidade é renda, não só ordem.",
       "motivo": "Centro religioso e cívico: onde o deus mora, o povo aguenta mais."
     },
     "porto": {
@@ -256,8 +256,8 @@
           2.4
         ]
       },
-      "promessa": "Liga esta terra ao resto do reino por mar, e aumenta o trânsito local.",
-      "motivo": "Só cabe onde a costa oferece ancoradouro real. Com Porto nas duas pontas, mercadoria atravessa o mar — mas exército, não: isso é frota."
+      "promessa": "Abre o mar: daqui o exército embarca, e a mercadoria chega a quem não faz fronteira. Aumenta o trânsito local.",
+      "motivo": "Só cabe onde a costa oferece ancoradouro real. É a porta do mar do reino: sem ela nenhuma tropa zarpa e nenhum acordo de comércio atravessa a água."
     },
     "estrada": {
       "nome": "Estrada",

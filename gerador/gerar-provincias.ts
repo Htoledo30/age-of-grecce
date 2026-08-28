@@ -16,6 +16,7 @@
  *        assets/mundo/provincias.json  nome, dono, centro, área e vizinhas
  */
 
+import { reivindicarAguaDosArquipelagos } from './gerar-provincias/agua-do-arquipelago';
 import { anexarIlhas } from './gerar-provincias/anexos';
 import { crescerProvincias } from './gerar-provincias/crescer';
 import { escreverProvincias, resumir } from './gerar-provincias/escrever';
@@ -35,6 +36,10 @@ const grade = carregarGrade();
 const sementes = plantarSementes(grade);
 const dono = crescerProvincias(grade, sementes);
 anexarIlhas(grade, dono, sementes);
+// ⚠️ Depois de anexar e ANTES de medir: a água reivindicada é território, então ela tem de
+// entrar na área, no centro e na vizinhança como qualquer pixel de chão. Medir antes daria um
+// centro no meio de uma ilhota e um arquipélago com a área de sete cacos.
+reivindicarAguaDosArquipelagos(grade, dono, sementes);
 relatarOrfas(grade, dono, sementes, acharOrfas(grade, dono), SUGERIR);
 
 const provincias = medirProvincias(grade, dono, sementes);

@@ -46,6 +46,7 @@
 import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
+import { acessoPedido } from './diplomacia/acesso';
 import { comercioEscolhido, pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
 import { tributoEscolhido } from './diplomacia/tributos';
 import { querPaz, querPazComTributo } from './diplomacia/paz';
@@ -58,6 +59,7 @@ import {
   ataquesEscolhidos,
   concentracoesEscolhidas,
   retiradasEscolhidas,
+  travessiasEscolhidas,
 } from './guerra/marchar';
 import { levaEscolhida } from './guerra/recrutar';
 
@@ -76,6 +78,15 @@ export interface LanceDaIa {
   /** Com quem ela abriu comércio nesta virada, se abriu. */
   comercio: string | null;
   /**
+   * De quem ela conseguiu passagem nesta virada, e por quantos turnos.
+   *
+   * ⚠️ Zero acessos numa partida inteira quer dizer mecânica morta: a geografia voltaria a
+   * obrigar guerras que ninguém queria, que é o que Henrique pediu para consertar.
+   */
+  acesso: { com: string; turnos: number } | null;
+  /** O que ela PEDIU ao jogador nesta virada, e ele ainda não respondeu. */
+  propostas: readonly string[];
+  /**
    * A quem ela passou a pagar tributo nesta virada, e por quantos turnos.
    *
    * ⚠️ Zero tributos numa partida inteira quer dizer mecânica morta: o jogador veria dois
@@ -90,6 +101,14 @@ export interface LanceDaIa {
   pazComprada: { com: string; turnos: number; ouro: number } | null;
   defesas: readonly { destino: string; homens: number; tipo: string }[];
   ataques: readonly { destino: string; homens: number; postura: string; valor: number }[];
+  /**
+   * As marchas de travessia desta virada — as que usam o mar.
+   *
+   * ⚠️ Zero travessias numa partida inteira quer dizer mecânica morta: as ilhas voltariam a ser
+   * seguras por serem invisíveis, e só o jogador navegaria. É por isso que a ferramenta de
+   * partida conta este campo.
+   */
+  travessias: readonly { destino: string; homens: number }[];
   /** Com quem ela assinou a paz nesta virada. */
   pazes: readonly string[];
   /** Cercos dela que viraram assalto nesta virada. */
@@ -133,7 +152,18 @@ export function jogarIA(
     // que estiverem longe enquanto a casa pega fogo. Sem esta decisão a IA vira estátua — e
     // vinha virando: exército parado diante de um muro por cinquenta turnos, pagando folha de
     // campanha, enquanto a província dele era tomada do outro lado do reino.
-    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, new Set());
+    // ⚠️ **A TRAVESSIA antes da retirada, e a ordem é a regra inteira.** Uma hoste no meio do
+    // mar está fora do próprio reino, e para a retirada isso basta para mandá-la voltar: sem
+    // esta linha vindo primeiro, todo exército que zarpasse daria meia-volta na virada
+    // seguinte e nenhuma travessia terminaria. Quem está a caminho não volta — e quando o
+    // alvo deixa de existir, a expedição não se renova e a retirada o traz de volta da água.
+    const travessias = travessiasEscolhidas(campanha, idPoder, estilo, ajustes.combate, new Set());
+    for (const ordem of travessias) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura);
+    }
+
+    const emViagem = new Set(travessias.map((t) => t.hoste));
+    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, emViagem);
     for (const ordem of retiradas) {
       campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
     }
@@ -152,8 +182,18 @@ export function jogarIA(
     const presente = presenteEscolhido(campanha, idPoder, estilo, dados);
     if (presente !== null) campanha.presentear(presente.para, presente.ouro, idPoder);
 
+    // ⚠️ **Com o JOGADOR, a assinatura vira PEDIDO.** A decisão é a mesma; o que muda é que
+    // ele responde. Henrique: *"não sinto a IA tentando se conectar comigo (...) e eu ter opção
+    // de aceitar ou recusar"*. Antes disto, pacto e comércio com o jogador eram fato consumado
+    // — ele descobria na aba de Diplomacia que tinha assinado alguma coisa.
     const pacto = pactoEscolhido(campanha, idPoder, estilo, dados);
-    if (pacto !== null) campanha.firmarPacto(pacto.com, pacto.turnos, idPoder);
+    if (pacto !== null) {
+      if (pacto.com === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'pacto', turnos: pacto.turnos });
+      } else {
+        campanha.firmarPacto(pacto.com, pacto.turnos, idPoder);
+      }
+    }
 
     // ⚠️ O TRIBUTO depois do pacto, e a ordem é a regra inteira: o pacto é de graça e o tributo
     // custa o cofre todo turno. Tentar o caro antes do grátis faria o reino pagar por aquilo
@@ -165,14 +205,32 @@ export function jogarIA(
     // O comércio por último entre os acordos: ele é a decisão mais fácil — lucro dos dois lados
     // — e não tira nada da mesa, então nunca compete com pacto nem com guerra.
     const comercio = comercioEscolhido(campanha, idPoder, estilo);
-    if (comercio !== null) campanha.acordarComercio(comercio, idPoder);
+    if (comercio !== null) {
+      if (comercio === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'comercio' });
+      } else {
+        campanha.acordarComercio(comercio, idPoder);
+      }
+    }
+
+    // ⚠️ **A PASSAGEM vem depois do comércio e antes da guerra**, e a ordem é a regra: ela só
+    // existe por causa de uma guerra em curso, e pedi-la a quem se vai atacar no mesmo turno
+    // seria assinar para romper. Ver `diplomacia/acesso.ts`.
+    const acesso = acessoPedido(campanha, idPoder, estilo, ajustes.diplomacia.acesso.prazos);
+    if (acesso !== null) {
+      if (acesso.com === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'acesso', turnos: acesso.turnos });
+      } else {
+        campanha.concederAcesso(idPoder, acesso.turnos, acesso.com);
+      }
+    }
 
     const guerra = guerraEscolhida(campanha, idPoder, estilo, ajustes.combate);
     if (guerra !== null) campanha.declararGuerra(guerra, idPoder);
 
     // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
     // depois de virar hoste, no turno que vem.
-    const jaMandadas = new Set(retiradas.map((r) => r.hoste));
+    const jaMandadas = new Set([...emViagem, ...retiradas.map((r) => r.hoste)]);
     const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha).filter(
       (o) => !jaMandadas.has(o.hoste),
     );
@@ -223,6 +281,11 @@ export function jogarIA(
       pacto,
       presente,
       comercio,
+      acesso,
+      propostas: campanha
+        .propostas()
+        .filter((pr) => pr.de === idPoder)
+        .map((pr) => pr.tipo),
       tributo,
       defesas: defesas.map((d) => ({ destino: d.destino, homens: d.homens, tipo: d.tipo })),
       ataques: ataques.map((a) => ({
@@ -231,6 +294,7 @@ export function jogarIA(
         postura: a.postura,
         valor: a.valor,
       })),
+      travessias: travessias.map((t) => ({ destino: t.destino, homens: t.homens })),
       assaltos,
       pazes: [],
       pazComprada: null,

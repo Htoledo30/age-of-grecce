@@ -23,6 +23,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ajustes, economia, novaCampanha as nova } from '../apoio/mundo';
+import { fatorDeRendaDoHumor } from '../../src/campanha/felicidade';
 
 describe('a economia é sobre a terra, não sobre cabeças', () => {
   it('a corrupção come as TRÊS parcelas, não só o imposto', () => {
@@ -37,7 +38,14 @@ describe('a economia é sobre a terra, não sobre cabeças', () => {
     // Cada parcela chega ao tesouro já mordida. Enquanto a corrupção só pegava o imposto,
     // ela deixou de ser freio de coisa nenhuma no dia em que o imposto virou um quinto da
     // renda — e junto com ela a Ágora e a Estrada, que existem para aliviá-la.
-    expect(e.impostos).toBe(Math.round(ficha.populacao * eco.impostoPorHabitante * perda));
+    expect(e.impostos).toBe(
+      Math.round(
+        ficha.populacao *
+          eco.impostoPorHabitante *
+          fatorDeRendaDoHumor(c.felicidadeEm('atenas'), ajustes.felicidade) *
+          perda,
+      ),
+    );
     expect(e.producao).toBeLessThan(
       economia.produtos[ficha.produto]!.valor * ficha.nivel +
         economia.produtos[ficha.secundario.produto]!.valor *

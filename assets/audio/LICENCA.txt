@@ -1,0 +1,16 @@
+AGE OF GRECCE — ÁUDIO DE TERCEIROS
+
+Ancient Mysteries
+Autor: Sperry Lion, LLC (2024)
+Arquivo usado: audio/musica/ancient-mysteries.ogg
+Fonte: https://opengameart.org/content/ancient-mysteries
+Arquivo original: https://opengameart.org/sites/default/files/ancient_mysteries.ogg
+SHA-256: 6717BFAAF7976F4508046A59B8505114467409CD5547C04B60F6A3B9112878B0
+Licença: CC0 1.0 Universal / domínio público
+Licença: https://creativecommons.org/publicdomain/zero/1.0/
+
+A página informa que o primeiro arquivo é próprio para loop e permite uso inclusive
+comercial. A atribuição não é obrigatória; foi mantida aqui por cortesia e rastreabilidade.
+
+Os efeitos curtos da interface não usam samples externos. São sintetizados em tempo real
+por src/audio/motor-de-audio.ts.

@@ -35,7 +35,7 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
     manutencao: Math.round(forca * taxaDaHoste(ajustes, emTerraAlheia)),
     emTerraAlheia,
     minha: campanha.jogador?.id === exercito.poder,
-    destinos: campanha.alcanceDaHoste(exercito.id).length,
+    destinos: campanha.rotasLongasDaHoste(exercito.id).size,
     marchando: selecao.marchando === exercito.id,
     // ⚠️ Perguntada com o MESMO poder e os MESMOS homens que o botão vai usar: uma recusa
     // calculada com outros números seria uma tela que promete o que a regra nega.

@@ -18,8 +18,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ui-overlay);
-  backdrop-filter: blur(4px) saturate(0.7);
+  /* Mesmo véu das outras janelas (ver `janela.css`): leve e sem desfoque, para a janela
+     ser uma folha sobre a mesa e não uma troca de cena. */
+  background: rgb(6 10 11 / 34%);
 }
 .diplomacia__janela {
   position: relative;
@@ -71,7 +72,7 @@
 }
 .diplomacia__resumo {
   margin: 0 0 12px;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -131,7 +132,7 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__nome-forca {
@@ -210,7 +211,7 @@
    Saber que Argos é guerreira muda toda proposta que se faz a ela. */
 .diplomacia__temperamento {
   margin: 1px 0 9px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -221,7 +222,7 @@
   grid-template-columns: auto 1fr;
   gap: 2px 12px;
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 .diplomacia__campos dt {
   color: var(--ui-texto-tenue);
@@ -306,7 +307,7 @@
 }
 .diplomacia__regua-texto {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__regua-texto[data-tom='bom'] {
@@ -345,7 +346,7 @@
 }
 .diplomacia__forca-texto {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__forca-texto[data-tom='bom'] {
@@ -401,14 +402,14 @@
   margin: 5px 0 9px;
   padding-bottom: 9px;
   border-bottom: 1px solid var(--ui-borda-fraca);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-fraco);
 }
 .diplomacia__parcelas {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__parcelas li {
@@ -492,7 +493,7 @@
   padding: 2px 8px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__laco[data-tipo='guerra'] {
@@ -523,7 +524,7 @@
 .diplomacia__rotulo {
   grid-column: 1;
   grid-row: 1;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -542,7 +543,7 @@
   grid-column: 2;
   grid-row: 2;
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   font-style: italic;
   color: var(--ui-texto-tenue);
 }
@@ -589,7 +590,7 @@
    curso, pacto em pé. Um botão apagado por falta de ouro e um apagado porque ele te odeia são
    dois problemas com duas soluções, e a tela nunca os pinta igual. */
 .diplomacia__selo {
-  font-size: 11px;
+  font-size: 12px;
   opacity: 0.9;
 }
 .diplomacia__acao[data-resposta='sim'] {
@@ -649,4 +650,82 @@
   border-top: 1px solid var(--ui-borda-fraca);
   font-size: 13px;
   color: var(--ui-bronze-claro);
+}
+
+/* O selo de fronteira na lista: com quem a hoste alcança por terra HOJE. Discreto porque é
+   qualificação, não estado — o estado (guerra, postura) fica na linha de baixo. */
+.diplomacia__nome-fronteira {
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: 2px;
+  font-family: var(--fonte-corpo);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--ui-texto-tenue);
+}
+
+/* ── O PEDIDO DELE ───────────────────────────────────────────────────────────────────────
+   A metade da diplomacia em que quem fala é o outro. Fica no topo do dossiê e tem moldura
+   própria de propósito: é a única coisa da tela que espera uma resposta AGORA. */
+.diplomacia__pedido {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ui-bronze);
+  border-left-width: 3px;
+  border-radius: 3px;
+  background: rgb(122 86 38 / 12%);
+}
+
+.diplomacia__pedido-fala {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ui-texto);
+}
+
+.diplomacia__pedido-botoes {
+  display: flex;
+  gap: 8px;
+}
+
+.diplomacia__pedido-botao {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--ui-borda);
+  border-radius: 2px;
+  background: var(--ui-fundo-suave);
+  color: var(--ui-texto);
+  font-family: var(--fonte-corpo);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.diplomacia__pedido-botao[data-acao='aceitar-pedido'] {
+  border-color: var(--ui-bronze);
+  background: rgb(122 86 38 / 30%);
+}
+
+.diplomacia__pedido-botao:hover {
+  border-color: var(--ui-bronze-claro);
+}
+
+/* A marca na lista: alguém quer falar com você, e você vê sem clicar reino por reino. */
+.diplomacia__nome-pedido {
+  margin-left: 7px;
+  padding: 1px 5px;
+  border: 1px solid var(--ui-bronze);
+  border-radius: 2px;
+  background: rgb(122 86 38 / 25%);
+  font-family: var(--fonte-corpo);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+  vertical-align: middle;
 }

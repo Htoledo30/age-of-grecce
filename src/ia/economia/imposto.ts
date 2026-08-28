@@ -11,6 +11,13 @@
  * Nada de meio-termo por enquanto: ou o preferido do estilo, ou o alívio. Um degrau
  * intermediário só faz sentido quando houver mais coisa puxando o humor — e aí a decisão
  * vira comparação, não regra.
+ *
+ * ⚠️ **O CONFISCO é a exceção, e ela tem uma condição só: a guerra não estar paga.** ×3 no
+ * imposto e −25 de humor não é "alto, porém mais" — é hipotecar a província para pagar o
+ * exército de hoje. A IA o puxa quando está em guerra e a renda não cobre a folha militar, e
+ * larga assim que a conta fecha, porque o decreto é refeito toda virada. Sem esta linha, o
+ * jogador teria uma alavanca que a IA não tem — e a regra da casa é que as duas jogam o mesmo
+ * jogo.
  */
 
 import type { Campanha } from '@/campanha/campanha';
@@ -23,11 +30,23 @@ export function decretosEscolhidos(
   idPoder: string,
   estilo: EstiloDeIa,
 ): readonly { provincia: string; nivel: NivelDeImposto }[] {
+  // A guerra não está paga: a renda do reino não cobre a folha militar dele. É a única
+  // situação em que hipotecar uma província compra alguma coisa.
+  const guerraNoVermelho =
+    campanha.guerrasDe(idPoder).length > 0 &&
+    campanha.rendaDe(idPoder) < campanha.manutencaoDe(idPoder);
+
   const decretos: { provincia: string; nivel: NivelDeImposto }[] = [];
   for (const provincia of [...campanha.provinciasDe(idPoder)].sort()) {
     if (!campanha.podeDefinirImposto(provincia, idPoder).pode) continue;
     const apertado = campanha.felicidadeEm(provincia) < estilo.humorParaAliviar;
-    const alvo: NivelDeImposto = apertado ? 'baixo' : estilo.imposto;
+    // ⚠️ **Nem na emergência se confisca terra que já ferve.** A província revoltosa não paga
+    // imposto nenhum: confiscar nela seria trocar o humor que resta por moeda que não vem.
+    const alvo: NivelDeImposto = apertado
+      ? 'baixo'
+      : guerraNoVermelho
+        ? 'confisco'
+        : estilo.imposto;
     // Só o que MUDA entra: repetir o decreto vigente encheria a crônica de nada e faria a
     // partida parecer que a IA mexe em tudo todo turno.
     if (campanha.nivelDeImpostoEm(provincia) === alvo) continue;

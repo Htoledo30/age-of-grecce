@@ -24,6 +24,12 @@
  * aperta, a obra de alimento passa a valer `alimentoApertado`, que é alto de propósito, e
  * atropela qualquer Ágora.
  *
+ * ⚠️ **E o PORTO tem um preço só na primeira vez.** Ele não é uma obra de renda como as
+ * outras: é a porta do mar — o comércio com quem não faz fronteira e a travessia até as ilhas.
+ * Pela conta do ouro ele nunca vencia uma Ágora, e o resultado medido foi zero Portos em cem
+ * turnos, com dezoito poderes e um Egeu inteiro do lado. `valorDoMar` é o que a porta vale, e
+ * ele some assim que ela está aberta.
+ *
  * ⚠️ **E a MURALHA segue a mesma regra, pelo mesmo motivo.** Um mercador acha muro caro — e
  * está certo, em paz. Com um exército alheio na fronteira ele deixa de estar: medido, numa
  * partida de 100 turnos com todos na IA, **os quatro únicos sobreviventes eram os quatro
@@ -86,7 +92,13 @@ export function obraEscolhida(
       if (!retorno || retorno.custo > disponivel) continue;
 
       const valor =
-        retorno.ganhoPorTurno + valorDoPapel(campanha, construcao, estilo, apertada, ameacado);
+        retorno.ganhoPorTurno +
+        valorDoPapel(campanha, construcao, estilo, apertada, ameacado) +
+        // ⚠️ **A porta do mar, e ela só se abre uma vez.** Sem esta parcela nenhuma IA erguia
+        // Porto em cem turnos — ele custa 2.500 e paga em trânsito, a menor parcela da renda —
+        // e sem Porto ninguém comercia com quem não faz fronteira nem embarca para ilha
+        // nenhuma. Do segundo em diante ele volta a valer o trânsito que rende.
+        (campanha.abreOMar(construcao) && !campanha.temPorto(idPoder) ? estilo.valorDoMar : 0);
       if (valor <= 0) continue;
       const porMoeda = retorno.custo > 0 ? valor / retorno.custo : valor;
       if (melhor === null || porMoeda > melhor.porMoeda) {

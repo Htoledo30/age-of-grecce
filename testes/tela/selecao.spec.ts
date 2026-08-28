@@ -38,9 +38,7 @@ test('clicar no painel de ações não troca a província selecionada', async ({
 
   await page.mouse.click(960, 540);
   await expect(page.locator('.ficha__nome')).toHaveText('Atenas');
-  await expect(page.locator('.acoes__alvo')).toContainText('0/4 slots');
-  await expect(page.getByRole('button', { name: /^Lagar/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Mina/ })).toHaveCount(0);
+  await expect(page.locator('.acoes__portao-contador').first()).toHaveText('0/4');
   // O decreto de imposto: três níveis, o vigente (Normal) marcado e desabilitado.
   await expect(page.locator('.acoes__imposto')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Normal' })).toBeDisabled();
@@ -93,17 +91,18 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   // Pergunta às regras em vez de cravar: tesouro inicial é balanço e já mudou uma vez.
   await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
-  // o detalhe agora vive no tooltip, pra lista dar pra varrer com o olho
-  await expect(page.getByRole('button', { name: /^Ágora/ })).toHaveAttribute(
-    'data-tooltip-corpo',
-    /paga-se em \d+ turnos/,
-  );
-  await expect(page.getByRole('button', { name: /^Fazenda/ })).toHaveAttribute(
-    'data-tooltip-corpo',
-    /\+1\/\+2\/\+3 ao saldo alimentar/,
+  // ⚠️ As construções moram numa JANELA desde a reforma do painel. O detalhe deixou de ser
+  // tooltip e voltou a ser texto no cartão: com espaço de verdade, a conta que decide entre
+  // duas obras cabe na tela em vez de ficar escondida atrás do cursor.
+  const agora = page.locator('.construcoes__cartao', { hasText: 'Ágora' });
+  await page.getByRole('button', { name: /^Construções/ }).click();
+  await expect(agora).toContainText(/paga-se em\s*\d+ turnos/);
+  await expect(page.locator('.construcoes__cartao', { hasText: 'Fazenda' })).toContainText(
+    '+1/+2/+3 ao saldo alimentar',
   );
 
-  await page.getByRole('button', { name: /^Ágora/ }).click();
+  await agora.getByRole('button', { name: /^Erguer/ }).click();
+  await page.keyboard.press('Escape');
 
   // paga à vista e ENTREGA DEPOIS: sobram 1.000 moedas, mas a renda ainda não subiu
   // Deriva do custo real: o preço da obra acompanha a riqueza da terra e não é mais um
@@ -113,10 +112,17 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   );
   await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro - custoDaAgora));
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
-  await expect(page.locator('.ficha__obra')).toContainText('Ágora I em obra · 2 turnos');
-  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('em obra, 2 turnos');
+  // A obra é ALARME no painel: fica acima das medidas, onde o olho entra.
+  await expect(page.locator('.ficha__aviso[data-tom="obra"]')).toContainText(
+    'Ágora I em obra · 2 turnos',
+  );
+  await page.getByRole('button', { name: /^Construções/ }).click();
+  await expect(agora).toContainText('Obra em andamento');
   // as outras continuam visíveis, dizendo por que não dá
-  await expect(page.getByRole('button', { name: /^Mercado/ })).toContainText('em obra aqui');
+  await expect(page.locator('.construcoes__cartao', { hasText: 'Mercado' })).toContainText(
+    'em obra aqui',
+  );
+  await page.keyboard.press('Escape');
 
   // dois turnos depois a obra está de pé e a renda subiu
   for (let i = 0; i < 2; i++) {
@@ -127,14 +133,17 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   );
   expect(rendaComAgora).toBeGreaterThan(renda); // a Ágora entregou
   await expect(page.locator('.barra-turno')).toContainText(`(+${rendaComAgora})`);
-  await expect(page.locator('.ficha__construcoes')).toHaveText('Ágora I');
-  await expect(page.locator('.acoes__alvo')).toContainText('1/4 slots');
-  await expect(page.getByRole('button', { name: /^Ágora/ })).toContainText('I → II');
-  // A ficha mostra o saldo COMPLETO da terra; o tooltip guarda a conta curta.
-  const saldoProvincial = page.locator('.ficha__renda');
-  await expect(saldoProvincial).toHaveText(/saldo [−+]\d+ por turno/);
+  // O painel não lista as construções erguidas — o contador do portão diz quantas são, e a
+  // janela diz quais. Duas listas de pastilha empilhadas confundiam produto com construção.
+  await expect(page.locator('.acoes__portao-contador').first()).toHaveText('1/4');
+  await page.getByRole('button', { name: /^Construções/ }).click();
+  await expect(agora.getByRole('button')).toContainText('Subir para II');
+  await page.keyboard.press('Escape');
+  // O painel mostra o saldo COMPLETO da terra; o tooltip guarda a conta curta.
+  const saldoProvincial = page.locator('.ficha__medida[data-medida="saldo"]');
+  await expect(saldoProvincial).toHaveText(/saldo[−+]\d+por turno/);
   await expect(saldoProvincial).toHaveAttribute('data-tooltip-corpo', /impostos/);
-  await expect(saldoProvincial).toHaveAttribute('data-tooltip-corpo', /tropas|= [−+]\d+ por turno/);
+  await expect(saldoProvincial).toHaveAttribute('data-tooltip-corpo', /produção/);
 
   expect(erros.join(' | ')).toBe('');
 });

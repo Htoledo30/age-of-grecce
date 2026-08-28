@@ -166,10 +166,11 @@ export function previsaoDaMarcha(jogo: Jogo): {
   if (!hoste) return { origem: null, rotas: [] };
   const origem = pontoDe(jogo, hoste.posicao);
   const poder = hoste.poder;
-  const rotas = [...campanha.rotasDaHoste(selecao.marchando)].map(([destino, rota]) => ({
+  const rotas = [...campanha.rotasLongasDaHoste(selecao.marchando)].map(([destino, rota]) => ({
     destino,
     pontos: [origem, ...rota.map((id) => pontoDe(jogo, id))],
-    hostil: poder !== undefined && campanha.donoDe(destino) !== poder,
+    hostil:
+      poder !== undefined && !campanha.ehMar(destino) && campanha.donoDe(destino) !== poder,
   }));
   return { origem, rotas };
 }
@@ -191,7 +192,7 @@ export function ordensNoMapa(jogo: Jogo): OrdemNoMapa[] {
         homens: ordem.homens,
         cor: poder.cor,
         minha: hoste.poder === campanha.jogador?.id,
-        hostil: campanha.donoDe(destino) !== hoste.poder,
+        hostil: !campanha.ehMar(destino) && campanha.donoDe(destino) !== hoste.poder,
       },
     ];
   });
@@ -199,17 +200,18 @@ export function ordensNoMapa(jogo: Jogo): OrdemNoMapa[] {
 
 /** Para onde a marcha em composição pode ir. Vazio fora do modo de marcha. */
 export function destinosDaMarcha(jogo: Jogo): Destino[] {
-  const { campanha, atlas, selecao } = jogo;
+  const { campanha, atlas, ajustes, selecao } = jogo;
   if (selecao.marchando === null) return [];
   const poder = campanha.hoste(selecao.marchando)?.poder;
-  return campanha.alcanceDaHoste(selecao.marchando).map((id) => {
+  return [...campanha.rotasLongasDaHoste(selecao.marchando)].map(([id, rota]) => {
     const p = atlas.provincia(id);
     return {
       provincia: id,
       nome: p.nome,
       x: p.centro.x,
       y: p.centro.y,
-      hostil: poder !== undefined && campanha.donoDe(id) !== poder,
+      hostil: poder !== undefined && !campanha.ehMar(id) && campanha.donoDe(id) !== poder,
+      turnos: Math.ceil(rota.length / ajustes.jogo.combate.saltosPorRodada),
     };
   });
 }

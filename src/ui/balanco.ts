@@ -34,7 +34,7 @@ export interface LinhaDoBalanco {
     /** O veredito da terra: renda líquida menos a tropa dela. Negativo puxa o reino. */
     saldo: number;
     /** O nível de imposto decretado. Vira marca no nome quando não é o normal. */
-    imposto: 'baixo' | 'normal' | 'alto';
+    imposto: 'baixo' | 'normal' | 'alto' | 'confisco';
   } | null;
   construcoes: readonly string[];
   obra: { nome: string; turnosRestantes: number } | null;

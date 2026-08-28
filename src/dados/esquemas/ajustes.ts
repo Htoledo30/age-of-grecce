@@ -107,17 +107,26 @@ export const Ajustes = z.object({
       /**
        * Os níveis de imposto por província: receita trocada por pressão social.
        *
-       * É o desenho do GDD, com a régua de Rome: Total War como referência (Low ×0,8
-       * comprando ordem pública; High/Very High ×1,2–1,5 pagando em revolta). O `fator`
-       * multiplica o imposto DEPOIS da corrupção; o `humor` entra no ALVO de felicidade
-       * da província. Substituiu o decreto de investimento, que era redundante com as
-       * construções e de retorno ilegível.
+       * O `fator` multiplica o imposto DEPOIS da corrupção; o `humor` entra no ALVO de
+       * felicidade da província.
+       *
+       * ⚠️ **Os fatores são grandes porque o imposto é uma PARCELA, e o humor cobra sobre o
+       * TODO.** Medido: o imposto é 13% a 48% da renda de uma província (mediana 27%), e
+       * cada ponto de humor vale 1% da renda inteira. Com ×1,35 e −8 de humor, "alto" era
+       * **negativo no equilíbrio em 6 das 25 províncias** — um botão que prometia mais
+       * dinheiro e entregava menos. Foi a queixa de Henrique: *"mudar entre imposto baixo,
+       * médio ou alto é uma mudança muito fraca"*. Com ×1,8 e −10, nenhuma fica negativa.
+       *
+       * ⚠️ **`confisco` é a alavanca de emergência, e ela se cobra sozinha.** ×3 no imposto
+       * paga a guerra deste turno; −25 de humor derruba a província para a faixa do levante
+       * em poucas viradas. Ela não é "alto, porém mais": é uma decisão com prazo.
        */
       imposto: z.object({
         niveis: z.object({
           baixo: NivelDeImposto,
           normal: NivelDeImposto,
           alto: NivelDeImposto,
+          confisco: NivelDeImposto,
         }),
       }),
     }),
@@ -226,6 +235,32 @@ export const Ajustes = z.object({
         reputacaoDaRuptura: z.number(),
         /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
         reputacaoPorTurno: z.number().positive(),
+      }),
+      /**
+       * O ACESSO MILITAR: a licença de atravessar a terra de quem não é inimigo.
+       *
+       * ⚠️ **Exige MAIS confiança que o pacto curto, e menos que o longo.** O pacto é uma
+       * promessa de não fazer; o acesso é uma chave da porta de casa. Pedir opinião de menos
+       * transformaria toda fronteira em corredor, e a geografia — que é metade deste jogo —
+       * deixaria de decidir qualquer coisa.
+       *
+       * ⚠️ **Revogar custa, mas custa menos que romper um pacto.** Fechar a própria estrada é
+       * um direito; trair uma promessa de não atacar é outra coisa. Sem preço nenhum, porém, a
+       * licença viraria armadilha: abre-se, o exército entra, fecha-se atrás dele.
+       */
+      acesso: z.object({
+        prazos: z
+          .array(
+            z.object({
+              turnos: z.number().int().positive(),
+              opiniaoMinima: z.number().min(-100).max(100),
+            }),
+          )
+          .min(1),
+        /** O que uma passagem aberta vale na conta da opinião, enquanto durar. */
+        pontos: z.number(),
+        /** O tombo na opinião de quem teve a estrada fechada na cara. */
+        choqueDeRevogacao: z.number(),
       }),
       /**
        * O TRIBUTO: o ano de sossego que se compra quando não há confiança para pedi-lo de graça.
@@ -478,7 +513,19 @@ export const Ajustes = z.object({
        * contagem de revolta corre. O limiar sai da própria faixa, não de outro número.
        */
       faixas: z
-        .array(z.object({ ate: z.number().int().min(0).max(100), nome: z.string().min(1) }))
+        .array(
+          z.object({
+            ate: z.number().int().min(0).max(100),
+            nome: z.string().min(1),
+            /**
+             * Turnos nesta faixa até o povo pegar em armas. Ausente = nunca se levanta.
+             *
+             * A faixa mais infeliz ferve rápido; a seguinte ferve devagar, e é essa a
+             * diferença entre uma província que dá trabalho e uma que se perde.
+             */
+            levanteEm: z.number().int().positive().optional(),
+          }),
+        )
         .min(2)
         .superRefine((faixas, ctx) => {
           for (let i = 1; i < faixas.length; i++) {
@@ -492,6 +539,32 @@ export const Ajustes = z.object({
         }),
       /** Para onde o humor caminha quando nada o empurra. */
       alvoBase: z.number().int().min(0).max(100),
+      /**
+       * O que o humor faz com a RENDA da província — uma reta, e não degraus.
+       *
+       * ⚠️ **É a consequência que o humor não tinha.** A única em todo o sistema era a greve
+       * fiscal da faixa revoltosa: entre 20 e 100 o número não mexia em nada, e por isso o
+       * Templo não se pagava, o imposto alto não doía e o jogador dizia que o humor estava
+       * *"todo travado"*. Medido antes: metade das províncias vivia em "Neutra" e "Muito
+       * feliz" nunca acontecia.
+       *
+       * ⚠️ **Reta, e não faixa, porque faixa cria degrau invisível.** Com o fator preso à
+       * faixa, o Templo I subia o alvo de 50 para 55 e não mudava nada — os dois valores
+       * caem em "Neutra" —, e a obra continuava parecendo inútil. Na reta, cada ponto de
+       * humor vale dinheiro, e qualquer coisa que acalme o povo se paga um pouco.
+       *
+       * ⚠️ **Sobre a renda INTEIRA, e não só o imposto.** Imposto é a menor das três parcelas
+       * (13% da renda de Atenas): preso a ele, nenhum ajuste de humor competiria com um
+       * Mercado. Povo contente lavra e comercia melhor; povo azedo faz corpo mole.
+       */
+      renda: z.object({
+        /** O humor em que a província rende exatamente 1 — o ponto neutro da reta. */
+        centro: z.number().int().min(0).max(100),
+        /** Quanto cada ponto de humor acima ou abaixo do centro soma ao fator. */
+        porPonto: z.number().min(0),
+        minimo: z.number().gt(0),
+        maximo: z.number().gt(0),
+      }),
       /** Quanto o humor anda por turno em direção ao alvo. Gradual, nunca salto. */
       passoPorTurno: z.number().int().positive(),
       /** Queda imediata quando a cidade é tomada. É o único movimento não gradual. */
@@ -530,10 +603,31 @@ export const Ajustes = z.object({
          * efeito é proporcional, para que cem homens numa vila já valham alguma coisa.
          */
         guarnicaoPlena: z.number().gt(0).max(1),
+        /**
+         * O reino desta província está em guerra com alguém.
+         *
+         * ⚠️ Guerra pesa em TODA a terra do reino, e não só na fronteira: é o filho que
+         * marchou e a colheita que ficou sem braço. É também o que dá preço social a uma
+         * campanha longa — quem guerreia por vinte turnos governa um reino mais azedo.
+         */
+        reinoEmGuerra: z.number().int(),
+        /**
+         * A província perdeu a estrada até a capital — ninguém governa o que não alcança.
+         *
+         * Mesma pergunta que a rede de trocas e a corrupção já fazem, e por isso não custa
+         * regra nova: quem está cortado já perde o trânsito, e agora perde a ordem também.
+         */
+        isoladaDaCapital: z.number().int(),
+        /**
+         * O peso do TAMANHO da cidade, por faixa de população — da menor para a maior.
+         *
+         * ⚠️ **Metrópole é mais difícil de governar que vila**, e é isto que impede o humor
+         * de ser o mesmo número em todo o mapa: sem ele, a régua inteira do jogo cabia em
+         * meia dúzia de valores. Uma entrada por faixa de `populacao.faixas`.
+         */
+        porTamanho: z.array(z.number().int()).min(1),
       }),
       revolta: z.object({
-        /** Turnos consecutivos na faixa revoltosa até o levante armado. */
-        turnos: z.number().int().positive(),
         /** Fração da população que pega em armas no levante. */
         fracaoRebelde: z.number().gt(0).max(1),
       }),
@@ -791,6 +885,13 @@ export const Ajustes = z.object({
     corSelecao: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'cor deve ser #rrggbb'),
     /** Cobertura que o destaque garante sozinho, mesmo com as cores dos reinos desligadas. */
     forcaSelecao: z.number().min(0).max(1),
+    /**
+     * Quanto da linha de fronteira sobra na divisa entre duas ZONAS MARÍTIMAS.
+     *
+     * Fração da linha de terra. A divisa do mar existe pra o jogador saber onde uma zona
+     * acaba; passar de meio-tom faz o Egeu virar uma grade e roubar a leitura dos reinos.
+     */
+    forcaDoMar: z.number().min(0).max(1),
   }),
   /**
    * Ritmo do que o mapa mostra ao virar o turno. **É ilustração, nunca regra** — mudar

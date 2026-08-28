@@ -6,6 +6,7 @@
  * de lugar não toca em regra nenhuma, e mudar uma regra não toca em painel nenhum.
  */
 
+import { coresDasRelacoes } from './vistas/mapa-de-relacoes';
 import { atualizarInterface } from './atualizar-interface';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
@@ -17,6 +18,8 @@ import { estiloDe } from '@/ia/estilo';
 import { virarTurno } from './virar-turno';
 import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
+import { vistaDeConstrucoes, vistaDeRecrutamento } from './vistas/provincia';
+import { formatarAno } from '@/campanha/estado-campanha';
 
 export function ligarAcoes(jogo: Jogo): void {
   const { campanha, atlas, ajustes, cena, tela, selecao } = jogo;
@@ -26,14 +29,38 @@ export function ligarAcoes(jogo: Jogo): void {
   // mesmo instante e pela mesma verdade. E o disco acompanha: o que se vê é o que está salvo
   // — e é aqui que a vitória e a derrota são percebidas, porque só mudança de estado pode
   // produzi-las.
+  /**
+   * Repinta o mapa com o modo vigente: político por padrão, relações quando há um sujeito.
+   *
+   * Uma porta só, porque as duas pinturas competem pela mesma paleta: dois lugares chamando
+   * `pintarDonos` e `pintarCores` fariam o modo voltar sozinho ao político na primeira
+   * conquista.
+   */
+  const repintarMapa = (): void => {
+    const sujeito = selecao.relacoesDe;
+    if (sujeito === null) cena.pintarDonos((id) => campanha.donoDe(id));
+    else cena.pintarCores(coresDasRelacoes(jogo, sujeito));
+  };
+
   campanha.aoMudar = () => {
-    cena.pintarDonos((id) => campanha.donoDe(id));
+    repintarMapa();
     repintar();
     salvarCampanha(campanha);
     conferirFimDeJogo(jogo);
   };
 
   tela.lateral.aoTrocarCores = (ligadas) => cena.mostrarCoresDosPoderes(ligadas);
+
+  // ⚠️ **O sujeito das relações troca por CLIQUE NO MAPA**, e é o pedido de Henrique ao pé da
+  // letra: *"a cor de um reino que eu selecionar"*. Uma lista de dezessete nomes no painel
+  // responderia a pergunta errada — a dele é sobre o mapa, e é no mapa que ela se aponta.
+  tela.lateral.aoTrocarRelacoes = (ligado) => {
+    selecao.relacoesDe = ligado ? (campanha.jogador?.id ?? null) : null;
+    tela.lateral.marcarRelacoes(
+      selecao.relacoesDe === null ? null : campanha.poder(selecao.relacoesDe).nome,
+    );
+    repintarMapa();
+  };
 
   // ── A barra de turno e o Governo ────────────────────────────────────────────────────
   tela.barraTurno.aoPassarTurno = () => virarTurno(jogo);
@@ -50,10 +77,20 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.diplomacia.alternar();
   };
 
-  // ── Os painéis da província ─────────────────────────────────────────────────────────
+  // ── O painel da província e as duas janelas que ele abre ────────────────────────────
   tela.acoes.aoDefinirImposto = (id, nivel) => campanha.definirImposto(id, nivel);
-  tela.acoes.aoConstruir = (id, construcao) => campanha.construir(id, construcao);
   tela.acoes.aoTornarCapital = (id) => campanha.mudarCapital(id);
+  // Desenhar ANTES de abrir, e não depois: abrir uma janela que só se preenche no próximo
+  // desenho a faria piscar vazia por um quadro.
+  tela.acoes.aoAbrirConstrucoes = () => {
+    tela.construcoes.desenhar(vistaDeConstrucoes(jogo));
+    tela.construcoes.abrir();
+  };
+  tela.acoes.aoAbrirRecrutamento = () => {
+    tela.recrutamento.mostrar(vistaDeRecrutamento(jogo));
+    tela.recrutamento.abrir();
+  };
+  tela.construcoes.aoConstruir = (id, construcao) => campanha.construir(id, construcao);
   tela.recrutamento.aoRecrutar = (id, homens, arma) => campanha.recrutar(id, homens, arma);
 
   // ── A ficha do exército ─────────────────────────────────────────────────────────────
@@ -148,6 +185,42 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.diplomacia.dizer(
       `Comércio aberto com ${campanha.poder(idPoder).nome}: +${renda} por turno para os dois.`,
     );
+  };
+
+  tela.diplomacia.aoConcederAcesso = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const r = campanha.podeConcederAcesso(eu, idPoder, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    campanha.concederAcesso(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `${campanha.poder(idPoder).nome} pode atravessar a sua terra por ${turnos} turnos. ` +
+        'Passagem não é conquista: ele não toma nada.',
+    );
+  };
+
+  tela.diplomacia.aoRevogarAcesso = (idPoder) => {
+    campanha.revogarAcesso(idPoder);
+    tela.diplomacia.dizer(
+      `Estrada fechada para ${campanha.poder(idPoder).nome}. ` +
+        'Quem já estava dentro fica onde está — e não avança mais.',
+    );
+  };
+
+  // ⚠️ **A resposta ao pedido DELE.** É a única ação da mesa em que o jogador não propõe: ele
+  // responde. Recusar não custa nada, de propósito — ver `diplomacia/propostas.ts`.
+  tela.diplomacia.aoResponderPedido = (idPoder, tipo, aceita) => {
+    const nome = campanha.poder(idPoder).nome;
+    if (!aceita) {
+      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'comercio' | 'acesso');
+      tela.diplomacia.dizer(`Você recusou ${nome}. Recusar não custa nada.`);
+      return;
+    }
+    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'comercio' | 'acesso');
+    tela.diplomacia.dizer(r.pode ? `Acertado com ${nome}.` : r.motivo);
   };
 
   tela.diplomacia.aoDesfazerAcordo = (idPoder) => {
@@ -359,7 +432,9 @@ export function ligarAcoes(jogo: Jogo): void {
   cena.aoSelecionar = (indice) => {
     const provincia = indice === null ? null : (atlas.porIndice(indice) ?? null);
     if (selecao.fase === 'escolha') {
-      if (!provincia) {
+      // Água não é reino: escolher com quem jogar é escolher terra, e perguntar o dono do
+      // mar devolveria o poder vazio.
+      if (!provincia || atlas.ehMar(provincia.id)) {
         tela.inicio.selecionar(null);
         return;
       }
@@ -373,6 +448,16 @@ export function ligarAcoes(jogo: Jogo): void {
     selecao.marchando = null;
     selecao.alvoHostil = null;
     selecao.provincia = provincia?.id ?? null;
+    // No modo de relações, clicar numa terra é perguntar "e este aqui, o que os outros acham
+    // dele?" — o mapa inteiro se reescreve do ponto de vista do dono dela.
+    if (selecao.relacoesDe !== null && provincia) {
+      const dono = campanha.donoDe(provincia.id);
+      if (dono !== '') {
+        selecao.relacoesDe = dono;
+        tela.lateral.marcarRelacoes(campanha.poder(dono).nome);
+        repintarMapa();
+      }
+    }
     // Clicar no mapa é escolher CHÃO: solta a hoste. Sem isto, a ficha do exército ficaria em
     // pé descrevendo uma tropa que o jogador não está mais olhando.
     selecao.hoste = null;
@@ -414,6 +499,31 @@ export function ligarAcoes(jogo: Jogo): void {
     // Nem notícia: a crônica da partida anterior fala de um mundo que deixou de existir.
     tela.cronica.esconder();
     entrarNaCampanha(jogo, idPoder);
+  };
+  tela.pausa.aoSairParaMenu = () => {
+    salvarCampanha(campanha);
+    tela.pausa.fechar();
+    tela.construcoes.fechar();
+    tela.recrutamento.fechar();
+    tela.governo.fechar();
+    tela.diplomacia.fechar();
+    tela.batalha.esconder();
+    tela.animacaoDeMarcha.parar();
+    selecao.fase = 'menu';
+    selecao.provincia = null;
+    selecao.hoste = null;
+    selecao.marchando = null;
+    selecao.alvoHostil = null;
+    tela.inicio.oferecerContinuacao(
+      `${campanha.jogador?.nome ?? ''} · turno ${campanha.turno} · ${formatarAno(campanha.ano)}`,
+    );
+    tela.inicio.mostrarMenu();
+    repintar();
+  };
+  tela.pausa.aoSairDoJogo = () => {
+    salvarCampanha(campanha);
+    if (window.nativo) window.nativo.sair();
+    else window.close();
   };
   tela.fimDeJogo.aoNovaCampanha = () => {
     esquecerCampanha();

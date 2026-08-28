@@ -19,7 +19,7 @@ export interface EstadoDaResolucao {
   /** Por ID de hoste. A provincia esta em `hoste.posicao`. */
   hostes: Record<string, Exercito>;
   proximaHoste: number;
-  /** Por ID de hoste: **uma ordem por hoste por rodada**, agora literalmente. */
+  /** Por ID de hoste: uma ordem ativa, que pode continuar por várias rodadas. */
   ordens: Record<string, OrdemDeMarcha>;
   /**
    * Hostes que SURTEM nesta rodada, por id. Ver `quemLuta` e `choqueObrigadoEm`.
@@ -43,6 +43,13 @@ export interface MundoDaResolucao {
    */
   batalha: AjustesDaBatalha;
   donoDe: (idProvincia: string) => string;
+  /**
+   * Esta posição é ZONA MARÍTIMA?
+   *
+   * A resolução precisa saber porque a água muda três coisas: todo encontro vira batalha
+   * (não há cidade para sitiar), ninguém toma nada (água não se conquista) e não há saque.
+   */
+  ehMar: (idProvincia: string) => boolean;
   /**
    * Estes dois poderes estão em guerra?
    *

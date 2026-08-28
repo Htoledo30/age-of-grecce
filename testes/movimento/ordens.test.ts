@@ -62,6 +62,61 @@ describe('a ordem é registrada, e nada se move', () => {
   });
 });
 
+describe('viagem automática entre várias províncias', () => {
+  function caminhoAteCorinto() {
+    const c = comHoste(1000);
+    c.trocarDono('eleusis', 'atenas');
+    c.trocarDono('megara', 'atenas');
+    c.trocarDono('corinto', 'atenas');
+    return c;
+  }
+
+  it('uma ordem distante anda sozinha, um trecho por virada, até chegar', () => {
+    const c = caminhoAteCorinto();
+    ordenar(c, 'atenas', 'corinto', 400);
+
+    c.passarTurno();
+    expect(c.forcaEm('atenas', 'atenas')).toBe(600);
+    expect(c.forcaEm('eleusis', 'atenas')).toBe(400);
+    expect(ordemDe(c, 'eleusis')).toMatchObject({
+      origem: 'eleusis',
+      rota: ['megara', 'corinto'],
+      homens: 400,
+    });
+
+    c.passarTurno();
+    expect(c.forcaEm('megara', 'atenas')).toBe(400);
+    expect(ordemDe(c, 'megara')).toMatchObject({ rota: ['corinto'] });
+
+    c.passarTurno();
+    expect(c.forcaEm('corinto', 'atenas')).toBe(400);
+    expect(ordemDe(c, 'corinto')).toBeUndefined();
+  });
+
+  it('o jogador pode cancelar a viagem durante uma parada', () => {
+    const c = caminhoAteCorinto();
+    ordenar(c, 'atenas', 'corinto', 400);
+    c.passarTurno();
+
+    cancelar(c, 'eleusis');
+    c.passarTurno();
+    expect(c.forcaEm('eleusis', 'atenas')).toBe(400);
+    expect(c.forcaEm('megara', 'atenas')).toBe(0);
+  });
+
+  it('para antes de entrar num destino que deixou de ser permitido', () => {
+    const c = caminhoAteCorinto();
+    ordenar(c, 'atenas', 'corinto', 400);
+    c.passarTurno();
+
+    c.trocarDono('corinto', 'corinto');
+    c.passarTurno();
+    expect(c.forcaEm('eleusis', 'atenas')).toBe(400);
+    expect(c.forcaEm('megara', 'atenas')).toBe(0);
+    expect(ordemDe(c, 'eleusis')).toBeUndefined();
+  });
+});
+
 describe('a ordem recusada diz o motivo', () => {
   it('sem hoste na origem', () => {
     expect(comHoste(1000).podeOrdenarMarcha('sounion', 'maratona', 100)).toMatchObject({
@@ -82,31 +137,33 @@ describe('a ordem recusada diz o motivo', () => {
     });
   });
 
-  it('mas terra alheia não serve de CAMINHO: a rota acaba nela', () => {
+  it('terra alheia não serve de CAMINHO: a rota acaba nela', () => {
     const c = comHoste(1000);
     // Tebas fica depois de Tanagra, que é alheia. Dois pontos não bastam, porque a hoste
     // não atravessa o reino do vizinho — pararia em Tanagra.
     expect(podeOrdenar(c, 'atenas', 'tebas', 100)).toMatchObject({
-      motivo: 'Tebas está longe demais para esta rodada',
+      motivo: 'não há caminho livre até Tebas',
     });
     // Elêusis é alheia e vizinha: alcançável. Mégara fica atrás dela: não.
     expect(podeOrdenar(c, 'atenas', 'eleusis', 100)).toMatchObject({ pode: true });
     expect(podeOrdenar(c, 'atenas', 'megara', 100)).toMatchObject({
-      motivo: 'Mégara está longe demais para esta rodada',
+      motivo: 'não há caminho livre até Mégara',
     });
   });
 
-  it('longe demais para os pontos desta rodada', () => {
+  it('aceita um destino distante e guarda a rota inteira', () => {
     const c = comHoste(1000);
     c.trocarDono('eleusis', 'atenas');
     c.trocarDono('megara', 'atenas');
     c.trocarDono('corinto', 'atenas');
-    // Com a regra-base de um trecho, nem Mégara nem Corinto cabem nesta rodada.
+    // A hoste anda um trecho por rodada, mas a ordem já aponta para o destino final.
     expect(podeOrdenar(c, 'atenas', 'corinto', 100)).toMatchObject({
-      motivo: 'Corinto está longe demais para esta rodada',
+      pode: true,
+      rota: ['eleusis', 'megara', 'corinto'],
     });
     expect(podeOrdenar(c, 'atenas', 'megara', 100)).toMatchObject({
-      motivo: 'Mégara está longe demais para esta rodada',
+      pode: true,
+      rota: ['eleusis', 'megara'],
     });
   });
 
@@ -116,11 +173,11 @@ describe('a ordem recusada diz o motivo', () => {
     });
   });
 
-  it('uma ordem por hoste por rodada', () => {
+  it('uma ordem por hoste de cada vez', () => {
     const c = comHoste(1000);
     ordenar(c, 'atenas', 'maratona', 500);
     expect(podeOrdenar(c, 'atenas', 'sounion', 500)).toMatchObject({
-      motivo: 'esta hoste já tem ordem nesta rodada',
+      motivo: 'esta hoste já está cumprindo uma ordem',
     });
     // Cancelar libera.
     cancelar(c, 'atenas');

@@ -44,10 +44,11 @@ import { posturaDaRelacao, retratoDe } from './retrato-do-vizinho';
 /**
  * A diplomacia: com quem o jogador faz fronteira, e o que ele é de cada um.
  *
- * ⚠️ **Só os vizinhos.** São 139 poderes no mapa, e uma lista com todos seria um catálogo onde
- * o jogador procura um nome em vez de tomar uma decisão. Guerra só interessa contra quem a
- * hoste alcança — e a vizinhança aqui é a mesma que ela enxerga. É a mesma resposta que Age of
- * History 3 deu ao ter 3.665 civilizações: nunca mostrar "todas", mostrar o balde relevante.
+ * ⚠️ **Os 18 com ficha, e não os 139 do mapa.** Uma lista com todos seria um catálogo onde o
+ * jogador procura um nome em vez de decidir — a mesma resposta que Age of History 3 deu ao ter
+ * 3.665 civilizações: nunca mostrar "todas", mostrar o balde relevante. Mas o balde certo é o
+ * dos poderes que arrecadam e decidem, e não o dos que encostam na sua cerca: prender a mesa à
+ * fronteira deixava o jogador com 2 parceiros de comércio enquanto a IA negociava com 17.
  */
 export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
   const { campanha } = jogo;
@@ -76,10 +77,30 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
     }
   }
 
-  const vizinhos = [...fronteiras.keys()]
+  // ⚠️ **A mesa deixou de ser só a vizinhança.** Henrique: *"temos que quebrar a ideia que
+  // só posso guerrear com quem faz fronteira, não faz sentido isso"* — e ele está certo pela
+  // própria história: Atenas guerreou com Siracusa e com a Pérsia, não com o vizinho de muro.
+  //
+  // A regra NUNCA exigiu fronteira: `podeDeclararGuerra` só olha pacto, trégua e tributo.
+  // Quem prendia o jogador era esta lista, e o efeito medido foi cruel — ele alcançava 2
+  // parceiros de comércio enquanto a IA, que não passa por tela nenhuma, alcançava 17.
+  //
+  // ⚠️ **Os 18 com ficha, e não os 139 do mapa.** O balde continua sendo um balde: quem não
+  // arrecada nem decide não tem opinião para negociar. A lista põe a fronteira primeiro,
+  // porque é dela que sai a decisão mais urgente.
+  const naMesaComigo = campanha
+    .poderesComFicha()
+    .filter((id) => id !== jogador.id && campanha.vivo(id));
+  const vizinhos = naMesaComigo
     .map((id) => naMesa(jogo, jogador.id, id, (fronteiras.get(id) ?? []).sort()))
-    // Guerra primeiro: é o que exige decisão. Depois por nome, que é como se procura na lista.
-    .sort((a, b) => Number(b.emGuerra) - Number(a.emGuerra) || a.nome.localeCompare(b.nome));
+    .sort(
+      (a, b) =>
+        // Guerra primeiro: é o que exige decisão. Depois quem encosta em você, porque é com
+        // quem a hoste pode marchar hoje. Depois por nome, que é como se procura na lista.
+        Number(b.emGuerra) - Number(a.emGuerra) ||
+        Number(b.fronteira.length > 0) - Number(a.fronteira.length > 0) ||
+        a.nome.localeCompare(b.nome),
+    );
 
   return {
     eu: cartaoDe(jogo, jogador.id, 'você'),
@@ -159,6 +180,9 @@ function naMesa(jogo: Jogo, eu: string, id: string, fronteira: readonly string[]
     pacto: Math.max(0, (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno),
     temAcordo: campanha.acordosDe(eu).includes(id),
     rendaDoAcordo: campanha.rendaDeUmAcordoCom(id),
+    pedido: pedidoDe(jogo, id),
+    passagemConcedida: Math.max(0, (campanha.acessoAte(eu, id) ?? campanha.turno) - campanha.turno),
+    passagemRecebida: Math.max(0, (campanha.acessoAte(id, eu) ?? campanha.turno) - campanha.turno),
     grupos: gruposDe(jogo, eu, id),
   };
 }
@@ -180,9 +204,83 @@ function gruposDe(jogo: Jogo, eu: string, id: string): readonly GrupoDaMesa[] {
     grupoDaGuerra(jogo, eu, id),
     grupoDoComercio(jogo, eu, id),
     grupoDoPacto(jogo, eu, id),
+    grupoDaPassagem(jogo, eu, id),
     grupoDoTributo(jogo, eu, id),
     grupoDoPresente(jogo, id),
   ];
+}
+
+/**
+ * O que ESTE reino está te pedindo nesta virada. `null` quando ele não pediu nada.
+ *
+ * A frase é montada aqui, e não na tela, pela regra da casa: a vista traduz o dado em palavra e
+ * a tela decide a tipografia.
+ */
+function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
+  const proposta = jogo.campanha.propostas().find((p) => p.de === id);
+  if (!proposta) return null;
+  const frase = {
+    pacto: `Propõe um pacto de não-agressão por ${proposta.turnos ?? 0} turnos.`,
+    comercio: 'Propõe abrir comércio: rende dos dois lados, e a guerra desfaz.',
+    acesso: `Pede passagem pela sua terra por ${proposta.turnos ?? 0} turnos.`,
+  }[proposta.tipo];
+  return { tipo: proposta.tipo, frase };
+}
+
+/**
+ * A PASSAGEM: a licença de atravessar a sua terra sem guerra.
+ *
+ * ⚠️ **É o único grupo em que quem concede é VOCÊ.** Todos os outros são coisas que você pede
+ * e ele aceita ou não; aqui é a sua estrada, e a decisão é inteira sua — por isso não há
+ * "vontade dele" a consultar e o botão nunca fica cinza por opinião.
+ */
+function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
+  const { campanha, ajustes } = jogo;
+  const dada = Math.max(0, (campanha.acessoAte(eu, id) ?? campanha.turno) - campanha.turno);
+  const recebida = Math.max(0, (campanha.acessoAte(id, eu) ?? campanha.turno) - campanha.turno);
+  const nota = recebida > 0 ? ` Ele te deixa passar por ${recebida} turnos.` : '';
+  if (dada > 0) {
+    return {
+      titulo: 'Passagem',
+      propostas: [
+        {
+          acao: 'revogar-acesso',
+          rotulo: `Fechar · faltam ${dada} ${dada === 1 ? 'turno' : 'turnos'}`,
+          valor: 0,
+          pode: true,
+          aceita: true,
+          bloqueio: '',
+        },
+      ],
+      fala: `O exército dele atravessa a sua terra sem guerra.${nota} Fechar antes do prazo custa a opinião dele.`,
+      tom: 'bom',
+    };
+  }
+  const prazos = ajustes.jogo.diplomacia.acesso.prazos;
+  const propostas = prazos.map((p) => {
+    const permissao = campanha.podeConcederAcesso(eu, id, p.turnos);
+    return {
+      acao: 'acesso',
+      rotulo: `${p.turnos} turnos`,
+      valor: p.turnos,
+      pode: permissao.pode,
+      aceita: true,
+      bloqueio: permissao.pode ? '' : permissao.motivo,
+    };
+  });
+  // ⚠️ **A estrada é SUA, e por isso aqui não há vontade dele a consultar**: o botão só fica
+  // cinza por regra — guerra em curso, passagem já aberta —, e nunca porque ele não gosta de
+  // você. Quem precisa de confiança é o contrário: ele abrir a dele.
+  const travado = propostas.every((p) => !p.pode);
+  const porque = propostas.find((p) => p.bloqueio !== '')?.bloqueio ?? '';
+  return {
+    titulo: 'Passagem',
+    propostas,
+    fala: travado
+      ? `${porque}. Passagem é decisão sua — mas não se abre estrada para quem está em armas contra você.`
+      : `Deixa o exército dele atravessar a sua terra sem guerra — e não deixa conquistar nada.${nota}`,
+    tom: travado ? 'ruim' : 'neutro',
+  };
 }
 
 function grupoDaGuerra(jogo: Jogo, eu: string, id: string): GrupoDaMesa {

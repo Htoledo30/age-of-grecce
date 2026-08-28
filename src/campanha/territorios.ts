@@ -38,7 +38,7 @@ export class Territorios {
     this.provinciasPorPoder.clear();
     for (const poder of this.atlas.poderes) this.provinciasPorPoder.set(poder.id, []);
 
-    for (const provincia of this.atlas.provincias) {
+    for (const provincia of this.atlas.terras) {
       const dono = this.donos[provincia.id];
       if (dono === undefined) throw new Error(`província sem dono na tabela: ${provincia.id}`);
       const lista = this.provinciasPorPoder.get(dono);
@@ -47,13 +47,25 @@ export class Territorios {
     }
   }
 
+  /**
+   * De quem é esta terra agora. **Vazio no mar**, que não é de ninguém.
+   *
+   * ⚠️ Vazio em vez de erro, e a razão é prática: meio jogo varre `vizinhas` perguntando o
+   * dono de cada uma, e desde que a água entrou nessa lista, estourar aqui transformaria
+   * cada varredura numa exceção. Com string vazia, todo `donoDe(x) === poder` responde
+   * `false` — que é a verdade sobre o mar, e não um caso especial escrito em vinte lugares.
+   */
   donoDe(idProvincia: string): string {
     const dono = this.donos[idProvincia];
-    if (dono === undefined) throw new Error(`província inexistente: ${idProvincia}`);
-    return dono;
+    if (dono !== undefined) return dono;
+    if (this.atlas.ehMar(idProvincia)) return '';
+    throw new Error(`província inexistente: ${idProvincia}`);
   }
 
   provinciasDe(idPoder: string): readonly string[] {
+    // O dono do mar é a string vazia, e ele não tem terra nenhuma: perguntar as províncias
+    // dele é uma pergunta legítima que aparece ao varrer vizinhança, não um erro.
+    if (idPoder === '') return [];
     const lista = this.provinciasPorPoder.get(idPoder);
     if (!lista) throw new Error(`poder inexistente: ${idPoder}`);
     return lista;

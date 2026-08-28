@@ -66,6 +66,9 @@ export function mundoDe(
     // em `testes/combate/conquista.test.ts`.
     saquear: (id: string) => ({ provincia: id, mortos: 0, obra: null, nivel: 0 }),
     miliciaDe: (id: string) => milicias[id] ?? 0,
+    // O tabuleiro de teste é todo de chão: as zonas marítimas têm testes próprios, e um
+    // mundo sintético que fingisse ter mar mediria a ficção em vez da regra.
+    ehMar: () => false,
     // Nenhuma província do mundo mínimo é fortificada: quem testa muralha é
     // `testes/cerco/`, contra os dados de verdade.
     impedeAssaltoImediato: () => false,

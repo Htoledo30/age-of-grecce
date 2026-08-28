@@ -57,6 +57,14 @@ export interface Semente {
    * fica escrita e versionada em vez de emergir de um desempate invisível.
    */
   anexos?: Array<{ lon: number; lat: number; nome?: string }>;
+  /**
+   * O raio, em km, de água que esta província reivindica em volta das ilhas dela.
+   *
+   * Só faz sentido em ARQUIPÉLAGO: um punhado de ilhotas espalhadas que, sem isto, se lê como
+   * confete e não como reino. Ver `agua-do-arquipelago.ts` — inclusive a folga que impede o
+   * desenho de virar regra de movimento.
+   */
+  aguaDoArquipelago?: number;
 }
 
 interface Poder {

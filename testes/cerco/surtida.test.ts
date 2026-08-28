@@ -72,7 +72,7 @@ describe('A SURTIDA: o sitiado obriga o choque que o sitiante recusou', () => {
     const c = sitiada(300);
     surtir(c, 'eleusis', 'eleusis');
     expect(podeOrdenar(c, 'eleusis', 'megara', 100, 'eleusis')).toMatchObject({
-      motivo: 'esta hoste já tem ordem nesta rodada',
+      motivo: 'esta hoste já está cumprindo uma ordem',
     });
 
     const outra = sitiada(300);

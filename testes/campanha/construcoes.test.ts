@@ -118,6 +118,7 @@ describe('construções', () => {
         corrupcao: 0,
         fatorDeImposto: 1,
         revoltosa: false,
+    fatorDoHumor: 1,
         sitiada: true,
         ligada: true,
       },

@@ -1,0 +1,203 @@
+/* A janela de construções. A moldura vem de `janela.css`; aqui está só o catálogo. */
+.construcoes__resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.construcoes__dado {
+  display: grid;
+  padding: 0 16px;
+  border-left: 1px solid var(--ui-borda-fraca);
+}
+.construcoes__dado:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.construcoes__dado-rotulo {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.construcoes__dado strong {
+  margin-top: 2px;
+  font-family: var(--fonte-numero);
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto);
+}
+.construcoes__dado[data-tom='cheio'] strong {
+  color: var(--ui-sangue-claro);
+}
+
+/* Quatro colunas e cartões baixos: as dez construções cabem em três fileiras, e a janela
+   fica larga e RASA em vez de alta — era a altura que a fazia parecer tela cheia. */
+.construcoes__grade {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+.construcoes__cartao {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 6px;
+  padding: 10px 11px 10px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+.construcoes__cartao[data-estado='maximo'] {
+  border-color: var(--ui-verde);
+  background: var(--ui-sucesso-fundo);
+}
+.construcoes__cartao[data-estado='obra'] {
+  border-color: var(--ui-bronze);
+  border-style: dashed;
+  background: var(--ui-pressionado);
+}
+.construcoes__cartao[data-estado='bloqueada'] {
+  opacity: 0.62;
+}
+.construcoes__topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.construcoes__identidade {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.construcoes__icone {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  color: var(--ui-bronze);
+}
+.construcoes__nome {
+  font-family: var(--fonte-nome);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ui-texto);
+}
+
+/* Os degraus: três pontos, acesos até onde a obra chegou, e o próximo em contorno.
+   Um algarismo romano diria a mesma coisa em menos espaço, mas não diria QUANTO FALTA. */
+.construcoes__degraus {
+  display: flex;
+  flex: none;
+  gap: 3px;
+  padding-top: 5px;
+}
+.construcoes__degrau {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ui-borda);
+  border-radius: 50%;
+}
+.construcoes__degrau[data-aceso='sim'] {
+  border-color: var(--ui-bronze);
+  background: var(--ui-bronze);
+}
+.construcoes__degrau[data-alvo='sim'] {
+  border-color: var(--ui-bronze-claro);
+  box-shadow: 0 0 0 2px var(--ui-pressionado);
+}
+/* A promessa em duas linhas no máximo: o que ela faz cabe numa frase, e o resto do cartão
+   é número. Passar disso é o cartão virando manual. */
+.construcoes__promessa {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ui-texto-tenue);
+  cursor: help;
+}
+
+/* A conta: rótulo à esquerda, número à direita, sempre nas mesmas alturas — é o que deixa
+   varrer a grade comparando preço com preço e retorno com retorno. */
+.construcoes__conta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: start;
+  gap: 1px 10px;
+  font-size: 12px;
+}
+.construcoes__conta dt {
+  color: var(--ui-texto-tenue);
+}
+.construcoes__conta dd {
+  font-family: var(--fonte-numero);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ui-texto-fraco);
+}
+.construcoes__conta dd[data-tom='ganho'] {
+  color: var(--ui-bronze-claro);
+}
+.construcoes__conta dd[data-tom='perda'] {
+  color: var(--ui-sangue-claro);
+}
+
+.construcoes__erguer {
+  width: 100%;
+  min-height: 30px;
+  padding: 6px 8px;
+  border: 1px solid var(--ui-bronze-escuro);
+  border-radius: var(--raio-1);
+  background: var(--ui-pressionado);
+  color: var(--ui-bronze-claro);
+  font-family: var(--fonte-corpo);
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease;
+}
+.construcoes__erguer:hover:not(:disabled) {
+  border-color: var(--ui-bronze-claro);
+  background: var(--ui-fundo-claro);
+  color: var(--ui-texto);
+}
+.construcoes__erguer:disabled {
+  border-color: var(--ui-borda-fraca);
+  background: transparent;
+  color: var(--ui-texto-tenue);
+  font-weight: 400;
+  cursor: not-allowed;
+}
+/* Sem ouro o botão guarda o preço e só apaga: a subtração é do jogador, não do jogo. */
+.construcoes__erguer[data-motivo='ouro'] {
+  opacity: 0.45;
+}
+.construcoes__estado {
+  padding: 6px 0 1px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.construcoes__cartao[data-estado='maximo'] .construcoes__estado {
+  color: var(--ui-verde-claro);
+}
+.construcoes__cartao[data-estado='obra'] .construcoes__estado {
+  color: var(--ui-bronze-claro);
+}
+
+@media (max-width: 1200px) {
+  .construcoes__grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

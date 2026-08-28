@@ -19,6 +19,21 @@ import { FRAGMENTO, VERTICE } from './sombreador';
 
 type AjustesProvincias = Ajustes['provincias'];
 
+/** Quanto a cor cobre o terreno num modo de dados. Ver `intensificar`. */
+const OPACIDADE_DO_MODO_DE_DADOS = 0.85;
+
+/**
+ * A partir de qual índice o mapa é água.
+ *
+ * Vem do assado, e não de uma constante repetida aqui: o gerador numera as zonas marítimas
+ * acima de toda a terra justamente pra que esta pergunta tenha resposta com uma comparação
+ * só — e é essa comparação que o chuveirinho faz por pixel. Sem mar, o teto do formato.
+ */
+function primeiroMar(dados: Provincias): number {
+  const mares = dados.provincias.filter((p) => p.mar === true).map((p) => p.indice);
+  return mares.length > 0 ? Math.min(...mares) : 65536;
+}
+
 export class ProvinciasMapa {
   readonly visual: Mesh<Geometry, Shader>;
 
@@ -38,6 +53,8 @@ export class ProvinciasMapa {
   private readonly opacidadeCheia: number;
   private selecionada = NENHUMA;
   private coresLigadas = true;
+  /** O mapa está respondendo uma pergunta de dados, e não "de quem é esta terra". */
+  private emModoDeDados = false;
 
   private constructor(
     dados: Provincias,
@@ -80,6 +97,8 @@ export class ProvinciasMapa {
             value: new Float32Array([r / 255, g / 255, b / 255, ajustes.forcaFronteira]),
           },
           uOpacidade: { type: 'f32', value: ajustes.opacidade },
+          uPrimeiroMar: { type: 'f32', value: primeiroMar(dados) },
+          uForcaDoMar: { type: 'f32', value: ajustes.forcaDoMar },
           uSelecionada: { type: 'f32', value: NENHUMA },
           uCorSelecao: {
             type: 'vec4<f32>',
@@ -145,6 +164,20 @@ export class ProvinciasMapa {
     }
   }
 
+  /**
+   * Repinta o mapa com uma cor por província, e não com a cor do dono.
+   *
+   * É o mesmo laço de `pintarDonos` — 243 escritas e um envio —, e é o que dá ao jogo um
+   * MODO DE MAPA sem custar uma camada nova. `null` deixa a província sem cor.
+   */
+  pintarCores(corDe: (idProvincia: string) => readonly [number, number, number] | null): void {
+    for (const id of this.idsDasProvincias) {
+      const indice = this.indiceDaProvincia.get(id);
+      if (indice === undefined) continue;
+      this.paleta.escreverCor(indice, corDe(id));
+    }
+  }
+
   /** Manda a paleta pra GPU, se ela mudou. Drenada uma vez por quadro. */
   aplicarPaleta(): void {
     this.paleta.aplicar();
@@ -157,7 +190,30 @@ export class ProvinciasMapa {
    */
   mostrarCores(ligadas: boolean): void {
     this.coresLigadas = ligadas;
-    this.uniformes['uOpacidade'] = ligadas ? this.opacidadeCheia : 0;
+    this.aplicarOpacidade();
+  }
+
+  /**
+   * MODO DE DADOS: a cor deixa de ser enfeite político e passa a ser a informação.
+   *
+   * ⚠️ **A opacidade do mapa político é baixa de propósito** — ela deixa o terreno aparecer,
+   * porque a cor ali só diz de quem é a terra e o relevo é metade da leitura. Num modo de
+   * dados a cor É a resposta, e a 55% duas faixas vizinhas da régua ficam indistinguíveis
+   * sobre um terreno que varia de verde a ocre. Aqui ela sobe, e volta ao sair.
+   */
+  intensificar(ligado: boolean): void {
+    this.emModoDeDados = ligado;
+    this.aplicarOpacidade();
+  }
+
+  private aplicarOpacidade(): void {
+    if (!this.coresLigadas) {
+      this.uniformes['uOpacidade'] = 0;
+      return;
+    }
+    this.uniformes['uOpacidade'] = this.emModoDeDados
+      ? OPACIDADE_DO_MODO_DE_DADOS
+      : this.opacidadeCheia;
   }
 
   get cores(): boolean {

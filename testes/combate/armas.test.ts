@@ -150,7 +150,10 @@ describe('a cavalaria: o que ela compra é o DEPOIS', () => {
       const antes = r.rounds.at(-2)?.b ?? 0;
       return antes > 0 ? 1 - r.sobreviventesB / antes : 0;
     };
-    expect(perseguicaoDoVencedor(comCavalo)).toBeCloseTo(perseguicaoDoVencedor(infantaria), 2);
+    // ⚠️ Uma casa, e não duas: quem quebra a 70% deixa 30% em pé, e a caçada acontece sobre
+    // umas seis dezenas de homens. Nessa base, um único homem arredondado vale quase dois
+    // pontos percentuais — exigir 0,5% de precisão era medir o `Math.floor`, não a regra.
+    expect(perseguicaoDoVencedor(comCavalo)).toBeCloseTo(perseguicaoDoVencedor(infantaria), 1);
   });
 
   it('recuar diante de cavalo custa mais que recuar diante de infantaria', () => {

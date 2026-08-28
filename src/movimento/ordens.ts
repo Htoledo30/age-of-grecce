@@ -11,12 +11,12 @@
 
 import type { Postura } from '@/combate/cerco';
 
-/** Uma ordem de marcha registrada, ainda não executada. */
+/** Uma ordem de marcha registrada, ainda não concluída. */
 export interface OrdemDeMarcha {
-  /** De onde sai. A chave do registro é o id da hoste: **uma ordem por hoste por rodada.** */
+  /** De onde sai no próximo trecho. A chave do registro é o id da hoste. */
   origem: string;
   /**
-   * Os trechos, na ordem, sem a origem. Um ou dois — nunca mais que os pontos da hoste.
+   * Os trechos que ainda faltam, na ordem, sem a origem.
    *
    * Guardar a ROTA e não só o destino é o que permite interceptar no meio do caminho: sem
    * ela, a resolução não saberia por onde a hoste passou.
@@ -44,6 +44,8 @@ export interface OrdemDeMarcha {
    * pausável, o botão entre os rounds entra por aqui sem mudar a regra.
    */
   recuarAos: number | null;
+  /** A ordem do jogador continua nas próximas viradas até o destino final. */
+  continuar?: true | undefined;
 }
 
 /** Por que uma ordem foi recusada — ou o consentimento de registrá-la. */
@@ -56,9 +58,9 @@ export interface SituacaoDaOrdem {
   forcaNaOrigem: number;
   /** A hoste é de quem está mandando. */
   minha: boolean;
-  /** A rota até o destino, ou `undefined` quando ele não é alcançável nesta rodada. */
+  /** A rota inteira até o destino, ou `undefined` quando não existe caminho permitido. */
   rota: readonly string[] | undefined;
-  /** Já existe ordem registrada para esta hoste nesta rodada. */
+  /** Já existe ordem ou viagem registrada para esta hoste. */
   jaTemOrdem: boolean;
   /** O destino é meu, ou é de alguém com quem estou em guerra. */
   emGuerraComODono: boolean;
@@ -85,15 +87,15 @@ export function avaliarOrdem(
   if (!situacao.minha) return { pode: false, motivo: 'esta hoste não é sua' };
   if (origem === destino) return { pode: false, motivo: 'a hoste já está aqui' };
   if (situacao.jaTemOrdem) {
-    return { pode: false, motivo: 'esta hoste já tem ordem nesta rodada' };
+    return { pode: false, motivo: 'esta hoste já está cumprindo uma ordem' };
   }
 
   // ⚠️ **Marchar contra terra alheia é legal — é o ponto da guerra.** O que a rota já
   // garante é que ela não SERVE de caminho: território inimigo só pode ser o último
-  // trecho. "Longe demais" cobre tanto a distância quanto a tentativa de atravessar um
-  // reino alheio pra chegar do outro lado.
+  // trecho. A falta de rota cobre também a tentativa de atravessar um reino alheio para
+  // chegar do outro lado.
   if (!situacao.rota) {
-    return { pode: false, motivo: `${nomeDoDestino} está longe demais para esta rodada` };
+    return { pode: false, motivo: `não há caminho livre até ${nomeDoDestino}` };
   }
 
   // ⚠️ **Marchar sobre terra alheia é ATO DE GUERRA, e o jogo passou a exigir que ela esteja

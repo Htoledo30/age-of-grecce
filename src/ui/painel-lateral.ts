@@ -18,18 +18,30 @@
 import { definirTooltip } from './tooltip';
 import { rotularComIcone } from './icones-gregos';
 
+/** Uma faixa da legenda de relações: a cor e o que ela quer dizer. */
+export interface FaixaDaLegenda {
+  rotulo: string;
+  cor: string;
+}
+
 export class PainelLateral {
   private readonly raiz = document.createElement('aside');
   private readonly corpo = document.createElement('div');
   private readonly aba = document.createElement('button');
   private readonly interruptorCores = document.createElement('button');
+  private readonly interruptorRelacoes = document.createElement('button');
+  private readonly sujeitoDasRelacoes = document.createElement('p');
+  private readonly legenda = document.createElement('ul');
 
   private aberto = false;
 
   /** Chamado quando o jogador liga ou desliga a cor dos reinos. */
   aoTrocarCores: (ligadas: boolean) => void = () => {};
 
-  constructor(pai: HTMLElement, coresLigadas: boolean) {
+  /** Chamado quando ele liga ou desliga o MODO DE RELAÇÕES. */
+  aoTrocarRelacoes: (ligado: boolean) => void = () => {};
+
+  constructor(pai: HTMLElement, coresLigadas: boolean, faixas: readonly FaixaDaLegenda[]) {
     this.raiz.className = 'painel-lateral';
     this.raiz.dataset['aberto'] = 'nao';
 
@@ -66,7 +78,61 @@ export class PainelLateral {
     this.corpo.appendChild(dica);
 
     this.marcarCores(coresLigadas);
+
+    // ── O modo de relações ──────────────────────────────────────────────────────────────
+    // ⚠️ **Depois do interruptor de cores e não antes**, porque é o mesmo assunto visto de
+    // outro ângulo: o de cima pergunta "mostro a cor dos reinos?", este pergunta "a cor
+    // quer dizer o quê?".
+    this.interruptorRelacoes.className = 'interruptor';
+    this.interruptorRelacoes.type = 'button';
+    this.interruptorRelacoes.addEventListener('click', () => {
+      const ligando = this.interruptorRelacoes.getAttribute('aria-pressed') !== 'true';
+      this.aoTrocarRelacoes(ligando);
+    });
+    definirTooltip(this.interruptorRelacoes, {
+      titulo: 'Relações no mapa',
+      corpo:
+        'Pinta cada reino pelo que ele acha de um outro. ' +
+        'Com o modo ligado, clicar numa terra troca de quem é o ponto de vista.',
+    });
+    this.corpo.appendChild(this.interruptorRelacoes);
+
+    this.sujeitoDasRelacoes.className = 'painel-lateral__dica';
+    this.corpo.appendChild(this.sujeitoDasRelacoes);
+
+    this.legenda.className = 'painel-lateral__legenda';
+    for (const faixa of faixas) {
+      const linha = document.createElement('li');
+      const tinta = document.createElement('span');
+      tinta.className = 'painel-lateral__tinta';
+      tinta.style.background = faixa.cor;
+      const texto = document.createElement('span');
+      texto.textContent = faixa.rotulo;
+      linha.append(tinta, texto);
+      this.legenda.appendChild(linha);
+    }
+    this.corpo.appendChild(this.legenda);
+    this.marcarRelacoes(null);
+
     pai.appendChild(this.raiz);
+  }
+
+  /**
+   * Diz de quem é o ponto de vista agora. `null` desliga o modo e esconde a legenda.
+   *
+   * A tela não decide isto: quem sabe se há campanha e quem é o jogador é a aplicação.
+   */
+  marcarRelacoes(nomeDoSujeito: string | null): void {
+    const ligado = nomeDoSujeito !== null;
+    this.interruptorRelacoes.setAttribute('aria-pressed', String(ligado));
+    this.interruptorRelacoes.textContent = ligado
+      ? 'Relações: ligadas'
+      : 'Relações: desligadas';
+    this.sujeitoDasRelacoes.textContent = ligado
+      ? `O mapa mostra o que os outros acham de ${nomeDoSujeito}. Clique numa terra para trocar.`
+      : '';
+    this.sujeitoDasRelacoes.hidden = !ligado;
+    this.legenda.hidden = !ligado;
   }
 
   alternar(): void {

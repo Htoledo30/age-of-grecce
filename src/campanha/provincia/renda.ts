@@ -17,7 +17,7 @@ import { saldoDeTributosDe } from '../diplomacia/relacoes';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
 import { estaSitiada } from '../guerra/cercos';
-import { emRevoltaEm } from '../sociedade/humor';
+import { emRevoltaEm, fatorDoHumorEm } from '../sociedade/humor';
 import { fichaDe, populacaoDe } from './consultas';
 
 /** O que a província é agora, tirando a fórmula: é o que as contas comparam. */
@@ -29,6 +29,7 @@ export function baseDe(nucleo: NucleoDaCampanha, idProvincia: string): BaseDaPro
     corrupcao: corrupcaoEm(nucleo, idProvincia).total,
     fatorDeImposto: fatorDeImpostoEm(nucleo, idProvincia),
     revoltosa: emRevoltaEm(nucleo, idProvincia),
+    fatorDoHumor: fatorDoHumorEm(nucleo, idProvincia),
     sitiada: estaSitiada(nucleo, idProvincia),
     ligada: ligadaACapital(nucleo, idProvincia),
   };

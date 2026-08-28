@@ -3,7 +3,7 @@
 // que quase nunca mudam, e assim o projeto tem um único empacotador (Vite) em vez de dois.
 'use strict';
 
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('node:path');
 
 const URL_DEV = process.env.URL_DEV;
@@ -52,6 +52,7 @@ function criarJanela() {
 }
 
 app.whenReady().then(() => {
+  ipcMain.on('aplicativo:sair', () => app.quit());
   criarJanela();
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) criarJanela();

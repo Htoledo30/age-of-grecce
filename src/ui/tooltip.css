@@ -27,7 +27,7 @@
 .tooltip-jogo__titulo {
   max-width: calc(100% - 46px);
   font-family: var(--fonte-corpo);
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 750;
   letter-spacing: 0.12em;
   line-height: 1.3;
@@ -37,7 +37,7 @@
 .tooltip-jogo__corpo {
   margin-top: 5px;
   white-space: pre-line;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--ui-texto-fraco);
 }

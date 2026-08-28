@@ -23,6 +23,8 @@ import { Tooltips } from '@/ui/tooltip';
 import { Campanha } from '@/campanha/campanha';
 import { formatarAno } from '@/campanha/estado-campanha';
 import { Atlas } from '@/mundo/atlas';
+import { iniciarAudio } from '@/audio/motor-de-audio';
+import { EditorDeBalanceamento } from '@/editor';
 
 import { SelecaoDaTela } from './contexto';
 import type { Jogo } from './contexto';
@@ -30,6 +32,7 @@ import { instalarInspecao } from './inspecao-de-desenvolvimento';
 import { ligarAcoes } from './ligar-acoes';
 import { montarTela } from './montar-tela';
 import { retomarCampanha } from './salvamento-local';
+import { atualizarInterface } from './atualizar-interface';
 
 function exigir<T extends Element>(seletor: string): T {
   const el = document.querySelector<T>(seletor);
@@ -46,6 +49,7 @@ export async function iniciarJogo(): Promise<void> {
   // Uma camada única substitui os balões nativos do navegador. Todo componente apenas declara
   // o conteúdo; atraso, posição, moldura e fechamento pertencem a ela.
   new Tooltips(ui);
+  const audio = iniciarAudio();
 
   const mundo = carregarMundo();
   const ajustes = carregarAjustes();
@@ -58,7 +62,10 @@ export async function iniciarJogo(): Promise<void> {
   const entrada = new Entrada(canvas);
 
   const construcoes = carregarConstrucoes();
-  const tela = montarTela(ui, cena.coresDosPoderes, construcoes.construcoes);
+  const tela = montarTela(ui, cena.coresDosPoderes, audio);
+  // Ferramenta isolada em `src/editor/`: fora dali o jogo só sabe que F2 alterna a janela.
+  // O perfil salvo entra sobre os dados validados antes de a campanha começar a consultá-los.
+  const editor = new EditorDeBalanceamento(ui, ajustes.jogo);
 
   // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate e
   // diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.
@@ -81,6 +88,7 @@ export async function iniciarJogo(): Promise<void> {
     selecao: new SelecaoDaTela(),
   };
   ligarAcoes(jogo);
+  editor.aoAplicar = () => atualizarInterface(jogo);
 
   // O boot pergunta pelo salvamento UMA vez, depois de a interface estar ligada: retomar já
   // dispara um redesenho, e ele precisa encontrar a tela de pé.
@@ -91,8 +99,9 @@ export async function iniciarJogo(): Promise<void> {
   }
 
   iniciarLaco((relogio) => {
+    if (entrada.apertou('F2')) editor.alternar();
     if (entrada.apertou('F3')) tela.painelFps.alternar();
-    cena.atualizar(relogio, entrada);
+    if (!editor.visivel) cena.atualizar(relogio, entrada);
     // Os marcadores seguem o mundo: reprojetados a cada quadro, arrastar e dar zoom levam a
     // peça junto. A marcha corre no relógio do quadro, ANTES de projetar: assim a peça já sai
     // deste quadro no ponto certo, em vez de ficar um quadro atrás.

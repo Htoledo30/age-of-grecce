@@ -221,16 +221,21 @@ describe('capitais e conexões da região', () => {
 
   it('a região é contígua por terra — só ilha DECLARADA fica de fora', () => {
     // Conexão terrestre é o que faz guerra e comércio interno existirem. Uma província
-    // sem fronteira com as outras seria inalcançável, e o bug só apareceria quando
-    // alguém tentasse marchar. Ilha sem vizinhança nenhuma (Salamina) é deliberada:
-    // espera o sistema naval, e o teste a reconhece em vez de fingir que há ponte.
+    // sem fronteira com as outras seria inalcançável por marcha simples, e o bug só
+    // apareceria quando alguém tentasse marchar.
+    //
+    // ⚠️ **Ilha é quem não tem vizinha de CHÃO**, e não quem não tem vizinha nenhuma: desde
+    // que as zonas marítimas existem, Salamina encosta no Estreito de Salamina como toda
+    // ilha encosta em água. Ela continua fora da contiguidade terrestre — chega-se lá
+    // embarcando num Porto —, e é isso que o teste separa.
     const atlas = new Atlas(provincias);
-    const ilhas = REGIAO.filter((id) => atlas.vizinhasDe(id).length === 0);
+    const ilhas = REGIAO.filter((id) => atlas.semVizinhaPorTerra(id));
     const alcancadas = new Set(['atenas']);
     const fila = ['atenas'];
     while (fila.length > 0) {
       const atual = fila.shift()!;
       for (const vizinha of atlas.vizinhasDe(atual)) {
+        if (atlas.ehMar(vizinha)) continue;
         if (!REGIAO.includes(vizinha) || alcancadas.has(vizinha)) continue;
         alcancadas.add(vizinha);
         fila.push(vizinha);

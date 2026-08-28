@@ -31,8 +31,13 @@ type AjustesEconomia = Ajustes['jogo']['economia'];
 type FichaEconomica = Economia['provincias'][string];
 type CatalogoDeConstrucoes = Construcoes['construcoes'];
 
-/** Os três níveis de imposto de uma província. `normal` é o padrão de toda terra. */
-export type NivelDeImposto = 'baixo' | 'normal' | 'alto';
+/**
+ * Os quatro níveis de imposto de uma província. `normal` é o padrão de toda terra.
+ *
+ * `confisco` é a alavanca de emergência: ×3 na arrecadação e −25 de humor. Ela paga a
+ * guerra de hoje e marca a data do levante — ver `ajustes.json`.
+ */
+export type NivelDeImposto = 'baixo' | 'normal' | 'alto' | 'confisco';
 
 /**
  * O que a província é AGORA, no momento do cálculo.
@@ -77,8 +82,20 @@ export interface BaseDaProvincia {
    * O povo está na faixa revoltosa: ninguém coleta imposto de quem está pronto pra
    * queimar o coletor. Produção e comércio continuam — a vida segue, o Estado é que não
    * entra — e a manutenção também: os prédios não deixam de custar.
+   *
+   * ⚠️ Continua aqui porque a TELA precisa dizer *por que* o imposto é zero. Quem faz a
+   * conta agora é `fatorDoHumor`, e a greve fiscal é só o degrau mais baixo dele.
    */
   revoltosa: boolean;
+  /**
+   * Quanto do imposto o humor deixa passar. 1 é a arrecadação cheia.
+   *
+   * ⚠️ **É a consequência que o humor não tinha.** Entre "revoltosa" e 100 o número não
+   * mexia em nada, e por isso o Templo não se pagava, o imposto alto não doía e o jogador
+   * dizia que o humor estava travado. Agora cada faixa tem um preço: povo satisfeito
+   * entrega mais, povo azedo entrega menos, e ninguém precisou de uma regra nova.
+   */
+  fatorDoHumor: number;
   /**
    * Há inimigo sentado em cima dela.
    *
@@ -206,7 +223,13 @@ export function rendaDaProvincia(
   //
   // Aplicada parcela a parcela, e não sobre o total: é o que faz a soma das três linhas da
   // ficha bater exata com a barra de turno, sem centavo sobrando em canto nenhum.
-  const chega = (bruto: number): number => Math.round(bruto * (1 - estado.corrupcao));
+  // ⚠️ **O humor multiplica as TRÊS parcelas, junto com a corrupção.** Preso ao imposto — a
+  // menor delas, 13% da renda de Atenas —, nenhum ajuste de felicidade competiria com um
+  // Mercado, e o Templo continuaria sendo a obra que "nunca se paga". Povo contente lavra e
+  // comercia melhor; povo azedo faz corpo mole. A greve fiscal da faixa revoltosa continua
+  // sendo uma regra à parte, e ela zera só o coletor.
+  const chega = (bruto: number): number =>
+    Math.round(bruto * (1 - estado.corrupcao) * estado.fatorDoHumor);
 
   const impostos = estado.revoltosa
     ? 0
@@ -300,6 +323,14 @@ export function retornoDaConstrucao(
    * apareceria como puro prejuízo: a manutenção entrava na conta e o benefício não.
    */
   corrupcaoComAObra = base.corrupcao,
+  /**
+   * O fator de humor que a província teria COM a obra de pé.
+   *
+   * Vem de fora pela mesma razão que a corrupção: depende do alvo de felicidade, que esta
+   * função não conhece. Sem ele, uma obra que só mexe no humor — o Templo — apareceria como
+   * puro prejuízo, porque o humor de hoje é o mesmo com e sem ela.
+   */
+  humorComAObra = base.fatorDoHumor,
 ): RetornoDaConstrucao {
   const construcao = construcoes[idConstrucao];
   if (!construcao) throw new Error(`construção inexistente no catálogo: ${idConstrucao}`);
@@ -312,6 +343,7 @@ export function retornoDaConstrucao(
   const depois = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {
     ...base,
     corrupcao: corrupcaoComAObra,
+    fatorDoHumor: humorComAObra,
     construcoes: { ...erguidas, [idConstrucao]: nivelAlvo },
   }).total;
 

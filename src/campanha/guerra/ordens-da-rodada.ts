@@ -30,7 +30,7 @@ export function surtidaDe(nucleo: NucleoDaCampanha, idHoste: string): boolean {
   return nucleo.estado.surtidas.includes(idHoste);
 }
 
-/** Todas as ordens da rodada, com a hoste de cada uma. É o que o mapa desenha. */
+/** Todas as ordens ativas, com a hoste de cada uma. É o que o mapa desenha. */
 export function ordens(
   nucleo: NucleoDaCampanha,
 ): readonly { idHoste: string; ordem: OrdemDeMarcha }[] {

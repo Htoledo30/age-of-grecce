@@ -10,6 +10,7 @@ import {
   corrupcaoPorTamanho,
 } from '../src/campanha/corrupcao';
 import { Atlas } from '../src/mundo/atlas';
+import { fatorDeRendaDoHumor } from '../src/campanha/felicidade';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -80,10 +81,13 @@ describe('a corrupção dentro da campanha', () => {
     const c = nova();
     for (const id of ['atenas', 'maratona', 'sounion']) {
       const e = c.economiaDe(id);
+      // ⚠️ O fator do HUMOR entra na fórmula desde que a faixa de felicidade passou a ter
+      // preço: povo satisfeito entrega mais, povo azedo entrega menos.
       expect(e?.impostos).toBe(
         Math.round(
           c.populacaoDe(id) *
             ajustes.economia.impostoPorHabitante *
+            fatorDeRendaDoHumor(c.felicidadeEm(id), ajustes.felicidade) *
             (1 - c.corrupcaoEm(id).total),
         ),
       );
@@ -148,13 +152,24 @@ describe('a previsão da obra que alivia corrupção', () => {
     // A comparação é frouxa de propósito: a população cresce durante a obra e só EMPURRA a
     // renda para cima, então "previsto ≤ real" é uma desigualdade segura. O que ela pega é
     // exatamente a promessa inflada.
+    // ⚠️ **As duas campanhas comparadas têm que ter vivido o MESMO tanto.** O teste erguia a
+    // obra e passava oito turnos, e desde que o humor tem preço no imposto esses turnos
+    // mexem na renda por conta própria — a província caminha para o alvo dela e arrasta o
+    // total junto. Duas Atenas com idades diferentes comparavam obra COM envelhecimento.
+    const aosMesmosTurnos = (obra: string, nivel: number): Campanha => {
+      const c = nova();
+      c.darOuro(900_000);
+      for (let n = 0; n < 3; n++) {
+        if (n < nivel) c.construir('atenas', obra);
+        for (let i = 0; i < 8; i++) c.passarTurno();
+      }
+      return c;
+    };
     for (const nivel of [1, 2, 3]) {
-      const c = comNivel('agora', nivel - 1);
+      const c = aosMesmosTurnos('agora', nivel - 1);
       const antes = c.economiaDe('atenas')?.total ?? 0;
       const previsto = c.retornoDaConstrucaoEm('atenas', 'agora')?.ganhoPorTurno ?? 0;
-      c.construir('atenas', 'agora');
-      for (let i = 0; i < 8; i++) c.passarTurno();
-      const real = (c.economiaDe('atenas')?.total ?? 0) - antes;
+      const real = (aosMesmosTurnos('agora', nivel).economiaDe('atenas')?.total ?? 0) - antes;
       expect(`nível ${nivel} previsto ${previsto} × real ${real}`).toBe(
         `nível ${nivel} previsto ${previsto} × real ${Math.max(previsto, real)}`,
       );

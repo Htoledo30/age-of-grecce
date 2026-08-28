@@ -59,6 +59,15 @@ describe('adjudicação: os seis casos da tabela', () => {
     // vem SEMPRE, mesmo nesta, que ninguém vai assistir.
     expect(r.batalhas[0]!.rounds.length).toBeGreaterThan(0);
     expect(r.batalhas[0]!.lados.map((l) => l.poder)).toEqual(['a', 'b']);
+    // ⚠️ **A composição é a ORDEM DE BATALHA, e por isso soma o mesmo que `homens`.** Ela
+    // era montada depois das baixas e contava sobreviventes: numa hoste de 3.000 a janela
+    // dizia 308 homens já no round zero. Henrique achou isso jogando, procurou os 308 no
+    // mapa, achou o marcador do inimigo e concluiu que os soldados dele tinham trocado de
+    // dono. O relatório é uma FOTOGRAFIA de quem entrou, não de quem saiu.
+    for (const lado of r.batalhas[0]!.lados) {
+      const soma = Object.values(lado.composicao).reduce((t, n) => t + n, 0);
+      expect(soma).toBe(lado.homens);
+    }
     expect(forcaDe(em(estado, 'y'))).toBe(vencemDe(1000, 600));
     expect(em(estado, 'x')).toBeUndefined();
     expect(mundo.donoDe('y')).toBe('a'); // seguiu e conquistou

@@ -25,7 +25,7 @@
       "id": "adramitio",
       "nome": "Adramítio",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#5c65a6"
     },
     {
       "id": "agrianes",
@@ -37,7 +37,7 @@
       "id": "almopes",
       "nome": "Almopes",
       "povo": "macedonio",
-      "cor": "#8f647f"
+      "cor": "#80618a"
     },
     {
       "id": "amantes",
@@ -49,7 +49,7 @@
       "id": "andros",
       "nome": "Andros",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#6d81a3"
     },
     {
       "id": "apsintios",
@@ -73,7 +73,7 @@
       "id": "astas",
       "nome": "Astas",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#6f5b90"
     },
     {
       "id": "astipaleia",
@@ -91,13 +91,13 @@
       "id": "bisaltas",
       "nome": "Bisaltas",
       "povo": "trace",
-      "cor": "#646c8f"
+      "cor": "#537598"
     },
     {
       "id": "bistones",
       "nome": "Bístones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#6e5ca6"
     },
     {
       "id": "bitinos",
@@ -127,7 +127,7 @@
       "id": "calimno",
       "nome": "Calimno",
       "povo": "dorio",
-      "cor": "#ab6d65"
+      "cor": "#ab7f65"
     },
     {
       "id": "caones",
@@ -145,7 +145,7 @@
       "id": "caristo",
       "nome": "Cáristo",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#8c8cae"
     },
     {
       "id": "carpatos",
@@ -157,13 +157,13 @@
       "id": "cefalenia",
       "nome": "Cefalênia",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#ba9d80"
     },
     {
       "id": "cicones",
       "nome": "Cícones",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#81659d"
     },
     {
       "id": "cidonia",
@@ -205,13 +205,13 @@
       "id": "cnido",
       "nome": "Cnido",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#a26e7b"
     },
     {
       "id": "cnossos",
       "nome": "Cnossos",
       "povo": "cretense",
-      "cor": "#ab7e65"
+      "cor": "#ab8865"
     },
     {
       "id": "colofao",
@@ -235,19 +235,19 @@
       "id": "cos",
       "nome": "Cós",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#8a6b61"
     },
     {
       "id": "crestones",
       "nome": "Crestones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#6e5ca6"
     },
     {
       "id": "dassaretios",
       "nome": "Dassarétios",
       "povo": "ilirio",
-      "cor": "#8f5c7c"
+      "cor": "#7b618a"
     },
     {
       "id": "delfos",
@@ -259,7 +259,7 @@
       "id": "dolonces",
       "nome": "Dolonces",
       "povo": "trace",
-      "cor": "#8381b9"
+      "cor": "#808fba"
     },
     {
       "id": "dorios",
@@ -277,37 +277,37 @@
       "id": "efeso",
       "nome": "Éfeso",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#61618a"
     },
     {
       "id": "egina",
       "nome": "Egina",
       "povo": "dorio",
-      "cor": "#9d6865"
+      "cor": "#ab7665"
     },
     {
       "id": "eleusis",
       "nome": "Elêusis",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#6e81a2"
     },
     {
       "id": "eleuterna",
       "nome": "Eleuterna",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#8f6469"
     },
     {
       "id": "elide",
       "nome": "Élide",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#a6785c"
     },
     {
       "id": "elimeia",
       "nome": "Elimeia",
       "povo": "macedonio",
-      "cor": "#8f5c6d"
+      "cor": "#945e6c"
     },
     {
       "id": "enqueleos",
@@ -325,19 +325,19 @@
       "id": "epidauro",
       "nome": "Epidauro",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#a36d7b"
     },
     {
       "id": "eretria",
       "nome": "Erétria",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#5c94a6"
     },
     {
       "id": "eritras",
       "nome": "Eritras",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#56689d"
     },
     {
       "id": "esciros",
@@ -349,25 +349,25 @@
       "id": "esmirna",
       "nome": "Esmirna",
       "povo": "jonio",
-      "cor": "#819ab9"
+      "cor": "#8ca1ae"
     },
     {
       "id": "esparta",
       "nome": "Esparta",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#985353"
     },
     {
       "id": "esporades",
       "nome": "Espórades",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#8096ba"
     },
     {
       "id": "etolos",
       "nome": "Etolos",
       "povo": "etolio",
-      "cor": "#658f5c"
+      "cor": "#7d9d73"
     },
     {
       "id": "farsalo",
@@ -385,7 +385,7 @@
       "id": "festo",
       "nome": "Festo",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#ab6e65"
     },
     {
       "id": "figalia",
@@ -397,13 +397,13 @@
       "id": "foceia",
       "nome": "Foceia",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#657fab"
     },
     {
       "id": "focida",
       "nome": "Focida",
       "povo": "focio",
-      "cor": "#659d6a"
+      "cor": "#5ca681"
     },
     {
       "id": "frigia",
@@ -415,31 +415,31 @@
       "id": "gortina",
       "nome": "Górtina",
       "povo": "cretense",
-      "cor": "#8f6d64"
+      "cor": "#b38787"
     },
     {
       "id": "hereia",
       "nome": "Hereia",
       "povo": "arcadio",
-      "cor": "#aba065"
+      "cor": "#9da65c"
     },
     {
       "id": "hermione",
       "nome": "Hermíone",
       "povo": "dorio",
-      "cor": "#8f695c"
+      "cor": "#906f5b"
     },
     {
       "id": "icaria",
       "nome": "Icária",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#5c94a6"
     },
     {
       "id": "ilion",
       "nome": "Ílion",
       "povo": "eolio",
-      "cor": "#9781b9"
+      "cor": "#9d80ba"
     },
     {
       "id": "imbros",
@@ -451,31 +451,31 @@
       "id": "iolco",
       "nome": "Iolco",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#80baab"
     },
     {
       "id": "itaca",
       "nome": "Ítaca",
       "povo": "aqueu",
-      "cor": "#9d8365"
+      "cor": "#97816b"
     },
     {
       "id": "lampsaco",
       "nome": "Lampsaco",
       "povo": "jonio",
-      "cor": "#64808f"
+      "cor": "#61858a"
     },
     {
       "id": "larissa",
       "nome": "Larissa",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#5ca694"
     },
     {
       "id": "lemnos",
       "nome": "Lemnos",
       "povo": "pelasgo",
-      "cor": "#5c638f"
+      "cor": "#5c81a6"
     },
     {
       "id": "licaones",
@@ -511,7 +511,7 @@
       "id": "locros-opuntios",
       "nome": "Locros Opuntios",
       "povo": "locrio",
-      "cor": "#6e9d65"
+      "cor": "#81a26e"
     },
     {
       "id": "locros-ozolios",
@@ -541,19 +541,19 @@
       "id": "mariandinos",
       "nome": "Mariandinos",
       "povo": "bitinio",
-      "cor": "#6c659d"
+      "cor": "#656eab"
     },
     {
       "id": "medos",
       "nome": "Medos",
       "povo": "trace",
-      "cor": "#8381b9"
+      "cor": "#9887b3"
     },
     {
       "id": "megara",
       "nome": "Mégara",
       "povo": "dorio",
-      "cor": "#8f6465"
+      "cor": "#985353"
     },
     {
       "id": "melos",
@@ -565,37 +565,37 @@
       "id": "messenia",
       "nome": "Messenia",
       "povo": "dorio",
-      "cor": "#8f695c"
+      "cor": "#97766b"
     },
     {
       "id": "metimna",
       "nome": "Metimna",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#5c5398"
     },
     {
       "id": "migdones",
       "nome": "Migdones",
       "povo": "trace",
-      "cor": "#646c8f"
+      "cor": "#61758a"
     },
     {
       "id": "mileto",
       "nome": "Mileto",
       "povo": "jonio",
-      "cor": "#6589ab"
+      "cor": "#657fab"
     },
     {
       "id": "misos",
       "nome": "Misos",
       "povo": "misio",
-      "cor": "#805c8f"
+      "cor": "#875e94"
     },
     {
       "id": "mitilene",
       "nome": "Mitilene",
       "povo": "eolio",
-      "cor": "#73659d"
+      "cor": "#6c5e94"
     },
     {
       "id": "molossos",
@@ -607,19 +607,19 @@
       "id": "naxos",
       "nome": "Naxos",
       "povo": "jonio",
-      "cor": "#64808f"
+      "cor": "#87adb3"
     },
     {
       "id": "odomantes",
       "nome": "Odomantes",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#81659d"
     },
     {
       "id": "odrisas",
       "nome": "Odrisas",
       "povo": "trace",
-      "cor": "#615c8f"
+      "cor": "#656eab"
     },
     {
       "id": "orcomeno",
@@ -631,13 +631,13 @@
       "id": "orcomeno-arcadio",
       "nome": "Orcomeno Arcadio",
       "povo": "arcadio",
-      "cor": "#b9b481"
+      "cor": "#b3b387"
     },
     {
       "id": "orestis",
       "nome": "Orestis",
       "povo": "macedonio",
-      "cor": "#8f647f"
+      "cor": "#9d7378"
     },
     {
       "id": "panfilios",
@@ -649,7 +649,7 @@
       "id": "partinos",
       "nome": "Partinos",
       "povo": "ilirio",
-      "cor": "#9d6595"
+      "cor": "#98739d"
     },
     {
       "id": "penestas",
@@ -667,13 +667,13 @@
       "id": "perrebos",
       "nome": "Perrebos",
       "povo": "tessalio",
-      "cor": "#65abab"
+      "cor": "#5b8990"
     },
     {
       "id": "pisa",
       "nome": "Pisa",
       "povo": "aqueu",
-      "cor": "#8f825c"
+      "cor": "#aea68c"
     },
     {
       "id": "pisidas",
@@ -685,13 +685,13 @@
       "id": "pitane",
       "nome": "Pitane",
       "povo": "eolio",
-      "cor": "#9781b9"
+      "cor": "#8d87b3"
     },
     {
       "id": "plateia",
       "nome": "Plateia",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#648f69"
     },
     {
       "id": "praisos",
@@ -703,13 +703,13 @@
       "id": "priene",
       "nome": "Priene",
       "povo": "jonio",
-      "cor": "#5c6f8f"
+      "cor": "#8c8cae"
     },
     {
       "id": "quios",
       "nome": "Quios",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#8caeae"
     },
     {
       "id": "rodes",
@@ -739,7 +739,7 @@
       "id": "sicion",
       "nome": "Sícion",
       "povo": "dorio",
-      "cor": "#9d6865"
+      "cor": "#b3878d"
     },
     {
       "id": "sinti",
@@ -751,55 +751,55 @@
       "id": "sitones",
       "nome": "Sitones",
       "povo": "trace",
-      "cor": "#6568ab"
+      "cor": "#8080ba"
     },
     {
       "id": "tanagra",
       "nome": "Tanagra",
       "povo": "beocio",
-      "cor": "#5c8f84"
+      "cor": "#5b9089"
     },
     {
       "id": "tasos",
       "nome": "Tasos",
       "povo": "trace",
-      "cor": "#656b9d"
+      "cor": "#64698f"
     },
     {
       "id": "taulantios",
       "nome": "Taulântios",
       "povo": "ilirio",
-      "cor": "#b981a9"
+      "cor": "#ae8cae"
     },
     {
       "id": "tebas",
       "nome": "Tebas",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#8cae94"
     },
     {
       "id": "tegeia",
       "nome": "Tegeia",
       "povo": "arcadio",
-      "cor": "#aba065"
+      "cor": "#8fa26e"
     },
     {
       "id": "tenedos",
       "nome": "Tenedos",
       "povo": "eolio",
-      "cor": "#745c8f"
+      "cor": "#835b90"
     },
     {
       "id": "teos",
       "nome": "Teos",
       "povo": "jonio",
-      "cor": "#65869d"
+      "cor": "#5e948e"
     },
     {
       "id": "tespias",
       "nome": "Téspias",
       "povo": "beocio",
-      "cor": "#648f79"
+      "cor": "#5ca69d"
     },
     {
       "id": "tesprotos",
@@ -817,19 +817,19 @@
       "id": "trezena",
       "nome": "Trezena",
       "povo": "dorio",
-      "cor": "#b98c81"
+      "cor": "#ae998c"
     },
     {
       "id": "trica",
       "nome": "Trica",
       "povo": "tessalio",
-      "cor": "#648f89"
+      "cor": "#618a7b"
     },
     {
       "id": "trifilia",
       "nome": "Trifília",
       "povo": "aqueu",
-      "cor": "#ab8f65"
+      "cor": "#9d8873"
     },
     {
       "id": "zacinto",
@@ -1586,6 +1586,7 @@
       "lon": 23.73,
       "lat": 39.12,
       "dono": "esporades",
+      "aguaDoArquipelago": 15,
       "anexos": [
         {
           "lon": 23.49,
@@ -1926,6 +1927,7 @@
       "lon": 24.93,
       "lat": 37.83,
       "dono": "andros",
+      "aguaDoArquipelago": 15,
       "anexos": [
         {
           "lon": 24.713,
@@ -1960,6 +1962,7 @@
       "lon": 25.53,
       "lat": 37.1,
       "dono": "naxos",
+      "aguaDoArquipelago": 15,
       "anexos": [
         {
           "lon": 25.453,
@@ -1996,6 +1999,16 @@
         {
           "lon": 25.9,
           "lat": 36.83
+        },
+        {
+          "lon": 25.43,
+          "lat": 36.42,
+          "nome": "Tera"
+        },
+        {
+          "lon": 25.782,
+          "lat": 36.375,
+          "nome": "Anafi"
         }
       ]
     },
@@ -2006,6 +2019,7 @@
       "lon": 24.42,
       "lat": 36.72,
       "dono": "melos",
+      "aguaDoArquipelago": 15,
       "anexos": [
         {
           "lon": 24.562,
@@ -2022,14 +2036,6 @@
         {
           "lon": 24.49,
           "lat": 37.15
-        },
-        {
-          "lon": 25.43,
-          "lat": 36.42
-        },
-        {
-          "lon": 25.782,
-          "lat": 36.375
         }
       ]
     },
@@ -2076,6 +2082,7 @@
       "lon": 26.98,
       "lat": 36.99,
       "dono": "calimno",
+      "aguaDoArquipelago": 15,
       "anexos": [
         {
           "lon": 26.83,

@@ -58,7 +58,7 @@
 }
 .painel-lateral__dica {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--ui-texto-tenue);
 }
@@ -70,4 +70,31 @@
   border-color: var(--ui-verde-claro);
   background: var(--ui-sucesso-fundo);
   color: var(--ui-texto);
+}
+
+/* ── A legenda das relações ──────────────────────────────────────────────────────────────
+   Só aparece com o modo ligado: uma legenda permanente para um modo desligado seria uma
+   pergunta respondida antes de ser feita. */
+.painel-lateral__legenda {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+
+.painel-lateral__legenda li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ui-texto-fraco);
+}
+
+.painel-lateral__tinta {
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgb(0 0 0 / 45%);
+  border-radius: 2px;
+  flex: none;
 }

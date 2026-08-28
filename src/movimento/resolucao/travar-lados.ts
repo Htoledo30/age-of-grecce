@@ -53,6 +53,14 @@ export function travarLados(
   const armasB = ladoB.flatMap((f) => f.contingentes);
   const valorA = valorEmCampo(armasA, armasB, ajustes);
   const valorB = valorEmCampo(armasB, armasA, ajustes);
+  // ⚠️ **A composição é fotografada AGORA, antes de qualquer baixa.** `armasA` guarda as
+  // referências dos contingentes, e `reduzirLado` mexe nos homens deles lá embaixo — chamar
+  // `porArma` depois contava SOBREVIVENTES e chamava isso de ordem de batalha. Era o defeito
+  // que Henrique achou jogando: a janela dizia que ele tinha 308 homens numa hoste de 3.000,
+  // e 308 era o que ia sobrar no fim. Ele procurou esses homens no mapa, achou o marcador do
+  // inimigo, e concluiu que os soldados dele tinham virado de Argos.
+  const composicaoA = porArma(armasA);
+  const composicaoB = porArma(armasB);
   const r = resolverBatalha(
     { ...valorA, recuaAos: recuoDe(ladoA) },
     { ...valorB, recuaAos: recuoDe(ladoB) },
@@ -83,8 +91,8 @@ export function travarLados(
     perdedores: [...new Set(perdedores.map((f) => f.poder))].sort(),
     sobreviventes,
     lados: [
-      { poder: ladoA[0]?.poder ?? 'ninguem', homens: totalA, aguento: 1, composicao: porArma(armasA) },
-      { poder: ladoB[0]?.poder ?? 'ninguem', homens: totalB, aguento: 1, composicao: porArma(armasB) },
+      { poder: ladoA[0]?.poder ?? 'ninguem', homens: totalA, aguento: 1, composicao: composicaoA },
+      { poder: ladoB[0]?.poder ?? 'ninguem', homens: totalB, aguento: 1, composicao: composicaoB },
     ],
     rounds: r.rounds,
     desfecho: r.desfecho,

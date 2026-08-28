@@ -18,19 +18,22 @@ export interface Levante {
 }
 
 /**
- * Corre o pavio desta província revoltosa e, no limite, arma o levante.
+ * Corre o pavio desta província descontente e, no limite, arma o levante.
  *
  * Devolve o levante quando ele nasce, e `null` quando o pavio só andou. Quem chama já
- * conferiu que o humor está na faixa revoltosa; sair da faixa apaga o registro lá.
+ * conferiu que a faixa de humor ferve, e passa em quantos turnos; subir para uma faixa que
+ * não ferve apaga o registro lá.
  */
 export function acenderPavioEm(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
+  /** Turnos até o levante NESTA faixa de humor: a revoltosa ferve rápido, a de cima devagar. */
+  prazo: number,
 ): Levante | null {
   if (!dominioEstrangeiroEm(nucleo, idProvincia)) return null;
 
   const pavio = (nucleo.estado.revoltas[idProvincia] ?? 0) + 1;
-  if (pavio < nucleo.ajustes.felicidade.revolta.turnos) {
+  if (pavio < prazo) {
     nucleo.estado.revoltas[idProvincia] = pavio;
     return null;
   }

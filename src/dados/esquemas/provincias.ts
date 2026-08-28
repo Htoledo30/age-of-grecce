@@ -25,17 +25,38 @@ export const Provincias = z.object({
     .min(1),
   provincias: z
     .array(
-      z.object({
-        /** Índice gravado em provincias.png. 0 é reservado pro mar. */
-        indice: z.number().int().positive(),
-        id: z.string().min(1),
-        nome: z.string().min(1),
-        regiao: z.string().min(1),
-        dono: z.string().min(1),
-        areaKm2: z.number().nonnegative(),
-        centro: z.object({ x: z.number(), y: z.number() }),
-        vizinhas: z.array(z.string().min(1)),
-      }),
+      z
+        .object({
+          /** Índice gravado em provincias.png. 0 é o que não pertence a ninguém. */
+          indice: z.number().int().positive(),
+          id: z.string().min(1),
+          nome: z.string().min(1),
+          regiao: z.string().min(1),
+          /** Quem governava isto em 700 a.C. **Vazio só no mar**, que não tem dono. */
+          dono: z.string(),
+          areaKm2: z.number().nonnegative(),
+          centro: z.object({ x: z.number(), y: z.number() }),
+          vizinhas: z.array(z.string().min(1)),
+          /**
+           * Esta é uma ZONA MARÍTIMA, e não um pedaço de chão.
+           *
+           * ⚠️ **Ela não tem dono, não se conquista, não produz e não tem milícia** — existe
+           * para ser atravessada e disputada. Ausente nas 196 terras, para um mapa antigo
+           * continuar carregando sem mudar uma linha.
+           */
+          mar: z.boolean().optional(),
+        })
+        .superRefine((p, ctx) => {
+          // Terra sem dono seria uma província órfã que ninguém governa; mar COM dono seria
+          // um pedaço de água conquistável. As duas coisas quebram regras diferentes, e é
+          // aqui que elas param.
+          if (p.mar === true && p.dono !== '') {
+            ctx.addIssue({ code: 'custom', message: `zona de mar não tem dono: ${p.id}` });
+          }
+          if (p.mar !== true && p.dono === '') {
+            ctx.addIssue({ code: 'custom', message: `província sem dono: ${p.id}` });
+          }
+        }),
     )
     .min(1),
 });

@@ -14,7 +14,8 @@ export function pousar(
   estado: EstadoDaResolucao,
   forcas: readonly Forca[],
   marchas: RelatorioEmConstrucao['marchas'],
-): void {
+): ReadonlyMap<Forca, string> {
+  const identidadeAoPousar = new Map<Forca, string>();
   for (const forca of forcas) {
     if (!forca.viva || soma(forca.contingentes) === 0) continue;
     const juntas = Object.keys(estado.hostes)
@@ -28,6 +29,7 @@ export function pousar(
       somarLeva(naChegada, c.terra, c.homens, c.arma, c.qualidade);
     }
     estado.hostes[naChegada.id] = naChegada;
+    identidadeAoPousar.set(forca, naChegada.id);
     if (forca.posicao !== forca.partiuDe) {
       // `rota` é o plano inteiro e `posicao` é onde a força de fato parou — quem foi barrado
       // num choque na estrada parou antes do fim. Cortar a rota na posição atual é o que faz a
@@ -43,4 +45,5 @@ export function pousar(
       });
     }
   }
+  return identidadeAoPousar;
 }

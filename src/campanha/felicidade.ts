@@ -47,6 +47,15 @@ export interface SituacaoDaProvincia {
    * numa metrópole de 35.000.
    */
   guarnicao: number;
+  /** O reino dono está em guerra com alguém — pesa em toda a terra dele, não só na frente. */
+  reinoEmGuerra: boolean;
+  /** A estrada até a capital foi cortada: ninguém governa o que não alcança. */
+  isoladaDaCapital: boolean;
+  /**
+   * O tamanho da cidade, de 1 (vila) para cima — é o nível populacional que a alimentação
+   * já calcula. Zero onde não há gente contada.
+   */
+  tamanho: number;
 }
 
 /** Uma parcela do alvo, com nome: é o que deixa a ficha explicar a conta inteira. */
@@ -68,10 +77,25 @@ export function parcelasDoAlvo(
 ): readonly ParcelaDoAlvo[] {
   const parcelas: ParcelaDoAlvo[] = [{ rotulo: 'base', pontos: ajustes.alvoBase }];
 
+  // ⚠️ **O TAMANHO entra sempre que a cidade é maior que uma vila**, e é ele que tira o humor
+  // do mesmo lugar em todo o mapa. Sem esta parcela o jogo inteiro cabia em meia dúzia de
+  // valores de humor — 80% das províncias viviam em seis números —, e era isso que Henrique
+  // sentia como *"todo travado"*. Metrópole é mais difícil de governar que vila.
+  const doTamanho = ajustes.alvo.porTamanho[Math.max(0, situacao.tamanho - 1)] ?? 0;
+  if (situacao.tamanho > 0 && doTamanho !== 0) {
+    parcelas.push({ rotulo: 'tamanho da cidade', pontos: doTamanho });
+  }
+
   if (situacao.passaFome) parcelas.push({ rotulo: 'fome', pontos: ajustes.alvo.fome });
   if (situacao.sitiada) parcelas.push({ rotulo: 'cidade sitiada', pontos: ajustes.alvo.sitiada });
   if (situacao.dominioEstrangeiro) {
     parcelas.push({ rotulo: 'domínio estrangeiro', pontos: ajustes.alvo.dominioEstrangeiro });
+  }
+  if (situacao.reinoEmGuerra) {
+    parcelas.push({ rotulo: 'reino em guerra', pontos: ajustes.alvo.reinoEmGuerra });
+  }
+  if (situacao.isoladaDaCapital) {
+    parcelas.push({ rotulo: 'sem estrada à capital', pontos: ajustes.alvo.isoladaDaCapital });
   }
   if (situacao.humorDoImposto !== 0) {
     parcelas.push({ rotulo: 'nível de imposto', pontos: situacao.humorDoImposto });
@@ -122,4 +146,36 @@ export function aproximarFelicidade(atual: number, alvo: number, passo: number):
 /** O humor está na faixa revoltosa — a primeira das faixas com nome? */
 export function revoltosa(valor: number, ajustes: AjustesFelicidade): boolean {
   return valor <= (ajustes.faixas[0]?.ate ?? 0);
+}
+
+/** A faixa em que este humor caiu. A última fecha em 100, então sempre existe uma. */
+function faixaDe(valor: number, ajustes: AjustesFelicidade) {
+  return ajustes.faixas.find((f) => valor <= f.ate) ?? ajustes.faixas[ajustes.faixas.length - 1];
+}
+
+/**
+ * Quanto a província rende pelo humor dela. 1 é o normal.
+ *
+ * ⚠️ **É a consequência que faltava.** A greve fiscal da faixa revoltosa era a única coisa
+ * que o humor fazia em todo o jogo: acima de 20 o número não mexia em nada, e por isso o
+ * Templo não se pagava e o imposto alto não doía.
+ *
+ * ⚠️ **Uma RETA, e não degraus por faixa.** Com o fator preso à faixa, o Templo subia o alvo
+ * de 50 para 55 e não mudava nada — os dois caem em "Neutra" — e a obra continuava inútil.
+ * Na reta, cada ponto de humor vale dinheiro. As faixas seguem sendo a leitura da tela e o
+ * gatilho do levante; o dinheiro é contínuo.
+ */
+export function fatorDeRendaDoHumor(valor: number, ajustes: AjustesFelicidade): number {
+  const r = ajustes.renda;
+  return Math.max(r.minimo, Math.min(r.maximo, 1 + (valor - r.centro) * r.porPonto));
+}
+
+/**
+ * Quantos turnos nesta faixa até o povo pegar em armas, ou `null` se ela nunca ferve.
+ *
+ * Duas faixas fervem: a revoltosa, rápido, e a insatisfeita, devagar. É essa diferença que
+ * separa a província que dá trabalho da província que se perde.
+ */
+export function turnosAteOLevante(valor: number, ajustes: AjustesFelicidade): number | null {
+  return faixaDe(valor, ajustes)?.levanteEm ?? null;
 }

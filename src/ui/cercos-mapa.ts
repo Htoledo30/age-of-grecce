@@ -9,7 +9,7 @@
  * ⚠️ **Não intercepta clique.** A bandeira cai justo no centro da província, que é onde o
  * jogador clica para selecioná-la; roubar o evento ali abriria um buraco morto em cima da
  * cidade mais interessante do mapa. Quem conta a história com todas as letras é a ficha da
- * província (`dd.ficha__cerco`, "sitiada por Atenas"); aqui é só o sinal que se vê de
+ * província (a linha de alarme "Sitiada por Atenas"); aqui é só o sinal que se vê de
  * longe, sem precisar clicar em nada.
  *
  * ⚠️ **`#ui > .cercos`, nunca `.cercos`.** `base.css` tem `#ui > * { pointer-events: auto }`

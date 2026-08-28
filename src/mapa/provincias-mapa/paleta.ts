@@ -41,14 +41,46 @@ export class PaletaDeDonos {
     });
   }
 
+  /**
+   * Pinta o índice com a cor do dono.
+   *
+   * ⚠️ **Dono vazio é ZONA MARÍTIMA, e ela fica TRANSPARENTE.** A água não é de ninguém: ela
+   * não recebe cor política, e o mar desenhado por baixo aparece inteiro. É o que faz o mapa
+   * continuar sendo um mapa de reinos mesmo com 48 zonas navegáveis dentro dele.
+   */
   escrever(indice: number, idPoder: string): void {
+    const base = indice * 4;
+    if (idPoder === '') {
+      this.bytes[base] = 0;
+      this.bytes[base + 1] = 0;
+      this.bytes[base + 2] = 0;
+      this.bytes[base + 3] = 0;
+      this.suja = true;
+      return;
+    }
     const cor = this.corDoPoder.get(idPoder);
     if (!cor) throw new Error(`poder inexistente: ${idPoder}`);
-    const base = indice * 4;
     this.bytes[base] = cor[0];
     this.bytes[base + 1] = cor[1];
     this.bytes[base + 2] = cor[2];
     this.bytes[base + 3] = 255;
+    this.suja = true;
+  }
+
+  /**
+   * Pinta o índice com uma cor QUALQUER, fora da tabela de donos.
+   *
+   * ⚠️ **É o que faz o mapa ter mais de um assunto sem ter mais de uma camada.** O modo de
+   * relações não pergunta "de quem é esta terra?", e sim "o que o dono dela acha daquele
+   * reino?" — mesma textura, mesma fronteira, mesma malha; só o significado da cor muda.
+   * `null` apaga o índice, e é o cinza do mar e de quem não entra na conta.
+   */
+  escreverCor(indice: number, cor: readonly [number, number, number] | null): void {
+    const base = indice * 4;
+    this.bytes[base] = cor?.[0] ?? 0;
+    this.bytes[base + 1] = cor?.[1] ?? 0;
+    this.bytes[base + 2] = cor?.[2] ?? 0;
+    this.bytes[base + 3] = cor === null ? 0 : 255;
     this.suja = true;
   }
 

@@ -20,9 +20,14 @@
   --ui-fundo-claro: #303b3d;
   --ui-borda: #756a52;
   --ui-borda-fraca: #3d4746;
-  --ui-texto: #eee4cd;
-  --ui-texto-fraco: #b8b3a4;
-  --ui-texto-tenue: #858b84;
+  --ui-texto: #f1e8d3;
+  /* ⚠️ Os dois tons secundários foram CLAREADOS depois de Henrique jogar: *"as letras são
+     muito finas, quase não dá para ler"*. Em fundo escuro, texto claro parece mais fino do
+     que é — o olho come o traço —, e os antigos #b8b3a4 e #858b84 vinham de uma paleta
+     pensada olhando o painel a 100% de escala. Na tela dele o palco roda a ~0,93 e o
+     contraste que já era justo virou insuficiente. */
+  --ui-texto-fraco: #cac5b4;
+  --ui-texto-tenue: #9ba39a;
   --ui-bronze: #bd8f42;
   --ui-bronze-claro: #d9b66e;
   --ui-bronze-escuro: #6f5128;

@@ -66,6 +66,21 @@ const Estilo = z.object({
    */
   defesaAmeacada: z.number(),
   /**
+   * O que ABRIR O MAR vale para este estilo, em moedas por turno — só o PRIMEIRO Porto.
+   *
+   * ⚠️ **Sem isto o mar seria uma mecânica morta do lado da IA.** O Porto custa 2.500 e paga
+   * em trânsito, que é a menor parcela da renda: medido, nenhum dos dezoito poderes ergueu um
+   * em cem turnos, e sem Porto ninguém embarca. O mar existia, o exército sabia navegar, e
+   * nenhum reino chegava à porta.
+   *
+   * O que o ouro não mede aqui é o que o Porto virou: **a porta.** Ele abre o comércio com
+   * quem não faz fronteira e abre a travessia para as ilhas — as duas coisas de uma vez, e
+   * as duas só na primeira vez. Do segundo Porto em diante a porta já está aberta, e ele
+   * volta a valer exatamente o trânsito que rende. É a mesma ideia de `defesaAmeacada`: um
+   * preço que muda com a situação, e não um gosto fixo.
+   */
+  valorDoMar: z.number(),
+  /**
    * Fatia do tesouro que esta IA NÃO gasta em obra.
    *
    * Sem reserva ela zera o caixa numa Ágora e não tem com que pagar a folha no turno

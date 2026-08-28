@@ -19,10 +19,12 @@
  * transforma o Porto numa decisão emparelhada — dois slots, duas obras — em vez de um
  * interruptor.
  *
- * ⚠️ **Isto NÃO move exército.** Mercadoria neste jogo é abstrata: não há inventário, não há
- * caravana, não há navio no mapa — então uma rota de mar abstrata cabe. Hoste é peça
- * concreta, com posição e batalha, e mover hoste por mar exige frota, que é o sistema naval.
- * Confundir as duas coisas daria teletransporte de exército com nome de comércio.
+ * ⚠️ **Isto NÃO move exército, e continua não movendo.** Mercadoria neste jogo é abstrata: não
+ * há inventário, não há caravana, não há navio no mapa — então uma rota de mar abstrata cabe.
+ * Hoste é peça concreta, com posição e batalha, e ela atravessa o mar **andando**, zona por
+ * zona, um salto por rodada, podendo ser interceptada — ver `movimento/alcance.ts`. As duas
+ * rotas saem da mesma porta, o Porto, e param aí de se parecer: confundi-las daria
+ * teletransporte de exército com nome de comércio.
  */
 
 import { alcanceDe } from '@/movimento/alcance';

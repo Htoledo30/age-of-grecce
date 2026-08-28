@@ -58,7 +58,9 @@ export function criarEstadoInicial(
   // O dono do arquivo assado é o dono INICIAL: a condição de 700 a.C. A partir daqui a
   // verdade corrente é `estado.dono`, e é ela que a conquista muda.
   const dono: Record<string, string> = {};
-  for (const p of atlas.provincias) dono[p.id] = p.dono;
+  // ⚠️ **Só as TERRAS entram na tabela de donos.** Zona marítima não se governa: dar-lhe
+  // dono seria criar água conquistável, e o resto do jogo passaria a contá-la como província.
+  for (const p of atlas.terras) dono[p.id] = p.dono;
 
   // Povo, humor e o que já está de pé em 700 a.C. — copiados do arquivo pro estado porque a
   // partir daqui são da PARTIDA. Província sem economia configurada não entra e continua
@@ -114,6 +116,8 @@ export function criarEstadoInicial(
     // Indiferença é o padrão: a tabela guarda só quem já se esbarrou.
     relacoes: {},
     pactos: {},
+    acessos: {},
+    propostas: [],
     acordos: {},
     // Ninguém compra o ano de ninguém antes de haver um ano do qual ter medo.
     tributos: {},

@@ -41,11 +41,59 @@ function indiceEm(lon: number, lat: number): number {
   return 0;
 }
 
+/** O índice EXATAMENTE neste pixel — sem procurar em volta. Zero é água sem dono. */
+function indiceCruEm(lon: number, lat: number): number {
+  const { x, y } = pixelDe(lon, lat);
+  const i = (y * mascara.width + x) * 4;
+  return mascara.data[i]! | (mascara.data[i + 1]! << 8);
+}
+
+describe('a água do arquipélago: o grupo é UM território, e não confete', () => {
+  const grupos = ['andros', 'naxos', 'melos', 'esporades', 'calimno'];
+
+  it('nenhum arquipélago ganhou vizinha por TERRA', () => {
+    // ⚠️ **É a prova de que reivindicar água é desenho e não regra.** Se a mancha de um
+    // arquipélago encostasse na de outra província, as duas seriam vizinhas — e um exército
+    // andaria da Eubeia até Andros sem Porto e sem embarcar, porque o mapa passaria a dizer
+    // que dá. O canal de mar entre territórios existe exatamente para isto não acontecer.
+    const porId = new Map(mundo.provincias.map((p) => [p.id, p]));
+    for (const id of grupos) {
+      const p = porId.get(id);
+      expect(p, id).toBeDefined();
+      const terrestres = p!.vizinhas.filter((v) => porId.get(v)?.mar !== true);
+      expect(terrestres, `${id} encostou em terra`).toEqual([]);
+      expect(p!.vizinhas.length, `${id} sem vizinha nenhuma`).toBeGreaterThan(0);
+    }
+  });
+
+  it('o mar ENTRE as ilhas de um grupo é do grupo, e o mar aberto não', () => {
+    const naxos = mundo.provincias.find((p) => p.id === 'naxos');
+    // O estreito entre Naxos e Paros: água, e água das Cíclades Centrais.
+    expect(indiceCruEm(25.345, 37.075)).toBe(naxos?.indice);
+    // E o canal ENTRE as Cíclades do Norte e as Centrais continua sendo mar de ninguém: é
+    // ele que impede os dois territórios de se encostarem e virarem vizinhos por terra.
+    const canal = mundo.provincias.find((p) => p.indice === indiceCruEm(25.0, 37.35));
+    expect(canal?.mar).toBe(true);
+  });
+
+  it('a área continua contando só o CHÃO', () => {
+    // A água reivindicada não pode inflar a área: é ela que escolhe a capital quando um reino
+    // perde a sede, e um arquipélago virando capital por ter mar em volta seria regra
+    // decidida por engano de medição.
+    const porId = new Map(mundo.provincias.map((p) => [p.id, p]));
+    expect(porId.get('naxos')!.areaKm2).toBeLessThan(2000);
+    expect(porId.get('andros')!.areaKm2).toBeLessThan(2000);
+  });
+});
+
 describe('as Cíclades agrupadas continuam inteiras e clicáveis', () => {
   const casos: Array<[string, Array<[number, number]>]> = [
     ['andros', [[25.16, 37.56], [25.35, 37.45], [24.34, 37.62], [24.42, 37.41]]],
-    ['naxos', [[25.15, 37.08], [25.29, 36.72], [25.9, 36.83]]],
-    ['melos', [[24.71, 36.98], [25.43, 36.42]]],
+    // Tera e Anafi passaram das Ocidentais para as CENTRAIS: elas ficam 70 km a leste do
+    // resto do grupo ocidental, e era por causa delas que aquele arquipélago nunca fechava
+    // numa mancha só. Ver `agua-do-arquipelago.ts`.
+    ['naxos', [[25.15, 37.08], [25.29, 36.72], [25.9, 36.83], [25.43, 36.42]]],
+    ['melos', [[24.71, 36.98], [24.49, 37.15]]],
   ];
 
   for (const [id, ilhas] of casos) {

@@ -67,9 +67,43 @@ export function oportunidadesDe(campanha: Campanha, idPoder: string): readonly O
     }
   }
 
+  return fichasDe(campanha, idPoder, alcancadas);
+}
+
+/**
+ * As terras alheias **no litoral do mundo** — as que um exército embarcado pode alcançar.
+ *
+ * ⚠️ **Existe porque a vizinhança não enxerga o outro lado da água.** `oportunidadesDe`
+ * pergunta "o que encosta em mim", e nada encosta em ninguém através do mar: a ilha fica a
+ * três saltos, e a lista de vizinhos nunca a conteria. Sem esta segunda lista, a travessia não
+ * teria para onde ir e o mar seria uma mecânica só do jogador.
+ *
+ * Ela é DELIBERADAMENTE larga — toda costa alheia do mapa, e não só a de quem está perto. Quem
+ * peneira é a marcha: `rotaLongaDaHoste` só devolve caminho para quem tem Porto por onde sair,
+ * e a conta de tomar continua sendo a mesma. Perceber longe não é poder longe.
+ */
+export function oportunidadesNoLitoral(
+  campanha: Campanha,
+  idPoder: string,
+): readonly Oportunidade[] {
+  const minhas = new Set(campanha.provinciasDe(idPoder));
+  const costa = new Set<string>();
+  for (const provincia of campanha.terras()) {
+    if (minhas.has(provincia)) continue;
+    if (campanha.vizinhasDe(provincia).some((v) => campanha.ehMar(v))) costa.add(provincia);
+  }
+  return fichasDe(campanha, idPoder, costa);
+}
+
+/** A ficha de cada terra desta lista, na ordem de id. É o corpo comum das duas percepções. */
+function fichasDe(
+  campanha: Campanha,
+  idPoder: string,
+  provincias: ReadonlySet<string>,
+): readonly Oportunidade[] {
   const ausentes = new Map(campanha.bensAusentes(idPoder).map((b) => [b.id, b.troca]));
   const oportunidades: Oportunidade[] = [];
-  for (const provincia of [...alcancadas].sort()) {
+  for (const provincia of [...provincias].sort()) {
     const dono = campanha.donoDe(provincia);
     // ⚠️ Poder sem economia fica de fora — ver o cabeçalho. Não é a IA sendo tímida: é o
     // mapa não estar desenhado o suficiente para aquela conquista significar alguma coisa.

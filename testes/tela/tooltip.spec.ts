@@ -37,20 +37,20 @@ test('a tooltip militar substitui title, respeita o palco e fecha ao sair', asyn
   await expect(tooltip).toBeHidden();
 
   // Informação provincial: resultado na ficha, conta curta no tooltip.
-  const renda = page.locator('.ficha__renda');
-  await expect(renda).toHaveText(/saldo [−+]\d+ por turno/);
+  const renda = page.locator('.ficha__medida[data-medida="saldo"]');
+  await expect(renda).toHaveText(/saldo[−+]\d+por turno/);
   await expect(renda).toHaveAttribute('data-tooltip-corpo', /\+\d+ impostos/);
-  await expect(renda).toHaveAttribute('data-tooltip-corpo', /= [−+]\d+ por turno/);
+  await expect(renda).toHaveAttribute('data-tooltip-corpo', /\+\d+ produção/);
 
-  const populacao = page.locator('.ficha__populacao').last();
+  const populacao = page.locator('.ficha__medida[data-medida="povo"]');
   await expect(populacao).toHaveAttribute(
     'data-tooltip-titulo',
     /População subindo|População caindo|População mantida|Sem crescimento líquido/,
   );
   await expect(populacao).not.toHaveAttribute('data-tooltip-corpo', /.{180,}/);
 
-  const humor = page.locator('.ficha__humor').last();
-  await expect(humor).toHaveText(/\d+ · /);
+  const humor = page.locator('.ficha__medida[data-medida="humor"]');
+  await expect(humor).toHaveText(/humor\d+/);
   await expect(humor).toHaveAttribute('data-tooltip-corpo', /= \d+$/);
 
   // O custo da tropa nascida aqui entra no número visível, não fica escondido no Governo.
@@ -64,8 +64,8 @@ test('a tooltip militar substitui title, respeita o palco e fecha ao sair', asyn
     ).inspecao;
     inspecao.plantarHoste('atenas', 'atenas', 4_001);
   });
-  await expect(renda).toHaveAttribute('data-tom', 'negativo');
-  await expect(renda).toHaveText(/saldo −\d+ por turno/);
+  await expect(renda).toHaveAttribute('data-tom', 'ruim');
+  await expect(renda).toHaveText(/saldo−\d+por turno/);
   await expect(renda).toHaveAttribute('data-tooltip-corpo', /−[\d.]+ tropas/);
   expect(erros, erros.join('\n')).toHaveLength(0);
 });

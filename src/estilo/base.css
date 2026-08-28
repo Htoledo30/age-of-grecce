@@ -18,7 +18,11 @@ body {
   color: var(--ui-texto);
   font-family: var(--fonte-corpo);
   font-size: 15px;
-  line-height: 1.4;
+  /* ⚠️ **500, e não 400.** O peso normal de uma humanista desaparece em corpo pequeno sobre
+     pedra escura, e o palco ainda encolhe tudo para caber na janela. O 500 está empacotado
+     junto com o 400 — não custa um byte a mais e é o peso que o gênero usa em painel. */
+  font-weight: 500;
+  line-height: 1.45;
   user-select: none;
   cursor: default;
 }
@@ -33,11 +37,12 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
+/* Posição e escala vêm de `escala.ts`, que usa `zoom` — ver o porquê lá. Nada de
+   `transform` aqui: ele desliga o antialiasing de subpixel de toda a interface. */
 #palco {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform-origin: center center;
+  top: 0;
+  left: 0;
   overflow: hidden;
   background: var(--mar-fundo);
 }
@@ -62,11 +67,10 @@ input:focus-visible {
 /* Uma borda externa fina segura o painel; o meandro interno é detalhe, não uma segunda
    moldura pesada. Centralizar isto evita que cada janela tenha uma grossura diferente. */
 .barra-turno,
-.acoes,
-.ficha,
-.recrutamento,
+.painel-provincia,
 .exercito,
 .governo__janela,
+.janela__caixa,
 .inicio-jogo__cartao-menu,
 .inicio-jogo__escolha,
 .painel-lateral__corpo {
@@ -74,11 +78,10 @@ input:focus-visible {
 }
 
 .barra-turno::after,
-.acoes::before,
-.ficha::before,
-.recrutamento::before,
+.painel-provincia::before,
 .exercito::before,
 .governo__janela::before,
+.janela__caixa::before,
 .inicio-jogo__cartao-menu::before,
 .inicio-jogo__escolha::before,
 .painel-lateral__corpo::before {
