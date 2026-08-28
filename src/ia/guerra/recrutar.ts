@@ -23,6 +23,10 @@
  *    decisão de levantar uma.** Parar só quando o saldo já está negativo é chegar tarde:
  *    medido, com saldo ZERO a IA levantava vinte mil homens e terminava o turno em −6. O
  *    teto é a comida que sobra, convertida em bocas — e cavalo conta por vários.
+ *
+ *    ⚠️ **E "apertada" olha para frente**, não para o saldo de hoje: é `despensaApertada`, em
+ *    `percepcao/sustento.ts`, que pergunta se a leva que o cofre já paga ainda cabe na
+ *    despensa. Ver o comentário longo lá.
  * 3. **A GENTE**, província por província. Quem vai pras armas sai da lavoura e do imposto.
  *
  * ⚠️ **Ela recruta na paz, e não quando o inimigo aparece.** Leva demora um turno para virar
@@ -46,7 +50,7 @@
 import type { Campanha } from '@/campanha/campanha';
 import type { Arma } from '@/combate/exercito';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
-import { estaAmeacado } from '../percepcao/ameaca';
+import { despensaApertada, folgaDaFolha } from '../percepcao/sustento';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
 
@@ -72,7 +76,7 @@ export function levaEscolhida(
   if (folgaNaFolha <= 0) return null;
 
   const balanco = campanha.balancoAlimentarDe(idPoder);
-  const apertada = balanco.saldo <= estilo.limiarDeAperto;
+  const apertada = despensaApertada(campanha, idPoder, estilo, ajustes);
   // ⚠️ Despensa no vermelho tranca o recrutamento inteiro. Não é excesso de zelo: cada boca a
   // mais come de um saldo que já não fecha, e a fome mata civil, não só soldado.
   if (balanco.saldo < 0) return null;
@@ -104,25 +108,6 @@ export function levaEscolhida(
     }
   }
   return melhor;
-}
-
-/**
- * Quanto ainda cabe na folha militar deste poder, em moedas por turno.
- *
- * A renda menos o que a tropa já custa, limitado pela fatia que o estilo topa gastar. É o
- * único teto que a IA se impõe sozinha — os outros dois vêm do mundo.
- */
-function folgaDaFolha(campanha: Campanha, idPoder: string, estilo: EstiloDeIa): number {
-  const renda = campanha.rendaDe(idPoder);
-  // ⚠️ **A conta VERDADEIRA, e não uma estimativa.** `manutencaoDe` é a mesma que a barra de
-  // turno mostra e que o tesouro paga: ela já sabe quem está em casa e quem pisa em terra
-  // alheia pagando a taxa de campanha. Multiplicar homens pela taxa de casa dava no mesmo
-  // enquanto a IA não saía do reino — e erraria feio no dia em que saísse.
-  const folhaAtual = campanha.manutencaoDe(idPoder);
-  // ⚠️ Guerra é ter alguém nas suas terras ou na porta delas — e não uma declaração, que este
-  // jogo ainda não tem. Ver `estaAmeacado`.
-  const teto = estaAmeacado(campanha, idPoder) ? estilo.folhaMilitar : estilo.folhaEmPaz;
-  return renda * teto - folhaAtual;
 }
 
 /** A arma que esta terra levanta e que este estilo prefere, com o que ela vale. */

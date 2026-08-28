@@ -24,6 +24,17 @@
  * aperta, a obra de alimento passa a valer `alimentoApertado`, que é alto de propósito, e
  * atropela qualquer Ágora.
  *
+ * ⚠️ **E "aperta" é uma pergunta sobre o FUTURO**, senão a fazenda vira obra de bombeiro. Ver
+ * `percepcao/sustento.ts`: a despensa conta como apertada quando o exército que a economia
+ * banca não caberia nela — e não quando o saldo já está no chão. Medido antes desta mudança,
+ * com um ponto de comida para cada 500 soldados, **21 das 28 obras de comida saíam com a
+ * parede já nas costas**: ela batia no teto, parava de recrutar, erguia a fazenda, recomeçava.
+ *
+ * ⚠️ **E por isso a comida tem TRÊS preços, não dois.** Emergência (`alimentoApertado`),
+ * gargalo (`alimentoNoGargalo`) e gosto (`valorDaObra.alimento`). Cobrar o preço de
+ * emergência na rotina do gargalo foi a primeira tentativa, e ela varreu a Ágora do mapa: 33%
+ * menos riqueza e 5 poderes vivos de 18 em 150 turnos.
+ *
  * ⚠️ **E o PORTO tem um preço só na primeira vez.** Ele não é uma obra de renda como as
  * outras: é a porta do mar — o comércio com quem não faz fronteira e a travessia até as ilhas.
  * Pela conta do ouro ele nunca vencia uma Ágora, e o resultado medido foi zero Portos em cem
@@ -40,8 +51,9 @@
  */
 
 import type { Campanha } from '@/campanha/campanha';
-import type { EstiloDeIa } from '@/dados/esquema';
+import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
 import { estaAmeacado } from '../percepcao/ameaca';
+import { despensaApertada, despensaNoChao } from '../percepcao/sustento';
 
 /** Uma obra que a IA considerou, com o valor que ela deu. */
 export interface ObraCotada {
@@ -73,12 +85,15 @@ export function obraEscolhida(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,
+  ajustes: Ajustes['jogo'],
 ): ObraCotada | null {
   const caixa = campanha.tesouroDe(idPoder);
   // ⚠️ A reserva não é frescura: sem ela a IA zera o cofre numa Ágora e não paga a folha no
   // turno seguinte. É o erro que todo jogador novo comete uma vez.
   const disponivel = caixa * (1 - estilo.guardaDoTesouro);
-  const apertada = campanha.balancoAlimentarDe(idPoder).saldo <= estilo.limiarDeAperto;
+  // Dois degraus, e não um: a emergência é rara e cara, o gargalo é rotina e mais barato.
+  const noChao = despensaNoChao(campanha, idPoder, estilo);
+  const apertada = despensaApertada(campanha, idPoder, estilo, ajustes);
   // A mesma pergunta que separa a folha de paz da de guerra decide o preço do muro.
   const ameacado = estaAmeacado(campanha, idPoder);
 
@@ -93,7 +108,7 @@ export function obraEscolhida(
 
       const valor =
         retorno.ganhoPorTurno +
-        valorDoPapel(campanha, construcao, estilo, apertada, ameacado) +
+        valorDoPapel(campanha, construcao, estilo, noChao, apertada, ameacado) +
         // ⚠️ **A porta do mar, e ela só se abre uma vez.** Sem esta parcela nenhuma IA erguia
         // Porto em cem turnos — ele custa 2.500 e paga em trânsito, a menor parcela da renda —
         // e sem Porto ninguém comercia com quem não faz fronteira nem embarca para ilha
@@ -121,13 +136,18 @@ function valorDoPapel(
   campanha: Campanha,
   construcao: string,
   estilo: EstiloDeIa,
-  despensaApertada: boolean,
+  noChao: boolean,
+  gargalo: boolean,
   ameacado: boolean,
 ): number {
   const tipo = campanha.efeitoDaObra(construcao);
   if (tipo === null) return 0;
   if (tipo === 'alimento') {
-    return despensaApertada ? estilo.alimentoApertado : estilo.valorDaObra.alimento;
+    // ⚠️ TRÊS degraus, e a ordem importa: emergência, gargalo, gosto. Ver `alimentoNoGargalo`
+    // no esquema — foi ele que separou "estou morrendo" de "a comida é o que me trava".
+    if (noChao) return estilo.alimentoApertado;
+    if (gargalo) return estilo.alimentoNoGargalo;
+    return estilo.valorDaObra.alimento;
   }
   // Muro em paz é gosto; muro com exército alheio na fronteira é sobrevivência.
   if (tipo === 'milicia' && ameacado) return estilo.defesaAmeacada;

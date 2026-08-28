@@ -40,7 +40,7 @@ describe('a IA escolhe obra pela conta do próprio jogo', () => {
     // dela um detector de balanço que joga duzentos turnos por segundo.
     const c = nova('atenas');
     for (const poder of poderesDaIa(c)) {
-      const escolha = obraEscolhida(c, poder, estiloDe(ia, poder));
+      const escolha = obraEscolhida(c, poder, estiloDe(ia, poder), ajustes);
       if (!escolha) continue;
       expect(`${poder}: ${escolha.construcao} vale ${escolha.valor}`).toContain('vale');
       expect(escolha.valor).toBeGreaterThan(0);
@@ -52,7 +52,7 @@ describe('a IA escolhe obra pela conta do próprio jogo', () => {
     // desertaria a tropa dela por falta de pagamento.
     const c = nova('atenas');
     const estilo = estiloDe(ia, 'corinto');
-    const escolha = obraEscolhida(c, 'corinto', estilo);
+    const escolha = obraEscolhida(c, 'corinto', estilo, ajustes);
     if (escolha) {
       expect(escolha.custo).toBeLessThanOrEqual(
         c.tesouroDe('corinto') * (1 - estilo.guardaDoTesouro),
@@ -68,8 +68,8 @@ describe('a IA escolhe obra pela conta do próprio jogo', () => {
     const apertado = { ...estilo, limiarDeAperto: 99 };
     const folgado = { ...estilo, limiarDeAperto: -99 };
 
-    const comAperto = obraEscolhida(c, 'tebas', apertado);
-    const semAperto = obraEscolhida(c, 'tebas', folgado);
+    const comAperto = obraEscolhida(c, 'tebas', apertado, ajustes);
+    const semAperto = obraEscolhida(c, 'tebas', folgado, ajustes);
     expect(comAperto).not.toBeNull();
     expect(c.efeitoDaObra(comAperto!.construcao)).toBe('alimento');
     expect(semAperto?.construcao).not.toBe(comAperto?.construcao);
@@ -81,7 +81,7 @@ describe('a IA escolhe obra pela conta do próprio jogo', () => {
     // cofre para a próxima. Escolher pelo valor cru é torrar o caixa na obra mais cara.
     const c = nova('atenas');
     const estilo = estiloDe(ia, 'corinto');
-    const escolha = obraEscolhida(c, 'corinto', estilo);
+    const escolha = obraEscolhida(c, 'corinto', estilo, ajustes);
     expect(escolha).not.toBeNull();
     expect(escolha!.porMoeda).toBeCloseTo(escolha!.valor / escolha!.custo, 8);
   });

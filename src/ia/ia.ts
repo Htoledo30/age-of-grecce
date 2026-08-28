@@ -139,7 +139,7 @@ export function jogarIA(
       campanha.definirImposto(decreto.provincia, decreto.nivel, idPoder);
     }
 
-    const obra = obraEscolhida(campanha, idPoder, estilo);
+    const obra = obraEscolhida(campanha, idPoder, estilo, ajustes);
     if (obra) campanha.construir(obra.provincia, obra.construcao, idPoder);
 
     // A leva depois da obra: o cofre já está do tamanho que ficou, e recrutar em cima de um

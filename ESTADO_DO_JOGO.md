@@ -816,6 +816,72 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## A IA e a comida: ela planta para crescer, ou planta por emergência?
+
+Pergunta de Henrique depois de mexer no balanço: *"uma config que eu gostei foi exército a
+partir de 500 soldados já tira 1 da comida. A IA está configurada com o sistema de comida
+também? Ela entende que precisa ter mais comida para poder criar mais exército?"*
+
+**Ela já estava ligada em quatro lugares**, e nenhum deles era novo: saldo negativo tranca o
+recrutamento inteiro; o que sobra na despensa vira o TETO da leva, em bocas, dividido pela
+comida da arma; despensa apertada tira a cavalaria da lista; e a obra de alimento troca de
+preço. O que **não** existia era o plano.
+
+⚠️ **Medido antes de mexer, com um ponto de comida para cada 500 soldados: 21 das 28 obras de
+comida saíam com a parede já nas costas.** O ciclo dela era de bombeiro — bater no teto, parar
+de recrutar, erguer a fazenda, recomeçar. A causa era a régua: `saldo <= limiarDeAperto` só
+enxerga o saldo de HOJE, e um saldo de hoje que fecha não diz nada sobre o exército de amanhã.
+
+### A régua nova olha para frente
+
+`src/ia/percepcao/sustento.ts`: a despensa conta como apertada quando **o exército que a
+economia do reino banca não caberia nela** — a folha de guerra convertida em homens, e os
+homens em pontos de comida. É a pergunta que faz um reino encher celeiro em tempo de paz.
+
+⚠️ **Pela folha de GUERRA, e nunca pela de paz — a primeira versão errou aqui.** Usando a
+folha vigente, que é um décimo da renda em paz, a conta dava menos de um ponto e a antecipação
+quase não disparava: as 21 de 28 continuavam iguais. Quem espera a guerra para plantar planta
+tarde.
+
+⚠️ **E a régua SENTE `soldadosPorPonto`, que a antiga não sentia.** A conta é em bocas, então
+baixar o número de 3.000 para 500 — um ponto de comida seis vezes mais valioso em soldado —
+move o gatilho sozinho, sem reajustar nenhum peso em `dados/ia.json`.
+
+### E a comida passou a ter TRÊS preços, porque um só quebrou o mundo
+
+A primeira tentativa reaproveitou `alimentoApertado` (40 moedas por turno) para o gatilho novo,
+e ela plantou: as fazendas reativas caíram de 21 de 28 para 18 de 52. **Mas o mapa quebrou.**
+`alimentoApertado` foi calibrado como preço de EMERGÊNCIA, raro e altíssimo, e cobrá-lo numa
+rotina fez a IA construir só fazenda: em 150 turnos a riqueza do mapa caiu 33% e sobraram
+**5 poderes vivos de 18**, com um reino de treze províncias. Uma corrida armamentista com
+todo mundo pobre.
+
+Então são três degraus, e a ordem é guardada por teste: **gosto** (`valorDaObra.alimento`, 4 a
+6) → **gargalo** (`alimentoNoGargalo`, 20 a 25, o preço de quem planeja) → **emergência**
+(`alimentoApertado`, 40 a 50, o saldo já no chão).
+
+### O que mudou, medido — e o que NÃO mudou
+
+Com `soldadosPorPonto` em 500, 100 turnos, 18 poderes na IA:
+
+| | régua antiga | um preço só | **três degraus** |
+|---|---|---|---|
+| homens em armas | 12.151 | 15.800 | **20.167** |
+| obras de comida (quantas na parede) | 28 (21 = 75%) | 52 (18 = 35%) | **43 (20 = 47%)** |
+| turnos com a tropa passando fome | 14 | 41 | **3** |
+| conquistas | 22 | 49 | **29** |
+| poderes vivos de 18 | 11 | 8 | **12** |
+| riqueza do mapa | 7.317 | 5.450 | **6.125** |
+
+Ela planta antes, mantém um exército 66% maior, quase não passa fome, e o mundo continua tão
+plural quanto era. A conta que ela paga é 16% de riqueza — ela troca Ágora por fazenda, que é
+exatamente a decisão que o balanço apertado deveria forçar.
+
+⚠️ **E no padrão do repositório (3.000 por ponto) nada se mexeu — nem um dígito.**
+`npm run partida 100` devolve os mesmos 19.958 homens, as mesmas 3 viradas com fome, os mesmos
+6 poderes de 18 varridos. A régua nova só morde onde a comida é de fato o gargalo, então quem
+não apertou o balanço não sente diferença nenhuma.
+
 ## O teto do zoom, e a arte que ele escondia
 
 Henrique: *"consegue liberar o quanto eu consigo dar zoom in? pelo que me lembre tinha travado

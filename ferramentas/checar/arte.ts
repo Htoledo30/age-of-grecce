@@ -17,7 +17,6 @@ const ESPERADOS = [
   'biomas.png',
   'altitude.png',
   'altitude.f32',
-  'detalhes.json',
   'hidrologia.json',
 ];
 

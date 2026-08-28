@@ -49,7 +49,22 @@ const Estilo = z.object({
    * levar uma batalha. Este número é alto de propósito, e só vale no aperto.
    */
   alimentoApertado: z.number(),
-  /** Em que saldo a despensa já conta como apertada. 1 é "uma folga e nada mais". */
+  /**
+   * O que a comida vale quando ela é o GARGALO — e não quando já é emergência.
+   *
+   * ⚠️ **É a irmã de `alimentoApertado`, e existe porque um preço só não servia para as duas
+   * perguntas.** A despensa "no chão" (saldo já no limiar) é rara e dramática, e por isso
+   * `alimentoApertado` é altíssimo. Mas desde que a IA passou a olhar para FRENTE — cabe na
+   * despensa o exército que a minha economia banca? (ver `ia/percepcao/sustento.ts`) — a
+   * resposta "não cabe" virou rotina, e cobrar o preço de emergência numa rotina fez a IA
+   * construir só fazenda. Medido em 150 turnos com um ponto de comida para cada 500 soldados:
+   * a riqueza do mapa caiu 33% e sobraram 5 poderes vivos de 18.
+   *
+   * Este é o preço do planejamento: acima do gosto de `valorDaObra.alimento`, bem abaixo da
+   * emergência. Ele é que faz a fazenda sair ANTES da parede sem varrer a Ágora do mapa.
+   */
+  alimentoNoGargalo: z.number(),
+  /** Em que saldo a despensa já conta como no chão. 1 é "uma folga e nada mais". */
   limiarDeAperto: z.number().int(),
   /**
    * O que uma obra de DEFESA vale quando há exército alheio na porta, em moedas por turno.

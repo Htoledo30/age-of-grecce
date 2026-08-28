@@ -272,3 +272,45 @@ linhas? que elas comecam a sumir e quebrar quando dou muito zoom
      larguraDaLinha: 2.0 que esta em dados/ajustes.json vinha entregando um fio de cabelo.
      Agora ele entrega 2. Se achar pesado, e esse numero, e da para calibrar sem recarregar.
      Par de capturas da mesma cena: capturas/par-antes.png e capturas/par-depois.png
+
+uma config que eu gostei foi exercito a partir de 500 soldados ja tira 1 da comida, minha
+unica duvida e a IA ta configurada com o sistema de comida tbm? Ela entende que precisa ter
+mais comida para poder criar mais exercito? Ela se importa com isso?
+   → ESTAVA LIGADA, mas NAO PLANEJAVA. Agora planeja.
+     O que ja existia (quatro lugares): saldo negativo tranca o recrutamento inteiro; o que
+     sobra na despensa vira o TETO da leva, em bocas, dividido pela comida da arma (cavalo
+     come por dois); despensa apertada tira a cavalaria da lista; e a obra de alimento troca
+     de preco.
+     O que NAO existia era o plano. Medi com o teu 500: 21 das 28 fazendas ela erguia com a
+     parede ja nas costas. O ciclo dela era de bombeiro — bater no teto, parar de recrutar,
+     erguer a fazenda, recomecar. A culpa era da regua: "saldo <= limiar" so olha o saldo de
+     HOJE, e saldo de hoje que fecha nao diz nada sobre o exercito de amanha.
+     A REGUA NOVA olha para frente: a despensa aperta quando o EXERCITO QUE A ECONOMIA BANCA
+     nao caberia nela. E a pergunta que faz um reino encher celeiro em tempo de paz.
+     ⚠️ Ela sente o TEU numero. A conta e em bocas, entao baixar de 3.000 para 500 move o
+     gatilho sozinho — a regua velha nao sentia, um ponto ficou seis vezes mais valioso em
+     soldado e o gatilho continuava disparando no mesmo lugar.
+     ⚠️ E a comida passou a ter TRES precos, porque um so quebrou o mundo. Minha primeira
+     tentativa reaproveitou o preco de emergencia (40 moedas/turno) no gatilho novo. Ela
+     plantou, sim — mas em 150 turnos a riqueza do mapa caiu 33% e sobraram 5 poderes vivos
+     de 18, com um reino de treze provincias. Aquele 40 foi calibrado para emergencia rara;
+     cobrado na rotina, a IA construia so fazenda. Agora: gosto (4-6) → gargalo (20-25) →
+     emergencia (40-50), com teste guardando a ordem.
+     MEDIDO com 500, 100 turnos, 18 poderes na IA — regua antiga vs tres degraus:
+       homens em armas ............ 12.151 → 20.167
+       fazendas (quantas na parede)  28 (21) → 43 (20)
+       tropa passando fome ........ 14 turnos → 3 turnos
+       conquistas ................. 22 → 29
+       poderes vivos de 18 ........ 11 → 12
+       riqueza do mapa ............ 7.317 → 6.125
+     Ela planta antes, segura um exercito 66% maior, quase nao passa fome, e o mundo continua
+     tao plural quanto era. A conta que ela paga sao 16% de riqueza — troca Agora por fazenda,
+     que e exatamente a decisao que o teu balanco apertado deveria forcar.
+     ⚠️ E no padrao do repo (3.000 por ponto) NADA se mexeu, nem um digito: `npm run partida
+     100` devolve os mesmos 19.958 homens, as mesmas 3 viradas com fome, os mesmos 6 poderes
+     varridos. A regua nova so morde onde a comida e de fato o gargalo.
+     ⚠️ FALTA UMA COISA TUA: o teu 500 nao esta no repositorio, aqui ainda esta 3.000. Medi
+     por override. Quando quiser, commita o teu valor em dados/ajustes.json.
+     O numero novo (alimentoNoGargalo) esta em dados/ia.json, um por estilo — da para mexer
+     no editor de balanceamento como os outros.
+

@@ -15,6 +15,7 @@
         "qualidade": 3
       },
       "alimentoApertado": 40,
+      "alimentoNoGargalo": 20,
       "limiarDeAperto": 1,
       "defesaAmeacada": 30,
       "valorDoMar": 35,
@@ -43,6 +44,7 @@
         "qualidade": 9
       },
       "alimentoApertado": 45,
+      "alimentoNoGargalo": 22,
       "limiarDeAperto": 1,
       "defesaAmeacada": 45,
       "valorDoMar": 45,
@@ -71,6 +73,7 @@
         "qualidade": 1
       },
       "alimentoApertado": 40,
+      "alimentoNoGargalo": 20,
       "limiarDeAperto": 1,
       "defesaAmeacada": 26,
       "valorDoMar": 60,
@@ -99,6 +102,7 @@
         "qualidade": 2
       },
       "alimentoApertado": 50,
+      "alimentoNoGargalo": 25,
       "limiarDeAperto": 2,
       "defesaAmeacada": 40,
       "valorDoMar": 20,
