@@ -168,9 +168,25 @@ Novas Observacoes Por Henrique
      contorno vazio de 14px), e a regiao na outra ponta da mesma faixa, menor e apagada. O
      nome da provincia continua grande, logo abaixo. Nenhum rotulo dizendo qual e qual — a
      posicao e o peso ja dizem. Comparativo em capturas/ficha-comparativo.png.
-     ⚠️ FALTA a segunda metade: o nome escrito DENTRO de cada provincia no mapa. Tu disseste
-     "futuramente", entao esta parada esperando tua palavra — e ela ajudaria bastante nessa
-     mesma confusao.
+     → E a SEGUNDA METADE tambem entrou: o nome escrito dentro de cada provincia, com
+     interruptor "Nomes no mapa" no painel da direita.
+     Pesquisei antes, como tu pediste. O Age of History 2 tem o interruptor e faz os nomes
+     aparecerem com o zoom — e a queixa mais repetida dos jogadores dele e "nomes e bandeiras
+     grandes demais"; a resposta da comunidade e diminuir a escala do mapa, ou seja, o jogo
+     empurra o problema para o jogador. O EU4 tem "Display province names" como opcao e o
+     mesmo comportamento; o ponto fraco conhecido dele e o CONTRASTE, tanto que existem mods
+     populares so para engrossar a fonte dos nomes.
+     Duas coisas vieram da cartografia de verdade, e nao dos jogos:
+     1) o ponto do nome NAO e o centro da provincia. O centroide cai FORA da forma em 15 das
+        244 (Itaca, Melos, o Estreito de Salamina) — o nome ficaria escrito no vizinho ou no
+        mar. O certo e o "polo de inacessibilidade", o ponto mais distante da borda. Como o
+        nosso mapa e raster, ele sai exato de graca.
+     2) rotulo de area so se desenha se COUBER na area naquele zoom. Isso da nivel de detalhe
+        sozinho: longe so as grandes tem nome, perto todas cabem. Sem nenhum limiar de zoom
+        escrito a mao, e sem precisar de detector de colisao.
+     E agua vai em ITALICO, convencao de cartografia de seculos — resolve de graca a confusao
+     entre "Mar de Esciros" e "Calcis", que sao coisas de natureza diferente.
+     Prints: capturas/nomes-perto.png e capturas/nomes-longe.png
 
 crash do editor de balanceamento (medidas.ts) — CONSERTADO. Era bug meu: escrevi uma quebra
 de linha literal dentro de uma string ao editar o arquivo por script. O build e a suite ja

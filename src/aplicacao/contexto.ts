@@ -28,6 +28,7 @@ import type { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import type { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import type { FimDeJogo } from '@/ui/fim-de-jogo';
 import type { Governo } from '@/ui/governo';
+import type { RotulosMapa } from '@/ui/rotulos-mapa';
 import type { HostesMapa } from '@/ui/hostes-mapa';
 import type { InicioJogo } from '@/ui/inicio-jogo';
 import type { MarchasMapa } from '@/ui/marchas-mapa';
@@ -58,6 +59,7 @@ export interface Tela {
   batalha: JanelaDeBatalha;
   inicio: InicioJogo;
   fimDeJogo: FimDeJogo;
+  rotulosMapa: RotulosMapa;
   hostesMapa: HostesMapa;
   cercosMapa: CercosMapa;
   marchasMapa: MarchasMapa;

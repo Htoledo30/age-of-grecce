@@ -1,0 +1,59 @@
+/* ── OS NOMES DAS PROVÍNCIAS SOBRE O MAPA ────────────────────────────────────────────────
+   HTML por cima do canvas, como as outras camadas: texto de verdade, com a mesma face
+   inscricional do resto da interface e sem sprite nenhum.
+
+   ⚠️ **A camada NÃO recebe clique.** O nome fica em cima da província, e o mapa precisa
+   continuar recebendo o clique através dele — senão clicar no nome da província deixaria de
+   selecionar a província. É o contrário dos marcadores de hoste, que interceptam de
+   propósito. */
+.rotulos-mapa {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ⚠️ **O contorno é obrigatório, e é a lição do EU4.** O ponto fraco conhecido dos nomes de
+   província daquele jogo é o contraste — existem mods populares só para engrossar a fonte —,
+   e aqui o texto passa por cima de terreno que vai de verde a ocre a azul, mais a cor do
+   reino por baixo. Sem sombra em volta, metade dos nomes some sobre a metade do mapa. */
+.rotulos-mapa__nome {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  font-family: var(--fonte-titulo);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(247 241 226 / 92%);
+  text-shadow:
+    0 0 3px rgb(0 0 0 / 95%),
+    0 0 7px rgb(0 0 0 / 80%),
+    0 1px 2px rgb(0 0 0 / 90%);
+  transition: opacity 140ms ease-out;
+}
+
+/* Não cabe na província, não se desenha — a regra dos renderizadores de mapa de verdade.
+   `opacity` e não `display`, para o nome aparecer e sumir sem piscar no zoom. */
+.rotulos-mapa__nome[data-cabe='nao'] {
+  opacity: 0;
+}
+.rotulos-mapa__nome[data-cabe='sim'] {
+  opacity: 1;
+}
+
+/* ⚠️ **Água em ITÁLICO — é convenção de cartografia com séculos de uso**, e resolve de graça
+   um problema que este mapa criou: desde que o mar virou zona com nome, "Mar de Esciros" e
+   "Cálcis" são coisas de natureza diferente escritas do mesmo jeito. O itálico e o azul dizem
+   qual é qual sem uma palavra a mais. */
+.rotulos-mapa__nome[data-mar='sim'] {
+  font-family: var(--fonte-nome);
+  font-style: italic;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: none;
+  color: rgb(206 226 236 / 88%);
+}

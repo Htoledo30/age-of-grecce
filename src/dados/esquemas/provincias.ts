@@ -36,6 +36,27 @@ export const Provincias = z.object({
           dono: z.string(),
           areaKm2: z.number().nonnegative(),
           centro: z.object({ x: z.number(), y: z.number() }),
+          /**
+           * Onde escrever o NOME dela no mapa, e quanto espaço ele tem.
+           *
+           * ⚠️ **Não é o `centro`, e a diferença não é sutil.** O centro é o centroide — a
+           * média das coordenadas —, e numa forma torta ele cai fora dela: medido, **15 das
+           * 244 províncias têm o centroide no vizinho ou no mar**, entre elas Ítaca, Melos e
+           * o Estreito de Salamina. Escrever o nome ali põe "Mégara" em cima de Corinto.
+           *
+           * Isto é o PÓLO DE INACESSIBILIDADE: o ponto mais distante da borda, centro do
+           * maior círculo que cabe dentro da forma. Sempre está dentro, mesmo num C. É o que
+           * a cartografia digital usa para rotular área (`polylabel`, da Mapbox), e aqui sai
+           * exato porque o mapa é raster: é o pixel de maior distância até a borda.
+           *
+           * O `raio` é a metade útil da resposta: **rótulo de área só se desenha se couber
+           * dentro dela naquele zoom**, e é ele que deixa a tela responder isso. Zoom baixo,
+           * só as grandes têm nome; zoom alto, todas cabem — nível de detalhe automático,
+           * sem um limiar escrito à mão. Ausente em mapa assado antes de `gerar-rotulos`.
+           */
+          rotulo: z
+            .object({ x: z.number(), y: z.number(), raio: z.number().nonnegative() })
+            .optional(),
           vizinhas: z.array(z.string().min(1)),
           /**
            * Esta é uma ZONA MARÍTIMA, e não um pedaço de chão.

@@ -13,6 +13,7 @@ import '@/estilo/base.css';
 import '@/ui/icones-gregos.css';
 import '@/ui/painel-fps.css';
 import '@/ui/painel-lateral.css';
+import '@/ui/rotulos-mapa.css';
 import '@/ui/ficha-provincia.css';
 import '@/ui/acoes-provincia.css';
 import '@/ui/janela.css';

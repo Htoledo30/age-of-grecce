@@ -51,6 +51,21 @@ export function ligarAcoes(jogo: Jogo): void {
 
   tela.lateral.aoTrocarCores = (ligadas) => cena.mostrarCoresDosPoderes(ligadas);
 
+  // Os nomes são montados uma vez e vivem escondidos: ligar não recria nada, só revela.
+  tela.rotulosMapa.desenhar(
+    atlas.provincias
+      .filter((p) => p.rotulo !== undefined)
+      .map((p) => ({
+        id: p.id,
+        nome: p.nome,
+        x: p.rotulo?.x ?? 0,
+        y: p.rotulo?.y ?? 0,
+        raio: p.rotulo?.raio ?? 0,
+        mar: p.mar === true,
+      })),
+  );
+  tela.lateral.aoTrocarNomes = (ligados) => tela.rotulosMapa.mostrar(ligados);
+
   // ⚠️ **O sujeito das relações troca por CLIQUE NO MAPA**, e é o pedido de Henrique ao pé da
   // letra: *"a cor de um reino que eu selecionar"*. Uma lista de dezessete nomes no painel
   // responderia a pergunta errada — a dele é sobre o mapa, e é no mapa que ela se aponta.

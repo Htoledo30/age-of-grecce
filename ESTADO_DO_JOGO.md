@@ -816,6 +816,41 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## O nome de cada província, escrito nela
+
+Pedido de Henrique: *"o nome de cada província deve ser escrito diretamente no mapa dentro de
+cada província"*. Interruptor **Nomes no mapa** no painel da direita, ao lado das cores e das
+relações.
+
+**Onde o nome vai.** Não no `centro` — o centroide, a média das coordenadas —, porque numa
+forma torta ele cai fora dela: medido, **15 das 244 províncias têm o centroide no vizinho ou
+no mar**, entre elas Ítaca, Melos e o Estreito de Salamina. O ponto é o **pólo de
+inacessibilidade**: o mais distante da borda, centro do maior círculo que cabe dentro da
+forma, sempre interno mesmo num C. É o que a cartografia digital usa para rotular área — o
+`polylabel` da Mapbox faz isso com busca em grade sobre o polígono —, e aqui sai **exato** de
+graça porque o mapa é raster: é o pixel de maior distância até a borda, duas varreduras de
+transformada de distância. `gerador/gerar-rotulos.ts` é aditivo: escreve só o JSON, não toca
+no PNG, e dispensa re-assar o mapa.
+
+⚠️ **A regra que resolve a poluição: rótulo de área só se desenha se COUBER na área naquele
+zoom.** É a regra dos renderizadores de mapa de verdade, e ela dá nível de detalhe **de
+graça** — o texto tem corpo fixo em pixels de tela, a província cresce com o zoom, então zoom
+baixo mostra só as grandes e zoom alto mostra todas. Nenhum limiar escrito à mão, nenhuma
+tabela de "aparece a partir de tanto". E dispensa detector de colisão: se cada nome cabe
+dentro da própria província, e províncias não se sobrepõem, dois nomes não podem se cruzar.
+
+**O que os outros fazem, e onde falham.** O Age of History 2 tem interruptor de nomes e faz
+aparecerem com o zoom; a queixa mais repetida dos jogadores é *"nomes e bandeiras grandes
+demais"*, e a resposta da comunidade é escolher uma escala de mapa menor — o jogo empurra o
+problema para o jogador. O EU4 põe "Display province names" como opção e tem o mesmo
+comportamento; o ponto fraco conhecido dele é o CONTRASTE, e há mods populares que só
+engrossam a fonte. As duas lições entraram: **é opção**, e o texto leva contorno próprio para
+sobreviver a um terreno que vai de verde a ocre a azul.
+
+⚠️ **Água em ITÁLICO** — convenção de cartografia com séculos de uso, e ela resolve de graça um
+problema que este mapa criou: desde que o mar virou zona com nome, "Mar de Esciros" e "Cálcis"
+são coisas de natureza diferente. O itálico e o azul dizem qual é qual sem uma palavra a mais.
+
 ## O mapa também responde "o que acham dele"
 
 Henrique: *"preciso saber qual a relação de um reino com outro reino (...) uma opção que

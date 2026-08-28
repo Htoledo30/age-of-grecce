@@ -54,12 +54,7 @@ de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com ac
 recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
 JSON e rodar `npm run partida`.
 
-⚠️ **PEDIDO ABERTO DELE, esperando a palavra: o NOME DE CADA PROVÍNCIA escrito no mapa,
-dentro dela.** Ele pediu junto com a queixa da ficha confusa e disse *"futuramente"* — não
-comece sem ele mandar. É trabalho de verdade: colocação do rótulo, nível de detalhe por zoom,
-colisão entre nomes e 244 províncias para desenhar.
-
-⚠️ **Fora isso, NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está riscada.** A
+⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está riscada.** A
 nacionalidade no humor, que era a última, entrou. A peça natural seguinte é a **ASSIMILAÇÃO**:
 hoje o povo conquistado nunca deixa de ser quem é, e o preço da conquista é permanente. Ela é
 decisão nova — não comece sem ele dizer.
@@ -140,6 +135,8 @@ interceptar travessia alheia.
 - **o acesso militar**: dá vontade de usar, ou é mais fácil declarar guerra e pronto?
 - **o modo de relações no mapa**: as seis cores se distinguem no terreno? trocar o escolhido por
   clique é o gesto certo?
+- **os nomes no mapa**: o corpo do texto é o certo? a regra do "só aparece se couber" mostra
+  nomes demais ou de menos no zoom em que ele joga? água em itálico se distingue de terra?
 - **a nacionalidade pesando**: conquistar a Eubeia jônia sai barato o bastante para valer a
   pena, e o Istmo dório sai caro o bastante para doer? O preço permanente frustra ou dá o
   formato de império que ele quer?

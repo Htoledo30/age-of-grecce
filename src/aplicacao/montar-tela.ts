@@ -21,6 +21,7 @@ import { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import { FimDeJogo } from '@/ui/fim-de-jogo';
 import { Governo } from '@/ui/governo';
+import { RotulosMapa } from '@/ui/rotulos-mapa';
 import { HostesMapa } from '@/ui/hostes-mapa';
 import { InicioJogo } from '@/ui/inicio-jogo';
 import { MarchasMapa } from '@/ui/marchas-mapa';
@@ -61,6 +62,9 @@ export function montarTela(
   const cercosMapa = new CercosMapa(ui);
   // Os marcadores ficam numa camada própria sobre o mapa, e não dentro de painel nenhum:
   // eles pertencem ao mundo, e é a câmera que decide onde cada um aparece.
+  // ⚠️ Os NOMES antes das hostes na ordem de montagem: o marcador de tropa tem de ficar por
+  // cima do nome da província, e não debaixo dele.
+  const rotulosMapa = new RotulosMapa(ui);
   const hostesMapa = new HostesMapa(ui);
   // A marcha é ILUSTRAÇÃO: a campanha já resolveu a rodada, e isto só atrasa a peça no
   // caminho pra que a ordem dada na rodada anterior aconteça diante do jogador.
@@ -121,6 +125,7 @@ export function montarTela(
     batalha,
     inicio,
     fimDeJogo,
+    rotulosMapa,
     hostesMapa,
     cercosMapa,
     marchasMapa,

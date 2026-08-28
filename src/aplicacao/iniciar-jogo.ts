@@ -106,6 +106,7 @@ export async function iniciarJogo(): Promise<void> {
     // peça junto. A marcha corre no relógio do quadro, ANTES de projetar: assim a peça já sai
     // deste quadro no ponto certo, em vez de ficar um quadro atrás.
     tela.animacaoDeMarcha.avancar(relogio.delta);
+    tela.rotulosMapa.posicionar(cena.camera);
     tela.cercosMapa.posicionar(cena.camera);
     tela.hostesMapa.posicionar(cena.camera);
     tela.marchasMapa.posicionar(cena.camera);
