@@ -36,4 +36,20 @@ export interface CampoNumerico {
   escrever(valor: number): void;
 }
 
+/** Uma linha compacta cujas três colunas são os níveis I, II e III. */
+export interface SerieNumerica {
+  aba: IdDaAba;
+  grupo: string;
+  nome: string;
+  descricao: string;
+  aplica: string;
+  campos: readonly [CampoNumerico, CampoNumerico, CampoNumerico];
+}
+
+export type ItemDoEditor = CampoNumerico | SerieNumerica;
+
+export function ehSerieNumerica(item: ItemDoEditor): item is SerieNumerica {
+  return 'campos' in item;
+}
+
 export type ValoresDoEditor = Readonly<Record<string, number>>;

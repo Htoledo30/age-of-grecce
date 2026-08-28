@@ -21,7 +21,7 @@ export const ABAS_DO_EDITOR: readonly AbaDoEditor[] = [
     descricao: 'Crescimento, faixas e consumo civil.',
     disponivel: true,
   },
-  { id: 'construcoes', nome: 'Construções', descricao: 'Preço, duração, folha e efeitos.', disponivel: false },
+  { id: 'construcoes', nome: 'Construções', descricao: 'Preço, duração, folha e efeitos.', disponivel: true },
   { id: 'ia', nome: 'IA', descricao: 'Economia, defesa e agressividade.', disponivel: false },
   { id: 'diplomacia', nome: 'Diplomacia', descricao: 'Relação, pactos, comércio e tributo.', disponivel: false },
   { id: 'provincias', nome: 'Províncias', descricao: 'Dados autorais de cada terra.', disponivel: false },

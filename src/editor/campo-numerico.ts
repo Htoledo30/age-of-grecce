@@ -8,6 +8,17 @@ export interface ControleNumerico {
   mudou(mudou: boolean): void;
 }
 
+export function normalizarValorDoCampo(campo: CampoNumerico, valorVisual: number): number {
+  const fator = campo.fatorVisual ?? 1;
+  const casas = 10 ** campo.casas;
+  const limitado = Math.min(campo.maximo * fator, Math.max(campo.minimo * fator, valorVisual));
+  return Math.round(limitado * casas) / casas / fator;
+}
+
+export function valorVisualDoCampo(campo: CampoNumerico, valor: number): string {
+  return (valor * (campo.fatorVisual ?? 1)).toFixed(campo.casas);
+}
+
 export function criarControleNumerico(
   campo: CampoNumerico,
   inicial: number,
@@ -46,23 +57,23 @@ export function criarControleNumerico(
   controle.append(menos, entrada, mais, unidade);
   linha.append(texto, controle);
 
-  const casas = 10 ** campo.casas;
-  const limitar = (valorVisual: number): number => {
-    const limitado = Math.min(campo.maximo * fator, Math.max(campo.minimo * fator, valorVisual));
-    return Math.round(limitado * casas) / casas / fator;
-  };
   const definir = (valor: number): void => {
-    entrada.value = (valor * fator).toFixed(campo.casas);
+    entrada.value = valorVisualDoCampo(campo, valor);
   };
   const deslocar = (direcao: number): void => {
-    definir(limitar((Number(entrada.value) || 0) + direcao * campo.passo * fator));
+    definir(
+      normalizarValorDoCampo(
+        campo,
+        (Number(entrada.value) || 0) + direcao * campo.passo * fator,
+      ),
+    );
     aoEditar();
   };
   menos.addEventListener('click', () => deslocar(-1));
   mais.addEventListener('click', () => deslocar(1));
   entrada.addEventListener('input', aoEditar);
   entrada.addEventListener('change', () => {
-    definir(limitar(Number(entrada.value)));
+    definir(normalizarValorDoCampo(campo, Number(entrada.value)));
     aoEditar();
   });
   definir(inicial);
@@ -70,7 +81,7 @@ export function criarControleNumerico(
   return {
     elemento: linha,
     campo,
-    valor: () => limitar(Number(entrada.value)),
+    valor: () => normalizarValorDoCampo(campo, Number(entrada.value)),
     definir,
     mudou: (mudou) => {
       linha.dataset['alterado'] = mudou ? 'sim' : 'nao';

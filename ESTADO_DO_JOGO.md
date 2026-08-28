@@ -1038,7 +1038,7 @@ faces continuam as mesmas; o que mudou foi corpo, peso, contraste e rasterizaç�
   etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
 - **O editor de balanceamento vive isolado em `src/editor/`.** F2 abre a ferramenta por cima
   do jogo e Esc fecha. A casca tem as dez abas planejadas, busca, alterações pendentes,
-  desfazer, restaurar e perfil persistido no navegador. Cinco abas estão funcionais:
+  desfazer, restaurar e perfil persistido no navegador. Seis abas estão funcionais:
   **Exército** reúne custo base, folha em casa/campanha, população protegida, milícia e
   multiplicadores de custo/comida das quatro armas; **Combate** reúne ritmo do choque,
   quebra, recuo, perseguição, ataque e aguento das armas, counter e preparação do cerco.
@@ -1047,11 +1047,15 @@ faces continuam as mesmas; o que mudou foi corpo, peso, contraste e rasterizaç�
   das cinco faixas; os limites aparecem como 15.000, 30.000 etc., embora o dado inclusivo
   interno termine em 14.999, 29.999 etc. **Economia** reúne as fontes de renda, arrecadação
   e humor dos quatro decretos de imposto e as curvas de corrupção por tamanho e distância;
-  imposto por habitante aparece na unidade legível de moedas por 1.000 pessoas. O editor
-  recusa um limiar de recuo igual ou posterior ao de quebra, faixas populacionais fora de
-  ordem, decretos com progressão invertida e uma distância desconectada menor que a meia
-  distância. Cada controle declara limites, passo, unidade, explicação e quando passa a
-  valer; nenhuma tela recebe acesso genérico ao JSON.
+  imposto por habitante aparece na unidade legível de moedas por 1.000 pessoas.
+  **Construções** reúne as regras gerais e as 18 obras por função; custo, duração,
+  manutenção e efeito numérico aparecem em linhas compactas com I, II e III lado a lado. O
+  mesmo perfil persistido altera `ajustes.json` e o catálogo validado de `construcoes.json`
+  antes de a campanha consultá-los. O editor recusa um limiar de recuo igual ou posterior ao
+  de quebra, faixas populacionais fora de ordem, decretos com progressão invertida, uma
+  distância desconectada menor que a meia distância e níveis de construção invertidos. Cada
+  controle declara limites, passo, unidade, explicação e quando passa a valer; nenhuma tela
+  recebe acesso genérico ao JSON.
 - `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
   `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/` e
   `estado/`; as perguntas ficam nas camadas de `campanha/fachada/`.

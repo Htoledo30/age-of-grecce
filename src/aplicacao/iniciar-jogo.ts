@@ -65,7 +65,7 @@ export async function iniciarJogo(): Promise<void> {
   const tela = montarTela(ui, cena.coresDosPoderes, audio);
   // Ferramenta isolada em `src/editor/`: fora dali o jogo só sabe que F2 alterna a janela.
   // O perfil salvo entra sobre os dados validados antes de a campanha começar a consultá-los.
-  const editor = new EditorDeBalanceamento(ui, ajustes.jogo);
+  const editor = new EditorDeBalanceamento(ui, ajustes.jogo, construcoes.construcoes);
 
   // O atlas é a geografia assada, indexada e imutável; a campanha é só as regras. Combate e
   // diplomacia vão ler o MESMO atlas, em vez de cada um montar o próprio índice.

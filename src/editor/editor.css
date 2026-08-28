@@ -252,6 +252,40 @@
   font-size: 11px;
 }
 
+.editor-balanceamento__niveis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.editor-balanceamento__nivel {
+  display: grid;
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+
+.editor-balanceamento__nivel[data-alterado='sim'] {
+  border-color: var(--ui-bronze-escuro);
+  background: var(--ui-pressionado);
+}
+
+.editor-balanceamento__nivel > span {
+  overflow: hidden;
+  color: var(--ui-texto-tenue);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.editor-balanceamento__nivel .editor-balanceamento__numero {
+  width: 100%;
+}
+
 .editor-balanceamento__espera {
   display: grid;
   place-content: center;

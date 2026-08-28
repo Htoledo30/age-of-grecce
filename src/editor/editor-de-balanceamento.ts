@@ -1,17 +1,27 @@
-import type { Ajustes } from '@/dados/esquema';
+import type { Ajustes, Construcoes } from '@/dados/esquema';
 import { ABAS_DO_EDITOR } from './abas';
+import { criarControleEmNiveis } from './campo-em-niveis';
 import { camposDaAlimentacao } from './catalogo-alimentacao';
 import { camposDoCombate } from './catalogo-combate';
+import { camposDasConstrucoes } from './catalogo-construcoes';
 import { camposDaEconomia } from './catalogo-economia';
 import { camposDoExercito } from './catalogo-exercito';
 import { camposDaPopulacao } from './catalogo-populacao';
 import { criarControleNumerico } from './campo-numerico';
 import type { ControleNumerico } from './campo-numerico';
 import { apagarPerfil, carregarPerfil, salvarPerfil } from './perfil-local';
-import type { AbaDoEditor, CampoNumerico, IdDaAba } from './tipos';
+import { ehSerieNumerica } from './tipos';
+import type { AbaDoEditor, CampoNumerico, IdDaAba, ItemDoEditor } from './tipos';
 import { erroNosValores } from './validacoes';
 
 type AjustesDoJogo = Ajustes['jogo'];
+type CatalogoDeConstrucoes = Construcoes['construcoes'];
+
+interface LinhaDoEditor {
+  elemento: HTMLElement;
+  campos: readonly CampoNumerico[];
+  texto: string;
+}
 
 /** A ferramenta de balanceamento do Henrique. F2 abre; Esc ou F2 fecham. */
 export class EditorDeBalanceamento {
@@ -23,22 +33,25 @@ export class EditorDeBalanceamento {
   private readonly busca = document.createElement('input');
   private readonly estado = document.createElement('span');
   private readonly controles: ControleNumerico[] = [];
+  private readonly linhas: LinhaDoEditor[] = [];
   private readonly padroes = new Map<string, number>();
   private aba: IdDaAba = 'exercito';
 
   /** A aplicação redesenha os números que já estiverem visíveis atrás da janela. */
   aoAplicar: () => void = () => {};
 
-  constructor(pai: HTMLElement, ajustes: AjustesDoJogo) {
+  constructor(pai: HTMLElement, ajustes: AjustesDoJogo, construcoes: CatalogoDeConstrucoes) {
     this.raiz.className = 'editor-balanceamento janela';
     this.raiz.hidden = true;
-    const campos = [
+    const itens: ItemDoEditor[] = [
       ...camposDoExercito(ajustes),
       ...camposDoCombate(ajustes),
       ...camposDaAlimentacao(ajustes),
       ...camposDaPopulacao(ajustes),
       ...camposDaEconomia(ajustes),
+      ...camposDasConstrucoes(ajustes, construcoes),
     ];
+    const campos = itens.flatMap((item) => (ehSerieNumerica(item) ? [...item.campos] : [item]));
     for (const campo of campos) this.padroes.set(campo.id, campo.ler());
 
     // O perfil entra sobre os dados validados, e antes de a campanha começar a consultá-los.
@@ -50,7 +63,7 @@ export class EditorDeBalanceamento {
 
     const janela = document.createElement('section');
     janela.className = 'editor-balanceamento__janela';
-    janela.append(this.montarCabecalho(), this.montarCorpo(campos), this.montarRodape());
+    janela.append(this.montarCabecalho(), this.montarCorpo(itens), this.montarRodape());
     this.raiz.appendChild(janela);
     pai.appendChild(this.raiz);
     this.mostrarAba('exercito');
@@ -112,7 +125,7 @@ export class EditorDeBalanceamento {
     return cabecalho;
   }
 
-  private montarCorpo(campos: readonly CampoNumerico[]): HTMLElement {
+  private montarCorpo(itens: readonly ItemDoEditor[]): HTMLElement {
     const corpo = document.createElement('div');
     corpo.className = 'editor-balanceamento__corpo';
     this.navegacao.className = 'editor-balanceamento__abas';
@@ -123,23 +136,39 @@ export class EditorDeBalanceamento {
     // exemplo. A tela agrupa pelo NOME, não pela posição, para produzir uma seção única com
     // Leves, Hoplitas, Arqueiros e Cavalaria alinhados embaixo do mesmo título.
     const grupos = new Map<string, HTMLElement>();
-    for (const campo of campos) {
-      const chaveDoGrupo = `${campo.aba}:${campo.grupo}`;
+    for (const item of itens) {
+      const chaveDoGrupo = `${item.aba}:${item.grupo}`;
       let secao = grupos.get(chaveDoGrupo);
       if (!secao) {
         secao = document.createElement('section');
         secao.className = 'editor-balanceamento__grupo';
-        secao.dataset['grupo'] = campo.grupo.toLocaleLowerCase('pt-BR');
-        secao.dataset['aba'] = campo.aba;
+        secao.dataset['grupo'] = item.grupo.toLocaleLowerCase('pt-BR');
+        secao.dataset['aba'] = item.aba;
         const titulo = document.createElement('h3');
-        titulo.textContent = campo.grupo;
+        titulo.textContent = item.grupo;
         secao.appendChild(titulo);
         this.conteudo.appendChild(secao);
         grupos.set(chaveDoGrupo, secao);
       }
-      const controle = criarControleNumerico(campo, campo.ler(), () => this.atualizarEstado());
-      this.controles.push(controle);
-      secao.appendChild(controle.elemento);
+      if (ehSerieNumerica(item)) {
+        const serie = criarControleEmNiveis(item, () => this.atualizarEstado());
+        this.controles.push(...serie.controles);
+        this.linhas.push({
+          elemento: serie.elemento,
+          campos: item.campos,
+          texto: `${item.nome} ${item.descricao} ${item.grupo}`,
+        });
+        secao.appendChild(serie.elemento);
+      } else {
+        const controle = criarControleNumerico(item, item.ler(), () => this.atualizarEstado());
+        this.controles.push(controle);
+        this.linhas.push({
+          elemento: controle.elemento,
+          campos: [item],
+          texto: `${item.nome} ${item.descricao} ${item.grupo}`,
+        });
+        secao.appendChild(controle.elemento);
+      }
     }
     corpo.append(this.navegacao, this.conteudo);
     return corpo;
@@ -214,13 +243,11 @@ export class EditorDeBalanceamento {
 
   private filtrar(): void {
     const termo = this.busca.value.trim().toLocaleLowerCase('pt-BR');
-    for (const controle of this.controles) {
-      if (controle.campo.aba !== this.aba) {
-        controle.elemento.hidden = true;
-        continue;
-      }
-      const texto = `${controle.campo.nome} ${controle.campo.descricao} ${controle.campo.grupo}`.toLocaleLowerCase('pt-BR');
-      controle.elemento.hidden = termo.length > 0 && !texto.includes(termo);
+    for (const linha of this.linhas) {
+      const pertenceAAba = linha.campos.some((campo) => campo.aba === this.aba);
+      linha.elemento.hidden =
+        !pertenceAAba ||
+        (termo.length > 0 && !linha.texto.toLocaleLowerCase('pt-BR').includes(termo));
     }
     for (const grupo of this.conteudo.querySelectorAll<HTMLElement>('.editor-balanceamento__grupo')) {
       grupo.hidden =

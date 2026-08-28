@@ -49,5 +49,34 @@ export function erroNosValores(valores: ValoresDoEditor): string | null {
     return 'Uma província sem caminho não pode parecer mais próxima que a meia distância.';
   }
 
+  const escalaMinima = valores['construcoes.escalaMinima'];
+  const escalaMaxima = valores['construcoes.escalaMaxima'];
+  if (escalaMinima !== undefined && escalaMaxima !== undefined && escalaMinima > escalaMaxima) {
+    return 'A menor escala de preço não pode ultrapassar a maior.';
+  }
+
+  const series = new Map<string, { direcao: 'crescente' | 'decrescente'; valores: number[] }>();
+  for (const [id, valor] of Object.entries(valores)) {
+    const resultado = /^(construcoes\.catalogo\..+\.(crescente|decrescente))\.(\d)$/.exec(id);
+    const chave = resultado?.[1];
+    const direcao = resultado?.[2];
+    const nivel = resultado?.[3];
+    if (!chave || (direcao !== 'crescente' && direcao !== 'decrescente') || nivel === undefined) {
+      continue;
+    }
+    const serie = series.get(chave) ?? { direcao, valores: [] };
+    serie.valores[Number(nivel)] = valor;
+    series.set(chave, serie);
+  }
+  for (const serie of series.values()) {
+    for (let indice = 1; indice < serie.valores.length; indice++) {
+      const anterior = serie.valores[indice - 1];
+      const atual = serie.valores[indice];
+      if (anterior === undefined || atual === undefined) continue;
+      const inverteu = serie.direcao === 'crescente' ? atual < anterior : atual > anterior;
+      if (inverteu) return 'Os níveis I, II e III das construções precisam seguir a ordem.';
+    }
+  }
+
   return null;
 }
