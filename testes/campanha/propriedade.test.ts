@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ajustes, atlas, construcoes, novaCampanha as nova } from '../apoio/mundo';
+import { ajustes, atlas, construcoes, novaCampanhaFarta as nova } from '../apoio/mundo';
 
 describe('o saldo completo da província: renda menos a tropa nascida nela', () => {
   it('a leva em formação ainda não pesa; a hoste ativa pesa na terra NATAL', () => {

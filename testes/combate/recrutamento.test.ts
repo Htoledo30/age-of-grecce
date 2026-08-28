@@ -9,7 +9,7 @@ import {
   maximoDaLeva,
 } from '../../src/combate/recrutamento';
 import { unicaEm } from '../apoio/hostes';
-import { ajustes, novaCampanha as nova } from '../apoio/mundo';
+import { ajustes, novaCampanhaFarta as nova } from '../apoio/mundo';
 import { comQuartel } from './apoio';
 
 const combate = ajustes.combate;

@@ -1,7 +1,11 @@
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
 
+import { gravarBalanco } from './ferramentas/vite-gravar-balanco';
+
 export default defineConfig({
+  // A ponte do editor de balanceamento (F2) para `dados/*.json`. Só no `npm run dev`.
+  plugins: [gravarBalanco()],
   // caminhos relativos: necessário pro Electron carregar o build via file://
   base: './',
   // o mapa fixo vive aqui e é copiado sem transformação para o jogo empacotado

@@ -11,10 +11,24 @@ import {
   retiradasEscolhidas,
 } from '../../src/ia/guerra/marchar';
 import { oportunidadesDe } from '../../src/ia/percepcao/oportunidade';
-import { ajustes, correrIA, ia, novaCampanha } from '../apoio/mundo';
+import { ajustes, correrIA, ia, novaCampanha, novaCampanhaFarta } from '../apoio/mundo';
 
 const nova = (jogador = 'atenas') => {
   const c = novaCampanha();
+  c.comecar(jogador);
+  return c;
+};
+
+/**
+ * A mesma coisa com a comida fora do caminho, para quem compara ARMAS e não despensas.
+ *
+ * ⚠️ Existe por um caso só, e ele é instrutivo: a surtida de 501 leves contra 500. Com a
+ * comida apertada, Atenas no turno 1 sustenta 500 homens — os 501 do teste passam fome, o
+ * quingentésimo primeiro morre, e a comparação que o teste queria fazer nunca acontece. O
+ * cenário perderia o ponto por um homem.
+ */
+const novaFarta = (jogador = 'atenas') => {
+  const c = novaCampanhaFarta();
   c.comecar(jogador);
   return c;
 };
@@ -463,7 +477,7 @@ describe('os buracos que a auditoria apontou', () => {
     // vale 1,33 em campo contra 1,00 do leve. A guarnição saía para morrer fora do muro.
     // Agora a previsão roda a MESMA função que decide a batalha.
     const comArma = (arma: 'leve' | 'arqueiro') => {
-      const c = nova('megara');
+      const c = novaFarta('megara');
       c.darOuro(400_000, 'megara');
       c.plantarHoste('atenas', 'atenas', 501, 'leve');
       // O cerco tem de ser DE VERDADE: sentar é o que cria o estado que a surtida pergunta.

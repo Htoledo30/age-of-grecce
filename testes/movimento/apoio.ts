@@ -11,14 +11,15 @@ import { Atlas } from '../../src/mundo/atlas';
 import { exercitoVazio, somarLeva } from '../../src/combate/exercito';
 import type { Exercito } from '../../src/combate/exercito';
 import type { EstadoDaResolucao } from '../../src/movimento/resolucao/relatorio';
-import { ajustes, construcoes, economia, exercitos, provincias } from '../apoio/mundo';
+import { ajustes, ajustesFartos, construcoes, economia, exercitos, provincias } from '../apoio/mundo';
 
 export const SALTOS = ajustes.combate.saltosPorRodada;
 export const combateComDoisSaltos = { ...ajustes.combate, saltosPorRodada: 2 };
 
 /** Atenas com Quartel e tropa em pé. `darOuro` é o gancho de desenvolvimento. */
 export function comHoste(homens = 1000, onde = 'atenas'): Campanha {
-  const c = new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
+  // Comida fora do caminho: marcha não é assunto de despensa. Ver `ajustesFartos`.
+  const c = new Campanha(new Atlas(provincias), economia, construcoes, ajustesFartos, exercitos);
   c.comecar('atenas');
   c.darOuro(60_000);
   c.construir(onde, 'quartel');

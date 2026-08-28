@@ -8,10 +8,10 @@
  */
 
 import type { Campanha } from '../../src/campanha/campanha';
-import { novaCampanha } from '../apoio/mundo';
+import { novaCampanhaFarta } from '../apoio/mundo';
 
 export function contraEleusis(homens: number): Campanha {
-  const c = novaCampanha();
+  const c = novaCampanhaFarta();
   c.comecar('atenas');
   c.darOuro(200_000);
   c.plantarHoste('atenas', 'atenas', homens);

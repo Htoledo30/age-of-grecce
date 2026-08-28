@@ -15,7 +15,7 @@
             "humor": 12
           },
           "normal": {
-            "fator": 1.0,
+            "fator": 1,
             "humor": 0
           },
           "alto": {
@@ -23,7 +23,7 @@
             "humor": -10
           },
           "confisco": {
-            "fator": 3.0,
+            "fator": 3,
             "humor": -25
           }
         }
@@ -167,7 +167,7 @@
     },
     "alimento": {
       "subsistenciaPorReino": 2,
-      "soldadosPorPonto": 3000,
+      "soldadosPorPonto": 500,
       "mortePorFome": 0.01,
       "mortePorFomeNaTropa": 0.05,
       "cerco": {
@@ -288,7 +288,7 @@
     }
   },
   "camera": {
-    "zoomMaximo": 1.0,
+    "zoomMaximo": 1,
     "velocidadeLivre": 900,
     "passoDaRoda": 1.18
   },
@@ -296,7 +296,7 @@
     "opacidade": 0.55,
     "corFronteira": "#3a2f26",
     "forcaFronteira": 0.9,
-    "larguraDaLinha": 2.0,
+    "larguraDaLinha": 2,
     "corSelecao": "#f0e2bd",
     "forcaSelecao": 0.5,
     "forcaDoMar": 0.4

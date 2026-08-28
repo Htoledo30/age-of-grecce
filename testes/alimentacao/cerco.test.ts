@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { custoMilitar, mortosPelaFome } from '../../src/producao/alimentacao';
 import { ordenar } from '../apoio/hostes';
 import { ajustes, construcoes } from '../apoio/mundo';
-import { nova } from './apoio';
+import { nova, novaFarta } from './apoio';
 
 describe('a cidade sitiada vive da própria despensa, fora da circulação', () => {
   it('o cerco zera também os pontos das construções alimentares, não só os da terra', () => {
@@ -55,7 +55,12 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
     // do reino nem derreter o exército do jogador no mapa todo. A sitiada sai da
     // circulação — não contribui, não pesa — e paga só o próprio relógio.
     const campanha = nova();
-    campanha.plantarHoste('sounion', 'atenas', 2000);
+    // ⚠️ A hoste é do TAMANHO DE UM PONTO de comida, e não um número redondo: ela está aqui
+    // para o exército aparecer na conta (`saldo = saldoCivil − exercito`), não para derrubá-la.
+    // Escrita como 2.000 fixos, ela quebrava no dia em que um ponto passou a sustentar 500
+    // homens em vez de 3.000 — e quebrava por fome nacional, que é exatamente o que este teste
+    // afirma não acontecer.
+    campanha.plantarHoste('sounion', 'atenas', ajustes.alimento.soldadosPorPonto);
     campanha.plantarHoste('tanagra', 'tanagra', 500);
     ordenar(campanha, 'tanagra', 'atenas', 500, 'tanagra', 'sitiar');
     campanha.passarTurno(); // o cerco se assenta
@@ -88,7 +93,7 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
     expect(campanha.populacaoDe('maratona')).toBeGreaterThanOrEqual(popMaratona);
     expect(campanha.populacaoDe('sounion')).toBeGreaterThanOrEqual(popSounion);
     // ...e o exército longe do cerco não perde um homem.
-    expect(campanha.forcaEm('sounion', 'atenas')).toBe(2000);
+    expect(campanha.forcaEm('sounion', 'atenas')).toBe(ajustes.alimento.soldadosPorPonto);
     expect(campanha.fome.tropas).toEqual([]);
   });
 
@@ -152,7 +157,9 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
   });
 
   it('a guarnição sitiada definha no fim do relógio, e o sitiante não perde nada nunca', () => {
-    const campanha = nova();
+    // ⚠️ `novaFarta`: aqui o assunto é o relógio da praça, e a fome NACIONAL só faria o
+    // sitiante encolher por outro motivo — arruinando a última linha, que é o ponto do teste.
+    const campanha = novaFarta();
     campanha.darOuro(100_000);
     campanha.plantarHoste('eleusis', 'eleusis', 500); // a guarnição que vai definhar
     campanha.plantarHoste('atenas', 'atenas', 1000);

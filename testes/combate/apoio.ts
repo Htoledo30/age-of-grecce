@@ -8,10 +8,10 @@
  */
 
 import type { Campanha } from '../../src/campanha/campanha';
-import { novaCampanha } from '../apoio/mundo';
+import { novaCampanhaFarta } from '../apoio/mundo';
 
 export function comQuartel(): Campanha {
-  const c = novaCampanha();
+  const c = novaCampanhaFarta();
   c.comecar('atenas');
   for (let i = 0; i < 3; i++) c.passarTurno(); // junta as 5.000 do Quartel
   c.construir('atenas', 'quartel');

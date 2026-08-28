@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Campanha } from '../../src/campanha/campanha';
 import { ordenar } from '../apoio/hostes';
-import { ajustes, construcoes, novaCampanha as nova } from '../apoio/mundo';
+import { ajustes, construcoes, novaCampanhaFarta as nova } from '../apoio/mundo';
 
 const cercoAjustes = ajustes.combate.cerco;
 

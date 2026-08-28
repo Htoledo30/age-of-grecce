@@ -7,6 +7,7 @@ import { Campanha } from '../src/campanha/campanha';
 import { Atlas } from '../src/mundo/atlas';
 import { miliciaDe, mortosDaMilicia } from '../src/combate/milicia';
 import { ordenar } from './apoio/hostes';
+import { ajustesFartos } from './apoio/mundo';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -21,7 +22,8 @@ const catalogo = construcoes.construcoes;
 const combate = ajustes.combate;
 
 function nova(): Campanha {
-  return new Campanha(new Atlas(provincias), economia, construcoes, ajustes, exercitos);
+  // Comida fora do caminho: milícia não é assunto de despensa. Ver `ajustesFartos`.
+  return new Campanha(new Atlas(provincias), economia, construcoes, ajustesFartos, exercitos);
 }
 
 /** Atenas com Quartel e tropa em pé. `darOuro` é o gancho de desenvolvimento. */

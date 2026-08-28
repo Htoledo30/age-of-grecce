@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Campanha } from '../../src/campanha/campanha';
 import { forcaDe } from '../../src/combate/exercito';
 import { ordenar } from '../apoio/hostes';
-import { novaCampanha as nova } from '../apoio/mundo';
+import { novaCampanhaFarta as nova } from '../apoio/mundo';
 import { contraEleusis } from './apoio';
 
 describe('SITIAR NÃO É LUTAR: o sitiante acampa ao lado da guarnição', () => {

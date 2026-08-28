@@ -9,6 +9,7 @@ import { camposDoExercito } from './catalogo-exercito';
 import { camposDaPopulacao } from './catalogo-populacao';
 import { criarControleNumerico } from './campo-numerico';
 import type { ControleNumerico } from './campo-numerico';
+import { gravarNoDisco } from './gravar-no-disco';
 import { apagarPerfil, carregarPerfil, salvarPerfil } from './perfil-local';
 import { ehSerieNumerica } from './tipos';
 import type { AbaDoEditor, CampoNumerico, IdDaAba, ItemDoEditor } from './tipos';
@@ -40,7 +41,18 @@ export class EditorDeBalanceamento {
   /** A aplicação redesenha os números que já estiverem visíveis atrás da janela. */
   aoAplicar: () => void = () => {};
 
+  /**
+   * Os mesmos objetos que o jogo consulta enquanto se joga, já com o que foi aplicado.
+   *
+   * ⚠️ Guardados porque são ELES que vão para o disco: gravar o objeto pronto dispensa um mapa
+   * de "id do campo → caminho no JSON", que envelheceria torto a cada campo novo do editor.
+   */
+  private readonly ajustesDoJogo: AjustesDoJogo;
+  private readonly catalogoDeConstrucoes: CatalogoDeConstrucoes;
+
   constructor(pai: HTMLElement, ajustes: AjustesDoJogo, construcoes: CatalogoDeConstrucoes) {
+    this.ajustesDoJogo = ajustes;
+    this.catalogoDeConstrucoes = construcoes;
     this.raiz.className = 'editor-balanceamento janela';
     this.raiz.hidden = true;
     const itens: ItemDoEditor[] = [
@@ -183,6 +195,7 @@ export class EditorDeBalanceamento {
     acoes.append(
       this.botaoDeAcao('Desfazer', () => this.desfazer()),
       this.botaoDeAcao('Restaurar padrões', () => this.restaurar()),
+      this.botaoDeAcao('Gravar em dados/', () => void this.gravar()),
       this.botaoDeAcao('Aplicar alterações', () => this.aplicar(), true),
     );
     rodape.append(this.estado, acoes);
@@ -278,6 +291,28 @@ export class EditorDeBalanceamento {
     else apagarPerfil();
     this.atualizarEstado();
     this.aoAplicar();
+  }
+
+  /**
+   * Aplica e escreve em `dados/*.json`, pelo servidor de desenvolvimento.
+   *
+   * ⚠️ **Aplica primeiro, sempre.** Gravar o que está na tela sem passar pelo `aplicar` poria
+   * no arquivo um número que o jogo nunca chegou a usar — e pior, um que a validação cruzada
+   * de `erroNosValores` não viu. O disco recebe o que a partida está rodando, e nada além.
+   *
+   * ⚠️ **E o perfil do navegador é APAGADO quando a gravação dá certo.** Ele existia para
+   * segurar valores que não tinham para onde ir; agora eles estão no arquivo. Deixá-lo ali
+   * seria uma armadilha silenciosa: no dia em que alguém editasse `dados/ajustes.json` na mão,
+   * o perfil velho voltaria por cima e o arquivo pareceria não ter efeito.
+   */
+  private async gravar(): Promise<void> {
+    this.aplicar();
+    if (this.estado.dataset['pendente'] === 'erro') return;
+    this.estado.textContent = 'Gravando…';
+    const resultado = await gravarNoDisco(this.ajustesDoJogo, this.catalogoDeConstrucoes);
+    if (resultado.ok) apagarPerfil();
+    this.estado.textContent = resultado.frase;
+    this.estado.dataset['pendente'] = resultado.ok ? 'nao' : 'erro';
   }
 
   private desfazer(): void {

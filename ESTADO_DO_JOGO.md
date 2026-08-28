@@ -816,6 +816,73 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## O editor de balanceamento passa a escrever nos dados
+
+Henrique, ao descobrir para onde iam os números que ele afinava: *"uai, quando eu mudo no
+editor que o chat criou não muda no repositório?"* — e a resposta era não. O editor (F2) fazia
+a parte difícil, que é mexer no número e ver o jogo responder na hora, sem recarregar; o que
+faltava era a saída. Os valores viviam em `localStorage`, então **não iam para o git, não iam
+para a outra máquina, e nenhuma ferramenta os enxergava** — `npm run partida`, os testes e o
+`npm run economia` leem `dados/*.json`.
+
+Agora o rodapé do editor tem **"Gravar em dados/"**, e ele grava de verdade:
+`ferramentas/vite-gravar-balanco.ts` é um plugin do vite que recebe os ajustes já mexidos e
+reescreve `dados/ajustes.json` e `dados/construcoes.json`. Daí em diante é arquivo como
+qualquer outro — entra no `git diff`, viaja no `git push`.
+
+⚠️ **Só durante o `npm run dev`.** `apply: 'serve'` mantém a rota fora do `vite build`: o jogo
+empacotado não carrega nada que escreva em disco. Fora do desenvolvimento o botão responde
+*"Gravar em disco só funciona no npm run dev"*, e não um erro de parser.
+
+⚠️ **E ele valida antes de escrever, com o mesmo esquema que o jogo usa para carregar.** Um
+editor capaz de corromper os dados é pior que nenhum editor. Se o Zod recusar, nada é escrito e
+o motivo volta em uma linha legível — `alimento.soldadosPorPonto: esperava número`, e não o
+despejo cru do erro.
+
+⚠️ **Grava o OBJETO, e não uma lista de campos.** O editor já mantém `ajustes.jogo` e
+`construcoes.construcoes` mexidos em memória; mandar o objeto pronto dispensa um mapa de "id do
+campo → caminho no JSON", que é o tipo de tabela paralela que envelhece torto quando alguém
+acrescenta um campo de um lado e esquece do outro. Isso se apoia numa propriedade que agora tem
+teste em `testes/dados.test.ts`: **a ida e volta pelo esquema não perde um campo sequer.** O
+Zod descarta chave que não conhece, então dado novo no JSON sem entrada no esquema sobreviveria
+a carregar o jogo e sumiria na primeira gravação — o teste é o alarme.
+
+Detalhe que aparece uma vez só: `JSON.stringify` normaliza `1.0` para `1`. A primeira gravação
+mexe em quatro linhas do `ajustes.json` por isso, e nunca mais.
+
+## Um ponto de comida passou a sustentar 500 soldados, e não 3.000
+
+Decisão de Henrique depois de afinar no editor. `alimento.soldadosPorPonto` foi de 3.000 para
+**500**: a comida deixa de ser um teto distante e vira o gargalo de verdade.
+
+⚠️ **O que isso significa no turno 1, e é a parte que surpreende: Atenas sustenta 500 homens.**
+Medido em todo o mapa, o jogador começa com o saldo alimentar mais APERTADO de todos — 1 ponto,
+contra 6 de Mégara e 5 de Argos e Tebas. Erguer exército passa a exigir erguer a lavoura antes.
+
+O mundo, porém, ficou mais saudável, e não menos — porque a IA aprendeu a plantar antes (ver a
+seção seguinte). `npm run partida 100`, comparado com o antigo 3.000:
+
+| | 3.000/ponto | **500/ponto** |
+|---|---|---|
+| turnos com fome em algum lugar | 3 | **0** |
+| turnos com a tropa passando fome | 29 | **3** |
+| homens em armas no mapa | 19.958 | **20.167** |
+| poderes varridos de 18 | 6 | **6** |
+| distância entre o maior e o menor | 11,0× | **8,5×** |
+
+⚠️ **E 25 testes ficaram vermelhos de uma vez, em 11 arquivos — nenhum deles sobre comida.**
+Eram folha militar, marcha, cerco, dispensa, milícia: todos plantavam mil homens em Atenas, que
+a 500 já não os alimenta, e passaram a medir fome sem querer. A correção não foi encolher os
+exércitos dos testes, e sim tirar a comida da equação onde ela não é o assunto:
+`testes/apoio/mundo.ts` ganhou `ajustesFartos` e `novaCampanhaFarta`, e quem testa comida
+continua nos ajustes de verdade.
+
+⚠️ **Um deles estava verde pelo motivo errado, e só o andaime revelou.** O teste da deserção
+alistava 3.500 homens e afirmava que eles desertavam por falta de pagamento — mas 3.500 homens
+custam 350 por turno contra 774 de renda de Atenas, folgadíssimo. Quem encolhia aquele exército
+era a FOME. Agora ele recruta **até a folha passar da renda**, derivado e não escrito à mão, e
+mede o mecanismo que diz medir.
+
 ## A IA e a comida: ela planta para crescer, ou planta por emergência?
 
 Pergunta de Henrique depois de mexer no balanço: *"uma config que eu gostei foi exército a

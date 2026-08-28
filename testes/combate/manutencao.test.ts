@@ -74,8 +74,25 @@ describe('manter tropa é o ralo de dinheiro', () => {
 
   it('o aperto drena o tesouro e a tropa deserta aos poucos, sem colapso', () => {
     const c = comQuartel();
-    c.recrutar('atenas', 3500);
-    c.passarTurno();
+    /**
+     * ⚠️ **Recruta até a FOLHA PASSAR DA RENDA, e não um número redondo escrito à mão.**
+     * A versão anterior alistava 3.500 e afirmava que eles desertavam — e a afirmação era
+     * verdadeira pelo motivo errado: 3.500 homens custam 350 por turno contra os 774 de renda
+     * de Atenas, folgadíssimo. Quem encolhia aquele exército era a FOME, não a deserção. Isso
+     * só apareceu quando a comida saiu do caminho neste arquivo; enquanto ela estava lá, o
+     * teste passava verde medindo o mecanismo errado.
+     *
+     * Agora ele monta a condição que diz medir. E derivada, não escrita: no dia em que a renda
+     * de Atenas ou a taxa por homem mudarem, o teste continua montando o mesmo aperto.
+     */
+    while (c.manutencao <= c.renda) {
+      const leva = c.maximoParaLevaEm('atenas', 'leve');
+      if (leva <= 0) break;
+      c.darOuro(20_000);
+      c.recrutar('atenas', leva);
+      c.passarTurno();
+    }
+    expect(c.manutencao).toBeGreaterThan(c.renda);
     const forcaInicial = c.forcaEm('atenas');
 
     // O tesouro escorre até não cobrir a folha, e aí começa a desertar. Não existe

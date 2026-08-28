@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { unicaEm } from '../apoio/hostes';
-import { ajustes, novaCampanha as nova } from '../apoio/mundo';
+import { ajustes, novaCampanhaFarta as nova } from '../apoio/mundo';
 import { comQuartel } from './apoio';
 
 describe('conquista e tropa', () => {

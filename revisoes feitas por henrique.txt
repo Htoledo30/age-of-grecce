@@ -314,3 +314,36 @@ mais comida para poder criar mais exercito? Ela se importa com isso?
      O numero novo (alimentoNoGargalo) esta em dados/ia.json, um por estilo — da para mexer
      no editor de balanceamento como os outros.
 
+uai quando eu mudo no editor que o chat criou nao muda no repositorio? / oxi que merda o editor entao
+   → ERA VERDADE, e agora nao e mais. O editor gravava so no localStorage do navegador: nao
+     ia pro git, nao ia pro notebook, e NENHUMA ferramenta via (partida, testes e economia
+     leem dados/*.json). Era por isso que eu media o teu 500 por override.
+     Agora o rodape do editor tem "Gravar em dados/", e ele escreve o arquivo de verdade.
+     Tu mexe, joga, gosta, aperta gravar — e o numero esta em dados/ajustes.json pronto pra
+     commitar. So funciona no npm run dev (o jogo empacotado nao carrega rota que escreve em
+     disco), e ele VALIDA antes de gravar: se o numero contradiz o esquema, nada e escrito e
+     o motivo aparece em uma linha, tipo "alimento.soldadosPorPonto: esperava numero".
+     A aba "Perfis" continua desligada — quem faz ela e a outra sessao; eu so abri a porta.
+
+   → E O 500 VIROU O PADRAO DO REPOSITORIO, como tu mandou.
+     ⚠️ Mas tem uma coisa que tu precisa saber, e eu so descobri medindo: NO TURNO 1, ATENAS
+     SUSTENTA 500 HOMENS. Exatamente 500. Tu comeca com o saldo alimentar mais apertado do
+     mapa inteiro — 1 ponto, contra 6 de Megara, 5 de Argos e 5 de Tebas. Erguer exercito
+     agora exige erguer lavoura antes. Se achar apertado demais, e um numero so, e agora tu
+     mesmo muda pelo editor e grava.
+     O mundo ficou MAIS saudavel, nao menos, porque a IA aprendeu a plantar antes:
+       npm run partida 100      3.000/ponto → 500/ponto
+       turnos com fome ........ 3 → 0
+       tropa passando fome .... 29 → 3
+       homens em armas ........ 19.958 → 20.167
+       poderes varridos de 18 . 6 → 6
+       maior contra o menor ... 11,0x → 8,5x
+     ⚠️ E 25 testes ficaram vermelhos de uma vez, em 11 arquivos, nenhum deles sobre comida —
+     folha militar, marcha, cerco, dispensa, milicia. Todos plantavam mil homens em Atenas e
+     passaram a medir fome sem querer. Consertei tirando a comida do caminho onde ela nao e o
+     assunto, e nao encolhendo os exercitos dos testes.
+     Um deles estava VERDE PELO MOTIVO ERRADO, e so apareceu agora: o teste da desercao
+     alistava 3.500 homens e dizia que eles desertavam por falta de pagamento — mas 3.500
+     homens custam 350 por turno contra 774 de renda de Atenas. Quem encolhia aquele exercito
+     era a fome. Agora ele recruta ate a folha passar da renda e mede o que diz medir.
+

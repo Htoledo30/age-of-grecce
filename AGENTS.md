@@ -175,6 +175,20 @@ Simulação mede relações e regressões; não substitui a sensação da partid
 - Chame revisão adicional somente sob demanda ou em mudança grande de combate, economia ou
   matemática.
 
+## O balanço vive nos dados, e o editor agora escreve neles
+
+Os números de balanço ficam em `dados/*.json`. Henrique afina pelo **editor (F2)** durante a
+partida, e desde a ponte nova o botão **"Gravar em dados/"** escreve o arquivo de verdade
+durante o `npm run dev` — ver `ferramentas/vite-gravar-balanco.ts`. O que ele salvar aparece
+no `git diff` como qualquer edição, e é assim que uma decisão de balanço dele chega aqui.
+
+⚠️ **Teste que não é sobre comida usa `novaCampanhaFarta`.** Quando `soldadosPorPonto` desceu
+de 3.000 para 500, 25 testes em 11 arquivos ficaram vermelhos e nenhum era sobre alimentação:
+todos plantavam mil homens em Atenas, que é a terra mais apertada do mapa no turno 1, e
+passavam a medir fome sem querer. `testes/apoio/mundo.ts` tem `ajustesFartos` e
+`novaCampanhaFarta` para isso. Quem testa comida usa `novaCampanha` e os ajustes de verdade —
+é lá que a régua tem de doer.
+
 ## Coesão do código
 
 Um arquivo deve ter um assunto. Tamanho é apenas um alerta: um catálogo ou arquivo de dados
