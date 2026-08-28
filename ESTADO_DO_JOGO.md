@@ -990,13 +990,15 @@ faces continuam as mesmas; o que mudou foi corpo, peso, contraste e rasterizaç�
   etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
 - **O editor de balanceamento vive isolado em `src/editor/`.** F2 abre a ferramenta por cima
   do jogo e Esc fecha. A casca tem as dez abas planejadas, busca, alterações pendentes,
-  desfazer, restaurar e perfil persistido no navegador. Duas abas estão funcionais:
+  desfazer, restaurar e perfil persistido no navegador. Três abas estão funcionais:
   **Exército** reúne custo base, folha em casa/campanha, população protegida, milícia e
   multiplicadores de custo/comida das quatro armas; **Combate** reúne ritmo do choque,
   quebra, recuo, perseguição, ataque e aguento das armas, counter e preparação do cerco.
-  O editor recusa um limiar de recuo igual ou posterior ao de quebra. Cada controle declara
-  limites, passo, unidade, explicação e quando passa a valer; nenhuma tela recebe acesso
-  genérico ao JSON.
+  **Alimentação** reúne subsistência do reino, consumo militar, mortalidade da fome e
+  mantimentos de cidade sitiada; faixas e crescimento permanecem juntos na futura aba
+  População. O editor recusa um limiar de recuo igual ou posterior ao de quebra. Cada
+  controle declara limites, passo, unidade, explicação e quando passa a valer; nenhuma tela
+  recebe acesso genérico ao JSON.
 - `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
   `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/` e
   `estado/`; as perguntas ficam nas camadas de `campanha/fachada/`.

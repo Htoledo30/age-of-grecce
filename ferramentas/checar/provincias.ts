@@ -1,6 +1,6 @@
 /**
- * O recorte político só é confiável se três coisas fecharem: **todo dono existe, todo índice
- * é único, e toda vizinha aponta pra província que existe.**
+ * O recorte político só é confiável se três coisas fecharem: **todo dono de terra existe,
+ * todo índice é único, e toda vizinha aponta pra província que existe.** O mar é neutro.
  *
  * Índice repetido é o pior deles — duas províncias dividindo cor e caindo juntas numa
  * conquista só, sem nada no jogo dando sinal de que há um problema nos dados.
@@ -44,7 +44,7 @@ export function checarProvincias(mapa: MapaGerado | null): void {
       reclamar(`provincias.json: índice ${p.indice} repetido em "${p.nome}"`);
     }
     indices.add(p.indice);
-    if (!poderes.has(p.dono)) {
+    if (p.mar !== true && !poderes.has(p.dono)) {
       reclamar(`provincias.json: "${p.nome}" tem dono inexistente "${p.dono}"`);
     }
     for (const v of p.vizinhas) {
@@ -59,7 +59,7 @@ export function checarProvincias(mapa: MapaGerado | null): void {
     reclamar(`provincias.json: ${semArea} província(s) sem um pixel sequer no mapa`);
   }
 
-  const donos = new Set(dados.provincias.map((p) => p.dono));
+  const donos = new Set(dados.provincias.filter((p) => p.mar !== true).map((p) => p.dono));
   const orfaos = [...poderes].filter((d) => !donos.has(d));
   if (orfaos.length > 0) {
     reclamar(`provincias.json: poder sem nenhuma província: ${orfaos.join(', ')}`);

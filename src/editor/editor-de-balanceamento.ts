@@ -1,5 +1,6 @@
 import type { Ajustes } from '@/dados/esquema';
 import { ABAS_DO_EDITOR } from './abas';
+import { camposDaAlimentacao } from './catalogo-alimentacao';
 import { camposDoCombate } from './catalogo-combate';
 import { camposDoExercito } from './catalogo-exercito';
 import { criarControleNumerico } from './campo-numerico';
@@ -28,7 +29,11 @@ export class EditorDeBalanceamento {
   constructor(pai: HTMLElement, ajustes: AjustesDoJogo) {
     this.raiz.className = 'editor-balanceamento janela';
     this.raiz.hidden = true;
-    const campos = [...camposDoExercito(ajustes), ...camposDoCombate(ajustes)];
+    const campos = [
+      ...camposDoExercito(ajustes),
+      ...camposDoCombate(ajustes),
+      ...camposDaAlimentacao(ajustes),
+    ];
     for (const campo of campos) this.padroes.set(campo.id, campo.ler());
 
     // O perfil entra sobre os dados validados, e antes de a campanha começar a consultá-los.
@@ -234,7 +239,9 @@ export class EditorDeBalanceamento {
     for (const controle of this.controles) {
       const valor = controle.valor();
       controle.campo.escrever(valor);
-      if (valor !== this.padroes.get(controle.campo.id)) salvos[controle.campo.id] = valor;
+      const aplicado = controle.campo.ler();
+      controle.definir(aplicado);
+      if (aplicado !== this.padroes.get(controle.campo.id)) salvos[controle.campo.id] = aplicado;
     }
     if (Object.keys(salvos).length > 0) salvarPerfil(salvos);
     else apagarPerfil();

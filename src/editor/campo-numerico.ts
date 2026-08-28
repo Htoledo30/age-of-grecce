@@ -46,8 +46,11 @@ export function criarControleNumerico(
   controle.append(menos, entrada, mais, unidade);
   linha.append(texto, controle);
 
-  const limitar = (valorVisual: number): number =>
-    Math.min(campo.maximo, Math.max(campo.minimo, valorVisual / fator));
+  const casas = 10 ** campo.casas;
+  const limitar = (valorVisual: number): number => {
+    const limitado = Math.min(campo.maximo * fator, Math.max(campo.minimo * fator, valorVisual));
+    return Math.round(limitado * casas) / casas / fator;
+  };
   const definir = (valor: number): void => {
     entrada.value = (valor * fator).toFixed(campo.casas);
   };

@@ -12,7 +12,7 @@ export const ABAS_DO_EDITOR: readonly AbaDoEditor[] = [
     id: 'alimentacao',
     nome: 'Alimentação',
     descricao: 'Subsistência, consumo e consequências da fome.',
-    disponivel: false,
+    disponivel: true,
   },
   { id: 'economia', nome: 'Economia', descricao: 'Impostos, trânsito e corrupção.', disponivel: false },
   { id: 'populacao', nome: 'População', descricao: 'Crescimento, faixas e mortalidade.', disponivel: false },
