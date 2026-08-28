@@ -1,10 +1,11 @@
 import type { Ajustes } from '@/dados/esquema';
 import { ABAS_DO_EDITOR } from './abas';
+import { camposDoCombate } from './catalogo-combate';
 import { camposDoExercito } from './catalogo-exercito';
 import { criarControleNumerico } from './campo-numerico';
 import type { ControleNumerico } from './campo-numerico';
 import { apagarPerfil, carregarPerfil, salvarPerfil } from './perfil-local';
-import type { AbaDoEditor, IdDaAba } from './tipos';
+import type { AbaDoEditor, CampoNumerico, IdDaAba } from './tipos';
 
 type AjustesDoJogo = Ajustes['jogo'];
 
@@ -27,7 +28,7 @@ export class EditorDeBalanceamento {
   constructor(pai: HTMLElement, ajustes: AjustesDoJogo) {
     this.raiz.className = 'editor-balanceamento janela';
     this.raiz.hidden = true;
-    const campos = camposDoExercito(ajustes);
+    const campos = [...camposDoExercito(ajustes), ...camposDoCombate(ajustes)];
     for (const campo of campos) this.padroes.set(campo.id, campo.ler());
 
     // O perfil entra sobre os dados validados, e antes de a campanha começar a consultá-los.
@@ -101,7 +102,7 @@ export class EditorDeBalanceamento {
     return cabecalho;
   }
 
-  private montarCorpo(campos: ReturnType<typeof camposDoExercito>): HTMLElement {
+  private montarCorpo(campos: readonly CampoNumerico[]): HTMLElement {
     const corpo = document.createElement('div');
     corpo.className = 'editor-balanceamento__corpo';
     this.navegacao.className = 'editor-balanceamento__abas';
@@ -113,16 +114,18 @@ export class EditorDeBalanceamento {
     // Leves, Hoplitas, Arqueiros e Cavalaria alinhados embaixo do mesmo título.
     const grupos = new Map<string, HTMLElement>();
     for (const campo of campos) {
-      let secao = grupos.get(campo.grupo);
+      const chaveDoGrupo = `${campo.aba}:${campo.grupo}`;
+      let secao = grupos.get(chaveDoGrupo);
       if (!secao) {
         secao = document.createElement('section');
         secao.className = 'editor-balanceamento__grupo';
         secao.dataset['grupo'] = campo.grupo.toLocaleLowerCase('pt-BR');
+        secao.dataset['aba'] = campo.aba;
         const titulo = document.createElement('h3');
         titulo.textContent = campo.grupo;
         secao.appendChild(titulo);
         this.conteudo.appendChild(secao);
-        grupos.set(campo.grupo, secao);
+        grupos.set(chaveDoGrupo, secao);
       }
       const controle = criarControleNumerico(campo, campo.ler(), () => this.atualizarEstado());
       this.controles.push(controle);
@@ -178,7 +181,7 @@ export class EditorDeBalanceamento {
 
   private mostrarCampos(): void {
     for (const grupo of this.conteudo.querySelectorAll<HTMLElement>('.editor-balanceamento__grupo')) {
-      grupo.hidden = false;
+      grupo.hidden = grupo.dataset['aba'] !== this.aba;
     }
     this.conteudo.querySelector('.editor-balanceamento__espera')?.remove();
     this.filtrar();
@@ -200,20 +203,33 @@ export class EditorDeBalanceamento {
   }
 
   private filtrar(): void {
-    if (this.aba !== 'exercito') return;
     const termo = this.busca.value.trim().toLocaleLowerCase('pt-BR');
     for (const controle of this.controles) {
+      if (controle.campo.aba !== this.aba) {
+        controle.elemento.hidden = true;
+        continue;
+      }
       const texto = `${controle.campo.nome} ${controle.campo.descricao} ${controle.campo.grupo}`.toLocaleLowerCase('pt-BR');
       controle.elemento.hidden = termo.length > 0 && !texto.includes(termo);
     }
     for (const grupo of this.conteudo.querySelectorAll<HTMLElement>('.editor-balanceamento__grupo')) {
-      grupo.hidden = [...grupo.querySelectorAll<HTMLElement>('.editor-balanceamento__campo')].every(
-        (campo) => campo.hidden,
-      );
+      grupo.hidden =
+        grupo.dataset['aba'] !== this.aba ||
+        [...grupo.querySelectorAll<HTMLElement>('.editor-balanceamento__campo')].every(
+          (campo) => campo.hidden,
+        );
     }
   }
 
   private aplicar(): void {
+    const valores = Object.fromEntries(this.controles.map((c) => [c.campo.id, c.valor()]));
+    const quebra = valores['combate.batalha.limiarDeQuebra'];
+    const recuo = valores['combate.batalha.limiarDeRecuo'];
+    if (quebra !== undefined && recuo !== undefined && recuo >= quebra) {
+      this.estado.textContent = 'O recuo precisa acontecer antes do limiar de quebra.';
+      this.estado.dataset['pendente'] = 'erro';
+      return;
+    }
     const salvos: Record<string, number> = {};
     for (const controle of this.controles) {
       const valor = controle.valor();

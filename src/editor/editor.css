@@ -292,6 +292,10 @@
   color: var(--ui-bronze-claro);
 }
 
+.editor-balanceamento__estado[data-pendente='erro'] {
+  color: var(--ui-sangue-claro);
+}
+
 .editor-balanceamento__acoes {
   display: flex;
   gap: 8px;

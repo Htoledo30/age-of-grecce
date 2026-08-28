@@ -7,7 +7,7 @@ export const ABAS_DO_EDITOR: readonly AbaDoEditor[] = [
     descricao: 'Recrutamento, folha, alimento militar e milícia.',
     disponivel: true,
   },
-  { id: 'combate', nome: 'Combate', descricao: 'Choque, quebra, recuo e armas.', disponivel: false },
+  { id: 'combate', nome: 'Combate', descricao: 'Choque, quebra, recuo e armas.', disponivel: true },
   {
     id: 'alimentacao',
     nome: 'Alimentação',
