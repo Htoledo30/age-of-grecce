@@ -9,7 +9,8 @@
 
 import type { NucleoDaCampanha } from '../nucleo';
 import { declararGuerra } from '../diplomacia/relacoes';
-import { dominioEstrangeiroEm, donoDe, populacaoDe } from '../provincia/consultas';
+import { donoDe, populacaoDe } from '../provincia/consultas';
+import { povoEstranhoManda } from './nacionalidade';
 
 export interface Levante {
   provincia: string;
@@ -30,7 +31,10 @@ export function acenderPavioEm(
   /** Turnos até o levante NESTA faixa de humor: a revoltosa ferve rápido, a de cima devagar. */
   prazo: number,
 ): Levante | null {
-  if (!dominioEstrangeiroEm(nucleo, idProvincia)) return null;
+  // ⚠️ **Quem levanta é a terra cuja MAIORIA não reconhece o dono**, e não a que trocou de
+  // bandeira em algum momento. Uma cidade não pega em armas contra o próprio governo por
+  // causa de um quinto dela — ver `nacionalidade.ts`.
+  if (!povoEstranhoManda(nucleo, idProvincia)) return null;
 
   const pavio = (nucleo.estado.revoltas[idProvincia] ?? 0) + 1;
   if (pavio < prazo) {

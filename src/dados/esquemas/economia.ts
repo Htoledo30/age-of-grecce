@@ -49,7 +49,23 @@ export const Economia = z
      * poder, e uma província tem várias ao mesmo tempo. Manter um catálogo aqui é o que
      * impede "eleusina" e "eleusino" virarem dois povos por causa de um erro de digitação.
      */
-    nacionalidades: z.record(z.string().min(1), z.object({ nome: z.string().min(1) })),
+    /**
+     * Os POVOS do recorte, e a tribo de cada um.
+     *
+     * ⚠️ **São duas camadas, e é o degrau entre elas que dá direção ao mapa.** A
+     * `nacionalidade` é a cidade — ateniense, megarense, tebano —, e o `povo` é a tribo
+     * grega a que ela pertence: jônio, dório, beócio, lócrio. Atenas mandando em Elêusis é
+     * uma cidade jônia sob outra cidade jônia; Atenas mandando em Mégara é jônio sobre
+     * dório, e o povo sente a diferença.
+     *
+     * ⚠️ **A tribo é fato do POVO, e não de quem manda nele hoje** — por isso ela mora aqui e
+     * não se deduz do dono. Carístio e hermioneu eram driopes na história; ficam com a tribo
+     * do reino a que a cidade pertencia em 700 a.C., que é a régua que o resto do jogo usa.
+     */
+    nacionalidades: z.record(
+      z.string().min(1),
+      z.object({ nome: z.string().min(1), povo: z.string().min(1) }),
+    ),
     provincias: z.record(
       z.string().min(1),
       z.object({

@@ -79,14 +79,6 @@ export function perfilDe(
   );
 }
 
-/** O povo desta província vive sob bandeira que não é a de 700 a.C.? */
-export function dominioEstrangeiroEm(
-  nucleo: NucleoDaCampanha,
-  idProvincia: string,
-): boolean {
-  return donoDe(nucleo, idProvincia) !== nucleo.atlas.donoInicial(idProvincia);
-}
-
 /** As províncias do poder que TÊM ficha autoral — as que a campanha simula. */
 export function simuladasDe(
   nucleo: NucleoDaCampanha,

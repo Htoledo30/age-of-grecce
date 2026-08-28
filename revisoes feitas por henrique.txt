@@ -35,6 +35,17 @@ outra coisa atualmente se eu comeco como atenas, so posso ter diplomacia com 2 r
      entre quem se toca, ou por mar entre quem tem Porto nos dois lados. E a mesa lista os
      18 poderes com ficha, com a fronteira virando um SELO em vez do filtro da lista.
 
+   → ACESSO MILITAR: FEITO. É o único acordo do jogo que tem LADO — deixar alguém passar
+     não é poder passar, e os dois sentidos podem existir com prazos diferentes. Ele dá
+     passagem e só: a terra dele vira CAMINHO da rota, sem conquista, sem cerco, sem saque.
+     A guerra rasga a licença nos dois sentidos. Abrir a TUA estrada não pede licença de
+     ninguém (é tua decisão, inclusive a ruim); conseguir a dele é que pede confiança.
+     Na aba de Diplomacia há um grupo "Passagem" com os prazos, ao lado de Pacto e Tributo.
+     A IA pede por geografia e não por simpatia: só com guerra em curso, e só a quem
+     encosta no inimigo. Medido: 39 passagens concedidas em 100 turnos.
+
+
+
 ═══════════════════════════════════════════════════════════════════════════════
 A FAZER
 ═══════════════════════════════════════════════════════════════════════════════
@@ -84,6 +95,29 @@ Porto na origem, e todo encontro na água é batalha sem conquista. A IA atraves
 que sobrou anotado, não pedido: nenhum desgaste por FICAR no mar (hoje só a folha de
 campanha), bloqueio naval, e a IA não patrulha nem intercepta travessia alheia.
 
+── nacionalidade ──
+
+essa da nacionalidade vai ter que entrar depois!
+   → ENTROU. A regra velha era binária e cega: "o dono de hoje é o mesmo de 700 a.C.?", −12 e
+     pronto. Ela dava o MESMO peso para Atenas mandando em Elêusis — jônia, a dez quilômetros,
+     com 15% de atenienses já morando lá — e para Atenas mandando na Beócia. E dava ZERO para
+     Mégara segurando uma Salamina que é 20% ateniense.
+     Os dados já tinham duas camadas e nenhuma regra usava: a NACIONALIDADE (ateniense,
+     megarense, tebano), com a fração da população em cada uma, e o POVO, que é a tribo grega
+     dela — jônio, dório, beócio, lócrio. Escrevi a tribo no dado, junto do nome.
+     Três degraus: teu próprio povo é de graça; outra cidade da tua tribo custa −6; outra
+     tribo custa −18. E tudo PROPORCIONAL à fatia: Mégara paga −4 por Salamina (os 20% de
+     atenienses), Atenas pagaria −14 pela mesma Salamina (os 80% de megarenses).
+     Medido com Atenas conquistando cada terra: a Ática sai de graça, a Eubeia jônia por −6,
+     e todo o resto por −18. É o mapa ganhando uma DIREÇÃO — unificar os teus é barato,
+     atravessar o Istmo é caro.
+     O levante também mudou: agora é gatilho de MAIORIA (a maior parte do povo não reconhece
+     o dono), e não "a bandeira mudou uma vez".
+     A/B em 100 turnos: a faixa Revoltosa não se mexeu (2,1% com e sem), o que desceu foi o
+     topo — Satisfeita de 27,1% para 15,2%. Ninguém foi empurrado para a revolta.
+     ⚠️ FALTA, e é decisão tua: ASSIMILAÇÃO. Hoje o povo conquistado nunca deixa de ser quem
+     é, então o preço é permanente e se paga com Templo, imposto baixo e guarnição.
+
 ── diplomacia ──
 
 outra coisa, nao sinto a IA tentando se conectar comigo para oferecer diplomacia, deveria acontecer isso, e aparecer que um reino ta querendo negociar comigo e eu ter opcao de aceitar ou recusar as propostas, e talvez no futuro ate negociar.
@@ -110,9 +144,6 @@ precio saber no futuro qual a relacao de um reino com outro reino. ter alguma ti
      entao trocar o SIGNIFICADO da cor e reescrever a paleta. Ele so pinta mais forte no
      modo de dados — a 55% duas faixas vizinhas somem sobre o terreno.
 
-═══════════════════════════════════════════════════════════════════════════════
-Novas Observacoes Por Henrique
-═══════════════════════════════════════════════════════════════════════════════
 
 Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do mar ela nao lembra que precisa ir para um territorio dela, ou de um inimigo, ela tenta ir em territorio que ela nao pode andar, para ela pdoer andar em territorio de reinos neutros precisamos criar algum sistema em diplomacia de liberar acesso militar, outra coisa, precisamos fazer a IA usar mais os sitemas de diplomacia!
    → A METADE DO MAR ESTÁ CONSERTADA. O defeito era este: a IDA ganhou rota longa e a VOLTA
@@ -122,13 +153,28 @@ Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do m
      Depois do conserto: ZERO hostes paradas, e a mais demorada fica 1 turno na água.
      (Ela nunca chegou a dar ordem ilegal — a marcha recusa isso —, o que tu viste foi o
      exército encalhado.)
-   → ACESSO MILITAR: FEITO. É o único acordo do jogo que tem LADO — deixar alguém passar
-     não é poder passar, e os dois sentidos podem existir com prazos diferentes. Ele dá
-     passagem e só: a terra dele vira CAMINHO da rota, sem conquista, sem cerco, sem saque.
-     A guerra rasga a licença nos dois sentidos. Abrir a TUA estrada não pede licença de
-     ninguém (é tua decisão, inclusive a ruim); conseguir a dele é que pede confiança.
-     Na aba de Diplomacia há um grupo "Passagem" com os prazos, ao lado de Pacto e Tributo.
-     A IA pede por geografia e não por simpatia: só com guerra em curso, e só a quem
-     encosta no inimigo. Medido: 39 passagens concedidas em 100 turnos.
 
+═══════════════════════════════════════════════════════════════════════════════
+Novas Observacoes Por Henrique
+═══════════════════════════════════════════════════════════════════════════════
+
+   → problema encontrado, mas bem basico, quando clico numa provincia ainda esta muito consufo, qual o nome da provincia, da regiao e do reino, o reino tem que ser o mais importante, e futuramente o nome de cada provincia deve ser escrito diretamente no mapa dentro de cada provincia, saca?
+
+crash- [plugin:vite:oxc] Transform failed with 1 error:
+
+[PARSE_ERROR] Unterminated string
+     ╭─[ src/ui/ficha-provincia/medidas.ts:195:83 ]
+     │
+ 195 │       corpo: [vista.povos, fraseDaEstranheza(vista)].filter((l) => l !== '').join('
+     │                                                                                   ─┬  
+     │                                                                                    ╰── 
+─────╯
+C:/AgeOfGrecce/src/ui/ficha-provincia/medidas.ts
+    at transformWithOxc (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:4097:19)
+    at TransformPluginContext.transform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:4168:26)
+    at EnvironmentPluginContainer.transform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:30851:51)
+    at async loadAndTransform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:20619:26)
+    at async viteTransformMiddleware (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:25142:20)
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
 

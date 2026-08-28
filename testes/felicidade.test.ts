@@ -69,7 +69,7 @@ describe('o alvo e o passo do humor', () => {
   const parada = {
     passaFome: false,
     sitiada: false,
-    dominioEstrangeiro: false,
+    estranheza: { mesmoPovo: 0, outroPovo: 0 },
     construcoes: {},
     humorDoImposto: 0,
     guarnicao: 0,
@@ -97,7 +97,7 @@ describe('o alvo e o passo do humor', () => {
       {
         passaFome: true,
         sitiada: true,
-        dominioEstrangeiro: true,
+        estranheza: { mesmoPovo: 0, outroPovo: 1 },
         construcoes: {},
         guarnicao: 0,
         humorDoImposto: -8,
@@ -125,7 +125,9 @@ describe('o alvo e o passo do humor', () => {
     const situacao = {
       passaFome: true,
       sitiada: true,
-      dominioEstrangeiro: true,
+      // As duas metades da estranheza ao mesmo tempo: a ficha tem de listar as DUAS, senão
+      // uma linha só somando esconderia de onde vem cada ponto.
+      estranheza: { mesmoPovo: 0.4, outroPovo: 0.6 },
       construcoes: { templo: 1 },
       humorDoImposto: -8,
       guarnicao: 0.01,
@@ -143,8 +145,9 @@ describe('o alvo e o passo do humor', () => {
       'base',
       'fome',
       'cidade sitiada',
-      'domínio estrangeiro',
+      'de outro povo (60%)',
       'nível de imposto',
+      'de outra cidade (40%)',
       'Templo',
     ]) {
       expect(rotulos).toContain(rotulo);
@@ -182,13 +185,16 @@ describe('o humor dentro da campanha', () => {
     c.passarTurno();
 
     expect(c.donoDe('eleusis')).toBe('atenas');
-    // O choque veio na conquista; o passo do turno veio depois, rumo ao alvo novo (que
-    // já inclui o domínio estrangeiro).
+    // O choque veio na conquista; o passo do turno veio depois, rumo ao alvo novo (que já
+    // inclui o preço de mandar num povo que não é o seu).
     const choque = Math.max(0, antes - felicidade.choqueDaConquista);
     expect(c.perfilDe('eleusis')?.felicidade.valor).toBe(
       aproximarFelicidade(choque, c.alvoDeFelicidadeEm('eleusis'), felicidade.passoPorTurno),
     );
-    expect(c.dominioEstrangeiroEm('eleusis')).toBe(true);
+    // ⚠️ Elêusis é 85% eleusina e 15% ateniense, e eleusinos são JÔNIOS como os atenienses:
+    // Atenas mandando ali é a cidade errada, não o povo errado. É o degrau barato.
+    expect(c.estranhezaEm('eleusis')).toEqual({ mesmoPovo: 0.85, outroPovo: 0 });
+    expect(c.povoEstranhoManda('eleusis')).toBe(true);
   });
 
   it('província revoltosa entra em greve fiscal: imposto zero, o resto continua', () => {
@@ -322,7 +328,7 @@ describe('a guarnição é ordem pública', () => {
   const parada = {
     passaFome: false,
     sitiada: false,
-    dominioEstrangeiro: false,
+    estranheza: { mesmoPovo: 0, outroPovo: 0 },
     construcoes: {},
     humorDoImposto: 0,
     guarnicao: 0,

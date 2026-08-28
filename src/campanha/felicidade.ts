@@ -30,7 +30,13 @@ export interface SituacaoDaProvincia {
   passaFome: boolean;
   sitiada: boolean;
   /** O dono atual não é o dono de 700 a.C. */
-  dominioEstrangeiro: boolean;
+  /**
+   * Que fatia do povo daqui não reconhece o dono, e quão estranha ela o acha.
+   *
+   * As duas frações vão de 0 a 1 e somam no máximo 1 — o que sobra é a fatia que se
+   * reconhece no rei. Ver `sociedade/nacionalidade.ts`.
+   */
+  estranheza: { mesmoPovo: number; outroPovo: number };
   /** Construções erguidas ali, com nível — o Templo entra por aqui. */
   construcoes: Readonly<Record<string, number>>;
   /**
@@ -88,8 +94,18 @@ export function parcelasDoAlvo(
 
   if (situacao.passaFome) parcelas.push({ rotulo: 'fome', pontos: ajustes.alvo.fome });
   if (situacao.sitiada) parcelas.push({ rotulo: 'cidade sitiada', pontos: ajustes.alvo.sitiada });
-  if (situacao.dominioEstrangeiro) {
-    parcelas.push({ rotulo: 'domínio estrangeiro', pontos: ajustes.alvo.dominioEstrangeiro });
+  // ⚠️ **Duas parcelas e não uma, porque são duas coisas diferentes** — e o jogador precisa
+  // ver qual delas está pesando. Uma linha só somando "estrangeiro −23" esconderia que 5 vêm
+  // de vizinhos da mesma tribo e 18 de gente de outra.
+  // A FATIA vai no rótulo: "de outro povo (85%)" diz o tamanho do problema, e −18 sozinho
+  // não diz. É a mesma ideia da guarnição, que já mostra o quanto dela está de pé.
+  const daCidade = Math.round(situacao.estranheza.mesmoPovo * ajustes.alvo.outraCidade);
+  if (daCidade !== 0) {
+    parcelas.push({ rotulo: fatia('de outra cidade', situacao.estranheza.mesmoPovo), pontos: daCidade });
+  }
+  const doPovo = Math.round(situacao.estranheza.outroPovo * ajustes.alvo.povoEstrangeiro);
+  if (doPovo !== 0) {
+    parcelas.push({ rotulo: fatia('de outro povo', situacao.estranheza.outroPovo), pontos: doPovo });
   }
   if (situacao.reinoEmGuerra) {
     parcelas.push({ rotulo: 'reino em guerra', pontos: ajustes.alvo.reinoEmGuerra });
@@ -178,4 +194,9 @@ export function fatorDeRendaDoHumor(valor: number, ajustes: AjustesFelicidade): 
  */
 export function turnosAteOLevante(valor: number, ajustes: AjustesFelicidade): number | null {
   return faixaDe(valor, ajustes)?.levanteEm ?? null;
+}
+
+/** "de outro povo (85%)" — o rótulo com o tamanho da fatia que ele descreve. */
+function fatia(rotulo: string, fracao: number): string {
+  return `${rotulo} (${Math.round(fracao * 100)}%)`;
 }

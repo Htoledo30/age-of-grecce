@@ -38,6 +38,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
       minha: false,
       capital: false,
       povos: '',
+      estranheza: null,
       faixa: '',
       milicia: 0,
       humor: null,
@@ -61,6 +62,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
     minha: campanha.jogador?.id === dono,
     capital: campanha.capitalDe(dono) === id,
     povos: perfil ? composicaoDoPovo(perfil.nacionalidades) : poder.povo,
+    estranheza: perfil ? campanha.estranhezaEm(id) : null,
     faixa: campanha.faixaDaProvinciaEm(id),
     milicia: campanha.miliciaEm(id),
     humor: perfil

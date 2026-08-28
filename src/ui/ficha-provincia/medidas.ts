@@ -189,7 +189,10 @@ ${comSinal(passo)}` : vista.faixa.toLowerCase(),
     tom: passo < 0 ? 'ruim' : 'neutro',
     tooltip: {
       ...(c ? tooltipDaPopulacao(c) : { titulo: 'População', corpo: '' }),
-      corpo: vista.povos,
+      // ⚠️ **A composição vem com a CONSEQUÊNCIA junto.** "Eleusina 85% · Ateniense 15%" era
+      // cor local até a nacionalidade entrar no humor; agora é a conta que esta terra cobra
+      // do dono dela, e o número sozinho não diz isso.
+      corpo: [vista.povos, fraseDaEstranheza(vista)].filter((l) => l !== '').join('\n'),
     },
   };
 }
@@ -216,4 +219,23 @@ function milicia(vista: VistaDaProvincia): Medida {
         : 'Defende sozinha quando não há exército. A Muralha a multiplica.',
     },
   };
+}
+
+/**
+ * O que a composição do povo custa a quem manda aqui. Vazia quando não custa nada.
+ *
+ * Duas frases e não uma: outra cidade da mesma tribo e outra tribo são coisas de peso
+ * diferente, e é o degrau entre elas que dá direção à expansão.
+ */
+function fraseDaEstranheza(vista: VistaDaProvincia): string {
+  const e = vista.estranheza;
+  if (!e) return '';
+  const partes: string[] = [];
+  if (e.outroPovo > 0) {
+    partes.push(`${Math.round(e.outroPovo * 100)}% é de outro povo que não o de ${vista.poder.nome}`);
+  }
+  if (e.mesmoPovo > 0) {
+    partes.push(`${Math.round(e.mesmoPovo * 100)}% é de outra cidade da mesma tribo`);
+  }
+  return partes.length === 0 ? '' : `${partes.join('; ')} — e isso pesa no humor.`;
 }

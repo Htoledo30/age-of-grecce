@@ -214,8 +214,19 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
 - Impostos, alimento, conquista, nacionalidade, prosperidade, guerra e presença militar
   podem afetar felicidade quando seus sistemas existirem.
 - Nacionalidade pertence à população, pode ser misturada e muda lentamente.
+- ⚠️ **E ela tem DUAS camadas, e é o degrau entre elas que dá direção à expansão.** A
+  nacionalidade é a cidade — ateniense, megarense, tebano —, com fração da população em cada
+  uma; o **povo** é a tribo grega dela: jônio, dório, beócio, lócrio. Mandar no próprio povo
+  não custa nada; mandar em outra cidade da mesma tribo incomoda; mandar em outra tribo é o
+  preço de império. Unificar os seus é barato, atravessar o Istmo é caro.
+- ⚠️ **A conta é proporcional à FATIA do povo, nunca um carimbo na província.** A mesma terra
+  mista cobra preços diferentes de donos diferentes, e é isso que faz uma cidade dividida ser
+  uma coisa e não um rótulo.
 - Diferença entre governante e população cria tensão, não uma trava artificial de uso da
   província conquistada.
+- ⚠️ **A ASSIMILAÇÃO ainda não existe, e é a peça natural seguinte.** Hoje o povo conquistado
+  não deixa de ser quem é: o preço é permanente e se paga com Templo, imposto baixo e
+  guarnição. No dia em que a nacionalidade caminhar, ela caminha devagar e nunca some de todo.
 - Insatisfação persistente pode gerar revoltas; migração pode responder a fome,
   prosperidade, guerra e segurança no futuro.
 - Cada poder possui uma capital. Perdê-la deve obrigar a escolher outra antes de continuar.

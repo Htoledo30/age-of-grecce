@@ -181,7 +181,8 @@
       "alvo": {
         "fome": -20,
         "sitiada": -15,
-        "dominioEstrangeiro": -12,
+        "outraCidade": -6,
+        "povoEstrangeiro": -18,
         "guarnicao": 12,
         "guarnicaoPlena": 0.02,
         "reinoEmGuerra": -6,

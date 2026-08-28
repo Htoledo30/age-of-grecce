@@ -22,6 +22,7 @@ import {
   produtosAlimentaresEm,
   saldoAlimentarLocalEm,
 } from '../alimentacao/contribuicao';
+import { estranhezaEm, povoEstranhoManda } from '../sociedade/nacionalidade';
 import { crescimentoDe } from '../alimentacao/crescimento';
 import type { CrescimentoNaProvincia } from '../alimentacao/crescimento';
 import { fomeDoCercoEm, mantimentosDeCercoEm } from '../alimentacao/mantimentos-de-cerco';
@@ -30,7 +31,6 @@ import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { miliciaEm } from '../guerra/defesa-local';
 import {
   construcoesEm,
-  dominioEstrangeiroEm,
   nivelDaConstrucaoEm,
   perfilDe,
   populacaoDe,
@@ -112,8 +112,19 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
   }
 
   /** O povo desta província vive sob bandeira que não é a de 700 a.C.? */
-  dominioEstrangeiroEm(idProvincia: string): boolean {
-    return dominioEstrangeiroEm(this.nucleo, idProvincia);
+  /**
+   * Quão estranho é o dono ao povo desta terra — a fatia dele que não o reconhece.
+   *
+   * ⚠️ Substituiu um `dominioEstrangeiroEm` binário que perguntava *"o dono mudou desde 700
+   * a.C.?"*. Ver `sociedade/nacionalidade.ts`.
+   */
+  estranhezaEm(idProvincia: string): { mesmoPovo: number; outroPovo: number } {
+    return estranhezaEm(this.nucleo, idProvincia);
+  }
+
+  /** A MAIORIA do povo daqui não reconhece o dono? É o portão do levante. */
+  povoEstranhoManda(idProvincia: string): boolean {
+    return povoEstranhoManda(this.nucleo, idProvincia);
   }
 
   alvoDeFelicidadeEm(idProvincia: string): number {

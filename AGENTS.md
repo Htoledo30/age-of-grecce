@@ -54,9 +54,10 @@ de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com ac
 recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
 JSON e rodar `npm run partida`.
 
-⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO.** Henrique parou aqui: *"por enquanto está ótimo"*. A
-única coisa aberta na lista dele é a **nacionalidade no humor**, que ele mesmo adiou (*"essa da
-nacionalidade vai ter que entrar depois!"*) — não comece sem ele dizer.
+⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está inteira riscada.** A
+nacionalidade no humor, que era a última, entrou. A peça natural seguinte é a **ASSIMILAÇÃO**:
+hoje o povo conquistado nunca deixa de ser quem é, e o preço da conquista é permanente. Ela é
+decisão nova — não comece sem ele dizer.
 
 O que ele ainda não julgou com o olho está na seção abaixo. **Perguntar antes de abrir frente
 nova** vale mais do que adivinhar a próxima peça.
@@ -134,6 +135,9 @@ interceptar travessia alheia.
 - **o acesso militar**: dá vontade de usar, ou é mais fácil declarar guerra e pronto?
 - **o modo de relações no mapa**: as seis cores se distinguem no terreno? trocar o escolhido por
   clique é o gesto certo?
+- **a nacionalidade pesando**: conquistar a Eubeia jônia sai barato o bastante para valer a
+  pena, e o Istmo dório sai caro o bastante para doer? O preço permanente frustra ou dá o
+  formato de império que ele quer?
 
 ⚠️ **NUNCA use `transform: scale()` no palco.** Ele desliga o antialiasing de subpixel de
 toda a interface e deixa o texto fino e lavado. A escala vive em `src/estilo/escala.ts` e usa

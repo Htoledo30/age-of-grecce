@@ -20,5 +20,34 @@ export function erroNosValores(valores: ValoresDoEditor): string | null {
     }
   }
 
+  const idsDosImpostos = ['baixo', 'normal', 'alto', 'confisco'] as const;
+  const fatores = idsDosImpostos.map(
+    (id) => valores[`economia.imposto.niveis.${id}.fator`],
+  );
+  for (let indice = 1; indice < fatores.length; indice++) {
+    const anterior = fatores[indice - 1];
+    const atual = fatores[indice];
+    if (anterior !== undefined && atual !== undefined && atual < anterior) {
+      return 'A arrecadação dos impostos precisa subir de Baixo até Confisco.';
+    }
+  }
+
+  const humores = idsDosImpostos.map(
+    (id) => valores[`economia.imposto.niveis.${id}.humor`],
+  );
+  for (let indice = 1; indice < humores.length; indice++) {
+    const anterior = humores[indice - 1];
+    const atual = humores[indice];
+    if (anterior !== undefined && atual !== undefined && atual > anterior) {
+      return 'O efeito no humor precisa piorar de Baixo até Confisco.';
+    }
+  }
+
+  const meioCaminho = valores['corrupcao.distancia.meioCaminho'];
+  const semCaminho = valores['corrupcao.distancia.semCaminho'];
+  if (meioCaminho !== undefined && semCaminho !== undefined && semCaminho < meioCaminho) {
+    return 'Uma província sem caminho não pode parecer mais próxima que a meia distância.';
+  }
+
   return null;
 }

@@ -14,7 +14,8 @@ import {
 } from '../felicidade';
 import type { ParcelaDoAlvo, SituacaoDaProvincia } from '../felicidade';
 import type { NucleoDaCampanha } from '../nucleo';
-import { donoDe, dominioEstrangeiroEm, populacaoDe } from '../provincia/consultas';
+import { donoDe, populacaoDe } from '../provincia/consultas';
+import { estranhezaEm } from './nacionalidade';
 import { estaSitiada } from '../guerra/cercos';
 import type { NivelDeImposto } from '../economia';
 import { humorDoImpostoEm } from '../governo/nivel-de-imposto';
@@ -50,7 +51,7 @@ function situacaoDeFelicidadeEm(
   return {
     passaFome: passaFomeEm(nucleo, idProvincia),
     sitiada: estaSitiada(nucleo, idProvincia),
-    dominioEstrangeiro: dominioEstrangeiroEm(nucleo, idProvincia),
+    estranheza: estranhezaEm(nucleo, idProvincia),
     construcoes: nucleo.estado.construcoes[idProvincia] ?? {},
     humorDoImposto: humorDoImpostoEm(nucleo, idProvincia),
     guarnicao: fracaoDaGuarnicaoEm(nucleo, idProvincia),

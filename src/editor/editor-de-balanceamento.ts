@@ -2,6 +2,7 @@ import type { Ajustes } from '@/dados/esquema';
 import { ABAS_DO_EDITOR } from './abas';
 import { camposDaAlimentacao } from './catalogo-alimentacao';
 import { camposDoCombate } from './catalogo-combate';
+import { camposDaEconomia } from './catalogo-economia';
 import { camposDoExercito } from './catalogo-exercito';
 import { camposDaPopulacao } from './catalogo-populacao';
 import { criarControleNumerico } from './campo-numerico';
@@ -36,6 +37,7 @@ export class EditorDeBalanceamento {
       ...camposDoCombate(ajustes),
       ...camposDaAlimentacao(ajustes),
       ...camposDaPopulacao(ajustes),
+      ...camposDaEconomia(ajustes),
     ];
     for (const campo of campos) this.padroes.set(campo.id, campo.ler());
 

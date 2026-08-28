@@ -73,6 +73,14 @@ export interface VistaDaProvincia {
   /** O povo que mora aqui, já composto: "Eleusina 85% · Ateniense 15%". */
   povos: string;
   /**
+   * Que fatia deste povo não se reconhece no dono, e quão estranha ela o acha.
+   *
+   * Fica na ficha porque virou consequência: desde que a nacionalidade entrou no humor, "quem
+   * mora aqui" deixou de ser cor local e passou a ser a conta que o jogador paga. `null` onde
+   * não há povo simulado.
+   */
+  estranheza: { mesmoPovo: number; outroPovo: number } | null;
+  /**
    * O nome da faixa de população: a RÉGUA do número de habitantes.
    *
    * "35.000 habitantes" sozinho não diz nada — grande comparado com quê? A faixa responde,

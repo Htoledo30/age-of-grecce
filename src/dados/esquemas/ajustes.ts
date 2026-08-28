@@ -578,8 +578,20 @@ export const Ajustes = z.object({
          *  negativo, ou sitiada com a despensa vencida. */
         fome: z.number().int(),
         sitiada: z.number().int(),
-        /** Dono atual diferente do dono de 700 a.C.: o povo vive sob bandeira alheia. */
-        dominioEstrangeiro: z.number().int(),
+        /**
+         * Os dois degraus do domínio estranho, e os dois são PROPORCIONAIS à fatia do povo.
+         *
+         * ⚠️ **Substituíram um `dominioEstrangeiro` binário que perguntava a coisa errada:**
+         * *"o dono mudou desde 700 a.C.?"*. Aquilo dava o mesmo peso para Atenas em Elêusis —
+         * jônia, vizinha, já com 15% de atenienses — e para Atenas na Beócia; e dava zero para
+         * Mégara segurando uma Salamina que é 20% ateniense.
+         *
+         * `outraCidade` é outra nacionalidade da MESMA tribo; `povoEstrangeiro` é outra tribo.
+         * O degrau entre os dois é o que dá direção à expansão: unificar os seus sai barato,
+         * atravessar o Istmo sai caro. Ver `sociedade/nacionalidade.ts`.
+         */
+        outraCidade: z.number().int(),
+        povoEstrangeiro: z.number().int(),
         /**
          * Quanto uma guarnição CHEIA acalma a província. Ordem pública com lança na porta.
          *

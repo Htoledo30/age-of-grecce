@@ -425,18 +425,54 @@ enfrentada no assalto; não existe outro multiplicador escondido.
 
 O humor de cada província é vivo: caminha alguns pontos por turno (`passoPorTurno`) rumo
 a um ALVO — base de 50, mais a comida do reino (fome −20 … abundante +10), cerco (−15),
-domínio estrangeiro (dono atual ≠ dono de 700 a.C., −12), a GUARNIÇÃO do dono (+12 na cheia,
+o quanto o rei é ESTRANHO ao povo daqui (ver abaixo), a GUARNIÇÃO do dono (+12 na cheia,
 proporcional abaixo dela), o nível de imposto (baixo +12,
 alto −10, confisco −25) e Templo. A conquista dá um choque imediato (−25), único movimento não gradual.
 Números em `ajustes.json`. A conta é LEGÍVEL como a da comida: o tooltip do humor na
 ficha decompõe o alvo parcela a parcela ("base +50 · mesa farta +5 · imposto −8 · Templo
 +8 → caminhando para N").
 
+**A NACIONALIDADE decide o quanto o rei é estranho ali** — e é o que dá direção à expansão.
+A regra que existia era binária e cega: *"o dono de hoje é o mesmo de 700 a.C.?"*, −12 e pronto.
+Ela dava o mesmo peso para Atenas mandando em Elêusis — jônia, a dez quilômetros, com 15% de
+atenienses já morando lá — e para Atenas mandando na Beócia. E dava ZERO para Mégara segurando
+uma Salamina que é 20% ateniense. A província sabia que tinha mudado de bandeira e não sabia
+de quem era o povo dela.
+
+Os dados já traziam duas camadas, e nenhuma regra as usava: a **nacionalidade**, que é a cidade
+(ateniense, eleusina, megarense), com a FRAÇÃO da população em cada uma; e o **povo**, que é a
+tribo grega dela — jônio, dório, beócio, lócrio. A tribo passou a morar em
+`dados/economia.json`, junto do nome, porque é fato do povo e não de quem manda nele.
+
+Daí saem três degraus, e eles são a régua inteira:
+
+| | exemplo | pontos |
+|---|---|---|
+| o meu próprio povo | Atenas em Maratona | 0 |
+| outra cidade da minha tribo | Atenas em Elêusis (jônia) | `outraCidade` −6 |
+| outra tribo | Atenas em Mégara (dória) | `povoEstrangeiro` −18 |
+
+⚠️ **E é PROPORCIONAL à fatia do povo, não um carimbo na província.** Mégara segurando Salamina
+paga pelos 20% de atenienses que vivem lá (−4); Atenas segurando a mesma Salamina paga pelos
+80% de megarenses (−14). A mesma terra cobra preços diferentes de donos diferentes, que é
+exatamente o que uma cidade mista faz. O rótulo da parcela leva a fatia junto — *"de outro povo
+(85%)"* —, porque −18 sozinho não diz o tamanho do problema.
+
+Medido com Atenas conquistando cada terra do recorte: a Ática sai de graça, a Eubeia jônia sai
+por −6, e tudo o mais por −18. **Isso é o mapa ganhando uma direção**: unificar os seus é
+barato, atravessar o Istmo é caro. E o LEVANTE passou a ser gatilho de maioria — a terra pega
+em armas quando a maior parte do povo dela não reconhece o dono, e não porque a bandeira mudou
+uma vez.
+
+A/B em 100 turnos, com a parcela ligada e desligada: a faixa Revoltosa **não se mexeu** (2,1%
+nas duas), e o que mudou foi o topo descer para o meio — Satisfeita 27,1% → 15,2%, Insatisfeita
+8,2% → 16,3%. Ninguém foi empurrado para a revolta; o mundo ficou menos folgado.
+
 **Guarnição é ordem pública** (pedido de Henrique jogando): tropa do DONO parada ali sobe o
 alvo do humor, em proporção ao tamanho da cidade e com teto na guarnição cheia
 (`alvo.guarnicaoPlena`). É a única coisa que se pode fazer contra o descontentamento no MESMO
-turno — Templo leva turnos, imposto baixo custa renda, e o domínio estrangeiro não sai
-enquanto a terra não assimilar. Tem preço: cobra folha todo turno e some quando a tropa
+turno — Templo leva turnos, imposto baixo custa renda, e o povo conquistado não deixa de ser
+quem é. Tem preço: cobra folha todo turno e some quando a tropa
 marchar. Exército inimigo acampado não conta — aquilo é cerco, e o cerco já desconta.
 
 Na faixa Revoltosa (primeira faixa das `faixas`), a província entra em greve fiscal:
@@ -990,16 +1026,20 @@ faces continuam as mesmas; o que mudou foi corpo, peso, contraste e rasterizaç�
   etapa (montar tela, ligar ações, vistas, crônica, salvamento, inspeção).
 - **O editor de balanceamento vive isolado em `src/editor/`.** F2 abre a ferramenta por cima
   do jogo e Esc fecha. A casca tem as dez abas planejadas, busca, alterações pendentes,
-  desfazer, restaurar e perfil persistido no navegador. Quatro abas estão funcionais:
+  desfazer, restaurar e perfil persistido no navegador. Cinco abas estão funcionais:
   **Exército** reúne custo base, folha em casa/campanha, população protegida, milícia e
   multiplicadores de custo/comida das quatro armas; **Combate** reúne ritmo do choque,
   quebra, recuo, perseguição, ataque e aguento das armas, counter e preparação do cerco.
   **Alimentação** reúne subsistência do reino, consumo militar, mortalidade da fome e
   mantimentos de cidade sitiada. **População** reúne crescimento natural, início e consumo
   das cinco faixas; os limites aparecem como 15.000, 30.000 etc., embora o dado inclusivo
-  interno termine em 14.999, 29.999 etc. O editor recusa um limiar de recuo igual ou posterior
-  ao de quebra e faixas populacionais fora de ordem. Cada controle declara limites, passo,
-  unidade, explicação e quando passa a valer; nenhuma tela recebe acesso genérico ao JSON.
+  interno termine em 14.999, 29.999 etc. **Economia** reúne as fontes de renda, arrecadação
+  e humor dos quatro decretos de imposto e as curvas de corrupção por tamanho e distância;
+  imposto por habitante aparece na unidade legível de moedas por 1.000 pessoas. O editor
+  recusa um limiar de recuo igual ou posterior ao de quebra, faixas populacionais fora de
+  ordem, decretos com progressão invertida e uma distância desconectada menor que a meia
+  distância. Cada controle declara limites, passo, unidade, explicação e quando passa a
+  valer; nenhuma tela recebe acesso genérico ao JSON.
 - `src/campanha/campanha.ts` é uma FACHADA: guarda o núcleo e delega. As regras vivem em
   `campanha/turno/`, `alimentacao/`, `sociedade/`, `governo/`, `guerra/`, `provincia/` e
   `estado/`; as perguntas ficam nas camadas de `campanha/fachada/`.
