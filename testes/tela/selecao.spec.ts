@@ -200,3 +200,43 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
 
   expect(erros.join(' | ')).toBe('');
 });
+
+/**
+ * A camada de NOMES não pode roubar o clique do mapa.
+ *
+ * ⚠️ **Regressão de especificidade de CSS, e ela chegou ao Henrique jogando:** `base.css` tem
+ * `#ui > * { pointer-events: auto; }` — seletor de ID —, que ANULA um `pointer-events: none`
+ * escrito só na classe. A camada de rótulos cobre a tela inteira; com o clique ligado nela, o
+ * jogo parava de responder a clique e a arrasto assim que os nomes acendiam. *"Quando ativo o
+ * botão eu não consigo clicar no mapa ou em nada, perco movimento."*
+ *
+ * Só um teste de tela pega isto: o TypeScript não vê CSS, e a camada existe e funciona — o
+ * que quebra é o que está DEBAIXO dela.
+ */
+test('com os nomes no mapa ligados, o clique continua chegando na província', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForSelector('body[data-pronto="sim"]');
+  await page.evaluate(() => {
+    (window as unknown as { inspecao: { comecar: (p: string) => void } }).inspecao.comecar(
+      'atenas',
+    );
+  });
+
+  // Os nomes vêm LIGADOS de fábrica: é o pedido dele, e é a condição em que o defeito aparece.
+  await expect(page.locator('.rotulos-mapa__nome').first()).toBeVisible();
+
+  await page.evaluate(() => {
+    const inspecao = window as unknown as {
+      inspecao: {
+        centroDe: (p: string) => { x: number; y: number };
+        posicionar: (x: number, y: number, zoom: number) => void;
+      };
+    };
+    const centro = inspecao.inspecao.centroDe('tebas');
+    inspecao.inspecao.posicionar(centro.x, centro.y, 3);
+  });
+  await page.waitForTimeout(300);
+  await page.mouse.click(960, 500);
+
+  await expect(page.locator('.ficha__reino')).toContainText('Tebas');
+});

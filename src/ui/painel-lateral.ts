@@ -30,7 +30,6 @@ export class PainelLateral {
   private readonly aba = document.createElement('button');
   private readonly interruptorCores = document.createElement('button');
   private readonly interruptorRelacoes = document.createElement('button');
-  private readonly interruptorNomes = document.createElement('button');
   private readonly sujeitoDasRelacoes = document.createElement('p');
   private readonly legenda = document.createElement('ul');
 
@@ -41,9 +40,6 @@ export class PainelLateral {
 
   /** Chamado quando ele liga ou desliga o MODO DE RELAÇÕES. */
   aoTrocarRelacoes: (ligado: boolean) => void = () => {};
-
-  /** Chamado quando ele liga ou desliga os NOMES das províncias no mapa. */
-  aoTrocarNomes: (ligados: boolean) => void = () => {};
 
   constructor(pai: HTMLElement, coresLigadas: boolean, faixas: readonly FaixaDaLegenda[]) {
     this.raiz.className = 'painel-lateral';
@@ -104,26 +100,6 @@ export class PainelLateral {
     this.sujeitoDasRelacoes.className = 'painel-lateral__dica';
     this.corpo.appendChild(this.sujeitoDasRelacoes);
 
-    // ── Os nomes das províncias ─────────────────────────────────────────────────────────
-    // ⚠️ **É opção, e não obrigação, e essa é a lição dos outros jogos.** O Age of History 2
-    // tem um interruptor de nomes de província e a queixa mais repetida dele é "nomes grandes
-    // demais"; o EU4 põe "Display province names" como opção no pé do mapa. Ninguém do gênero
-    // deixa isso ligado à força, e por bom motivo: às vezes se quer olhar o mapa, não lê-lo.
-    this.interruptorNomes.className = 'interruptor';
-    this.interruptorNomes.type = 'button';
-    this.interruptorNomes.addEventListener('click', () => {
-      const ligando = this.interruptorNomes.getAttribute('aria-pressed') !== 'true';
-      this.marcarNomes(ligando);
-      this.aoTrocarNomes(ligando);
-    });
-    definirTooltip(this.interruptorNomes, {
-      titulo: 'Nomes no mapa',
-      corpo:
-        'Escreve o nome de cada província dentro dela. ' +
-        'O nome só aparece onde couber: aproxime para ver os menores.',
-    });
-    this.corpo.appendChild(this.interruptorNomes);
-
     this.legenda.className = 'painel-lateral__legenda';
     for (const faixa of faixas) {
       const linha = document.createElement('li');
@@ -137,7 +113,6 @@ export class PainelLateral {
     }
     this.corpo.appendChild(this.legenda);
     this.marcarRelacoes(null);
-    this.marcarNomes(false);
 
     pai.appendChild(this.raiz);
   }
@@ -165,13 +140,6 @@ export class PainelLateral {
     this.raiz.dataset['aberto'] = this.aberto ? 'sim' : 'nao';
     this.aba.textContent = this.aberto ? '›' : '‹';
     this.aba.setAttribute('aria-expanded', String(this.aberto));
-  }
-
-  private marcarNomes(ligados: boolean): void {
-    this.interruptorNomes.setAttribute('aria-pressed', String(ligados));
-    this.interruptorNomes.textContent = ligados
-      ? 'Nomes no mapa: ligados'
-      : 'Nomes no mapa: desligados';
   }
 
   private marcarCores(ligadas: boolean): void {

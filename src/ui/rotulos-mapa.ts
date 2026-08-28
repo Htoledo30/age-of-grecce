@@ -18,15 +18,17 @@
  *
  * ## A regra que resolve a poluição, e ela vem da cartografia
  *
- * ⚠️ **Rótulo de área só se desenha se COUBER dentro da área naquele zoom.** É a regra dos
- * renderizadores de mapa de verdade — no Mapbox, um rótulo que não cabe em nenhuma âncora
- * simplesmente não é desenhado —, e ela dá nível de detalhe **de graça**: o texto tem tamanho
- * fixo em pixels de tela, a província cresce com o zoom, e portanto zoom baixo mostra só as
- * grandes e zoom alto mostra todas. Nenhum limiar de zoom escrito à mão, nenhuma tabela de
- * "aparece a partir de tanto".
+ * ⚠️ **O nome ENCOLHE até caber, e nunca some.** A primeira versão seguia a regra dos
+ * renderizadores de mapa de verdade — rótulo que não cabe na área não é desenhado —, e ela
+ * está certa para um atlas e errada para este jogo. Henrique jogando: *"muitos nomes não
+ * aparecem (...) tem que aparecer de todas as zonas"*. Num mapa impresso o nome é enfeite; num
+ * jogo de estratégia ele é como se sabe onde se está, e uma província muda é uma província que
+ * o jogador precisa clicar para identificar.
  *
- * E ela dispensa detector de colisão: se cada nome cabe dentro da própria província, e as
- * províncias não se sobrepõem, dois nomes não podem se cruzar.
+ * O que sobrou da regra é a boa metade: o espaço disponível continua mandando no TAMANHO. O
+ * texto tem corpo fixo em pixels de tela e a província cresce com o zoom, então o nome de uma
+ * terra grande fica no corpo cheio e o de uma pequena encolhe até o piso. Nível de detalhe sem
+ * limiar de zoom escrito à mão, e sem esconder nada.
  *
  * O espaço disponível vem do `rotulo.raio` assado — o raio do maior círculo que cabe na
  * província —, e o ponto vem do `rotulo`, que é o PÓLO DE INACESSIBILIDADE e não o centroide:
@@ -56,6 +58,17 @@ export interface RotuloDeProvincia {
  */
 const FOLGA = 0.82;
 
+/**
+ * O menor corpo em que um nome ainda se lê, em pixels de palco.
+ *
+ * ⚠️ **É o piso que substituiu o "some quando não cabe".** A primeira versão seguia a regra
+ * dos renderizadores de mapa — rótulo que não cabe na área não se desenha — e Henrique
+ * jogando: *"muitos nomes não aparecem (...) tem que aparecer de todas as zonas"*. Ele está
+ * certo sobre o jogo dele: aqui o nome não é enfeite cartográfico, é como se sabe onde se
+ * está. Então o nome ENCOLHE em vez de sumir, e para de encolher aqui.
+ */
+const CORPO_MINIMO = 8;
+
 export class RotulosMapa {
   private readonly raiz = document.createElement('div');
   private readonly elementos = new Map<string, HTMLElement>();
@@ -67,6 +80,10 @@ export class RotulosMapa {
    * nunca muda: medir uma vez ao criar o rótulo é medir para sempre.
    */
   private readonly larguras = new Map<string, number>();
+  /** O corpo que o CSS deu a cada nome. Terra e água têm faces e tamanhos diferentes. */
+  private readonly corpos = new Map<string, number>();
+  /** O último corpo escrito, em pixel inteiro: escrever igual de novo custaria refluxo à toa. */
+  private readonly corpoAtual = new Map<string, number>();
   private ligados = false;
 
   constructor(pai: HTMLElement) {
@@ -120,7 +137,12 @@ export class RotulosMapa {
    */
   private medir(): void {
     if (this.larguras.size === this.elementos.size && this.larguras.size > 0) return;
-    for (const [id, elemento] of this.elementos) this.larguras.set(id, elemento.offsetWidth);
+    for (const [id, elemento] of this.elementos) {
+      this.larguras.set(id, elemento.offsetWidth);
+      // O corpo vem do CSS e não de uma constante aqui: terra é versalete de 13, água é
+      // itálico de 15, e quem manda nisso é a folha de estilo.
+      this.corpos.set(id, Number.parseFloat(getComputedStyle(elemento).fontSize) || 13);
+    }
   }
 
   /**
@@ -134,16 +156,24 @@ export class RotulosMapa {
     for (const p of this.provincias) {
       const elemento = this.elementos.get(p.id);
       if (!elemento) continue;
-      // O diâmetro da província EM PIXELS DE PALCO. O texto não cresce com o zoom; a
-      // província sim — e é essa diferença que faz o nível de detalhe acontecer sozinho.
-      const cabe = p.raio * 2 * camera.zoom * FOLGA;
       const largura = this.larguras.get(p.id) ?? 0;
-      if (largura === 0 || largura > cabe) {
-        elemento.dataset['cabe'] = 'nao';
-        continue;
+      const base = this.corpos.get(p.id) ?? 13;
+      if (largura === 0) continue;
+
+      // O diâmetro da província EM PIXELS DE PALCO. O texto não cresce com o zoom; a
+      // província sim — e é dessa diferença que sai o tamanho de cada nome.
+      const cabe = p.raio * 2 * camera.zoom * FOLGA;
+      // ⚠️ **Encolhe até caber, e nunca some.** O corpo é arredondado a pixel inteiro de
+      // propósito: durante um zoom contínuo isso troca o `font-size` só quando cruza um
+      // inteiro, e escrever `font-size` é a única coisa aqui que custa refluxo.
+      const corpo = Math.round(
+        Math.max(CORPO_MINIMO, Math.min(base, (base * cabe) / largura)),
+      );
+      if (this.corpoAtual.get(p.id) !== corpo) {
+        elemento.style.fontSize = `${corpo}px`;
+        this.corpoAtual.set(p.id, corpo);
       }
       const ponto = camera.mundoParaPalco(p.x, p.y);
-      elemento.dataset['cabe'] = 'sim';
       // `translate` e nunca `transform`: é a mesma lição dos marcadores de hoste — um `scale`
       // independente multiplicaria o que estivesse em `transform` e jogaria a peça longe.
       elemento.style.translate = `calc(${ponto.x}px - 50%) calc(${ponto.y}px - 50%)`;

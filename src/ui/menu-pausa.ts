@@ -11,6 +11,17 @@ export class MenuPausa {
   private readonly opcoes = document.createElement('section');
   private tela: TelaDaPausa = 'menu';
 
+  /**
+   * O jogador ligou ou desligou os nomes das províncias no mapa.
+   *
+   * ⚠️ **Isto mora nas OPÇÕES e não no painel do mapa, e a decisão é de Henrique:** *"essa
+   * opção tem que estar ativa 24 horas por dia (...) o único jeito de desligar seria indo em
+   * opções no menu"*. Nome de província não é modo de visualização como as cores ou as
+   * relações — é parte de como o mapa se lê, e um interruptor à mão convida a desligar o que
+   * deveria estar sempre lá.
+   */
+  aoTrocarNomes: (ligados: boolean) => void = () => {};
+
   aoSairParaMenu: () => void = () => {};
   aoSairDoJogo: () => void = () => {};
   aoAlternar: (aberto: boolean) => void = () => {};
@@ -71,7 +82,7 @@ export class MenuPausa {
     this.opcoes.className = 'menu-pausa__cartao';
     this.opcoes.dataset['tela'] = 'opcoes';
     this.opcoes.hidden = true;
-    this.opcoes.append(this.cabecalho('Opções', 'Áudio'));
+    this.opcoes.append(this.cabecalho('Opções', 'Áudio e interface'));
 
     const controles = document.createElement('div');
     controles.className = 'menu-pausa__controles';
@@ -81,6 +92,16 @@ export class MenuPausa {
       ),
       this.volume('Efeitos', 'efeitos', this.audio.volumes.efeitos, (n) =>
         this.audio.definirEfeitos(n),
+      ),
+      this.chave(
+        'Nomes das províncias no mapa',
+        'nomes',
+        nomesNoMapa(),
+        'O nome de cada terra e de cada zona de mar, escrito dentro dela.',
+        (ligados) => {
+          guardarNomesNoMapa(ligados);
+          this.aoTrocarNomes(ligados);
+        },
       ),
     );
 
@@ -114,6 +135,40 @@ export class MenuPausa {
     if (perigo) botao.dataset['tom'] = 'perigo';
     botao.addEventListener('click', acao);
     return botao;
+  }
+
+  /**
+   * Uma opção de liga-desliga, no mesmo desenho das barras de volume.
+   *
+   * A explicação vai NA TELA e não num tooltip: a tela de opções é lida uma vez a cada muitos
+   * meses, e é justamente onde o mouse parado não ajuda ninguém.
+   */
+  private chave(
+    rotulo: string,
+    id: string,
+    ligado: boolean,
+    explicacao: string,
+    aoMudar: (ligado: boolean) => void,
+  ): HTMLElement {
+    const linha = document.createElement('label');
+    linha.className = 'menu-pausa__chave';
+    linha.htmlFor = `chave-${id}`;
+    const textos = document.createElement('div');
+    const nome = document.createElement('span');
+    nome.className = 'menu-pausa__chave-nome';
+    nome.textContent = rotulo;
+    const nota = document.createElement('span');
+    nota.className = 'menu-pausa__chave-nota';
+    nota.textContent = explicacao;
+    textos.append(nome, nota);
+    const controle = document.createElement('input');
+    controle.type = 'checkbox';
+    controle.id = `chave-${id}`;
+    controle.className = 'menu-pausa__caixa';
+    controle.checked = ligado;
+    controle.addEventListener('change', () => aoMudar(controle.checked));
+    linha.append(textos, controle);
+    return linha;
   }
 
   private volume(
@@ -185,5 +240,30 @@ export class MenuPausa {
     return document.querySelector(
       '.janela:not([hidden]), .governo:not([hidden]), .diplomacia:not([hidden]), .fim-de-jogo:not([hidden])',
     ) !== null;
+  }
+}
+
+/**
+ * A preferência de nomes no mapa, guardada no navegador.
+ *
+ * ⚠️ **O padrão é LIGADO**, e é o pedido dele com todas as letras: *"tem que estar ativa 24
+ * horas por dia"*. Ausente do armazenamento quer dizer "nunca mexeu", e quem nunca mexeu vê
+ * os nomes.
+ */
+const CHAVE_NOMES = 'grecce:nomes-no-mapa';
+
+export function nomesNoMapa(): boolean {
+  try {
+    return localStorage.getItem(CHAVE_NOMES) !== 'nao';
+  } catch {
+    return true;
+  }
+}
+
+function guardarNomesNoMapa(ligados: boolean): void {
+  try {
+    localStorage.setItem(CHAVE_NOMES, ligados ? 'sim' : 'nao');
+  } catch {
+    // Navegador sem armazenamento: a escolha vale esta sessão e pronto.
   }
 }

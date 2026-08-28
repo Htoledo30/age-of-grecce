@@ -188,6 +188,23 @@ Novas Observacoes Por Henrique
      entre "Mar de Esciros" e "Calcis", que sao coisas de natureza diferente.
      Prints: capturas/nomes-perto.png e capturas/nomes-longe.png
 
+   → E DEPOIS TU JOGASTE E ACHASTE TRES COISAS, as tres corrigidas:
+     1) "nao consigo clicar no mapa, perco movimento" — bug meu e feio. O base.css tem
+        "#ui > * { pointer-events: auto }", que e seletor de ID e ANULA o pointer-events:none
+        que eu escrevi so na classe. A camada cobre a tela inteira, entao ela engolia todo
+        clique e todo arrasto assim que os nomes acendiam. Consertado, e agora tem teste de
+        tela guardando (o TypeScript nao ve CSS; so clicando de verdade da para pegar).
+     2) "muitos nomes nao aparecem, tem que aparecer de todas as zonas" — tu tens razao sobre
+        o TEU jogo. A regra da cartografia (rotulo que nao cabe nao se desenha) vale para
+        atlas, onde o nome e enfeite; aqui ele e como tu sabes onde estas. Agora o nome
+        ENCOLHE ate um piso de 8px e nunca some. O tamanho continua vindo do espaco, entao
+        terra grande fica no corpo cheio e terra pequena fica pequena — mas aparece.
+     3) "essa opcao tem que estar ativa 24 horas por dia, o unico jeito de desligar seria indo
+        em opcoes" — feito. Saiu do painel do mapa e foi para o menu de pausa, aba de opcoes
+        (que agora se chama "Audio e interface"), LIGADA por padrao. A preferencia fica
+        guardada no navegador, como os volumes.
+     Print das opcoes: capturas/opcoes-nomes.png
+
 crash do editor de balanceamento (medidas.ts) — CONSERTADO. Era bug meu: escrevi uma quebra
 de linha literal dentro de uma string ao editar o arquivo por script. O build e a suite ja
 passam; a versao empurrada esta correta.

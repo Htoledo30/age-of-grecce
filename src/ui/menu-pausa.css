@@ -130,3 +130,37 @@
   width: 100%;
   text-align: center;
 }
+
+/* ── Uma opção de liga-desliga, no mesmo desenho das barras de volume ─────────────────────
+   A explicação vai NA TELA e não num tooltip: a tela de opções se lê uma vez a cada muitos
+   meses, e é justamente onde o mouse parado não ajuda ninguém. */
+.menu-pausa__chave {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.menu-pausa__chave-nome {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ui-texto);
+}
+
+.menu-pausa__chave-nota {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ui-texto-tenue);
+}
+
+.menu-pausa__caixa {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ui-bronze);
+  cursor: pointer;
+}

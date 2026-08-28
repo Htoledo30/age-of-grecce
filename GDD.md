@@ -587,10 +587,11 @@ novos sistemas podem ser julgados jogando, não apenas imaginando.
 
 - Mesa de comando helênica contemporânea: pedra escura, bronze, marfim e ornamentação
   grega discreta.
-- **O nome da província vive NO MAPA, dentro dela** — e só onde couber. Rótulo de área que
-  não cabe na área não se desenha: é a regra da cartografia, e é ela que dá nível de detalhe
-  sem limiar de zoom escrito à mão. O ponto é o pólo de inacessibilidade, nunca o centroide,
-  que cai fora da forma em 15 das 244. Água se rotula em itálico.
+- **O nome da província vive NO MAPA, dentro dela, e SEMPRE.** Ele encolhe onde a terra é
+  pequena e nunca desaparece: num atlas o nome é enfeite, num jogo de estratégia ele é como se
+  sabe onde se está. O tamanho vem do espaço disponível, o que dá nível de detalhe sem limiar
+  de zoom escrito à mão. O ponto é o pólo de inacessibilidade, nunca o centroide, que cai fora
+  da forma em 15 das 244. Água se rotula em itálico. Desligar é possível, mas só nas opções.
 - **O mapa tem MODOS.** Ele responde "de quem é esta terra" por padrão e "o que acham deste
   reino" no modo de relações — mesma textura, mesma fronteira, só o significado da cor muda.
   Modo de dados pinta mais forte que o político: ali a cor é a resposta, e não enfeite sobre o

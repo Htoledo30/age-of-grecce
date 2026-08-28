@@ -832,12 +832,27 @@ graça porque o mapa é raster: é o pixel de maior distância até a borda, dua
 transformada de distância. `gerador/gerar-rotulos.ts` é aditivo: escreve só o JSON, não toca
 no PNG, e dispensa re-assar o mapa.
 
-⚠️ **A regra que resolve a poluição: rótulo de área só se desenha se COUBER na área naquele
-zoom.** É a regra dos renderizadores de mapa de verdade, e ela dá nível de detalhe **de
-graça** — o texto tem corpo fixo em pixels de tela, a província cresce com o zoom, então zoom
-baixo mostra só as grandes e zoom alto mostra todas. Nenhum limiar escrito à mão, nenhuma
-tabela de "aparece a partir de tanto". E dispensa detector de colisão: se cada nome cabe
-dentro da própria província, e províncias não se sobrepõem, dois nomes não podem se cruzar.
+⚠️ **O nome ENCOLHE até caber, e nunca some.** A primeira versão seguia a regra dos
+renderizadores de mapa de verdade — rótulo que não cabe na área não é desenhado —, e ela está
+certa para um atlas e errada para este jogo. Henrique jogando: *"muitos nomes não aparecem
+(...) tem que aparecer de todas as zonas"*. Num mapa impresso o nome é enfeite; num jogo de
+estratégia ele é como se sabe onde se está, e uma província muda é uma província que o jogador
+precisa clicar para identificar. O que sobrou da boa metade da regra é o TAMANHO: o corpo é
+fixo em pixels de tela e a província cresce com o zoom, então terra grande fica no corpo cheio
+e terra pequena encolhe até um piso de 8 px. Nível de detalhe sem limiar de zoom escrito à mão,
+e sem esconder nada.
+
+⚠️ **A opção mora no MENU DE PAUSA, e vem LIGADA.** Decisão dele: *"essa opção tem que estar
+ativa 24 horas por dia; o único jeito de desligar seria indo em opções"*. Nome de província não
+é modo de visualização como as cores ou as relações — é parte de como o mapa se lê, e um
+interruptor à mão convida a desligar o que deveria estar sempre lá. A preferência fica no
+navegador, como os volumes.
+
+⚠️ **E a camada não pode roubar o clique.** `base.css` tem `#ui > * { pointer-events: auto; }`
+— seletor de ID —, que ANULA um `pointer-events: none` escrito só na classe. Como a camada
+cobre a tela inteira, o jogo parava de responder a clique e a arrasto assim que os nomes
+acendiam. O seletor aqui precisa do `#ui` junto, e um teste de tela guarda isso: o TypeScript
+não vê CSS.
 
 **O que os outros fazem, e onde falham.** O Age of History 2 tem interruptor de nomes e faz
 aparecerem com o zoom; a queixa mais repetida dos jogadores é *"nomes e bandeiras grandes

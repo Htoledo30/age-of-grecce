@@ -7,6 +7,7 @@
  */
 
 import { coresDasRelacoes } from './vistas/mapa-de-relacoes';
+import { nomesNoMapa } from '@/ui/menu-pausa';
 import { atualizarInterface } from './atualizar-interface';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
@@ -64,7 +65,10 @@ export function ligarAcoes(jogo: Jogo): void {
         mar: p.mar === true,
       })),
   );
-  tela.lateral.aoTrocarNomes = (ligados) => tela.rotulosMapa.mostrar(ligados);
+  // ⚠️ **Ligado de saída**, e a opção de desligar vive no menu de pausa: decisão de Henrique
+  // — *"tem que estar ativa 24 horas por dia; o único jeito de desligar seria indo em opções"*.
+  tela.rotulosMapa.mostrar(nomesNoMapa());
+  tela.pausa.aoTrocarNomes = (ligados) => tela.rotulosMapa.mostrar(ligados);
 
   // ⚠️ **O sujeito das relações troca por CLIQUE NO MAPA**, e é o pedido de Henrique ao pé da
   // letra: *"a cor de um reino que eu selecionar"*. Uma lista de dezessete nomes no painel
