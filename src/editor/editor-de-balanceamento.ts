@@ -108,22 +108,25 @@ export class EditorDeBalanceamento {
     for (const aba of ABAS_DO_EDITOR) this.navegacao.appendChild(this.botaoDaAba(aba));
 
     this.conteudo.className = 'editor-balanceamento__conteudo';
-    let grupo = '';
-    let secao: HTMLElement | null = null;
+    // O catálogo pode declarar assuntos intercalados — custo e comida de cada arma, por
+    // exemplo. A tela agrupa pelo NOME, não pela posição, para produzir uma seção única com
+    // Leves, Hoplitas, Arqueiros e Cavalaria alinhados embaixo do mesmo título.
+    const grupos = new Map<string, HTMLElement>();
     for (const campo of campos) {
-      if (campo.grupo !== grupo) {
-        grupo = campo.grupo;
+      let secao = grupos.get(campo.grupo);
+      if (!secao) {
         secao = document.createElement('section');
         secao.className = 'editor-balanceamento__grupo';
-        secao.dataset['grupo'] = grupo.toLocaleLowerCase('pt-BR');
+        secao.dataset['grupo'] = campo.grupo.toLocaleLowerCase('pt-BR');
         const titulo = document.createElement('h3');
-        titulo.textContent = grupo;
+        titulo.textContent = campo.grupo;
         secao.appendChild(titulo);
         this.conteudo.appendChild(secao);
+        grupos.set(campo.grupo, secao);
       }
       const controle = criarControleNumerico(campo, campo.ler(), () => this.atualizarEstado());
       this.controles.push(controle);
-      secao?.appendChild(controle.elemento);
+      secao.appendChild(controle.elemento);
     }
     corpo.append(this.navegacao, this.conteudo);
     return corpo;

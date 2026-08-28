@@ -22,54 +22,63 @@ antiga da ideia.
 ## Trabalho atual
 
 A campanha básica, a economia provincial, a alimentação, as construções, o save/load, a
-capital, a corrupção, a felicidade, as revoltas, a guerra terrestre, o áudio e a IA econômica,
-defensiva e **ofensiva** já existem. O resumo completo está em `ESTADO_DO_JOGO.md`.
+capital, a corrupção, a felicidade, as revoltas, a guerra terrestre, **o mar**, o áudio e a IA
+econômica, defensiva e ofensiva já existem. O resumo completo está em `ESTADO_DO_JOGO.md`.
 
-A IA ataca, reage e desiste; a diplomacia básica existe. O ritmo dela vive em `dados/ia.json`
-(`fracaoQueMarcha`, `sobraMinima`, `valorDaCapital`, `vantagemParaDeclarar`, `guerraLonga`,
-`defesaAmeacada`) e é balanço, não código: mexer nele é editar JSON e rodar `npm run partida`.
+A diplomacia tem relação, presente, pacto, comércio, tributo, **acesso militar** e uma **mesa
+de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com aceitar e
+recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
+JSON e rodar `npm run partida`.
 
-A relação, o presente, o pacto, o acordo de comércio e o **tributo** já existem — a lista de
-vizinhos virou mesa de negociação.
+⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO.** Henrique parou aqui: *"por enquanto está ótimo"*. A
+única coisa aberta na lista dele é a **nacionalidade no humor**, que ele mesmo adiou (*"essa da
+nacionalidade vai ter que entrar depois!"*) — não comece sem ele dizer.
 
-**O trabalho autorizado agora é FECHAR O BALANÇO DO TRIBUTO**, e ele está aberto de propósito.
-A mecânica funciona e está medida, mas o número que decide se ela fica como está é de Henrique:
+O que ele ainda não julgou com o olho está na seção abaixo. **Perguntar antes de abrir frente
+nova** vale mais do que adivinhar a próxima peça.
 
-- sem tributo: 12 províncias trocando de dono em 100 turnos, 6 poderes eliminados de 18;
-- com tributo, hoje: 25 e 7, com a desigualdade final em 3,2× contra 12,4× da linha de base.
+### A leitura de balanço de hoje, e o alvo que ela ainda não cumpre
 
-⚠️ **Uma configuração não é uma medição.** Rodar `npm run partida 100` com `turnosDePremio`
-(hoje 6) e `fracaoDaRenda` dos prazos em valores vizinhos antes de concluir qualquer coisa — este
-mesmo dial já deu 41 conquistas em 20 e 25 em 6, e a resposta é caótica.
+`npm run partida 100`, com tudo ligado:
 
-**O ALVO, decidido por Henrique:** a curva desce até o turno 100, e lá **já tem de haver alguns
-impérios APARECENDO — mas não reinos imensos.** Cem turnos são rápidos: cerca de meia hora de
-partida. Não é um mapa que se consolidou, é um mapa em que já dá para apontar quem está
-ganhando.
+- 25 províncias trocando de dono · **4 poderes eliminados de 18** · maior reino com 6
+  (começou com 3) · distância entre maior e menor 10,0× contra 6,2× no turno 1;
+- 11% dos poder-turnos em guerra · 28 guerras · 86 pactos · 47 acordos de comércio de pé ·
+  39 passagens militares · 47 trechos de travessia pelo mar;
+- decretos: baixo 79 · normal 19 · alto 70 · **confisco 19** (a alavanca de emergência dispara,
+  e dispara raro, que é o desenho).
 
-⚠️ **A leitura de hoje pode estar plana demais para esse alvo.** A configuração atual dá 7
-poderes eliminados de 18 e o maior reino saindo de 2 para 6 províncias — mas a distância entre
-o maior e o menor entre os SOBREVIVENTES cai para 3,2×, contra 6,2× no turno 1. O mundo termina
-mais igual do que começou, o que é o oposto de "impérios aparecendo". Antes do tributo eram
-12,4×, com um Argos destacado — longe demais para o outro lado.
+⚠️ **O ALVO, decidido por Henrique, continua sendo:** a curva desce até o turno 100 e lá **já
+tem de haver alguns impérios APARECENDO — mas não reinos imensos.** Cem turnos são meia hora de
+partida; não é um mapa consolidado, é um mapa em que já dá para apontar quem está ganhando.
 
-O número a perseguir fica entre os dois, e é ele que precisa de medição: **alguns poderes
-visivelmente maiores, sem um dono do mapa.**
-
-Depois disso, a próxima peça natural é a **aliança**, que é o topo da régua: acima de +45 ainda
-não há nada a comprar.
+⚠️ **E a leitura de hoje pode estar plana demais para esse alvo.** O reforço do imposto deixou
+a IA mais rica, e mundo rico é mundo estável: a guerra caiu de 18% para 11% dos poder-turnos, as
+conquistas de 40 para 25 e os reinos eliminados de 11 para 4. Argos termina com 6 províncias
+onde antes terminava com 12. **Não mexer nisso sem Henrique jogar primeiro** — ele pode achar
+bom ter vizinhos vivos, e o número que resolve é o olho dele, não a medição.
 
 ⚠️ **Cuidado ao mexer nos números da IA sem medir.** A resposta é caótica: uma conquista cedo
 vira bola de neve, e andar na mesma direção de um dial já deu 20 conquistas numa configuração e
 105 na vizinha. `npm run partida 100` é barato e é o corte.
 
+⚠️ **E cuidado com dial cujo custo é HUMOR.** Desde que o humor multiplica a arrecadação, cada
+ponto vale 1% da renda inteira da província — enquanto o fator do imposto incide só sobre a
+parcela dele, que é 13% a 48% do total. Foi assim que o imposto alto chegou a ser NEGATIVO no
+equilíbrio: um botão que prometia mais dinheiro e entregava menos. Qualquer alavanca nova que
+se pague em humor tem de refazer essa conta dos dois lados.
+
 Não começar espionagem, migração, governadores, vassalagem ou suserania sem uma nova decisão
 de Henrique. **A IA não EXIGE tributo nem rompe o que recebe** — as duas coisas foram deixadas
 de fora de propósito e são decisão nova.
 
-⚠️ **O naval JÁ COMEÇOU, e com decisão dele (28/08/2026): não existe frota.** O exército anda
-pelas zonas de mar como anda por terra. O que continua fora, e é decisão nova: bloqueio naval,
-desgaste por ficar na água, e a IA patrulhar ou interceptar travessia alheia.
+⚠️ **O naval está DE PÉ, e sem frota — decisão de Henrique (28/08/2026).** O exército anda
+pelas 48 zonas de mar como anda por terra, embarcar exige Porto, e todo encontro na água é
+batalha sem conquista. A IA atravessa. O que continua fora, e é decisão nova: bloqueio naval,
+desgaste por FICAR parado na água (hoje só a folha de campanha), e a IA patrulhar ou
+interceptar travessia alheia.
+
+⚠️ **Aliança** continua sendo o topo da régua: acima de +45 ainda não há nada a comprar.
 
 ## O que depende de Henrique testar
 
@@ -78,7 +87,10 @@ desgaste por ficar na água, e a IA patrulhar ou interceptar travessia alheia.
 - força prática da corrupção e dos decretos de imposto;
 - quatro armas, muralhas, cerco, recuo e folha militar dentro e fora de casa;
 - utilidade das abas de Alimentação e Mercado no Governo;
-- aparência dos três arquipélagos das Cíclades;
+- **os arquipélagos com a água deles**: as manchas se leem como reinos agora, ou o mar
+  reivindicado parece território demais para cinco ilhotas?
+- **a paleta desempatada**: 75 dos 139 poderes mudaram de tom. Perdeu-se alguma identidade de
+  reino no caminho?
 - comportamento da IA, especialmente defesa e ataque;
 - **o tributo jogando**: a parcela dói o suficiente? o prazo longo é tentador ou é armadilha?
   comprar a saída de uma guerra perdida chega a tempo de salvar a partida?
@@ -89,6 +101,15 @@ desgaste por ficar na água, e a IA patrulhar ou interceptar travessia alheia.
 - **o painel da província refeito**: as quatro medidas são as quatro certas? tirar as
   construções do painel e pô-las em janela custa cliques demais em partida longa? o contador
   do portão ("0/4", "2.500 homens") evita abrir a janela à toa?
+- **o mar jogando**: a viagem custa o que deve custar? Atenas→Rodes em 7 turnos é espera boa ou
+  espera chata? interceptar alguém no meio da água acontece na prática?
+- **o imposto refeito**: o CONFISCO é uma decisão de verdade ou uma armadilha óbvia? a previsão
+  em moeda no tooltip resolve o "isto rende ou não rende"?
+- **a mesa de propostas**: chega proposta o suficiente quando ele joga de verdade? O medido com
+  um jogador ativo foi 5 propostas de 5 reinos em 60 turnos — pode ser pouco.
+- **o acesso militar**: dá vontade de usar, ou é mais fácil declarar guerra e pronto?
+- **o modo de relações no mapa**: as seis cores se distinguem no terreno? trocar o escolhido por
+  clique é o gesto certo?
 
 ⚠️ **NUNCA use `transform: scale()` no palco.** Ele desliga o antialiasing de subpixel de
 toda a interface e deixa o texto fino e lavado. A escala vive em `src/estilo/escala.ts` e usa

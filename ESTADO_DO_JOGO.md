@@ -7,7 +7,7 @@ sendo a prova final. A visão desejada, inclusive sistemas ainda ausentes, fica 
 ## Visão rápida
 
 Age of Grecce é um grand strategy por províncias no mundo grego de 700 a.C. A versão
-declarada pelo projeto é `0.0.4`.
+declarada pelo projeto é `0.1.0`.
 
 O mapa possui 196 províncias de terra, **48 zonas marítimas**, 53 regiões e 139 poderes. A fatia autoral cobre a Grécia
 central: 25 províncias com economia completa (Ática, Megáris, Coríntia, Beócia, Eubeia,
@@ -201,6 +201,8 @@ para a campanha completa do GDD é a diplomacia necessária.
 - recrutar por ARMA — leves em qualquer terra, hoplitas com Armaria, arqueiros onde há
   madeira, cavalaria onde há cavalos —, esperar a formação e dispensar soldados;
 - dividir, reunir e mover hostes por ordens simultâneas;
+- **embarcar num Porto e atravessar o mar** zona por zona, um salto por rodada — e brigar com
+  quem estiver na água, sem tomar nada dela;
 - enfrentar batalhas em províncias e encontros na estrada;
 - assaltar, sitiar, fazer surtida, socorrer uma cidade e conquistar território;
 - acompanhar marchas e ler a crônica da rodada;
@@ -214,6 +216,12 @@ para a campanha completa do GDD é a diplomacia necessária.
 - fechar o jogo a qualquer momento e retomar depois: todo clique já está salvo;
 - ver o humor das províncias reagir a comida, cerco, conquista e Templo — e pagar o preço
   da revolta quando ele desaba;
+- **hipotecar uma província no confisco** para pagar a guerra de hoje, com a data do levante
+  escrita no botão;
+- **abrir a própria estrada** a quem não é inimigo, e **responder** ao que os outros reinos vêm
+  pedir — pacto, comércio ou passagem, com aceitar e recusar;
+- **virar o mapa para o modo de relações** e ver, de um golpe, o que cada reino acha de
+  qualquer outro;
 - vencer a campanha unificando a Grécia central, ou perdê-la deixando de existir.
 
 ## Sistemas implementados
