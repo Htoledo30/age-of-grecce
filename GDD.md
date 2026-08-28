@@ -534,6 +534,15 @@ faça alguma coisa com o comércio que passa, e isso é sistema próprio.
   primeira versão.
 - Diplomacia começa depois da IA mínima e contém apenas o necessário para a campanha
   funcionar; sistemas diplomáticos profundos são evolução posterior.
+- ⚠️ **A TRIBO é a razão de aproximação que a Grécia tinha no lugar de nação.** Jônio, dório,
+  beócio e lócrio já decidiam a felicidade de quem é governado por estranho; eles decidem também
+  quem reconhece quem na mesa. Ser de outra tribo não afasta — a tribo dá razão para gostar, e a
+  falta dela é indiferença. É o que permite dois reinos separados pelo Egeu terem opinião um
+  sobre o outro sem nunca terem assinado nada.
+- ⚠️ **O inimigo em comum aproxima enquanto durar.** É a única aproximação viva da mesa: nasce
+  com a guerra de terceiros e morre com ela, e é por isso que ela produz aliança de conveniência
+  e não amizade. A paz longa cicatriza a fronteira pelo mesmo motivo inverso — vizinhança é
+  atrito, e atrito que nunca vira sangue deixa de doer.
 - ⚠️ **O ACESSO MILITAR existe, e é o único acordo com LADO.** Guerra, trégua, pacto e comércio
   valem igual para os dois; deixar alguém atravessar a sua terra não deixa você atravessar a
   dele. Ele dá passagem e só passagem — nada de conquista, cerco ou saque, que não existem sem

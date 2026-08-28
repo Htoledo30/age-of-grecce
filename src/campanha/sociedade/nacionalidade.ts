@@ -77,6 +77,22 @@ function nacionalidadeDoPoder(
 }
 
 /**
+ * A TRIBO deste poder — jônio, dório, beócio, lócrio —, ou `undefined` se ele não tem ficha.
+ *
+ * ⚠️ **Exportada para a DIPLOMACIA, e não para a felicidade.** Aqui dentro o povo serve para
+ * medir quanto um dono é estranho a quem ele governa; lá fora ele responde outra pergunta, e
+ * mais simples: dois reinos são da mesma gente? Medido antes de existir, **82% dos 306 pares
+ * de poderes ficavam em opinião zero para sempre** — a única parcela que a geografia produzia
+ * era fronteira comum, então quem não te encosta não tinha como ter opinião nenhuma sobre ti.
+ * A tribo já estava escrita no dado e não decidia nada fora da felicidade.
+ */
+export function povoDoPoder(nucleo: NucleoDaCampanha, idPoder: string): string | undefined {
+  const nacionalidade = nacionalidadeDoPoder(nucleo, idPoder);
+  if (nacionalidade === undefined) return undefined;
+  return nucleo.economia.nacionalidades[nacionalidade]?.povo;
+}
+
+/**
  * O quanto o dono de hoje é estranho ao povo desta terra.
  *
  * As duas frações somam no máximo 1, e o que sobra é a fatia que se reconhece no rei.

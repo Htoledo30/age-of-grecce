@@ -816,6 +816,82 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## A mesa diplomática deixa de ser 82% indiferença
+
+Henrique: *"o que mais de diplomacia tá meia-boca? Tá faltando?"*. Fui medir antes de opinar, e
+o diagnóstico tinha um número só.
+
+⚠️ **Dos 306 pares possíveis entre os 18 poderes, apenas 56 tinham alguma parcela de opinião
+acontecendo. Os outros 250 ficavam em zero para sempre.** A causa era estrutural, e ela se lê
+na própria régua:
+
+```
+POSITIVAS (todas exigem ASSINAR algo):  comércio +10 · pacto +15 · tributo +6
+NEGATIVAS (todas acontecem sozinhas):   guerra −60 · trégua −15 · fronteira −20
+                                        terra tomada −45 · promessa quebrada −25
+```
+
+A única coisa que a geografia sabia produzir era *fronteira comum*, e ela é negativa. Quem não
+te encosta não tinha como ter opinião nenhuma sobre ti — e a IA só abre comércio com opinião
+acima de `relacaoParaDeclarar`, que é **0** no equilibrado. Ou seja: **o estado natural da mesa
+era reprovado de saída.** O único caminho para entrar nela era presente, e o banco mostrava a
+IA fazendo exatamente isso — 51 presentes e 25.201 de ouro em 150 turnos, comprando o direito
+de existir numa mesa que nascia trancada.
+
+Duas consequências:
+
+- **o vizinho, que é o parceiro natural, era estruturalmente o pior parceiro possível** —
+  fronteira dá −5 por província e nada cicatrizava; dois vizinhos que nunca se bateram seguiam
+  em −20 no turno trezentos;
+- **o jogador parado recebia ZERO propostas em 150 turnos**, com opinião 0 contra todo mundo.
+  Não por hostilidade: por inelegibilidade.
+
+### Três razões de gostar de alguém, e nenhuma delas pede assinatura
+
+- **mesma gente** — a tribo grega (jônio, dório, beócio, lócrio) já estava escrita nas fichas
+  autorais e já movia a felicidade desde a nacionalidade; **não havia uma linha dela em toda a
+  pasta de diplomacia.** É a razão certa porque é o que a Grécia de 700 a.C. tinha no lugar de
+  nação: o dório de Corinto reconhece o dório de Argos, e o jônio de Atenas reconhece o jônio
+  de Eretria através do Egeu inteiro. Ser de outra tribo não afasta — dá indiferença, que é o
+  que a base já diz;
+- **inimigo em comum** — o motor mais básico do gênero, e não havia uma linha dele: dois reinos
+  podiam sangrar contra o mesmo agressor por cinquenta turnos e continuar indiferentes. Ao
+  contrário da tribo, esta parcela é VIVA: aparece com a guerra e some com ela, que é o que faz
+  a aliança de conveniência ser exatamente isso. Com teto, senão uma guerra geral faria todo
+  mundo amar todo mundo por aritmética;
+- **paz por década** — é o que faz a fronteira parar de ser veneno eterno. Com teto também:
+  durar não vira amizade infinita.
+
+⚠️ **E nada disso pediu estado novo.** A paz sai do registro de TRÉGUA, que guarda o turno em
+que ela vence e não é apagado quando vence — é, portanto, a data em que a última guerra deixou
+de doer. Quem nunca guerreou conta desde o começo da campanha, que é a resposta certa: não ter
+história de sangue é a paz mais longa que dois reinos podem ter.
+
+### O que mudou, medido em 150 turnos
+
+| | antes | depois |
+|---|---|---|
+| pares em opinião zero | 54% | **0%** |
+| **propostas ao jogador** | **0** | **34** |
+| opinião dos outros sobre o jogador | 0 (de 0 a 0) | **6 (de −7 a 12)** |
+| acordos de comércio abertos | 52 | **90** |
+| pactos assinados | 88 | **113** |
+| presentes (o suborno de entrada) | 51 · 25.201 de ouro | **23 · 10.253** |
+| guerras declaradas | 40 | **29** |
+| províncias que mudaram de dono | 30 | **15** |
+| poderes varridos de 18 | 6 | **6** |
+
+⚠️ **O preço está na última metade da tabela, e ele é honesto: o mundo guerreia menos.** As
+conquistas caíram pela metade — o que é o que se pede a um sistema cujo trabalho é dar razões
+para não brigar. As doses foram varridas antes de escolher; a mais generosa que testei (o dobro
+desta) derrubava as conquistas para 10 e deixava a mesa boa demais.
+
+⚠️ **E sobrou um nó conhecido, que é o próximo se ele quiser a guerra de volta:
+`relacaoParaDeclarar` faz DOIS trabalhos.** Ele é ao mesmo tempo *"acima disto eu não te
+ataco"* e *"acima disto eu comercio contigo"*, e os dois puxam para lados opostos — subir a
+barra devolve a guerra e apaga as propostas ao jogador. Medido: com a barra +8 as conquistas
+voltam a 42 e as propostas caem a zero. Separá-los é o conserto, e ele não cabia nesta mudança.
+
 ## O editor de balanceamento passa a escrever nos dados
 
 Henrique, ao descobrir para onde iam os números que ele afinava: *"uai, quando eu mudo no

@@ -40,6 +40,7 @@ import { darOuro, gastar, tesouroDe } from '../governo/tesouro';
 import { rendaBaseDe, rendaDe } from '../provincia/renda';
 import { valorDoTributo } from './tributo';
 import { alcancaComercio, temPorto } from '../comercio/alcance';
+import { povoDoPoder } from '../sociedade/nacionalidade';
 import {
   alvoDaRelacao,
   aproximarRelacao,
@@ -262,6 +263,7 @@ function situacaoDaRelacao(
   // A memória da conquista sem guardar memória: enquanto a bandeira dele estiver na minha
   // mão, ele lembra. Devolver a terra apaga a mágoa sozinho.
   const terrasTomadas = minhas.filter((id) => nucleo.atlas.donoInicial(id) === b).length;
+  const povoDeA = povoDoPoder(nucleo, a);
   return {
     emGuerra: emGuerra(nucleo, a, b),
     tregoa: tregoaAte(nucleo, a, b) === undefined ? 0 : 1,
@@ -272,7 +274,35 @@ function situacaoDaRelacao(
     temTributo: tributoEntre(nucleo, a, b) !== undefined,
     // A PIOR das duas: o que envenena a relação é haver um quebrador de promessas nela.
     reputacao: Math.min(reputacaoDe(nucleo, a), reputacaoDe(nucleo, b)),
+    // ⚠️ `undefined` de um lado não casa com `undefined` do outro: poder sem ficha não tem
+    // tribo, e dois desconhecidos não são "a mesma gente" por igualmente não se saber.
+    mesmoPovo: povoDeA !== undefined && povoDeA === povoDoPoder(nucleo, b),
+    inimigosComuns: inimigosComuns(nucleo, a, b),
+    turnosDePaz: turnosDePaz(nucleo, a, b),
   };
+}
+
+/** Com quantos reinos os dois estão em guerra ao MESMO tempo. */
+function inimigosComuns(nucleo: NucleoDaCampanha, a: string, b: string): number {
+  const dele = new Set(guerrasDe(nucleo, b));
+  // Um contra o outro não é inimigo em comum: é a guerra dos dois, e ela já tem parcela.
+  return guerrasDe(nucleo, a).filter((id) => id !== b && dele.has(id)).length;
+}
+
+/**
+ * Há quantos turnos estes dois não se enfrentam.
+ *
+ * ⚠️ **Sai da trégua, e por isso não precisa de estado novo.** O registro de trégua guarda o
+ * turno em que ela vence e NÃO é apagado quando vence — `tregoaAte` só para de devolvê-lo. Ele
+ * é, portanto, a data em que a última guerra entre os dois deixou de doer, e é dela que a paz
+ * se conta. Quem nunca guerreou conta desde o começo da campanha, que é a resposta certa: não
+ * ter história de sangue é a paz mais longa que dois reinos podem ter.
+ */
+function turnosDePaz(nucleo: NucleoDaCampanha, a: string, b: string): number {
+  if (emGuerra(nucleo, a, b)) return 0;
+  const fimDaTregoa = nucleo.estado.tregoas[parDe(a, b)];
+  if (fimDaTregoa === undefined) return nucleo.estado.turno;
+  return Math.max(0, nucleo.estado.turno - fimDaTregoa);
 }
 
 /** Até que turno o pacto de não-agressão segura. `undefined` quando não há pacto. */

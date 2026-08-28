@@ -45,7 +45,12 @@
         "fronteiraMaxima": -20,
         "porTerraTomada": -15,
         "acordoDeComercio": 10,
-        "terraTomadaMaxima": -45
+        "terraTomadaMaxima": -45,
+        "mesmoPovo": 6,
+        "porInimigoComum": 5,
+        "inimigoComumMaximo": 12,
+        "porDecadaDePaz": 2,
+        "pazMaxima": 6
       },
       "choque": {
         "conquista": -25

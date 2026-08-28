@@ -347,3 +347,59 @@ uai quando eu mudo no editor que o chat criou nao muda no repositorio? / oxi que
      homens custam 350 por turno contra 774 de renda de Atenas. Quem encolhia aquele exercito
      era a fome. Agora ele recruta ate a folha passar da renda e mede o que diz medir.
 
+o que mais de diplomacia ta meia boca? Ta faltando? O que mais conseguimos melhorar?
+   → MEDI ANTES DE OPINAR, e o diagnostico cabia num numero: dos 306 pares possiveis entre os
+     18 poderes, so 56 tinham alguma coisa acontecendo. OS OUTROS 250 FICAVAM EM ZERO PARA
+     SEMPRE — 82% da mesa era indiferenca permanente.
+     A causa estava na propria regua:
+       POSITIVAS (todas exigem ASSINAR algo): comercio +10 · pacto +15 · tributo +6
+       NEGATIVAS (todas acontecem sozinhas):  guerra -60 · tregua -15 · fronteira -20
+                                              terra tomada -45 · promessa quebrada -25
+     A unica coisa que a geografia sabia produzir era fronteira comum, e ela e negativa. Quem
+     nao te encosta nao tinha como ter opiniao nenhuma sobre ti. E a IA so abre comercio com
+     opiniao acima de 0 — ou seja, o estado natural da mesa era reprovado de saida. O unico
+     jeito de entrar era presente, e o banco mostrava a IA fazendo isso: 51 presentes e 25.201
+     de ouro em 150 turnos, comprando o direito de existir numa mesa que nascia trancada.
+     Duas consequencias feias: o VIZINHO, que e o parceiro natural, era o pior parceiro
+     possivel (fronteira nunca cicatrizava); e TU PARADO recebia ZERO propostas em 150 turnos,
+     com opiniao 0 contra todo mundo — nao por hostilidade, por inelegibilidade.
+
+   → FEITO: tres razoes de gostar de alguem, e nenhuma delas pede assinatura.
+     1) MESMA GENTE. A tribo grega (jonio, dorio, beocio, locrio) ja estava escrita nas fichas
+        e ja movia a felicidade desde a nacionalidade — e nao havia UMA LINHA dela em toda a
+        pasta de diplomacia. E a razao certa porque e o que a Grecia de 700 a.C. tinha no lugar
+        de nacao. Ser de outra tribo nao afasta: da indiferenca.
+     2) INIMIGO EM COMUM. O motor mais basico do genero, e nao existia. Dois reinos podiam
+        sangrar contra o mesmo agressor por cinquenta turnos e continuar indiferentes. Essa e
+        VIVA: nasce com a guerra e morre com ela.
+     3) PAZ POR DECADA. E o que faz a fronteira parar de ser veneno eterno.
+     Nada disso pediu estado novo: a paz sai do registro de TREGUA, que guarda o turno em que
+     ela vence e nao e apagado depois. Quem nunca guerreou conta desde o comeco da campanha.
+     MEDIDO em 150 turnos, antes → depois:
+       pares em opiniao zero ....... 54% → 0%
+       PROPOSTAS A TI .............. 0 → 34
+       o que os outros acham de ti .. 0 (de 0 a 0) → 6 (de -7 a 12)
+       acordos de comercio abertos .. 52 → 90
+       pactos assinados ............. 88 → 113
+       presentes (o suborno) ........ 51 / 25.201 ouro → 23 / 10.253
+       guerras declaradas ........... 40 → 29
+       provincias que mudaram dono .. 30 → 15
+       poderes varridos de 18 ....... 6 → 6
+     ⚠️ O PRECO: o mundo guerreia menos. As conquistas cairam pela metade. Isso e o que se pede
+     a um sistema cujo trabalho e dar razoes para nao brigar, mas e teu direito achar demais —
+     os cinco numeros novos estao em dados/ajustes.json, em diplomacia.alvo, e varri as doses
+     antes de escolher (a dose dobrada derrubava as conquistas para 10).
+     ⚠️ E SOBROU UM NO, que e o proximo se tu quiser a guerra de volta: relacaoParaDeclarar faz
+     DOIS trabalhos — "acima disto eu nao te ataco" E "acima disto eu comercio contigo". Eles
+     puxam para lados opostos: medido, subindo a barra +8 as conquistas voltam a 42 e as
+     propostas caem a zero. Separar os dois e o conserto, e nao cabia nesta mudanca.
+
+   → O QUE CONTINUA FALTANDO, na ordem em que eu faria:
+     1. ALIANCA. O pacto e so nao-agressao; ninguem entra na guerra de ninguem. E o topo da
+        escada e ele nao existe. Agora existe caminho ate ela, que antes nao existia.
+     2. Separar o gatilho de atacar do gatilho de comerciar (o no acima).
+     3. Os portoes que te deixam inelegivel: pacto so vai para vizinho MAIS FORTE que a IA,
+        entao um jogador sem exercito nunca e candidato.
+     4. A IA nunca rompe pacto — esta documentado como decisao da v1, nao e descuido.
+     5. Espionagem: desenhada no GDD e adiada de proposito ate a diplomacia basica funcionar.
+

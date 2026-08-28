@@ -174,6 +174,30 @@ export const Ajustes = z.object({
         /** Dinheiro entrando dos dois lados aproxima. Ver `acordoDeComercio`. */
         acordoDeComercio: z.number(),
         terraTomadaMaxima: z.number(),
+        /**
+         * O que vale ser da MESMA TRIBO grega — dois jônios, dois dórios.
+         *
+         * ⚠️ **A única parcela positiva que a geografia produz sozinha, e ela nasceu de um
+         * número medido: 250 dos 306 pares de poderes ficavam em opinião zero para sempre.**
+         * As três parcelas positivas que existiam — comércio, pacto, tributo — só chegam por
+         * assinatura, e ninguém assina com quem não conhece. Sem uma razão para gostar de
+         * alguém do outro lado do mar, 82% da mesa era indiferença permanente.
+         */
+        mesmoPovo: z.number(),
+        /** Por reino contra quem os DOIS lutam ao mesmo tempo. O inimigo do meu inimigo. */
+        porInimigoComum: z.number(),
+        /** Com teto, como a fronteira: o quinto inimigo comum não aproxima mais que o primeiro. */
+        inimigoComumMaximo: z.number(),
+        /**
+         * Por década sem se enfrentarem. É o que faz a fronteira parar de ser veneno eterno.
+         *
+         * ⚠️ Sem ele, vizinhança dava −5 por província e NADA cicatrizava: dois vizinhos que
+         * nunca se bateram seguiam em −20 no turno trezentos, e a IA não abre comércio com
+         * opinião negativa. O parceiro natural era o pior parceiro possível.
+         */
+        porDecadaDePaz: z.number(),
+        /** Teto da paz: ela sara a fronteira, não compra amizade eterna de graça. */
+        pazMaxima: z.number(),
       }),
       /**
        * Os choques: o que um ATO faz com a opinião na hora, antes de ela voltar a caminhar.

@@ -73,7 +73,52 @@ export interface SituacaoDaRelacao {
    * você — e é exatamente isso que faz o pacto valer o papel em que está escrito.
    */
   reputacao: number;
+  /**
+   * Os dois são da MESMA TRIBO grega — dois jônios, dois dórios?
+   *
+   * ⚠️ **É a única parcela positiva que a geografia produz sozinha**, e ela existe por causa de
+   * um número medido: antes dela, **250 dos 306 pares de poderes ficavam em zero para sempre**.
+   * A conta só sabia produzir aproximação por assinatura — comércio, pacto, tributo —, e
+   * assinatura ninguém oferece a quem não conhece. Sem uma razão para gostar de alguém do outro
+   * lado do mar, 82% da mesa era indiferença permanente.
+   *
+   * A tribo é a razão certa porque já está escrita nas fichas e porque é o que a Grécia de 700
+   * a.C. realmente tinha no lugar de nação: o dório de Corinto reconhece o dório de Argos, e o
+   * jônio de Atenas reconhece o jônio de Eretria através do Egeu inteiro.
+   */
+  mesmoPovo: boolean;
+  /**
+   * Com quantos reinos os DOIS estão em guerra ao mesmo tempo.
+   *
+   * ⚠️ **O inimigo do meu inimigo, e ele não existia.** É o motor mais básico do gênero e não
+   * havia uma linha dele: dois reinos podiam sangrar contra o mesmo agressor por cinquenta
+   * turnos e continuar indiferentes um ao outro. Ao contrário da tribo, esta parcela é VIVA —
+   * ela aparece quando a guerra começa e some quando ela acaba, o que faz a aliança de
+   * conveniência ser exatamente isso.
+   */
+  inimigosComuns: number;
+  /**
+   * Há quantos turnos estes dois não se enfrentam.
+   *
+   * ⚠️ **Existe porque a fronteira era veneno permanente.** Vizinhança dá `−5` por província e
+   * nada cicatrizava: dois vizinhos que nunca se bateram continuavam em `−20` no turno
+   * trezentos, e a IA não abre comércio com opinião negativa — o vizinho, que é o parceiro
+   * natural, era estruturalmente o pior parceiro possível.
+   *
+   * Quem nunca guerreou conta desde o começo da campanha: nunca ter lutado É a paz mais longa
+   * que existe. Quem guerreou conta do fim da trégua, e é assim que a ferida sara sozinha sem
+   * apagar a memória da terra tomada, que essa só se apaga devolvendo.
+   */
+  turnosDePaz: number;
 }
+
+/**
+ * De quantos turnos é uma década.
+ *
+ * O jogo anda um ano por turno (`anosPorTurno`), então a década é a unidade em que uma paz se
+ * conta na boca de quem a viveu — e é ela que aparece no rótulo da parcela.
+ */
+const TURNOS_DA_DECADA = 10;
 
 /** Uma parcela do alvo, com nome — a mesma legibilidade da conta da felicidade. */
 export interface ParcelaDaRelacao {
@@ -124,6 +169,27 @@ export function parcelasDaRelacao(
 
   if (situacao.reputacao < 0) {
     parcelas.push({ rotulo: 'promessa quebrada', pontos: situacao.reputacao });
+  }
+
+  if (situacao.mesmoPovo) {
+    parcelas.push({ rotulo: 'mesma gente', pontos: alvo.mesmoPovo });
+  }
+
+  if (situacao.inimigosComuns > 0) {
+    // Com teto, como a fronteira: o quinto inimigo em comum não aproxima mais que o primeiro.
+    const pontos = Math.min(
+      alvo.inimigoComumMaximo,
+      situacao.inimigosComuns * alvo.porInimigoComum,
+    );
+    parcelas.push({ rotulo: `inimigo em comum (${situacao.inimigosComuns})`, pontos });
+  }
+
+  // ⚠️ Em guerra não há paz que conte: a parcela sumiria no turno seguinte de qualquer jeito,
+  // e mostrá-la ao lado de "em guerra −60" seria a conta se contradizendo na cara do jogador.
+  if (!situacao.emGuerra) {
+    const decadas = Math.floor(situacao.turnosDePaz / TURNOS_DA_DECADA);
+    const pontos = Math.min(alvo.pazMaxima, decadas * alvo.porDecadaDePaz);
+    if (pontos > 0) parcelas.push({ rotulo: `paz de ${decadas} décadas`, pontos });
   }
 
   if (situacao.terrasTomadas > 0) {

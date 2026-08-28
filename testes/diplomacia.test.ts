@@ -165,19 +165,38 @@ describe('a relação: o humor entre reinos', () => {
   it('começa em indiferença e caminha para o alvo, sem saltar', () => {
     // ⚠️ A mesma mecânica do humor do povo, de propósito: um VALOR que anda em direção a um
     // ALVO feito de parcelas com nome. O jogador já aprendeu essa máquina uma vez.
+    //
+    // ⚠️ **Este teste já afirmou que o alvo entre Atenas e Elêusis era NEGATIVO**, porque
+    // fronteira comum era a única coisa que a geografia sabia produzir. Desde que a tribo
+    // entrou na conta ele é positivo, e está certo que seja: as duas são jônias e estão a dez
+    // quilômetros uma da outra. O que se guarda aqui é o MOVIMENTO, que não mudou.
     const c = nova();
     expect(c.relacaoEntre('atenas', 'eleusis')).toBe(0);
     const alvo = c
       .parcelasDaRelacaoEntre('atenas', 'eleusis')
       .reduce((soma, p) => soma + p.pontos, 0);
-    // Vizinhos se atritam: fronteira comum puxa o alvo para baixo de zero.
-    expect(alvo).toBeLessThan(0);
+    expect(alvo).not.toBe(0);
 
     c.passarTurno();
     const depois = c.relacaoEntre('atenas', 'eleusis');
-    expect(depois).toBeLessThan(0);
-    // Um passo, e não um salto: ninguém passa a odiar você da noite para o dia.
+    // Andou PARA o alvo, e nunca além dele.
+    expect(Math.sign(depois)).toBe(Math.sign(alvo));
+    expect(Math.abs(depois)).toBeLessThanOrEqual(Math.abs(alvo));
+  });
+
+  it('e é um passo por turno, nunca um salto', () => {
+    // Ninguém passa a odiar você da noite para o dia: a guerra põe o alvo lá embaixo e a
+    // opinião leva turnos para descer até ele.
+    const c = nova();
+    c.declararGuerra('eleusis');
+    const alvo = c
+      .parcelasDaRelacaoEntre('atenas', 'eleusis')
+      .reduce((soma, p) => soma + p.pontos, 0);
+    expect(alvo).toBeLessThan(-30);
+    c.passarTurno();
+    const depois = c.relacaoEntre('atenas', 'eleusis');
     expect(depois).toBeGreaterThan(alvo);
+    expect(Math.abs(depois)).toBeLessThanOrEqual(ajustes.diplomacia.passoPorTurno);
   });
 
   it('a guerra afunda a opinião, e a conta diz por quê', () => {
