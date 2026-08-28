@@ -205,6 +205,19 @@ Novas Observacoes Por Henrique
         guardada no navegador, como os volumes.
      Print das opcoes: capturas/opcoes-nomes.png
 
+zoom travado em 0.40, liberar mais
+   → FEITO, e tu lembravas certo: camera.zoomMaximo estava em 0,40, e a faixa inteira ia de
+     0,156 (mapa todo na tela) a 0,40 — 2,5x de ponta a ponta.
+     Comparei 0,4 / 0,7 / 1,0 / 1,4 lado a lado antes de escolher (capturas/zoom-comparativo
+     .png). O achado: **passando de 0,4 aparece a vegetacao pintada no terreno.png**, uma
+     camada de arte que tu nunca viste porque o teto nao deixava chegar la. Em 1,0 as arvores
+     aparecem e o traco continua limpo; em 1,4 a textura comeca a papar e as arvores a se
+     repetir. Teto novo: 1,0 — dois e meio vezes mais perto do que dava antes.
+     Mexi tambem no passo da roda (1,12 -> 1,18), porque com a faixa maior o mesmo passo
+     levaria 16 voltas de roda para atravessar em vez de 8. Agora sao 11.
+     Os dois ficam em dados/ajustes.json, em "camera" — se quiseres chegar mais perto ainda,
+     e so subir o zoomMaximo; custa nitidez, nao desempenho.
+
 crash do editor de balanceamento (medidas.ts) — CONSERTADO. Era bug meu: escrevi uma quebra
 de linha literal dentro de uma string ao editar o arquivo por script. O build e a suite ja
 passam; a versao empurrada esta correta.

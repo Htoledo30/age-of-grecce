@@ -816,6 +816,23 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## O teto do zoom, e a arte que ele escondia
+
+Henrique: *"consegue liberar o quanto eu consigo dar zoom in? pelo que me lembre tinha travado
+em 0,40"*. Lembrava certo — `camera.zoomMaximo` estava em 0,4, e a faixa inteira ia de 0,156
+(o mapa todo na tela) a 0,4: **2,5× de ponta a ponta**.
+
+⚠️ **O terreno tinha mais detalhe do que o teto deixava ver.** Comparados lado a lado 0,4 /
+0,7 / 1,0 / 1,4, a vegetação pintada no `terreno.png` só começa a aparecer passando de 0,4 —
+havia uma camada de arte que o jogador não alcançava. Em **1,0** as árvores aparecem e o traço
+continua limpo; é em 1,4 que a textura começa a papar e as árvores a se repetir. O teto foi
+para 1,0, e subir mais custa nitidez, não desempenho.
+
+⚠️ **E o passo da roda anda junto, o que é fácil esquecer.** O número de entalhes de ponta a
+ponta é `ln(máximo/mínimo) / ln(passo)`: com o teto em 1,0, o passo de 1,12 passaria de 8 para
+**16 voltas de roda** para atravessar a faixa. 1,18 devolve o percurso a 11 sem tornar o passo
+brusco.
+
 ## O nome de cada província, escrito nela
 
 Pedido de Henrique: *"o nome de cada província deve ser escrito diretamente no mapa dentro de

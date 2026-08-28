@@ -876,11 +876,26 @@ export const Ajustes = z.object({
     }),
   }),
   camera: z.object({
-    /** Teto de aproximação. O piso não se ajusta: é o zoom em que o mapa inteiro cabe. */
+    /**
+     * Teto de aproximação. O piso não se ajusta: é o zoom em que o mapa inteiro cabe.
+     *
+     * ⚠️ **O terreno tem mais detalhe do que o teto deixava ver.** Em 0,4 a Ática inteira
+     * cabia na tela e a vegetação pintada no `terreno.png` nunca aparecia — havia uma camada
+     * de arte que o jogador não alcançava. Em 1,0 as árvores aparecem e o traço ainda está
+     * limpo; comparado lado a lado, é em 1,4 que a textura começa a papar e as árvores a se
+     * repetir. Subir daqui é possível e custa nitidez, não desempenho.
+     */
     zoomMaximo: z.number().positive(),
     /** Velocidade da câmera pelo teclado, em pixels do palco por segundo. */
     velocidadeLivre: z.number().positive(),
-    /** Fator de zoom por entalhe da roda do mouse. */
+    /**
+     * Fator de zoom por entalhe da roda do mouse.
+     *
+     * ⚠️ **Anda junto com o `zoomMaximo`, e é fácil esquecer.** O número de entalhes de ponta
+     * a ponta é `ln(máximo/mínimo) / ln(passo)`: quando o teto subiu de 0,4 para 1,0, o mesmo
+     * passo de 1,12 passou de 8 para 16 voltas de roda para atravessar a faixa. 1,18 devolve
+     * o percurso a 11 voltas sem tornar o passo brusco.
+     */
     passoDaRoda: z.number().gt(1),
   }),
   provincias: z.object({

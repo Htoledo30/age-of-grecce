@@ -288,9 +288,9 @@
     }
   },
   "camera": {
-    "zoomMaximo": 0.4,
+    "zoomMaximo": 1.0,
     "velocidadeLivre": 900,
-    "passoDaRoda": 1.12
+    "passoDaRoda": 1.18
   },
   "provincias": {
     "opacidade": 0.55,
