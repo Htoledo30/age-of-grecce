@@ -95,6 +95,29 @@ describe('o acesso militar abre a estrada, e só a estrada', () => {
     expect(c.podeConcederAcesso('eleusis', 'atenas', CURTO).pode).toBe(false);
   });
 
+  it('a viagem de várias viradas sobrevive à virada quando o destino tem licença', () => {
+    // ⚠️ **Duas portas discordavam.** `podeOrdenarMarcha` aceitava o destino pela licença e
+    // `atualizarViagens` não a conhecia: a ordem era registrada no clique e apagada em silêncio
+    // na virada seguinte. Só a viagem do JOGADOR passa por ali — a IA refaz tudo todo turno —,
+    // então quem via o exército parar sem explicação era ele.
+    const c = nova();
+    c.plantarHoste('atenas', 'atenas', 800);
+    const hoste = c.hostes().find((h) => h.poder === 'atenas')!;
+    fazerAmizade(c, 'eleusis', 'atenas');
+    c.concederAcesso('atenas', CURTO, 'eleusis');
+    fazerAmizade(c, 'megara', 'atenas');
+    c.concederAcesso('atenas', CURTO, 'megara');
+
+    c.ordenarMarcha(hoste.id, 'megara', 800, 'atenas', 'sitiar');
+    // Duas pernas: ela não cabe numa virada, e é por isso que a viagem precisa continuar.
+    expect(c.ordemDaHoste(hoste.id)?.rota).toEqual(['eleusis', 'megara']);
+
+    c.passarTurno();
+    const emViagem = c.hostes().find((h) => h.poder === 'atenas')!;
+    expect(emViagem.posicao).toBe('eleusis');
+    expect(c.ordemDaHoste(emViagem.id)?.rota).toEqual(['megara']);
+  });
+
   it('abrir a PRÓPRIA estrada não pede licença de ninguém', () => {
     // ⚠️ A regra deixa; quem exige confiança é o outro lado abrir a dele. Sem esta separação,
     // o jogo travava o jogador de tomar uma decisão que é dele — inclusive a decisão ruim.

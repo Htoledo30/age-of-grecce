@@ -65,6 +65,11 @@ medição ou de pesquisa nos jogos do gênero, e cada uma tem o número que a ju
 `testes/diplomacia/posicao-no-mapa.test.ts` varre o mapa inteiro exigindo que os dois sentidos
 deem o mesmo número.
 
+⚠️ **29/08/2026: o naval veio na frente, a pedido de Henrique** — ele voltou do desktop para o
+notebook, puxou o repositório e apontou o mar como incompleto. As fases 0 a 2 estão descritas
+abaixo, na seção do naval. **A LIGA continua sendo o trabalho combinado**, e a pergunta aberta
+dela continua aberta.
+
 ⚠️ **TRABALHO COMBINADO PARA A PRÓXIMA SESSÃO (28/08/2026): a LIGA.** Henrique decidiu fechar o
 dia e retomar pela diplomacia. A peça é a **liga hegemônica — vassalagem em roupa grega**: o
 membro mantém o próprio governo, paga tributo, entra nas guerras do hegemon, e tem um *desejo de
@@ -97,6 +102,15 @@ diplomacia refeita):
 - 18 propostas ao jogador parado, contra ZERO antes da mesa ser refeita;
 - decretos: baixo 156 · normal 14 · alto 143 · confisco 5.
 
+⚠️ **A leitura NAVAL é separada, e é de 29/08/2026 — em SEIS partidas de 120 turnos, trocando o
+reino parado a cada uma.** Uma partida só não serve para o mar: as seis divergem completamente
+entre si, e foi assim que três consertos que pareciam bons apareceram como ruído. Depois das
+fases 0 a 2: **2,8 desembarques em terra alheia** (eram 1,5), 31,7 trechos de travessia, 0,3
+interceptações, **1,7 bloqueios**, com 20,0 conquistas, 10,5 poderes vivos de 18 e o maior reino
+em 7,8 — ou seja, **o mar dobrou de movimento e o mundo não desandou**. `npm run partida` passou
+a contar desembarques em terra alheia, interceptações e bloqueios: os três ficam ZERADOS quando
+a mecânica morre, e os três já estiveram zerados.
+
 ⚠️ **O ALVO, decidido por Henrique, continua sendo:** a curva desce até o turno 100 e lá **já
 tem de haver alguns impérios APARECENDO — mas não reinos imensos.** Cem turnos são meia hora de
 partida; não é um mapa consolidado, é um mapa em que já dá para apontar quem está ganhando.
@@ -123,9 +137,41 @@ são decisão nova. (Vassalagem/suserania saiu desta lista: virou a **liga**, co
 
 ⚠️ **O naval está DE PÉ, e sem frota — decisão de Henrique (28/08/2026).** O exército anda
 pelas 48 zonas de mar como anda por terra, embarcar exige Porto, e todo encontro na água é
-batalha sem conquista. A IA atravessa. O que continua fora, e é decisão nova: bloqueio naval,
-desgaste por FICAR parado na água (hoje só a folha de campanha), e a IA patrulhar ou
-interceptar travessia alheia.
+batalha sem conquista.
+
+⚠️ **E ele foi RETOMADO em 29/08/2026, por fases, a pedido de Henrique** — *"nao faca tudo de
+uma vez que para testar depois fica mais dificil"*. O que entrou:
+
+- **o desembarque, que era um DEFEITO**: a IA atravessava e nunca chegava. Medido, 12 embarques
+  e ZERO desembarques em terra alheia em 150 turnos — a travessia soltava a hoste quando faltava
+  o último trecho, e a retirada a pegava no mesmo instante;
+- **a IA disputa o mar** (fase 1): ela intercepta expedição inimiga parada na água que encosta
+  no chão dela. E o encontro na estrada passou a exigir guerra, que o cabeçalho dele sempre
+  disse e o código não cumpria;
+- **o BLOQUEIO NAVAL** (fase 2): frota inimiga na água que banha o teu Porto fecha o cais — ele
+  para de ligar por mar e de levar mercadoria. Embarcar continua livre, senão o bloqueio seria
+  inquebrável. A IA bloqueia. E a rota do acordo de comércio passou a ser conferida TODO TURNO,
+  e não só na assinatura;
+- **a viagem entra na conta do alvo** (valor por trecho) e **casa em chamas fecha o cais, não
+  afunda a viagem**.
+
+⚠️ **O que continua fora, e é decisão nova: o DESGASTE por ficar parado na água** (hoje só a
+folha de campanha) — agora ele faz sentido, porque ficar parado finalmente compra alguma coisa —
+e a **proteção de rota escoltada**, já que o que existe é o bloqueio do CAIS.
+
+⚠️ **E o número que segura o teto de tudo isso não é regra, é balanço: o mapa termina com SEIS
+Portos de pé em 150 turnos.** `valorDoMar` faz só o PRIMEIRO cais valer a obra, e bloqueio,
+interceptação e desembarque dependem de haver cais dos dois lados. Mar mais cheio se compra ali,
+e é decisão de Henrique.
+
+⚠️ **UM CONSERTO MEDIDO E DESCARTADO, para ninguém tentar de novo sem ler: a paz é CEGA para o
+mar.** *"Não há mais o que tomar dele"* pergunta só o que ENCOSTA no reino, e nada encosta em
+ninguém através da água — das 32 hoste-viradas na água em 150 turnos, **16 eram de reinos sem
+guerra nenhuma**. Escrevi o conserto de três formas e medi as três; nenhuma se pagou, e a mais
+promissora derrubou os desembarques de 2,0 para 1,0 com +71% de conquistas por guerras que não
+terminavam. O conserto certo é a memória da IA, e ela precisa de campo no ESTADO: a hoste que
+marcha com a força inteira renasce com id novo a cada virada. Os três números estão no
+`ESTADO_DO_JOGO.md`.
 
 ⚠️ **A aliança FECHOU o topo da régua** (28/08/2026): ela obriga, a convocação é automática, e
 romper custa mais que romper um pacto. O que resta acima dela é a **liga**.
@@ -153,6 +199,11 @@ romper custa mais que romper um pacto. O que resta acima dela é a **liga**.
   do portão ("0/4", "2.500 homens") evita abrir a janela à toa?
 - **o mar jogando**: a viagem custa o que deve custar? Atenas→Rodes em 7 turnos é espera boa ou
   espera chata? interceptar alguém no meio da água acontece na prática?
+- **o BLOQUEIO**: fechar o cais de alguém é uma jogada que dá vontade de fazer, ou é lento
+  demais para competir com marchar? Ver a frota inimiga na tua água assusta o suficiente? E o
+  contrário — quebrar um bloqueio saindo do porto bloqueado parece a resposta certa, ou parece
+  que o jogo te encurralou? (Medido: 1,7 bloqueios por partida de 120 turnos, e o teto disso é
+  o número de Portos no mapa, não a regra.)
 - **o imposto refeito**: o CONFISCO é uma decisão de verdade ou uma armadilha óbvia? a previsão
   em moeda no tooltip resolve o "isto rende ou não rende"?
 - **a mesa de propostas**: chega proposta o suficiente quando ele joga de verdade? O medido com

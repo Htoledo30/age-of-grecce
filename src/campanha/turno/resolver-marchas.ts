@@ -14,6 +14,7 @@ import { donoDe, populacaoDe } from '../provincia/consultas';
 import { conquistar } from '../provincia/posse';
 import { impedeAssaltoImediatoEm } from '../guerra/cercos';
 import { abalarRelacao, emGuerra } from '../diplomacia/relacoes';
+import { temAcessoA } from '../diplomacia/acesso-militar';
 import { miliciaEm } from '../guerra/defesa-local';
 import { saquearProvincia } from '../guerra/saque';
 import { rotasLongasDaHoste } from '../guerra/marchas';
@@ -32,10 +33,15 @@ function atualizarViagens(nucleo: NucleoDaCampanha): void {
       continue;
     }
     const donoDoDestino = donoDe(nucleo, destinoFinal);
+    // ⚠️ **As chaves são as MESMAS de `podeOrdenarMarcha`, e a licença é uma delas.**
+    // Sem ela as duas portas discordavam: a ordem para uma terra que abriu a estrada era aceita
+    // no clique e apagada em silêncio na virada seguinte — e como só a viagem do JOGADOR chega
+    // aqui (a IA refaz tudo todo turno), quem via o exército parar sem explicação era ele.
     const podeEntrar =
       nucleo.atlas.ehMar(destinoFinal) ||
       donoDoDestino === hoste.poder ||
-      emGuerra(nucleo, hoste.poder, donoDoDestino);
+      emGuerra(nucleo, hoste.poder, donoDoDestino) ||
+      temAcessoA(nucleo, hoste.poder, donoDoDestino);
     const rotaAtual = podeEntrar
       ? rotasLongasDaHoste(nucleo, idHoste).get(destinoFinal)
       : undefined;

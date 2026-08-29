@@ -120,6 +120,14 @@ export interface VistaDaProvincia {
     mantimentosRestantes: number;
     fomeAtiva: boolean;
   } | null;
+  /**
+   * Quem tem frota na água que banha este cais. `null` quando ninguém tem.
+   *
+   * ⚠️ **Um Porto que para de funcionar sem dizer por quê lê-se como defeito do jogo.** É a
+   * mesma razão pela qual a ficha distingue "em revolta" de "rota cortada": o zero precisa de
+   * uma frase. Ver `campanha/guerra/bloqueio.ts`.
+   */
+  bloqueio: { por: string } | null;
   /** A obra em andamento, se houver. */
   obra: { nome: string; turnosRestantes: number } | null;
   /** `null` nas províncias que ainda não têm economia autoral. */

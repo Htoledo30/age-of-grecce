@@ -19,6 +19,12 @@
  * transforma o Porto numa decisão emparelhada — dois slots, duas obras — em vez de um
  * interruptor.
  *
+ * ⚠️ **E o BLOQUEIO fecha a rota.** Frota inimiga parada na água que banha o cais apaga aquele
+ * Porto desta busca — a metade do reino que só chegava à capital embarcando fica cortada, e
+ * perde o trânsito. É o cerco do mar, e ele existe justamente aqui: uma zona de água não se
+ * conquista, então a única coisa que segurar uma pode comprar é o que passa por ela. Ver
+ * `guerra/bloqueio.ts`.
+ *
  * ⚠️ **Isto NÃO move exército, e continua não movendo.** Mercadoria neste jogo é abstrata: não
  * há inventário, não há caravana, não há navio no mapa — então uma rota de mar abstrata cabe.
  * Hoste é peça concreta, com posição e batalha, e ela atravessa o mar **andando**, zona por
@@ -30,6 +36,7 @@
 import { alcanceDe } from '@/movimento/alcance';
 import type { NucleoDaCampanha } from '../nucleo';
 import { construcoesEm, donoDe } from '../provincia/consultas';
+import { bloqueadaEm } from '../guerra/bloqueio';
 
 /**
  * As terras do poder ligadas à capital, a capital inclusive.
@@ -91,9 +98,20 @@ export function ligadaACapital(nucleo: NucleoDaCampanha, idProvincia: string): b
 function portosDe(nucleo: NucleoDaCampanha, idPoder: string): ReadonlySet<string> {
   const portos = new Set<string>();
   for (const idProvincia of nucleo.territorios.provinciasDe(idPoder)) {
-    for (const id of construcoesEm(nucleo, idProvincia)) {
-      if (nucleo.catalogo[id]?.ligaPorMar === true) portos.add(idProvincia);
-    }
+    const temCais = construcoesEm(nucleo, idProvincia).some(
+      (id) => nucleo.catalogo[id]?.ligaPorMar === true,
+    );
+    if (!temCais) continue;
+    // ⚠️ **A pergunta do bloqueio vem DEPOIS da do cais, e a ordem é desempenho, não estilo.**
+    // `ligadaACapital` refaz esta busca para cada província ao calcular renda, humor e rede de
+    // trocas, e `bloqueadaEm` varre as hostes: perguntando antes, ela rodava para as 196 terras
+    // do mapa em vez de para os poucos cais que existem, e a suíte de testes foi de 45 s para
+    // 83 s — dois testes longos estouraram o timeout de 30 s. Cais é raro; terra não é.
+    //
+    // Cais bloqueado não é cais: a frota inimiga está justamente na água por onde a rota
+    // sairia. Ver `guerra/bloqueio.ts`.
+    if (bloqueadaEm(nucleo, idProvincia)) continue;
+    portos.add(idProvincia);
   }
   return portos;
 }

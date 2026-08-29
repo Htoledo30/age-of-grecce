@@ -45,121 +45,6 @@ outra coisa atualmente se eu comeco como atenas, so posso ter diplomacia com 2 r
      encosta no inimigo. Medido: 39 passagens concedidas em 100 turnos.
 
 
-
-═══════════════════════════════════════════════════════════════════════════════
-A FAZER
-═══════════════════════════════════════════════════════════════════════════════
-
-── economia ──
-
-mudar entre imposto baixo médio ou alto é uma mudança muito fraca, tinha que ser um pouco mais forte, ou precisamos adicionar um tipo de imposto mais alto so que diminui bem mais a relação da província;
-   → FEITO, e era pior do que fraco. Medido: o imposto é 13% a 48% da renda de uma
-     província (mediana 27%), e desde que o humor multiplica a arrecadação cada ponto de
-     humor vale 1% da renda INTEIRA. Então o alto de ×1,35 com −8 de humor era NEGATIVO no
-     equilíbrio em 6 das 25 províncias — um botão que prometia mais dinheiro e entregava
-     menos. Agora: baixo ×0,75 (+12 de humor), normal, alto ×1,8 (−10) e CONFISCO ×3 (−25).
-     Alto passou de +9% para +21% na virada seguinte e nenhuma província fica negativa.
-     O confisco é a tua "relação bem mais baixa": em Atenas são +214 por turno na hora, e
-     9 turnos até o levante — em toda província do mapa. A IA também o usa, numa condição
-     só: em guerra e com a renda sem cobrir a folha militar.
-     E a TELA mudou junto: cada botão agora diz quanto ESTA terra ganha na próxima virada e
-     quanto sobra quando o humor assentar. Quando o decreto acende levante, a segunda linha
-     vira o prazo — prometer um equilíbrio que nunca chega é pior que não prometer nada.
-
-
-── humor e revolta ──
-
-humor das províncias continua muito esquisito, todo travado esses valores;
-   → MEXIDO, falta o teu olho. A régua estava travada porque quase nada empurrava o alvo:
-     medido em 100 turnos, 50% das províncias ficavam na faixa do meio e NENHUMA chegava a
-     muito feliz. Entraram três parcelas novas de situação (reino em guerra −6, província
-     isolada da capital −10, tamanho da terra 0 a −15), o Templo subiu para +9/+15/+22, e o
-     humor passou a MEXER NO DINHEIRO: a arrecadação vira ×0,7 a ×1,3 numa linha contínua,
-     e não em degraus. Depois: 1,7 / 18,0 / 45,8 / 19,7 / 14,8% nas cinco faixas.
-
-problema diretamente ligado a humor, atualmente sempre que tento conquistar alguma província que o humor dela já esta baixo, a chance de eu conquistar aquela província e em duas rodadas ela já se revoltar é muito alta;
-   → MEXIDO. O prazo do levante passou a olhar para onde a província ESTÁ INDO, e não só
-     para onde ela está: ninguém se revolta enquanto o humor está subindo. Quem tomou a
-     cidade e já baixou o imposto tem tempo; quem tomou e não fez nada, não.
-
-a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta;
-   → MEXIDO. Templo de +5/+8/+12 para +9/+15/+22, com manutenção menor (5/8/12). E ele
-     deixou de pagar só em ordem: como o humor agora multiplica a arrecadação numa linha
-     contínua, cada ponto de felicidade vira moeda — o Templo passou a aparecer na conta de
-     retorno como qualquer obra de renda.
-
-── naval ──
-
-o mar está de pé: 47 zonas com nome, o exército anda por elas como em terra, embarcar exige
-Porto na origem, e todo encontro na água é batalha sem conquista. A IA atravessa também. O
-que sobrou anotado, não pedido: nenhum desgaste por FICAR no mar (hoje só a folha de
-campanha), bloqueio naval, e a IA não patrulha nem intercepta travessia alheia.
-
-── nacionalidade ──
-
-essa da nacionalidade vai ter que entrar depois!
-   → ENTROU. A regra velha era binária e cega: "o dono de hoje é o mesmo de 700 a.C.?", −12 e
-     pronto. Ela dava o MESMO peso para Atenas mandando em Elêusis — jônia, a dez quilômetros,
-     com 15% de atenienses já morando lá — e para Atenas mandando na Beócia. E dava ZERO para
-     Mégara segurando uma Salamina que é 20% ateniense.
-     Os dados já tinham duas camadas e nenhuma regra usava: a NACIONALIDADE (ateniense,
-     megarense, tebano), com a fração da população em cada uma, e o POVO, que é a tribo grega
-     dela — jônio, dório, beócio, lócrio. Escrevi a tribo no dado, junto do nome.
-     Três degraus: teu próprio povo é de graça; outra cidade da tua tribo custa −6; outra
-     tribo custa −18. E tudo PROPORCIONAL à fatia: Mégara paga −4 por Salamina (os 20% de
-     atenienses), Atenas pagaria −14 pela mesma Salamina (os 80% de megarenses).
-     Medido com Atenas conquistando cada terra: a Ática sai de graça, a Eubeia jônia por −6,
-     e todo o resto por −18. É o mapa ganhando uma DIREÇÃO — unificar os teus é barato,
-     atravessar o Istmo é caro.
-     O levante também mudou: agora é gatilho de MAIORIA (a maior parte do povo não reconhece
-     o dono), e não "a bandeira mudou uma vez".
-     A/B em 100 turnos: a faixa Revoltosa não se mexeu (2,1% com e sem), o que desceu foi o
-     topo — Satisfeita de 27,1% para 15,2%. Ninguém foi empurrado para a revolta.
-     ⚠️ FALTA, e é decisão tua: ASSIMILAÇÃO. Hoje o povo conquistado nunca deixa de ser quem
-     é, então o preço é permanente e se paga com Templo, imposto baixo e guarnição.
-
-── diplomacia ──
-
-outra coisa, nao sinto a IA tentando se conectar comigo para oferecer diplomacia, deveria acontecer isso, e aparecer que um reino ta querendo negociar comigo e eu ter opcao de aceitar ou recusar as propostas, e talvez no futuro ate negociar.
-   → FEITO. A IA já DECIDIA com quem assinar pacto e comércio; ela só não perguntava — tu
-     descobrias pela aba que tinha assinado alguma coisa. Agora, quando a outra ponta é o
-     jogador, a assinatura vira PEDIDO: marca "PEDE" na lista de reinos, contador na barra
-     ("DIPLOMACIA · 2") e, no topo do dossiê daquele reino, a frase dele com Aceitar e
-     Recusar. Recusar NÃO custa nada — um "não" que abalasse a opinião faria a resposta
-     certa ser nunca abrir a aba. A mesa é do turno: a virada limpa.
-     ⚠️ Um aviso honesto: jogador PARADO não recebe proposta nenhuma, e isso é a regra
-     funcionando. Medido, uma Atenas que não faz nada chega ao turno 20 com opinião média
-     −6 e comércio possível com ZERO reinos — sem Porto ela não alcança ninguém por mar, e
-     fronteira comum é parcela negativa de opinião. Um jogador que joga (ergue o Porto,
-     cultiva os vizinhos) recebeu 5 propostas de 5 reinos diferentes em 60 turnos.
-
-precio saber no futuro qual a relacao de um reino com outro reino. ter alguma tipo de menu, ou diretamente naquela janela na direita onde mostra as cores dos reinos ter uma opcao que mostra a cor de um reino que eu selecionar e em volta vermelho, amarelo ou verde para demostrar a relacao daquele reino com outros reinos sacou?
-   → FEITO, e foi onde tu pediste: no painel da direita, ao lado do interruptor de cores.
-     "Relações: ligadas" e o mapa inteiro se repinta pelo que os outros acham do ESCOLHIDO —
-     que começa sendo tu e troca com um clique em qualquer terra. A legenda aparece junto:
-     o escolhido em osso, em guerra em vermelho escuro, hostil / indiferente / amigo nas
-     tres faixas, e cinza para quem nao tem economia (esses nao tem opiniao nenhuma; pinta-
-     los de indiferente seria dar por resposta um numero que ninguem calculou).
-     Nao custou camada nova: o mapa politico ja e uma textura de indices contra uma paleta,
-     entao trocar o SIGNIFICADO da cor e reescrever a paleta. Ele so pinta mais forte no
-     modo de dados — a 55% duas faixas vizinhas somem sobre o terreno.
-
-
-Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do mar ela nao lembra que precisa ir para um territorio dela, ou de um inimigo, ela tenta ir em territorio que ela nao pode andar, para ela pdoer andar em territorio de reinos neutros precisamos criar algum sistema em diplomacia de liberar acesso militar, outra coisa, precisamos fazer a IA usar mais os sitemas de diplomacia!
-   → A METADE DO MAR ESTÁ CONSERTADA. O defeito era este: a IDA ganhou rota longa e a VOLTA
-     não — a retirada só perguntava "que terra minha eu alcanço nesta rodada", e no meio do
-     Egeu a resposta é nenhuma. Medido: 159 hoste-turnos parados na água em 100 turnos, e
-     uma delas passou 56 turnos boiando. Agora a volta usa a mesma rota longa da ida.
-     Depois do conserto: ZERO hostes paradas, e a mais demorada fica 1 turno na água.
-     (Ela nunca chegou a dar ordem ilegal — a marcha recusa isso —, o que tu viste foi o
-     exército encalhado.)
-
-═══════════════════════════════════════════════════════════════════════════════
-Novas Observacoes Por Henrique
-═══════════════════════════════════════════════════════════════════════════════
-
- 
-
 pode comecar pelo item 1! (o mundo reagir a tua posicao) + "provavelmente precisamos de mais estilos?"
    → FEITO, e no caminho eu achei um DEFEITO que estava escondido ha muito tempo.
 
@@ -242,3 +127,253 @@ aqueles 1500 jogados na UI é ridiculo"
      depende da arma — cavalo come por varios, entao a mesma despensa alimenta menos cavaleiros
      que hoplitas.
 
+
+
+═══════════════════════════════════════════════════════════════════════════════
+A FAZER
+═══════════════════════════════════════════════════════════════════════════════
+
+── economia ──
+
+mudar entre imposto baixo médio ou alto é uma mudança muito fraca, tinha que ser um pouco mais forte, ou precisamos adicionar um tipo de imposto mais alto so que diminui bem mais a relação da província;
+   → FEITO, e era pior do que fraco. Medido: o imposto é 13% a 48% da renda de uma
+     província (mediana 27%), e desde que o humor multiplica a arrecadação cada ponto de
+     humor vale 1% da renda INTEIRA. Então o alto de ×1,35 com −8 de humor era NEGATIVO no
+     equilíbrio em 6 das 25 províncias — um botão que prometia mais dinheiro e entregava
+     menos. Agora: baixo ×0,75 (+12 de humor), normal, alto ×1,8 (−10) e CONFISCO ×3 (−25).
+     Alto passou de +9% para +21% na virada seguinte e nenhuma província fica negativa.
+     O confisco é a tua "relação bem mais baixa": em Atenas são +214 por turno na hora, e
+     9 turnos até o levante — em toda província do mapa. A IA também o usa, numa condição
+     só: em guerra e com a renda sem cobrir a folha militar.
+     E a TELA mudou junto: cada botão agora diz quanto ESTA terra ganha na próxima virada e
+     quanto sobra quando o humor assentar. Quando o decreto acende levante, a segunda linha
+     vira o prazo — prometer um equilíbrio que nunca chega é pior que não prometer nada.
+
+
+── humor e revolta ──
+
+humor das províncias continua muito esquisito, todo travado esses valores;
+   → MEXIDO, falta o teu olho. A régua estava travada porque quase nada empurrava o alvo:
+     medido em 100 turnos, 50% das províncias ficavam na faixa do meio e NENHUMA chegava a
+     muito feliz. Entraram três parcelas novas de situação (reino em guerra −6, província
+     isolada da capital −10, tamanho da terra 0 a −15), o Templo subiu para +9/+15/+22, e o
+     humor passou a MEXER NO DINHEIRO: a arrecadação vira ×0,7 a ×1,3 numa linha contínua,
+     e não em degraus. Depois: 1,7 / 18,0 / 45,8 / 19,7 / 14,8% nas cinco faixas.
+
+problema diretamente ligado a humor, atualmente sempre que tento conquistar alguma província que o humor dela já esta baixo, a chance de eu conquistar aquela província e em duas rodadas ela já se revoltar é muito alta;
+   → MEXIDO. O prazo do levante passou a olhar para onde a província ESTÁ INDO, e não só
+     para onde ela está: ninguém se revolta enquanto o humor está subindo. Quem tomou a
+     cidade e já baixou o imposto tem tempo; quem tomou e não fez nada, não.
+
+a escolha de fazer o templo esta muito inútil ainda, considerando um dos pontos que coloquei a cima em relação a moral de províncias estar meio bosta;
+   → MEXIDO. Templo de +5/+8/+12 para +9/+15/+22, com manutenção menor (5/8/12). E ele
+     deixou de pagar só em ordem: como o humor agora multiplica a arrecadação numa linha
+     contínua, cada ponto de felicidade vira moeda — o Templo passou a aparecer na conta de
+     retorno como qualquer obra de renda.
+
+── naval ──
+
+o mar está de pé: 47 zonas com nome, o exército anda por elas como em terra, embarcar exige
+Porto na origem, e todo encontro na água é batalha sem conquista. A IA atravessa também. O
+que sobrou anotado, não pedido: nenhum desgaste por FICAR no mar (hoje só a folha de
+campanha), bloqueio naval, e a IA não patrulha nem intercepta travessia alheia.
+
+   → "A IA atravessa também" ERA MENTIRA, e eu fui medir porque tu disseste que o mar estava
+     incompleto. Ela atravessava e NUNCA CHEGAVA: 12 embarques e ZERO desembarques em terra
+     alheia em 150 turnos. Todas as doze expedições voltaram para casa.
+     O defeito é do ÚLTIMO PASSO. A travessia se separa da marcha por terra por duas guardas —
+     rota de dois trechos ou mais, e água dentro dela — e as duas valem para quem ainda está em
+     casa. Para quem já está boiando elas viravam armadilha: chegando à zona que ENCOSTA na
+     ilha, o que falta é um trecho só e sem água nenhuma, a travessia soltava a hoste, e a
+     retirada a pegava no mesmo instante — água não é terra inimiga, então "a terra deixou de
+     ser inimiga" é sempre verdade no mar. O ataque também não a salvava: a fatia que pode
+     marchar já conta os homens no mar como gastos, e chega a zero justamente para quem está
+     na água.
+     Reproduzido: 4.000 megarenses parados em Euripo, ENCOSTADOS em Cálcis, deram meia-volta e
+     passaram SETE turnos contornando a Eubeia até Mégara, perdendo 570 homens no caminho, com
+     a ilha intocada.
+     Consertado: quem está na água é dono do último trecho, e ele leva a postura decidida — no
+     meio do mar ela não significa nada, na praia é a diferença entre assaltar a praça aberta e
+     sentar na frente dela. Depois: 3 desembarques em terra alheia nos mesmos 150 turnos.
+     ⚠️ O número que teria mostrado isso NÃO EXISTIA — embarques e trechos de travessia estavam
+     os dois saudáveis. `npm run partida` passou a contar DESEMBARQUES EM TERRA ALHEIA.
+     ⚠️ O JOGADOR nunca teve este defeito, e é o que o escondeu: a viagem dele é uma ordem só e
+     ela atravessa e desembarca sozinha. Medido: Atenas com Porto cruza o Estreito de Salamina
+     e o Golfo Sarônico e toma Cálcis na terceira virada.
+
+   → E achei um SEGUNDO, na mesma tubulação: a licença de passagem valia só numa das duas
+     portas. A ordem era aceita no clique e apagada em SILÊNCIO na virada seguinte, porque
+     quem reconfere as viagens antes de cada trecho conhecia só mar, terra própria e guerra —
+     não a licença. Só a viagem do JOGADOR passa por ali (a IA refaz tudo todo turno), então
+     quem via o exército parar sem explicação era só tu. As duas portas agora perguntam o
+     mesmo.
+
+   → FASE 2 FEITA: O BLOQUEIO NAVAL. "Frota inimiga parada na agua que banha o teu Porto fecha
+     aquele Porto." E a primeira razao que uma forca tem para FICAR numa zona de mar — ate aqui
+     a agua era estrada, e ocupar estrada nao compra nada. Fechar o cais e tudo o que ele faz:
+     nao toma, nao saqueia, nao mata. Mas apaga duas das tres razoes de existir do Porto — a
+     ligacao por mar (a ilha que so chegava a capital embarcando fica CORTADA e perde o
+     transito) e o alcance do comercio (reino com todos os cais fechados nao poe mercadoria no
+     mar, e os acordos por agua param de render).
+     ⚠️ EMBARCAR CONTINUA LIVRE, e e deliberado: um bloqueio que trancasse o cais seria
+     inquebravel — o bloqueado nao teria como sair para atacar quem o bloqueia. Do jeito que
+     esta, SAIR E ATACAR: a agua que se precisa cruzar e justamente a ocupada.
+     ⚠️ E o mesmo desenho do cerco em terra. Sitiar nao toma a cidade: corta a producao e o
+     comercio dela e espera. Bloquear nao toma a agua: corta o que passa por ela.
+     ⚠️ Uma zona banha meia duzia de provincias, entao uma frota fecha varios cais de uma vez.
+     E a geografia falando — e o que faz o Golfo Saronico valer uma guerra e o Mar de Rodes nao.
+     ⚠️ E a ROTA DO ACORDO passou a ser conferida TODO TURNO, e nao so na assinatura. O proprio
+     codigo ja dizia por que ("um acordo assinado sobre rota nenhuma seria dinheiro nascendo do
+     nada") e a regra so valia no aperto de mao. Agora fronteira perdida, Porto derrubado e
+     frota inimiga cortam a renda sem precisar rasgar o acordo.
+     NA TELA: selo "bloqueada" e a linha "Cais bloqueado por X" na ficha da provincia, com
+     tooltip dizendo o que se perde.
+     A IA BLOQUEIA: escolhe a agua que fecha mais cais inimigos, so vai se aguenta ficar la, e
+     so sai de casa se sobrar reino. E quem ja esta bloqueando FICA — isso custou um teste
+     vermelho: a primeira versao descartava o cais ja bloqueado, inclusive o bloqueado por mim,
+     entao a frota que segurava a agua tornava a propria posicao inutil e a retirada a levava
+     para casa. O bloqueio se desfazia sozinho por ter dado certo.
+
+   → E MAIS DUAS PECAS DE MOVIMENTO, que sairam da medicao:
+     A VIAGEM ENTRA NA CONTA DO ALVO. A frota zarpava atras da costa mais RICA do mapa e nao da
+     mais PERTO — uma hoste de Megara punha-se a caminho de Rodes, a oito trechos, e a guerra
+     acabava muito antes. Agora a regua e VALOR POR TRECHO.
+     CASA EM CHAMAS FECHA O CAIS, NAO AFUNDA A VIAGEM. A trava dizia "o pior momento possivel
+     para ZARPAR" e cancelava tambem a expedicao que ja estava no meio do Egeu. Uma frota a tres
+     turnos de casa esta a tres turnos de socorrer qualquer coisa: dar meia-volta perde a viagem
+     E chega tarde.
+
+   → MEDIDO EM 6 PARTIDAS DE 120 TURNOS (o jogador parado muda de reino a cada uma — uma
+     partida so nao mostra nada, elas divergem completamente entre si):
+                                        antes da fase 2 | depois
+       desembarques em terra alheia ......... 1,5 | 2,8
+       trechos de travessia ................ 24,3 | 31,7
+       intercepcoes na agua ................. 0,2 | 0,3
+       BLOQUEIOS ............................. — | 1,7
+       conquistas .......................... 20,8 | 20,0
+       poderes vivos de 18 ................. 10,2 | 10,5
+       maior reino .......................... 8,2 | 7,8
+     O mar dobrou de movimento e o mundo NAO desandou: o maior reino ficou menor e sobrevive
+     mais gente.
+
+   → ⚠️ UM RESULTADO NEGATIVO, e ele fica anotado: A PAZ E CEGA PARA O MAR e eu nao consegui
+     consertar sem estragar o jogo. "Nao ha mais o que tomar dele" pergunta so o que ENCOSTA no
+     reino, e nada encosta em ninguem atraves da agua — a mesma cegueira que ja foi consertada
+     do lado do ataque. Medido: das 32 hoste-viradas na agua em 150 turnos, 16 eram de reinos
+     SEM GUERRA NENHUMA. Metade das expedicoes boiava por nada.
+     Escrevi o conserto de tres formas e medi as tres. NENHUMA SE PAGOU:
+       - recusar toda paz com frota na agua: o maior reino saltou de 9 para 20 provincias e a
+         distancia entre o maior e o menor de 11,4x para 30,9x. Quase todo poder deste mapa tem
+         costa, entao uma expedicao travava TODAS as pazes do reino;
+       - so a clausula "o que tomar" com a costa dentro: inerte, tres das seis sementes deram
+         resultado identico ao de nao haver regra;
+       - a clausula acima das outras: travessias de 24 para 89 trechos e desembarques CAINDO de
+         2,0 para 1,0 — mais frota no mar, menos chegando, e +71% de conquistas por guerras que
+         nao terminavam.
+     O conserto certo e a memoria da IA ("estou comprometido a tomar Megara"), e ela nao cabe no
+     tabuleiro: a hoste que marcha com a forca inteira renasce com id novo a cada virada, entao
+     precisa de campo no estado. Nao vale a pena antes de o mar ter mais portos.
+
+   → ⚠️ E ESTE E O NUMERO QUE SEGURA TUDO: o mapa inteiro termina com 6 PORTOS DE PE em 150
+     turnos. O valorDoMar faz so o PRIMEIRO cais valer a obra, e bloqueio, intercepcao e
+     desembarque dependem de haver cais dos dois lados. Se tu quiser um mar mais cheio, e ali
+     que se mexe — e e decisao de balanceamento, nao de regra.
+
+   → O QUE CONTINUA FALTANDO: o desgaste por ficar no mar (agora faz sentido, porque ficar
+     parado finalmente COMPRA alguma coisa), e a protecao de rota escoltada — o que existe e o
+     bloqueio do CAIS, nao da rota no meio da agua.
+     O reembarque tu já decidiste e fica como está: desembarcar em qualquer província, voltar
+     ao mar só por província com Porto. Escrevi isso no ESTADO_DO_JOGO como decisão, não como
+     buraco — "se sou um reino do mar e ataco um reino da terra e não houver um porto, não é
+     possível retirar exércitos da terra".
+
+   → FASE 1 FEITA: A IA DISPUTA O MAR. Ela ganhou a quarta reação de defesa — expedição
+     inimiga parada na água que ENCOSTA no meu chão é desembarque a caminho, e se eu ganho
+     dela lá, eu vou. Antes disso a batalha na água só acontecia quando duas expedições se
+     cruzavam por acaso: quem escolhia o lugar do desembarque era sempre o invasor, e ele
+     escolhia a terra mais fraca.
+     ⚠️ Quem não tem Porto não disputa o mar, e isso caiu sozinho — embarcar exige cais, então
+     um reino sem ele vê a frota passar e espera na praia. Quarta razão de existir da obra.
+     ⚠️ E o encontro na estrada passou a EXIGIR GUERRA. O cabeçalho dele sempre disse "duas
+     forças hostis" e o código emparelhava qualquer par de poderes diferentes — era o último
+     lugar do jogo onde gente em paz se matava. No mar isso acontece mais, porque a rota longa
+     põe muita gente na mesma água.
+
+   → ⚠️ MEDIDO: ZERO INTERCEPTAÇÕES EM 150 TURNOS, e a razão não é a regra — é que NÃO HOUVE
+     UMA ÚNICA OCASIÃO. Nenhuma frota no mar, em nenhuma virada, estava em guerra com o dono de
+     alguma costa que ela tocava: as 32 hoste-viradas na água eram todas de gente em paz.
+     A causa é a expedição não sobreviver à diplomacia. A IA decide do zero todo turno e não
+     guarda plano nenhum, então a paz assinada no meio da travessia dissolve a campanha e a
+     retirada traz o exército de volta. Das 32: 13 seguiram viagem, 19 deram meia-volta. O
+     sintoma que se vê no mapa é o vaivém — Lócrida Opúntia oscilando entre o Golfo Maliaco e o
+     Pagasético em viradas alternadas, travessia num turno e retirada no outro.
+     A interceptação fica de pé e sob teste; ela dispara no dia em que a guerra durar mais que
+     a viagem. A MEMÓRIA DA IA — "estou comprometido a tomar Cálcis" — é o que a fase 2 tem de
+     resolver, junto com o bloqueio.
+
+── nacionalidade ──
+
+essa da nacionalidade vai ter que entrar depois!
+   → ENTROU. A regra velha era binária e cega: "o dono de hoje é o mesmo de 700 a.C.?", −12 e
+     pronto. Ela dava o MESMO peso para Atenas mandando em Elêusis — jônia, a dez quilômetros,
+     com 15% de atenienses já morando lá — e para Atenas mandando na Beócia. E dava ZERO para
+     Mégara segurando uma Salamina que é 20% ateniense.
+     Os dados já tinham duas camadas e nenhuma regra usava: a NACIONALIDADE (ateniense,
+     megarense, tebano), com a fração da população em cada uma, e o POVO, que é a tribo grega
+     dela — jônio, dório, beócio, lócrio. Escrevi a tribo no dado, junto do nome.
+     Três degraus: teu próprio povo é de graça; outra cidade da tua tribo custa −6; outra
+     tribo custa −18. E tudo PROPORCIONAL à fatia: Mégara paga −4 por Salamina (os 20% de
+     atenienses), Atenas pagaria −14 pela mesma Salamina (os 80% de megarenses).
+     Medido com Atenas conquistando cada terra: a Ática sai de graça, a Eubeia jônia por −6,
+     e todo o resto por −18. É o mapa ganhando uma DIREÇÃO — unificar os teus é barato,
+     atravessar o Istmo é caro.
+     O levante também mudou: agora é gatilho de MAIORIA (a maior parte do povo não reconhece
+     o dono), e não "a bandeira mudou uma vez".
+     A/B em 100 turnos: a faixa Revoltosa não se mexeu (2,1% com e sem), o que desceu foi o
+     topo — Satisfeita de 27,1% para 15,2%. Ninguém foi empurrado para a revolta.
+     ⚠️ FALTA, e é decisão tua: ASSIMILAÇÃO. Hoje o povo conquistado nunca deixa de ser quem
+     é, então o preço é permanente e se paga com Templo, imposto baixo e guarnição.
+
+── diplomacia ──
+
+outra coisa, nao sinto a IA tentando se conectar comigo para oferecer diplomacia, deveria acontecer isso, e aparecer que um reino ta querendo negociar comigo e eu ter opcao de aceitar ou recusar as propostas, e talvez no futuro ate negociar.
+   → FEITO. A IA já DECIDIA com quem assinar pacto e comércio; ela só não perguntava — tu
+     descobrias pela aba que tinha assinado alguma coisa. Agora, quando a outra ponta é o
+     jogador, a assinatura vira PEDIDO: marca "PEDE" na lista de reinos, contador na barra
+     ("DIPLOMACIA · 2") e, no topo do dossiê daquele reino, a frase dele com Aceitar e
+     Recusar. Recusar NÃO custa nada — um "não" que abalasse a opinião faria a resposta
+     certa ser nunca abrir a aba. A mesa é do turno: a virada limpa.
+     ⚠️ Um aviso honesto: jogador PARADO não recebe proposta nenhuma, e isso é a regra
+     funcionando. Medido, uma Atenas que não faz nada chega ao turno 20 com opinião média
+     −6 e comércio possível com ZERO reinos — sem Porto ela não alcança ninguém por mar, e
+     fronteira comum é parcela negativa de opinião. Um jogador que joga (ergue o Porto,
+     cultiva os vizinhos) recebeu 5 propostas de 5 reinos diferentes em 60 turnos.
+
+precio saber no futuro qual a relacao de um reino com outro reino. ter alguma tipo de menu, ou diretamente naquela janela na direita onde mostra as cores dos reinos ter uma opcao que mostra a cor de um reino que eu selecionar e em volta vermelho, amarelo ou verde para demostrar a relacao daquele reino com outros reinos sacou?
+   → FEITO, e foi onde tu pediste: no painel da direita, ao lado do interruptor de cores.
+     "Relações: ligadas" e o mapa inteiro se repinta pelo que os outros acham do ESCOLHIDO —
+     que começa sendo tu e troca com um clique em qualquer terra. A legenda aparece junto:
+     o escolhido em osso, em guerra em vermelho escuro, hostil / indiferente / amigo nas
+     tres faixas, e cinza para quem nao tem economia (esses nao tem opiniao nenhuma; pinta-
+     los de indiferente seria dar por resposta um numero que ninguem calculou).
+     Nao custou camada nova: o mapa politico ja e uma textura de indices contra uma paleta,
+     entao trocar o SIGNIFICADO da cor e reescrever a paleta. Ele so pinta mais forte no
+     modo de dados — a 55% duas faixas vizinhas somem sobre o terreno.
+
+
+Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do mar ela nao lembra que precisa ir para um territorio dela, ou de um inimigo, ela tenta ir em territorio que ela nao pode andar, para ela pdoer andar em territorio de reinos neutros precisamos criar algum sistema em diplomacia de liberar acesso militar, outra coisa, precisamos fazer a IA usar mais os sitemas de diplomacia!
+   → A METADE DO MAR ESTÁ CONSERTADA. O defeito era este: a IDA ganhou rota longa e a VOLTA
+     não — a retirada só perguntava "que terra minha eu alcanço nesta rodada", e no meio do
+     Egeu a resposta é nenhuma. Medido: 159 hoste-turnos parados na água em 100 turnos, e
+     uma delas passou 56 turnos boiando. Agora a volta usa a mesma rota longa da ida.
+     Depois do conserto: ZERO hostes paradas, e a mais demorada fica 1 turno na água.
+     (Ela nunca chegou a dar ordem ilegal — a marcha recusa isso —, o que tu viste foi o
+     exército encalhado.)
+
+═══════════════════════════════════════════════════════════════════════════════
+Novas Observacoes Por Henrique
+═══════════════════════════════════════════════════════════════════════════════
+
+ 
+ problema encontrado: eu mando recrutar tropas certo?é 1 round para eu poder mover essas tropas, porem atualmente o jogo le diferente, se eu sou atacado durante e troca de rodada essas tropas recrutadas nao defendem a minha localizacao, isso esta errado, era para elas ja existirem e porntas para defender, mas so vou poder mexer elas na rodada seguinte da que eu recrutei elas, faz sentido? outra coisas precisamos ajustar por ordem alfabetico ou algo do tipo que movimenta depois de mim, saca? estilo rome total war, ter uma ordem de turnos acho que as IA nao tem turno nao sei.
+ outra coisa que preciso saber, caso eu faca alianca com outro reino, ambos os reinos ja estao liberados em anadar em cima da provincia um do outro ? deveria ja possuir acesso militar por conta da alianca.

@@ -26,6 +26,7 @@ import { construcoesEm, fichaDe, nivelDaConstrucaoEm } from '../provincia/consul
 import { estaSitiada } from '../guerra/cercos';
 import { ligadasACapital } from './circulacao';
 import { rendaDoAcordo, rendaTotalDeAcordos } from './acordos';
+import { alcancaComercio } from './alcance';
 import { rendaBaseDe } from '../provincia/renda';
 
 export interface BemEmCirculacao {
@@ -128,6 +129,13 @@ export function rendaDeAcordos(nucleo: NucleoDaCampanha, idPoder: string): numbe
     if (a === undefined || b === undefined) continue;
     const outro = a === idPoder ? b : b === idPoder ? a : null;
     if (outro === null) continue;
+    // ⚠️ **A ROTA É CONFERIDA TODO TURNO, e não só na assinatura.** O próprio `alcance.ts` já
+    // dizia por quê — *"um acordo assinado sobre rota nenhuma seria dinheiro nascendo do
+    // nada"* —, e a regra só valia no instante do aperto de mão: depois dela, o papel pagava
+    // para sempre. Agora a fronteira perdida, o Porto derrubado e a frota inimiga parada na
+    // água que banha o cais cortam a renda do acordo sem precisar rasgá-lo. É por aqui que o
+    // BLOQUEIO NAVAL chega ao bolso.
+    if (!alcancaComercio(nucleo, idPoder, outro)) continue;
     valores.push(rendaDoAcordo(minha, rendaBaseDe(nucleo, outro), ajustes));
   }
   return rendaTotalDeAcordos(valores, ajustes);

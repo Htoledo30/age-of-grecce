@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { estiloDe } from '../../src/ia/estilo';
-import { travessiasEscolhidas } from '../../src/ia/guerra/marchar';
+import { retiradasEscolhidas, travessiasEscolhidas } from '../../src/ia/guerra/marchar';
 import { oportunidadesDe, oportunidadesNoLitoral } from '../../src/ia/percepcao/oportunidade';
 import { ajustes, ia, novaCampanha } from '../apoio/mundo';
 
@@ -81,5 +81,52 @@ describe('a IA atravessa o mar — e a porta continua sendo o Porto', () => {
     expect(litoral).toContain('calcis');
     // E o litoral não inventa água: zona marítima não é terra a tomar.
     expect(litoral.some((id) => c.ehMar(id))).toBe(false);
+  });
+});
+
+/**
+ * O DESEMBARQUE — o último trecho da travessia, e o que faltava para ela terminar.
+ *
+ * ⚠️ **Medido antes do conserto: 12 embarques e ZERO desembarques em terra alheia em 150
+ * turnos.** Todas as doze expedições voltaram para casa. A travessia soltava a hoste quando a
+ * rota que faltava passava a ser de um trecho só — o pulo da água para a praia —, e a retirada
+ * a pegava no mesmo instante, porque água não é terra inimiga e *"a terra deixou de ser
+ * inimiga"* é sempre verdade no mar. Uma expedição de 4.000 homens encostada em Cálcis deu
+ * meia-volta e contornou a Eubeia por sete turnos.
+ */
+describe('a travessia termina: quem chega à água da ilha desembarca nela', () => {
+  it('a hoste encostada no alvo recebe o desembarque, e a retirada não a reivindica', () => {
+    const c = megaraComPorto();
+    const estilo = estiloDe(ia, 'megara');
+    // A água que encosta na ilha, tirada do mapa e não de um id escrito à mão.
+    const zona = c.vizinhasDe('calcis').find((v) => c.ehMar(v));
+    expect(zona).toBeDefined();
+    const naAgua = c.plantarHoste(zona!, 'megara', 4000);
+
+    const ordens = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens);
+    const dela = ordens.find((o) => o.hoste === naAgua);
+    expect(dela?.destino).toBe('calcis');
+
+    // E a retirada respeita quem a travessia levou: é `ia.ts` quem passa a lista adiante.
+    const emViagem = new Set(ordens.map((o) => o.hoste));
+    const voltas = retiradasEscolhidas(c, 'megara', combate, emViagem);
+    expect(voltas.some((v) => v.hoste === naAgua)).toBe(false);
+  });
+
+  it('no meio da água a postura é sitiar; no desembarque ela volta a ser decidida', () => {
+    const c = megaraComPorto();
+    const estilo = estiloDe(ia, 'megara');
+    // Quem parte de Mégara ainda tem mar pela frente: postura nenhuma significa nada ali.
+    const emCasa = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens);
+    expect(emCasa.length).toBeGreaterThan(0);
+    expect(emCasa.every((o) => o.postura === 'sitiar')).toBe(true);
+
+    // Quem já está na água da ilha decide de verdade — e contra uma praça aberta ela vai.
+    const zona = c.vizinhasDe('calcis').find((v) => c.ehMar(v));
+    c.plantarHoste(zona!, 'megara', 6000);
+    const desembarque = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens).find(
+      (o) => o.destino === 'calcis',
+    );
+    expect(desembarque?.postura).toBe('assaltar');
   });
 });

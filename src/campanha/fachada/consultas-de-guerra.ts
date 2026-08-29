@@ -17,6 +17,8 @@ import { podeRecrutar } from '../guerra/levas';
 import { armasEm, treinoEm } from '../provincia/armas-da-provincia';
 import { podeOrdenarMarcha, rotasDaHoste, rotasLongasDaHoste } from '../guerra/marchas';
 import { ordemDaHoste, ordens, surtidaDe } from '../guerra/ordens-da-rodada';
+import { bloqueadaEm, bloqueiamEm } from '../guerra/bloqueio';
+import { temPortoEm } from '../comercio/alcance';
 import { podeSurtir, sitianteDaHosteDe } from '../guerra/surtidas';
 import { ConsultasDaProvincia } from './consultas-da-provincia';
 
@@ -212,5 +214,25 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
   /** Contra quem esta hoste surtiria, se pudesse. `undefined` quando não há cerco ali. */
   sitianteDaHosteDe(idHoste: string): string | undefined {
     return sitianteDaHosteDe(this.nucleo, idHoste);
+  }
+
+  /** Esta terra tem Porto de pé? É a porta do mar — bloqueada ou não. */
+  temPortoEm(idProvincia: string): boolean {
+    return temPortoEm(this.nucleo, idProvincia);
+  }
+
+  /**
+   * Há frota inimiga na água que banha esta terra?
+   *
+   * O cerco do mar: o cais fecha, e com ele a ligação marítima e o alcance do comércio. Ver
+   * `campanha/guerra/bloqueio.ts`.
+   */
+  bloqueadaEm(idProvincia: string): boolean {
+    return bloqueadaEm(this.nucleo, idProvincia);
+  }
+
+  /** Quem está bloqueando este cais, por id. Vazio quando ninguém está. */
+  bloqueiamEm(idProvincia: string): readonly string[] {
+    return bloqueiamEm(this.nucleo, idProvincia);
   }
 }

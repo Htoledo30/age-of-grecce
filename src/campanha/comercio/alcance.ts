@@ -33,6 +33,7 @@
  */
 
 import type { NucleoDaCampanha } from '../nucleo';
+import { bloqueadaEm } from '../guerra/bloqueio';
 
 /** O id da obra que abre o mar. Um só lugar sabe disso. */
 const PORTO = 'porto';
@@ -50,9 +51,17 @@ export function temPortoEm(nucleo: NucleoDaCampanha, idProvincia: string): boole
   return (nucleo.estado.construcoes[idProvincia]?.[PORTO] ?? 0) > 0;
 }
 
-/** Este reino tem Porto de pé em alguma terra? É o que põe a mercadoria dele no mar. */
+/**
+ * Este reino tem Porto ABERTO em alguma terra? É o que põe a mercadoria dele no mar.
+ *
+ * ⚠️ **Cais bloqueado não conta**, e é por aqui que o bloqueio naval chega ao comércio: um reino
+ * com todos os portos fechados por frota inimiga deixa de alcançar por mar, e os acordos que só
+ * existiam por água param de render. Ver `guerra/bloqueio.ts`.
+ */
 export function temPorto(nucleo: NucleoDaCampanha, idPoder: string): boolean {
-  return nucleo.territorios.provinciasDe(idPoder).some((id) => temPortoEm(nucleo, id));
+  return nucleo.territorios
+    .provinciasDe(idPoder)
+    .some((id) => temPortoEm(nucleo, id) && !bloqueadaEm(nucleo, id));
 }
 
 /**
@@ -62,5 +71,9 @@ export function temPorto(nucleo: NucleoDaCampanha, idPoder: string): boolean {
  * não há rota — e um acordo assinado sobre rota nenhuma seria dinheiro nascendo do nada.
  */
 export function alcancaComercio(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
-  return fazemFronteira(nucleo, a, b) || (temPorto(nucleo, a) && temPorto(nucleo, b));
+  // ⚠️ **O mar é perguntado ANTES da fronteira, e é desempenho.** Desde que a renda confere a
+  // rota de cada acordo TODO TURNO, esta função virou caminho quente; `fazemFronteira` cruza
+  // as províncias de um com a vizinhança das do outro, e `temPorto` só varre uma lista curta.
+  // O `||` dá o mesmo resultado nas duas ordens.
+  return (temPorto(nucleo, a) && temPorto(nucleo, b)) || fazemFronteira(nucleo, a, b);
 }

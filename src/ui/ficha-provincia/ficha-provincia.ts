@@ -138,6 +138,7 @@ export class FichaProvincia {
     const selos: HTMLElement[] = [];
     if (vista.capital) selos.push(selo('capital', 'ouro'));
     if (vista.cerco) selos.push(selo('sitiada', 'perigo'));
+    if (vista.bloqueio) selos.push(selo('bloqueada', 'perigo'));
     if (vista.humor && vista.humor.posicao <= 0.25) selos.push(selo('revolta', 'perigo'));
     return selos;
   }
@@ -156,6 +157,17 @@ export class FichaProvincia {
         `Sitiada por ${vista.cerco.sitiante} · ${faseDoCerco(vista.cerco)}`,
       );
       definirTooltip(aviso, tooltipDoCerco(vista.cerco));
+      linhas.push(aviso);
+    }
+    if (vista.bloqueio) {
+      const aviso = alarme('perigo', `Cais bloqueado por ${vista.bloqueio.por}`);
+      definirTooltip(aviso, {
+        titulo: 'Bloqueio naval',
+        corpo:
+          'Frota inimiga na água ao lado. O Porto para de ligar por mar e de levar ' +
+          'mercadoria: terra que só chegava à capital embarcando fica cortada, e os acordos ' +
+          'de comércio por água param de render. Embarcar continua livre — sair é atacar.',
+      });
       linhas.push(aviso);
     }
     if (vista.economia?.revoltosa) {

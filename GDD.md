@@ -120,8 +120,8 @@ ferida. É consequência econômica de guerra sem precisar de diplomacia nenhuma
 - **Diplomacia**, que dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que
   a guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
   sem disparar flecha.
-- **Mar e zonas marítimas**, que dão o alcance — feito — e um dia o bloqueio: fechar o Euripo
-  e Cálcis sente.
+- **Mar e zonas marítimas**, que dão o alcance — feito — e o **bloqueio**, também feito: fechar
+  o Euripo e Cálcis sente. Ver **Naval**.
 
 ⚠️ A cadeia de dependência é **IA → diplomacia → comércio externo**, e ela é o inverso da
 ordem em que os itens foram planejados. Por isso o item 4 foi partido em dois, como o 3 foi:
@@ -521,8 +521,40 @@ Medido em 100 turnos: sem o mar, 24 províncias mudaram de dono; com ele, 45 —
 entre o maior e o menor reino DIMINUIU (8,0× → 6,9×). O mar não faz ninguém disparar: ele
 abre uma segunda frente para todo mundo ao mesmo tempo.
 
-Bloqueio naval e proteção de rota continuam adiados: eles exigem que uma força PARADA no mar
-faça alguma coisa com o comércio que passa, e isso é sistema próprio.
+### O BLOQUEIO — a razão de FICAR numa água
+
+> **Frota inimiga parada na água que banha o teu Porto fecha aquele Porto.**
+
+Sem ele a água era estrada, e estrada não se ocupa: uma zona de mar não tem dono e não se
+conquista, então segurar uma não comprava nada. O bloqueio dá a ela a única coisa que ela pode
+ter sem ter dono — **o que passa por ela**.
+
+Fechar o cais é tudo o que ele faz. Não toma, não saqueia, não mata. Mas apaga duas das três
+razões de existir do Porto:
+
+- **a ligação por mar**: a terra que só chegava à capital embarcando fica cortada e perde o
+  trânsito. Salamina volta a ser uma ilha;
+- **o alcance do comércio**: reino com todos os cais fechados não põe mercadoria no mar, e os
+  acordos que só existiam por água param de render.
+
+⚠️ **EMBARCAR continua livre, e é deliberado.** Um bloqueio que trancasse o cais seria
+inquebrável — o bloqueado não teria como sair para atacar quem o bloqueia, e a única defesa
+contra uma frota seria não ter porto. Do jeito que está, **sair é atacar**: a água que se
+precisa cruzar é justamente a ocupada, e o encontro no mar já é batalha.
+
+⚠️ **É o mesmo desenho do cerco em terra.** Sitiar não toma a cidade: corta a produção e o
+comércio dela e espera. Bloquear não toma a água: corta o que passa por ela.
+
+⚠️ **Uma zona banha meia dúzia de províncias**, então uma frota fecha vários cais de uma vez. É
+a geografia falando — e é o que faz o Golfo Sarônico valer uma guerra e o Mar de Rodes não.
+
+**A IA disputa o mar**: ela intercepta expedição inimiga parada na água que encosta no chão
+dela, e vai buscar a água que fecha mais cais inimigos. Quem não tem Porto não disputa — a
+mesma porta serve às duas coisas.
+
+**O que continua fora:** o **desgaste por FICAR** na água (hoje o embarcado paga só a folha de
+campanha, três vezes a de casa) e a **proteção de rota escoltada** — o que existe é o bloqueio
+do CAIS, e não da rota no meio do mar.
 
 ## IA e diplomacia
 

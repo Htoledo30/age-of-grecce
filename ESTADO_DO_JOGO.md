@@ -203,6 +203,9 @@ para a campanha completa do GDD é a diplomacia necessária.
 - dividir, reunir e mover hostes por ordens simultâneas;
 - **embarcar num Porto e atravessar o mar** zona por zona, um salto por rodada — e brigar com
   quem estiver na água, sem tomar nada dela;
+- **bloquear o cais de um inimigo** parando a hoste na água que o banha: o Porto dele para de
+  ligar por mar e de levar mercadoria, e a ilha que dependia dele fica cortada. Sair de um porto
+  bloqueado continua permitido — sair é atacar;
 - enfrentar batalhas em províncias e encontros na estrada;
 - assaltar, sitiar, fazer surtida, socorrer uma cidade e conquistar território;
 - acompanhar marchas e ler a crônica da rodada;
@@ -785,6 +788,31 @@ do mar está fora do próprio reino, e para a retirada isso basta para mandá-la
 ordem, todo exército que zarpasse daria meia-volta na virada seguinte. Quem está a caminho não
 volta — e quando a guerra acaba, a expedição não se renova e a retirada o traz de volta da água.
 
+⚠️ **E a travessia é dona do ÚLTIMO trecho, que é o desembarque — sem isso ela nunca terminava.**
+Duas guardas separavam a travessia da marcha por terra: rota de dois trechos ou mais, e água
+dentro dela. Elas valem para quem ainda está em casa; para quem já está boiando eram uma
+armadilha fechada. Chegando à zona que ENCOSTA na ilha, o que falta é um trecho só e sem água
+nenhuma — a travessia soltava a hoste, e `retiradasEscolhidas` a pegava no mesmo instante,
+porque água não é terra inimiga e *"a terra deixou de ser inimiga"* é sempre verdade no mar.
+`ataquesEscolhidos` também não a salvava: `emTerraAlheia` já conta os homens no mar como
+gastos, então a fatia que pode marchar chega a zero justamente para quem está na água.
+
+**Medido: 12 embarques e ZERO desembarques em terra alheia em 150 turnos.** Todas as doze
+expedições voltaram para casa. Reproduzido no detalhe: 4.000 homens megarenses parados em
+Euripo, encostados em Cálcis, deram meia-volta e passaram **sete turnos** contornando a Eubeia
+até Mégara, perdendo 570 homens de folha e deserção, com a ilha intocada. **A IA atravessava o
+mar inteiro para desistir no último passo** — e o número que teria mostrado isso não existia:
+embarques e trechos de travessia estavam os dois saudáveis. `npm run partida` passou a contar
+**desembarques em terra alheia**, que é o número que fica zerado quando a travessia não conclui.
+
+Depois do conserto, nos mesmos 150 turnos: **3 desembarques em terra alheia**, e a postura do
+último trecho volta a ser a decidida — no meio da água ela não significa nada, na praia ela é
+a diferença entre assaltar a praça aberta e sentar na frente dela.
+
+⚠️ **O jogador nunca teve este defeito**, e é o que o escondeu: a viagem dele é uma ordem só,
+guardada com `continuar`, e ela atravessa e desembarca sozinha. Medido: Atenas com Porto sai da
+Ática, cruza o Estreito de Salamina e o Golfo Sarônico e toma Cálcis na terceira virada.
+
 **Medido em 100 turnos, isolando cada peça:**
 
 | | conquistas | travessias | acordos de comércio de pé |
@@ -806,15 +834,183 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
 
 **O que falta:**
 
-1. **o custo de FICAR no mar.** Hoje o exército embarcado paga a taxa de campanha (três vezes a
-   de casa) e come da mesa do reino — o que já é caro —, mas não há desgaste por estar na água.
-   Enquanto ficar parado no mar não COMPRA nada, ninguém tem motivo para morar no Egeu; a
-   pergunta fica de pé para o dia em que houver bloqueio;
-2. **bloqueio naval e proteção de rota** — exigem que uma força PARADA no mar faça alguma coisa
-   com o comércio que passa, e isso é sistema próprio;
-3. **a IA não defende o mar.** Ela zarpa e ela desembarca, mas ninguém patrulha uma zona nem
-   intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
-   cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
+1. **o custo de FICAR no mar.** O exército embarcado paga a taxa de campanha (três vezes a de
+   casa) e come da mesa do reino — o que já é caro —, mas não há desgaste por estar na água.
+   A pergunta esperava o bloqueio, e o bloqueio chegou: agora que ficar parado COMPRA alguma
+   coisa, o desgaste é a próxima fase;
+2. **bloqueio naval — FEITO na fase 2.** Ver a seção adiante. Proteção de rota escoltada
+   continua fora: o que existe é o bloqueio do CAIS, e não da rota no meio da água;
+3. **a IA patrulha? ainda não — mas ela já INTERCEPTA.** Ver a seção seguinte: a regra existe,
+   está sob teste, e mediu **zero disparos** por uma razão que não é dela;
+4. **quem desembarca não tem volta.** Embarcar exige Porto **em terra sua**, então o exército
+   que desce numa ilha alheia e não a toma fica lá: a retirada não acha caminho nenhum e o
+   exílio se resolve pela deserção. Hoje é a regra sendo coerente — sem frota, não há navio
+   esperando na praia —, e é uma decisão por tomar, não um defeito: ou embarcar passa a valer
+   de qualquer costa sob licença, ou toda travessia continua sendo aposta sem volta. Medido
+   depois do conserto do desembarque: em 150 turnos, **15 expedições voltaram para casa e 3
+   desembarcaram** — a maioria desiste porque a paz é assinada no meio da viagem, que é a
+   regra funcionando; mas a que desce e erra não volta nunca.
+
+   ⚠️ **Decidido por Henrique, e fica como está:** *"para desembarque não é obrigado porto, mas
+   para ir pro mar é obrigado. Posso desembarcar em qualquer província, mas para voltar pro mar
+   só por províncias com porto"* — e o caso que ele deu é o desenho inteiro: *"se sou um reino
+   do mar e ataco um reino da terra e não houver um porto, não é possível retirar exércitos da
+   terra"*. Não é buraco: é o preço de zarpar.
+
+## Fase 1 do naval: a IA disputa o mar
+
+Henrique, sobre a lista acima: *"essa ideia de ter guerras por controle no mar é perfeito"* — e
+*"não faça tudo de uma vez, separe por fases cada implementação"*. Esta é a primeira.
+
+**A INTERCEPTAÇÃO** entrou como a quarta reação de `ia/guerra/defender.ts`, ao lado do socorro,
+do socorro à cidade sitiada e da surtida: **expedição inimiga parada na água que ENCOSTA no meu
+chão é desembarque a caminho; se eu ganho dela lá, eu vou.**
+
+- ⚠️ **Não fura a regra dura do arquivo — água não é terra alheia.** Zona marítima não tem dono,
+  não se conquista e não se sitia, então sair para ela continua sendo defender. É a única saída
+  de casa que aquele arquivo autoriza;
+- ⚠️ **Encostar na minha costa é a régua inteira, e ela é estreita de propósito.** Sem isso a IA
+  sairia caçando expedição alheia pelo Egeu inteiro, e uma frota que vai de Rodes a Corcira não
+  é ameaça de ninguém no caminho. O que se defende é a praia: quem está na água ao lado da minha
+  terra desembarca nela na virada seguinte, e a escolha do lugar já terá sido dele;
+- ⚠️ **Quem não tem Porto não disputa o mar, e isso caiu sozinho.** A interceptação pergunta a
+  `alcanceDaHoste`, e embarcar exige Porto na terra de onde se sai — um reino sem cais vê a frota
+  passar e espera na praia. É a **quarta razão de existir da obra**, sem regra nova;
+- **no mar não há milícia, muralha nem praça a segurar**: é a batalha mais limpa do jogo, e por
+  isso a previsão vale ali mais do que em qualquer outro lugar. O desempate vai para quem já
+  está na água — ninguém segura chão nenhum, e estar ali é o que mais se parece com defender.
+
+**E o encontro na estrada passou a exigir guerra.** O cabeçalho dele sempre disse *"duas forças
+HOSTIS"*, e o código emparelhava qualquer par de poderes diferentes — era o último lugar do jogo
+onde gente em paz se matava, já que o choque na província pergunta pela guerra antes de escolher
+o segundo lado. É no mar que a troca de aresta acontece mais: a rota longa põe muita gente na
+mesma água.
+
+⚠️ **Medido em 150 turnos: ZERO interceptações — e a razão não é a regra.** Instrumentado, **não
+houve uma única ocasião**: nenhuma frota no mar, em nenhuma virada, estava em guerra com o dono
+de alguma costa que ela tocava. Todas as 32 hoste-viradas na água eram de gente em paz.
+
+**A causa é a expedição não sobreviver à diplomacia.** A IA decide do zero a cada turno e não
+guarda plano nenhum — está escrito no cabeçalho de `ia/ia.ts` como dívida conhecida —, então a
+paz assinada no meio da travessia dissolve a campanha e a retirada traz o exército de volta.
+Medido nas mesmas 32 hoste-viradas na água: **13 seguiram viagem e 19 deram meia-volta**, e o
+sintoma visível é o vaivém — Lócrida Opúntia oscilando entre o Golfo Maliaco e o Pagasético em
+viradas alternadas, travessia num turno e retirada no outro.
+
+A interceptação fica de pé e sob teste — e na fase 2 ela passou a disparar.
+
+## Fase 2 do naval: o bloqueio, e a viagem entrando na conta
+
+### O BLOQUEIO NAVAL — o cerco do mar
+
+> **Frota inimiga parada na água que banha o teu Porto fecha aquele Porto.**
+
+É a primeira razão que uma força tem para **FICAR** numa zona de mar. Até aqui a água era
+estrada: servia para atravessar, e ocupá-la não comprava nada — zona de mar não tem dono, não se
+conquista e não se sitia. O bloqueio dá a ela a única coisa que ela podia ter sem ter dono: **o
+que passa por ela**.
+
+Fechar o cais é tudo o que ele faz — não toma, não saqueia, não mata. O Porto é que tem três
+razões de existir, e o bloqueio apaga duas:
+
+1. **a ligação por mar** (`comercio/circulacao.ts`): a metade do reino que só chega à capital
+   embarcando fica **cortada** e perde o trânsito. Salamina volta a ser uma ilha;
+2. **o alcance do comércio** (`comercio/alcance.ts`): reino com todos os cais fechados não põe
+   mercadoria no mar, e os acordos que só existiam por água param de render.
+
+⚠️ **A terceira razão do Porto — EMBARCAR — continua livre, e é deliberado.** Um bloqueio que
+também trancasse o cais seria inquebrável: o bloqueado não teria como sair para atacar quem o
+bloqueia, e a única defesa contra uma frota seria não ter porto. Do jeito que está, **sair é
+atacar** — a água que se precisa cruzar é justamente a ocupada, e o encontro no mar é batalha
+pela regra que já existia.
+
+⚠️ **É o mesmo desenho do cerco em terra, de propósito.** Sitiar não toma a cidade: corta a
+produção e o comércio dela e espera. Bloquear não toma a água: corta o que passa por ela. Quem
+leu uma das duas não precisa aprender a outra.
+
+⚠️ **Uma zona banha meia dúzia de províncias, e é a geografia falando.** Uma frota fecha vários
+cais de uma vez, e é isso que faz o Golfo Sarônico valer uma guerra e o Mar de Rodes não.
+
+⚠️ **A ROTA DO ACORDO passou a ser conferida TODO TURNO** (`comercio/rede-de-trocas.ts`), e não
+só na assinatura. O próprio `alcance.ts` já dizia por quê — *"um acordo assinado sobre rota
+nenhuma seria dinheiro nascendo do nada"* — e a regra só valia no aperto de mão: depois disso o
+papel pagava para sempre. Agora a fronteira perdida, o Porto derrubado e a frota inimiga cortam
+a renda sem precisar rasgar o acordo. É por aqui que o bloqueio chega ao bolso.
+
+**Na tela**: selo `bloqueada` e a linha *"Cais bloqueado por X"* na ficha da província, com o
+tooltip dizendo o que se perde. Um Porto que para de funcionar sem dizer por quê lê-se como
+defeito do jogo — a mesma razão pela qual a ficha distingue "em revolta" de "rota cortada".
+
+**A IA bloqueia** (`ia/guerra/bloquear.ts`), e a decisão são três perguntas: que água fecha mais
+cais inimigos; eu aguento ficar lá; e sobra reino em casa. Ela roda **depois da travessia e antes
+da retirada** — depois porque tomar uma cidade vale mais que fechar um cais, antes porque frota
+parada é, para a retirada, exército fora do reino, e sem essa ordem o bloqueio duraria um turno.
+
+⚠️ **E quem já está bloqueando FICA — isso custou um teste vermelho.** A primeira versão
+descartava da lista o cais já bloqueado, inclusive o bloqueado por mim: a frota que segurava a
+água tornava a própria posição inútil na virada seguinte, saía da lista, e a retirada a levava
+para casa. **O bloqueio se desfazia sozinho por ter dado certo.**
+
+### A VIAGEM ENTRA NA CONTA DO ALVO
+
+`oportunidadesNoLitoral` é deliberadamente larga — toda costa alheia do mapa —, e a travessia
+escolhia o primeiro alvo que passasse, ordenado por valor puro. A frota zarpava atrás da costa
+mais **rica** e não da mais **perto**: uma hoste de Mégara punha-se a caminho de Rodes, a oito
+trechos, e a guerra acabava ou a casa pegava fogo muito antes. A régua passou a ser **valor por
+trecho** — a distância já virou tempo quando o exército passou a andar um salto por rodada, e
+tempo aqui é a folha de campanha.
+
+### CASA EM CHAMAS FECHA O CAIS, NÃO AFUNDA A VIAGEM
+
+A trava é a mesma do ataque — *"quem embarca fica turnos longe de casa, e casa pegando fogo é o
+pior momento possível para **zarpar**"* — e ela guardava a função inteira, cancelando a expedição
+que já estava no meio do Egeu. **Uma frota a três turnos de casa está a três turnos de socorrer
+qualquer coisa**: dar meia-volta perde a viagem E chega tarde. Quem está na água segue; quem está
+no cais fica.
+
+### Medido em 6 partidas de 120 turnos (o jogador parado muda de reino a cada uma)
+
+| | antes da fase 2 | depois |
+|---|---|---|
+| desembarques em terra alheia | 1,5 | **2,8** |
+| trechos de travessia | 24,3 | 31,7 |
+| interceptações na água | 0,2 | 0,3 |
+| **bloqueios** | — | **1,7** |
+| conquistas | 20,8 | 20,0 |
+| poderes vivos de 18 | 10,2 | 10,5 |
+| maior reino | 8,2 | 7,8 |
+
+**O mar dobrou de movimento e o mundo não desandou** — o maior reino ficou menor e sobrevive
+mais gente. Uma partida só não teria mostrado isso: as seis divergem completamente entre si.
+
+### ⚠️ O resultado NEGATIVO que ficou de fora: a paz cega ao mar
+
+*"Não há mais o que tomar dele"* pergunta a `oportunidadesDe`, que só vê o que ENCOSTA no reino
+— e nada encosta em ninguém através da água. É a mesma cegueira que `oportunidadesNoLitoral`
+consertou do lado do ataque, e do lado da paz ela custa caro: **medido, das 32 hoste-viradas na
+água em 150 turnos, 16 eram de reinos SEM GUERRA NENHUMA.** Metade das expedições boiava por
+nada, porque a paz fora assinada no meio da viagem.
+
+Escrevi o conserto em três formas e **medi as três**. Nenhuma se pagou:
+
+- **recusar toda paz com frota na água**: o maior reino saltou de 9 para **20 províncias**, os
+  eliminados de 11 para 14, a distância entre o maior e o menor de 11,4× para **30,9×**. Quase
+  todo poder deste mapa tem costa, então uma expedição travava TODAS as pazes do reino;
+- **só a cláusula "o que tomar", com a costa dentro**: inerte — três das seis sementes deram
+  resultado idêntico ao de não haver regra nenhuma;
+- **a cláusula acima das outras três**: as travessias saltaram de 24 para 89 trechos e os
+  desembarques **caíram de 2,0 para 1,0**. Mais frota no mar, menos chegando: as expedições
+  passaram a circular sem concluir, e as conquistas subiram 71% por guerras que não terminavam.
+
+A regra fica **anotada e fora**. A cegueira é real, e o conserto certo é a memória prometida no
+cabeçalho de `ia/ia.ts` — *"estou comprometido a tomar Mégara"* —, que não cabe no tabuleiro: a
+hoste que marcha com a força inteira renasce com id novo a cada virada, então a memória precisa
+de campo no estado e de prazo próprio. Não vale a pena antes de o mar ter mais portos.
+
+⚠️ **E é o número que explica o resto: o mapa inteiro termina com 6 Portos de pé em 150 turnos.**
+O `valorDoMar` faz só o PRIMEIRO cais valer a obra, e é essa escassez — e não a regra naval — que
+segura o teto de tudo: bloqueio, interceptação e desembarque dependem de haver cais dos dois
+lados. Quem quiser um mar mais cheio mexe ali.
 
 ## A barra de comida diz o teto do exército, e é a única coisa que ela precisava dizer
 
@@ -1374,6 +1570,14 @@ ruim, que é metade do jogo.
 **A IA pede passagem por geografia, não por simpatia**: só quando tem guerra em curso, e só a
 quem encosta no inimigo. Medido em 100 turnos: **39 passagens concedidas**.
 
+⚠️ **A licença precisa valer nas DUAS portas, e por um tempo valeu só numa.** `podeOrdenarMarcha`
+aceitava o destino pela licença; `atualizarViagens`, que reconfere as viagens antes de cada
+trecho, conhecia só mar, terra própria e guerra. A ordem era aceita no clique e apagada em
+silêncio na virada seguinte. Só a viagem do JOGADOR passa por ali — a IA refaz tudo todo turno,
+e por isso nunca viu o defeito —, então quem via o exército parar sem explicação era ele. As
+duas portas agora fazem a mesma pergunta, e um teste guarda a viagem de duas pernas terminando
+em terra com licença.
+
 **A MESA DE PROPOSTAS** é a outra metade. A IA já decidia com quem assinar pacto e comércio; ela
 só não perguntava — o jogador descobria pela aba que tinha assinado alguma coisa. Agora, quando
 a outra ponta é o jogador, a assinatura vira **pedido**: aparece a marca `PEDE` na lista de
@@ -1593,7 +1797,10 @@ regra nova: mecânica nova nasce em módulo próprio. Os dois já foram arquivos
 - As primeiras 26 linhas e as últimas 26 colunas da moldura são água artificial e devem
   ser removidas antes de qualquer futuro recorte naval.
 - Duas execuções simultâneas de Vitest podem disputar o cache e produzir falhas falsas de
-  carregamento.
+  carregamento. ⚠️ **E o mesmo vale para Vitest disputando a máquina com o Playwright**: rodar
+  `npm run teste-tela` em paralelo com `npm run verificar` produziu **11 testes estourando o
+  timeout de 30 s** que passavam sozinhos segundos antes. Suíte vermelha por contenção de CPU
+  parece regressão e não é — rode uma de cada vez antes de investigar.
 
 ## Verificação
 

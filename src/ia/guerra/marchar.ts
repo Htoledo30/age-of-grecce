@@ -179,10 +179,6 @@ export function travessiasEscolhidas(
   ajustes: AjustesDeCombate,
   jaMandadas: ReadonlySet<string>,
 ): readonly OrdemDeAtaque[] {
-  // A mesma trava do ataque, e pelo mesmo motivo — com uma razão a mais: quem embarca fica
-  // turnos longe de casa, e casa pegando fogo é o pior momento possível para zarpar.
-  if (estaAmeacado(campanha, idPoder)) return [];
-
   // ⚠️ **A percepção aqui é a do LITORAL, e não a da vizinhança.** Nada encosta em ninguém
   // através da água: a lista de vizinhos nunca conteria a ilha, e a travessia não teria para
   // onde ir. Ver `oportunidadesNoLitoral`.
@@ -208,10 +204,19 @@ export function travessiasEscolhidas(
     const passo = trechoDeHoje(campanha, idPoder, hoste, homens, alvos, estilo, ajustes);
     if (passo === null) continue;
     usadas.add(hoste.id);
-    ordens.push({ hoste: hoste.id, homens, postura: 'sitiar', ...passo });
+    ordens.push({ hoste: hoste.id, homens, ...passo });
   }
 
   // ── 2. Quem zarpa hoje gasta a fatia que pode sair de casa ──────────────────────────
+  //
+  // ⚠️ **A trava da casa em chamas vale para ZARPAR, e só para zarpar.** Ela é a mesma do
+  // ataque — *"quem embarca fica turnos longe de casa, e casa pegando fogo é o pior momento
+  // possível para zarpar"* —, e por um tempo ela guardava a função INTEIRA. Aí ela virava outra
+  // coisa: cancelava a expedição que já estava no meio do Egeu, e a retirada a trazia de volta.
+  // **Uma frota a três turnos de casa está a três turnos de socorrer qualquer coisa** — dar
+  // meia-volta perde a viagem E chega tarde. Quem está na água segue; quem está no cais fica.
+  if (estaAmeacado(campanha, idPoder)) return ordens;
+
   let naEstrada =
     Math.floor(forcaTotalDe(campanha, idPoder) * estilo.fracaoQueMarcha) -
     emTerraAlheia(campanha, idPoder);
@@ -225,7 +230,7 @@ export function travessiasEscolhidas(
     if (passo === null) continue;
     usadas.add(hoste.id);
     naEstrada -= homens;
-    ordens.push({ hoste: hoste.id, homens, postura: 'sitiar', ...passo });
+    ordens.push({ hoste: hoste.id, homens, ...passo });
   }
 
   return ordens;
@@ -239,9 +244,25 @@ export function travessiasEscolhidas(
  * segunda prova é a mesma do ataque — quem não tomaria a ilha não zarpa, porque atravessar o
  * mar com um exército que perde a batalha do outro lado é o jeito mais caro de perdê-lo.
  *
- * ⚠️ **Sempre `sitiar` no caminho.** A postura decidida vale para o ALVO, e ele está a rodadas
- * dali: assaltar uma zona de mar não quer dizer nada, e assaltar a costa por onde se passa
- * seria atacar quem não era o alvo.
+ * ⚠️ **Sitiar no caminho, e a postura decidida no DESEMBARQUE.** No meio da água a postura não
+ * quer dizer nada — assaltar uma zona de mar não significa coisa alguma, e assaltar a costa por
+ * onde se passa seria atacar quem não era o alvo. No último trecho ela volta a significar tudo:
+ * é o momento de pisar na praia, e `hosteQueToma` já sabe se a muralha e os números deixam.
+ *
+ * ⚠️ **A HOSTE NA ÁGUA É DONA DO ÚLTIMO TRECHO, e sem isso a travessia nunca terminava.**
+ * As duas guardas abaixo — rota de dois trechos, rota com água dentro — são a linha que separa
+ * a travessia da marcha por terra, e valem para quem ainda está em casa. Para quem já está
+ * boiando elas eram uma armadilha fechada: chegando à zona que ENCOSTA na ilha, a rota que
+ * falta passa a ser de um trecho só e sem água nenhuma dentro dela, a travessia soltava a
+ * hoste, e `retiradasEscolhidas` a pegava no mesmo instante — água não é terra inimiga, então
+ * *"a terra deixou de ser inimiga"* é sempre verdade no mar. Medido: uma expedição de 4.000
+ * homens parada em Euripo, encostada em Cálcis, deu meia-volta e passou **sete turnos**
+ * contornando a Eubeia até voltar a Mégara, perdendo 570 homens de folha e deserção pelo
+ * caminho, com a ilha intocada. **A IA não conseguia completar desembarque nenhum** — ela
+ * atravessava o mar inteiro para desistir no último passo.
+ *
+ * `ataquesEscolhidos` também não a salvava: `emTerraAlheia` já conta os homens no mar como
+ * gastos, então a fatia que pode marchar chega a zero justamente para quem está na água.
  */
 function trechoDeHoje(
   campanha: Campanha,
@@ -251,21 +272,47 @@ function trechoDeHoje(
   alvos: readonly { oportunidade: Oportunidade; valor: number }[],
   estilo: EstiloDeIa,
   ajustes: AjustesDeCombate,
-): { destino: string; valor: number } | null {
+): { destino: string; valor: number; postura: Postura } | null {
   // Todas as outras hostes ficam de fora da escolha: aqui a pergunta não é "qual delas vai",
   // e sim "ESTA vai?". É a mesma conta de `hosteQueToma`, com uma candidata só.
   const outras = new Set(campanha.hostes().map((h) => h.id));
   outras.delete(hoste.id);
   // Uma busca em largura por hoste, e não uma por alvo: as rotas saem todas juntas.
   const rotas = campanha.rotasLongasDaHoste(hoste.id);
+  // Quem já embarcou está NUMA travessia: o que falta dela é a viagem, curta ou longa.
+  const naAgua = campanha.ehMar(hoste.posicao);
 
-  for (const alvo of alvos) {
-    const rota = rotas.get(alvo.oportunidade.provincia);
+  // ⚠️ **A VIAGEM ENTRA NA CONTA, e sem ela a expedição nunca chegava.** `alvos` vem ordenado
+  // por valor puro, e `oportunidadesNoLitoral` é deliberadamente larga — toda costa alheia do
+  // mapa. Escolhendo o primeiro que passa, a frota zarpava atrás da costa mais RICA e não da
+  // mais perto: uma hoste de Mégara punha-se a caminho de Rodes, a oito trechos, e a guerra
+  // acabava, a casa pegava fogo ou o alvo mudava de dono muito antes de ela chegar.
+  //
+  // **Medido em 6 partidas de 120 turnos, com a trava da casa em chamas consertada junto: os
+  // desembarques em terra alheia subiram de 1,5 para 2,0 por partida COM MENOS trechos de
+  // travessia andados (24,3 para 22,2).** Menos frota circulando e mais frota chegando é
+  // exatamente o que se espera de parar de perseguir o alvo do outro lado do mapa.
+  //
+  // A régua é o valor POR TRECHO. Não é sofisticada de propósito: a distância já virou tempo
+  // quando o exército passou a andar um salto por rodada, e tempo aqui é a folha de campanha
+  // — três vezes a de casa, paga toda virada em que a frota está na água. Um alvo que vale o
+  // dobro e fica quatro vezes mais longe perde, e é o que qualquer general responderia.
+  const porPerto = [...alvos]
+    .map((alvo) => ({ alvo, rota: rotas.get(alvo.oportunidade.provincia) }))
+    .filter((c): c is { alvo: (typeof alvos)[number]; rota: readonly string[] } =>
+      c.rota !== undefined && c.rota.length > 0,
+    )
+    .sort(
+      (a, b) =>
+        b.alvo.valor / b.rota.length - a.alvo.valor / a.rota.length ||
+        a.alvo.oportunidade.provincia.localeCompare(b.alvo.oportunidade.provincia),
+    );
+
+  for (const { alvo, rota } of porPerto) {
     // Rota de um trecho só é o ataque de hoje, e ele já rodou. Rota sem água é marcha por
     // terra, que é assunto da concentração — duas regras mandando a mesma hoste para lados
-    // diferentes é como se perde um exército.
-    if (rota === undefined || rota.length < 2) continue;
-    if (!rota.some((id) => campanha.ehMar(id))) continue;
+    // diferentes é como se perde um exército. Nenhuma das duas vale para quem está na água.
+    if (!naAgua && (rota.length < 2 || !rota.some((id) => campanha.ehMar(id)))) continue;
     const proximo = rota[0];
     if (proximo === undefined) continue;
     if (!campanha.podeOrdenarMarcha(hoste.id, proximo, homens, idPoder).pode) continue;
@@ -281,7 +328,12 @@ function trechoDeHoje(
       () => true,
     );
     if (toma === null) continue;
-    return { destino: proximo, valor: alvo.valor };
+    // O último trecho é o desembarque, e só ele carrega a postura decidida.
+    return {
+      destino: proximo,
+      valor: alvo.valor,
+      postura: rota.length === 1 ? toma.postura : 'sitiar',
+    };
   }
   return null;
 }

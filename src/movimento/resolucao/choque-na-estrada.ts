@@ -7,6 +7,13 @@
  *
  * ⚠️ **É a única batalha do jogo sem lugar** — não acontece em província nenhuma, e por isso
  * não tem defensor nem terreno. Quem vence **continua a rota**; quem perde some.
+ *
+ * ⚠️ **"Hostis" é uma palavra que o código não estava cumprindo.** Ele emparelhava qualquer par
+ * de poderes diferentes, e o encontro na estrada acontecia entre gente em PAZ — o único lugar
+ * do jogo onde isso ainda podia acontecer, já que o choque na província pergunta pela guerra
+ * antes de escolher o segundo lado. Duas expedições em paz cruzando o mesmo golfo em sentidos
+ * opostos se aniquilavam, e é no mar que a troca de aresta é mais fácil de acontecer: a rota
+ * longa põe muita gente na mesma água.
  */
 
 import type { Forca } from './forcas';
@@ -23,6 +30,7 @@ export function naEstrada(
   batalha: AjustesDaBatalha,
   dispersaram: (porOrigem: Readonly<Record<string, number>>) => void,
   refugio: (provincia: string, poder: string) => string | null,
+  emGuerra: (a: string, b: string) => boolean,
 ): void {
   const andando = forcas.filter((f) => f.viva && f.rota[passo] !== undefined);
 
@@ -32,6 +40,8 @@ export function naEstrada(
       const b = andando[j];
       if (!a?.viva || !b?.viva) continue;
       if (a.poder === b.poder) continue;
+      // Sem guerra não há encontro: dois exércitos em paz se cruzam e seguem viagem.
+      if (!emGuerra(a.poder, b.poder)) continue;
       // A troca: o destino de um é a origem do outro, nos dois sentidos.
       if (a.rota[passo] !== b.posicao || b.rota[passo] !== a.posicao) continue;
       // Quem vence na estrada CONTINUA: não há província onde parar.

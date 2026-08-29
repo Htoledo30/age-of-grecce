@@ -71,6 +71,23 @@ let quebrados = 0;
 
 let socorros = 0;
 let surtidas = 0;
+/**
+ * Hostes mandadas à ÁGUA para barrar um desembarque.
+ *
+ * ⚠️ **Zero aqui quer dizer que o mar voltou a ser estrada vazia.** A batalha na água só
+ * acontecia quando duas expedições se cruzavam por acaso: quem escolhia o lugar do desembarque
+ * era sempre o invasor, e ele escolhia a terra mais fraca.
+ */
+let intercepcoes = 0;
+/**
+ * Frotas mandadas a fechar um cais inimigo, e turnos de bloqueio somados.
+ *
+ * ⚠️ **Zero aqui quer dizer que a água voltou a ser estrada.** Uma zona de mar não tem dono e
+ * não se conquista: a única coisa que segurar uma pode comprar é o que passa por ela, e sem
+ * isso nenhuma guerra por controle do mar existe.
+ */
+let bloqueiosPostos = 0;
+let bloqueioTurnos = 0;
 let tomadas = 0;
 let ameacados = 0;
 let conquistas = 0;
@@ -89,6 +106,17 @@ let marTurnos = 0;
 let marExilado = 0;
 let marParado = 0;
 let maiorEstadaNoMar = 0;
+/**
+ * Travessias que TERMINARAM: o pulo da água para uma praia que não é dela.
+ *
+ * ⚠️ **Zero aqui quer dizer que a travessia não chega ao fim, e ela já ficou zerada.** Medido
+ * antes do conserto do desembarque: doze embarques e ZERO desembarques em terra alheia em 150
+ * turnos — todas as expedições voltavam para casa no último trecho, porque a travessia soltava
+ * a hoste quando faltava um salto e a retirada a pegava no mesmo instante. Contar só os
+ * embarques ou os trechos de travessia não mostrava isso: os dois números estavam saudáveis.
+ */
+let desembarquesAlheios = 0;
+let desembarquesEmCasa = 0;
 const ondeEstavaNoMar = new Map<string, string>();
 const desdeQuandoNoMar = new Map<string, number>();
 let marchas = 0;
@@ -168,6 +196,9 @@ for (let turno = 0; turno < TURNOS; turno++) {
   for (const lance of jogarIA(c, ia, ajustes)) {
     socorros += lance.defesas.filter((d) => d.tipo === 'socorro').length;
     surtidas += lance.defesas.filter((d) => d.tipo === 'surtida').length;
+    intercepcoes += lance.defesas.filter((d) => d.tipo === 'intercepcao').length;
+    bloqueiosPostos += lance.bloqueios.filter((b) => !b.manter).length;
+    bloqueioTurnos += lance.bloqueios.length;
     marchas += lance.ataques.length;
     for (const d of lance.decretos) {
       decretosPorNivel.set(d.nivel, (decretosPorNivel.get(d.nivel) ?? 0) + 1);
@@ -221,6 +252,18 @@ for (let turno = 0; turno < TURNOS; turno++) {
   if (c.rodada.conquistas.length > 0 && conquistas === 0) primeiraConquista = turno;
   conquistas += c.rodada.conquistas.length;
   cercoTurnos += c.cercos().length;
+  for (const m of c.rodada.marchas) {
+    for (let i = 1; i < m.trilha.length; i++) {
+      const de = m.trilha[i - 1];
+      const para = m.trilha[i];
+      if (de === undefined || para === undefined) continue;
+      if (!c.ehMar(de) || c.ehMar(para)) continue;
+      // O dono DEPOIS da rodada serve: desembarque que tomou a praça ainda é desembarque
+      // em terra que era alheia, e a conquista já é contada em outra linha.
+      if (c.donoDe(para) === c.hoste(m.hoste)?.poder) desembarquesEmCasa += 1;
+      else desembarquesAlheios += 1;
+    }
+  }
   const noMar = new Set<string>();
   for (const h of c.hostes()) {
     if (!c.ehMar(h.posicao)) continue;
@@ -354,6 +397,15 @@ console.log(
   `  hostes paradas no mar, somadas por turno: ${marTurnos}` +
     ` (${marExilado} de reino sem terra, ${marParado} sem sair do lugar)` +
     ` · a mais demorada ficou ${maiorEstadaNoMar} turnos na água`,
+);
+console.log(
+  `  desembarques: ${desembarquesAlheios} em terra alheia` +
+    ` · ${desembarquesEmCasa} de volta em casa` +
+    ` · interceptações na água: ${intercepcoes}`,
+);
+console.log(
+  `  bloqueios postos: ${bloqueiosPostos}` +
+    ` · frota-turnos segurando cais inimigo: ${bloqueioTurnos}`,
 );
 console.log(`  primeira conquista no turno: ${conquistas > 0 ? primeiraConquista : '—'}`);
 console.log(

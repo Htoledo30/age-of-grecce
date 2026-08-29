@@ -43,6 +43,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
       milicia: 0,
       humor: null,
       cerco: null,
+      bloqueio: null,
       obra: null,
       economia: null,
     };
@@ -76,6 +77,13 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
       : null,
     cerco:
       cerco && relogio ? { sitiante: campanha.poder(cerco.sitiante).nome, ...relogio } : null,
+    // O bloqueio é o cerco do mar, e a ficha o diz com as mesmas palavras: quem, e o que se
+    // perde. Vários reinos podem estar na mesma água — a frase junta os nomes.
+    bloqueio: (() => {
+      const quem = campanha.bloqueiamEm(id);
+      if (quem.length === 0) return null;
+      return { por: quem.map((idp) => campanha.poder(idp).nome).join(' e ') };
+    })(),
     obra: obra
       ? {
           nome:

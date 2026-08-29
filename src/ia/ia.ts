@@ -62,6 +62,7 @@ import {
   retiradasEscolhidas,
   travessiasEscolhidas,
 } from './guerra/marchar';
+import { bloqueiosEscolhidos } from './guerra/bloquear';
 import { levaEscolhida } from './guerra/recrutar';
 
 /** O que a IA fez num turno. Serve à ferramenta de partida e aos testes, não ao jogo. */
@@ -112,6 +113,14 @@ export interface LanceDaIa {
    * partida conta este campo.
    */
   travessias: readonly { destino: string; homens: number }[];
+  /**
+   * Os BLOQUEIOS desta virada — frota parada na água que banha um cais inimigo.
+   *
+   * ⚠️ Zero numa partida inteira quer dizer que a água voltou a ser estrada: nenhuma razão para
+   * FICAR numa zona, e portanto nenhuma guerra por controle do mar. É por isso que a ferramenta
+   * de partida conta este campo. `manter` separa a frota que zarpou hoje da que já estava lá.
+   */
+  bloqueios: readonly { destino: string; homens: number; manter: boolean }[];
   /** Com quem ela assinou a paz nesta virada. */
   pazes: readonly string[];
   /** Cercos dela que viraram assalto nesta virada. */
@@ -166,7 +175,28 @@ export function jogarIA(
     }
 
     const emViagem = new Set(travessias.map((t) => t.hoste));
-    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, emViagem);
+
+    // ⚠️ **O BLOQUEIO depois da travessia e antes da retirada, e a ordem é a regra inteira.**
+    // Depois da travessia porque tomar uma cidade vale mais do que fechar um cais, e a hoste é
+    // a mesma. Antes da retirada porque uma frota parada na água é, para ela, um exército fora
+    // do reino — e sem esta linha vindo primeiro o bloqueio duraria exatamente um turno. Ver
+    // `guerra/bloquear.ts`.
+    const bloqueios = bloqueiosEscolhidos(
+      campanha,
+      idPoder,
+      estilo,
+      ajustes.combate,
+      emViagem,
+    );
+    for (const ordem of bloqueios) {
+      // `manter` não é ordem nenhuma no tabuleiro: a frota já está lá, e o que ela precisa é
+      // que ninguém a chame de volta.
+      if (ordem.manter) continue;
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+    }
+
+    const emCampanhaNaval = new Set([...emViagem, ...bloqueios.map((b) => b.hoste)]);
+    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, emCampanhaNaval);
     for (const ordem of retiradas) {
       campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
     }
@@ -246,7 +276,7 @@ export function jogarIA(
 
     // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
     // depois de virar hoste, no turno que vem.
-    const jaMandadas = new Set([...emViagem, ...retiradas.map((r) => r.hoste)]);
+    const jaMandadas = new Set([...emCampanhaNaval, ...retiradas.map((r) => r.hoste)]);
     const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha).filter(
       (o) => !jaMandadas.has(o.hoste),
     );
@@ -312,6 +342,11 @@ export function jogarIA(
         valor: a.valor,
       })),
       travessias: travessias.map((t) => ({ destino: t.destino, homens: t.homens })),
+      bloqueios: bloqueios.map((b) => ({
+        destino: b.destino,
+        homens: b.homens,
+        manter: b.manter,
+      })),
       assaltos,
       pazes: [],
       pazComprada: null,

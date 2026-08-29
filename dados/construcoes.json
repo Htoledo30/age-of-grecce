@@ -246,7 +246,6 @@
       "requisito": {
         "ancoradouro": true
       },
-      "ligaPorMar": true,
       "efeito": {
         "tipo": "renda",
         "parcela": "transito",
@@ -257,6 +256,7 @@
         ]
       },
       "promessa": "Abre o mar: daqui o exército embarca, e a mercadoria chega a quem não faz fronteira. Aumenta o trânsito local.",
+      "ligaPorMar": true,
       "motivo": "Só cabe onde a costa oferece ancoradouro real. É a porta do mar do reino: sem ela nenhuma tropa zarpa e nenhum acordo de comércio atravessa a água."
     },
     "estrada": {

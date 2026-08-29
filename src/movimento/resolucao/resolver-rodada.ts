@@ -51,7 +51,15 @@ export function resolverRodada(
 
   const forcas = partir(estado);
   for (let passo = 0; passo < ajustes.saltosPorRodada; passo++) {
-    naEstrada(forcas, passo, relatorio.batalhas, mundo.batalha, mundo.dispersaram, mundo.refugio);
+    naEstrada(
+      forcas,
+      passo,
+      relatorio.batalhas,
+      mundo.batalha,
+      mundo.dispersaram,
+      mundo.refugio,
+      mundo.emGuerra,
+    );
     chegar(forcas, passo);
     naProvincia(
       forcas,
