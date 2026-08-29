@@ -173,6 +173,11 @@
 .recrutamento__previsao[data-pode='nao'] {
   color: var(--ui-sangue-claro);
 }
+/* Passar da despensa não é recusa, é escolha cara: mesma cor de alerta, botão liberado. */
+.recrutamento__previsao[data-pode='fome'],
+.recrutamento__quantidade[data-fome='sim'] {
+  color: var(--ui-sangue-claro);
+}
 .recrutamento__previsao[data-pode='espera'] {
   color: var(--ui-texto-tenue);
 }

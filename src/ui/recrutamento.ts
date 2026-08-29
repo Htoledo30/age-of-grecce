@@ -58,6 +58,15 @@ export type VistaDeRecrutamento =
        * levanta hoje leva o treino de hoje para o resto da campanha.
        */
       treino: number;
+      /**
+       * Quantos homens A MAIS a despensa do reino ainda alimenta.
+       *
+       * ⚠️ **A comida é o terceiro teto da leva, e era o único mudo.** O painel já dizia o que
+       * ela custa em ouro e em gente; a comida ficava para o jogador descobrir na virada
+       * seguinte, com 5% da tropa morrendo. Medido: Atenas abre alimentando 500 homens e
+       * podendo pagar 7.740 — o pior teto militar do mapa, no reino mais rico dele.
+       */
+      homensQueAComidaSustenta: number;
       /** Por homem por turno com a tropa parada em casa. */
       manutencaoPorHomem: number;
       /** Por homem por turno com ela em terra alheia. É o preço de ir à guerra. */
@@ -312,6 +321,12 @@ export class Recrutamento {
     this.quantidade.textContent =
       `${numero(homens)} ${NOME_DA_ARMA[escolhida.arma].toLowerCase()}` +
       (escolhida.maximo > 0 ? ` · máximo agora: ${numero(escolhida.maximo)}` : '');
+    // ⚠️ **Não é uma trava.** Passar da despensa continua sendo uma decisão do jogador, como é
+    // para a IA: o número fica vermelho, a previsão diz o preço, e o botão segue liberado.
+    // Cavalo come por vários, então o que cabe depende da arma escolhida.
+    const cabemNaDespensa = Math.floor(vista.homensQueAComidaSustenta / escolhida.comida);
+    const passaDaDespensa = homens > cabemNaDespensa;
+    this.quantidade.dataset['fome'] = passaDaDespensa ? 'sim' : 'nao';
 
     if (escolhida.maximo === 0) {
       this.previsao.textContent =
@@ -346,17 +361,20 @@ export class Recrutamento {
 
     const manutencao = Math.round(r.homens * vista.manutencaoPorHomem);
     const emCampanha = Math.round(r.homens * vista.manutencaoEmCampanha);
-    this.previsao.textContent =
-      `${numero(r.ouro)} moedas agora · ${numero(manutencao)} por turno em casa · ` +
-      `${numero(emCampanha)} por turno em terra alheia · prontos no próximo turno`;
-    this.previsao.dataset['pode'] = 'sim';
+    this.previsao.textContent = passaDaDespensa
+      ? `A despensa alimenta ${numero(cabemNaDespensa)}: o resto passa fome no próximo turno.`
+      : `${numero(r.ouro)} moedas agora · ${numero(manutencao)} por turno em casa · ` +
+        `${numero(emCampanha)} por turno em terra alheia · prontos no próximo turno`;
+    this.previsao.dataset['pode'] = passaDaDespensa ? 'fome' : 'sim';
     definirTooltip(this.previsao, {
       titulo: 'Custo da mobilização',
       corpo:
         `−${numero(r.ouro)} moedas agora\n` +
         `−${numero(manutencao)} por turno em casa\n` +
         `−${numero(emCampanha)} por turno em terra alheia\n` +
-        `−${numero(r.homens)} habitantes`,
+        `−${numero(r.homens)} habitantes` +
+        (passaDaDespensa ? `
+a despensa alimenta ${numero(cabemNaDespensa)}` : ''),
       tom: 'custo',
     });
     this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)} ${NOME_DA_ARMA[

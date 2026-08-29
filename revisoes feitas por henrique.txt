@@ -229,3 +229,16 @@ pode comecar pelo item 1! (o mundo reagir a tua posicao) + "provavelmente precis
      Nao pus tutorial, nao pus texto no painel de recrutar, nao travei o recrutamento. So o
      numero na barra, visivel de qualquer tela.
 
+"ficou bem feio isso ai, nao era mais facil por no tooltip? ou na aba de recrutamento? (...)
+aqueles 1500 jogados na UI é ridiculo"
+   → TU TINHA RAZAO E EU DESFIZ. O numero saiu da barra do topo, que voltou a ser
+     "+1 Abastecido" como era.
+     A licao vale pro resto do jogo: numero solto no HUD e ruido permanente. A informacao
+     pertence ao INSTANTE DA DECISAO, e o lugar foi o que tu apontou.
+     Agora, no painel de recrutar: se a leva passa da despensa, o NUMERO DE SOLDADOS FICA
+     VERMELHO e a previsao troca de conta por consequencia —
+       "A despensa alimenta 500: o resto passa fome no proximo turno."
+     Nao e trava: o botao continua liberado e tu paga na virada, como a IA paga. E o que cabe
+     depende da arma — cavalo come por varios, entao a mesma despensa alimenta menos cavaleiros
+     que hoplitas.
+

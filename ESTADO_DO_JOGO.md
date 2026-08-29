@@ -836,15 +836,23 @@ teto a 1.500, 4 a 2.500, 6 a 3.500 — e aí a comida para de importar, porque o
 dela é 3.498. **O teto de Atenas é temporário; o de Mégara, que trava em OURO com renda 208, é
 estrutural.** Mégara começa forte e estaciona; Atenas começa de joelhos e não tem teto.
 
-O problema, então, nunca foi o balanço — era o jogo não contar. A correção é **uma linha na
-barra**: onde ela dizia `+1 Abastecido`, ela diz `+1 500 homens`. O `+1` continua onde estava;
-o que mudou é a palavra ao lado. Com saldo zero ou negativo ela volta a mostrar a palavra —
-"Fome" não se traduz em homens que cabem.
+O problema, então, nunca foi o balanço — era o jogo não contar.
 
-⚠️ **E nada além disso**, por pedido explícito: *"quero algo básico, nada de tutorial explicando
-cada centímetro, tem que ser simples e self explanatory"*. Sem texto no painel de recrutar, sem
-travar o recrutamento no teto da comida — passar do que se alimenta continua sendo uma decisão
-do jogador, como é para a IA.
+⚠️ **E o aviso mora no RECRUTAMENTO, não na barra do topo.** A primeira tentativa pôs o número
+na barra — `+1 500 homens` no lugar de `+1 Abastecido` — e Henrique matou na hora: *"aqueles
+1500 jogados na UI é ridículo"*. Ele tinha razão, e a lição vale para o resto do jogo: **um
+número solto no HUD é ruído permanente; a informação pertence ao instante da decisão**, quando
+a mão já está na barra do recrutamento. Foi ele quem propôs o lugar certo.
+
+Então o painel de recrutar, que já dizia o que a leva custa em ouro e em gente, passou a dizer
+o terceiro teto — o único que estava mudo. Passando da despensa, o número de soldados fica
+vermelho e a previsão troca de conta por consequência:
+
+> **A despensa alimenta 500: o resto passa fome no próximo turno.**
+
+⚠️ **Não é uma trava.** O botão continua liberado: passar do que se alimenta é uma decisão do
+jogador, como é para a IA, e ele paga na virada. E o que cabe depende da ARMA — cavalo come por
+vários, então a mesma despensa alimenta menos cavaleiros que hoplitas.
 
 ## O mundo passa a olhar a tua POSIÇÃO — e uma assimetria que estava escondida
 

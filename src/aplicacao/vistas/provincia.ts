@@ -288,6 +288,14 @@ export function vistaDeRecrutamento(jogo: Jogo): VistaDeRecrutamento | null {
     treino: campanha.treinoEm(alvo),
     // A leva nasce e fica EM CASA: a previsão mostra o que ela vai custar de verdade no
     // próximo turno. O preço de marchar é outro, e a janela diz qual.
+    /**
+     * Quantos homens A MAIS a despensa do reino ainda alimenta.
+     *
+     * ⚠️ **O aviso mora AQUI e não na barra do topo**, e Henrique estava certo: *"aqueles
+     * 1500 jogados na UI é ridículo"*. Um número solto no HUD é ruído permanente; a informação
+     * pertence ao instante da decisão, quando a mão já está na barra do recrutamento.
+     */
+    homensQueAComidaSustenta: campanha.alimentacao.homensQueSustenta,
     manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem.emCasa,
     manutencaoEmCampanha: ajustes.jogo.combate.manutencaoPorHomem.emCampanha,
     avaliar: (homens, arma) => campanha.podeRecrutar(alvo, homens, arma),
