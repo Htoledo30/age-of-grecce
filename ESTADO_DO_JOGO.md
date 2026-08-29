@@ -816,6 +816,74 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## O mundo passa a olhar a tua POSIÇÃO — e uma assimetria que estava escondida
+
+Depois da pesquisa nos jogos do gênero, o buraco tinha nome: **a nossa conta só sabia responder
+por fatos bilaterais.** A guerra entre os dois, a fronteira entre os dois, a terra que um tomou
+do outro. Um reino podia engolir meia Grécia e **nenhum terceiro sentia nada** — a conquista
+abalava a opinião de um par, o da vítima.
+
+Os quatro jogos pesquisados punem expansão globalmente: é a **expansão agressiva** do EU4 (que a
+−50 forma coalizão), o *"poderoso demais"* do Total War, as **grievances** do Civ VI. E o Age of
+History 2 e o Total War têm também a metade que nos faltava do outro lado: **tratado com o
+inimigo dela baixa a opinião dela.**
+
+### As duas parcelas
+
+- **sombra do maior** — a diferença de porte entre os dois, em províncias. ⚠️ **E aqui ela não é
+  importada, é o tema**: Tucídides explicando a Guerra do Peloponeso, *"o crescimento do poder de
+  Atenas, e o alarme que isso causou em Esparta"*. Repare que o jogo já punia o tamanho **por
+  dentro** — corrupção por tamanho, com teto de 50% — e não tinha nada por fora. Faltava metade
+  do freio;
+- **amigo do meu inimigo** — quantos reinos abraçam quem está em guerra com o outro. É o que faz
+  a diplomacia ser **escolha**: sem ela, ser amigo de todo mundo é grátis e sempre certo.
+
+⚠️ **A sombra conta acordo MILITAR e não comércio, de propósito.** Pacto, aliança, tributo e
+passagem são compromissos; comércio é o degrau mais barato da escada, e foi ele que tirou a mesa
+de 82% de indiferença. Cobrar por comerciar com um inimigo trancaria de volta o que acabou de
+abrir.
+
+⚠️ **E a sombra tem LIMIAR, que é o que separa sombra de ruído.** Sem ele ela disparava entre um
+reino de três províncias e um de uma — o mapa inicial, não uma ameaça — e a mesa inteira
+afundava: **as propostas ao jogador caíam de 54 para ZERO**, em toda dose testada. É o mesmo
+limiar que a corrupção por tamanho já usava.
+
+### A assimetria que elas revelaram
+
+⚠️ **A conta do alvo era assimétrica, e a opinião é UM número por par.** `fronteira` contava só
+as províncias DELE que encostam nas minhas — não é o mesmo número que o contrário —, e
+`terrasTomadas` só a terra que o primeiro da ordem alfabética tirou do segundo. Como
+`andarRelacoes` sempre chama na ordem dos ids, **quem decidia qual das duas contas valia era o
+alfabeto**.
+
+Medido numa partida de 60 turnos: **7 pares divergiam**, com Argos e Epidauro em *"fronteira
+comum (1)"* num sentido e *"(3)"* no outro. E o efeito grave: **metade das conquistas do mapa não
+envenenava relação nenhuma** — no par argos–corinto, uma província que Corinto tomasse de Argos
+era invisível.
+
+Agora a fronteira é a maior das duas contas e a terra tomada soma os dois sentidos. Há teste
+varrendo o mapa inteiro e exigindo que os dois sentidos deem o mesmo número.
+
+### Medido em três passos, 150 turnos
+
+| | antes de hoje | só a simetria | **+ as duas parcelas** |
+|---|---|---|---|
+| guerras declaradas | 33 | 41 | **38** |
+| províncias que mudaram de dono | 12 | 29 | **28** |
+| propostas ao jogador | 59 | 54 | **37** |
+| **maior reino** | 8 | 10 | **6** |
+| **poderes vivos de 18** | 12 | 9 | **13** |
+| distância entre o maior e o menor | 7,6× | — | **6,2×** |
+
+⚠️ **A correção da simetria sozinha deixou o mundo mais violento**, e está certa: as conquistas
+passaram a envenenar nos dois sentidos, então há mais motivo de guerra do que antes. O maior
+reino foi a 10 e sobraram 9 poderes. **As duas parcelas são o que o mundo precisava para
+absorver isso**: com elas o maior reino não passa de 6, sobrevivem 13 de 18, e a distância entre
+o maior e o menor é a menor já medida neste projeto.
+
+O preço são as propostas ao jogador caindo de 59 para 37 — a mesa ficou mais desconfiada com
+todo mundo, inclusive contigo. Continua sendo dez vezes o que era antes da semana começar (zero).
+
 ## A ALIANÇA: o único acordo que obriga a fazer
 
 *"Vamos de aliança então!"*. Ela era o degrau que faltava, e a falta dela tinha forma: **todo o

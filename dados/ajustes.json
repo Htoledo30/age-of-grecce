@@ -50,7 +50,12 @@
         "porInimigoComum": 5,
         "inimigoComumMaximo": 12,
         "porDecadaDePaz": 2,
-        "pazMaxima": 6
+        "pazMaxima": 6,
+        "sombraLimiar": 3,
+        "porProvinciaDeVantagem": -2,
+        "sombraMaxima": -15,
+        "porAmigoDoInimigo": -3,
+        "amigoDoInimigoMaximo": -9
       },
       "choque": {
         "conquista": -25

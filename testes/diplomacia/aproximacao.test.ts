@@ -35,6 +35,8 @@ const NEUTROS: SituacaoDaRelacao = {
   mesmoPovo: false,
   inimigosComuns: 0,
   turnosDePaz: 0,
+  diferencaDePorte: 0,
+  amigosDoMeuInimigo: 0,
 };
 
 const alvo = (mudanca: Partial<SituacaoDaRelacao>): number =>

@@ -198,6 +198,34 @@ export const Ajustes = z.object({
         porDecadaDePaz: z.number(),
         /** Teto da paz: ela sara a fronteira, não compra amizade eterna de graça. */
         pazMaxima: z.number(),
+        /**
+         * Por província de diferença de porte entre os dois — **a sombra do maior**.
+         *
+         * ⚠️ **A única parcela que reage à POSIÇÃO de alguém no mapa.** Antes dela um reino
+         * engolia meia Grécia e só a vítima sentia: a conquista abalava um par. É a expansão
+         * agressiva do EU4 e o "poderoso demais" do Total War — e, neste jogo, é Tucídides.
+         */
+        /**
+         * Diferença de porte a partir da qual a sombra começa a pesar.
+         *
+         * ⚠️ **É o que separa sombra de ruído.** Sem limiar a parcela disparava entre dois
+         * reinos pequenos — três províncias contra uma é o mapa inicial, não uma ameaça — e o
+         * efeito medido foi a mesa inteira afundar: **as propostas ao jogador caíram de 54 para
+         * ZERO em 150 turnos, em toda dose testada.**
+         */
+        sombraLimiar: z.number().int().nonnegative(),
+        porProvinciaDeVantagem: z.number(),
+        /** Teto: passado certo ponto ele já é grande demais, e mais uma não assusta mais. */
+        sombraMaxima: z.number(),
+        /**
+         * Por reino que abraça o inimigo do outro — **o amigo do meu inimigo**.
+         *
+         * ⚠️ É o que faz a diplomacia ser ESCOLHA: sem ele, ser amigo de todo mundo é grátis e
+         * sempre certo. Tínhamos só a metade positiva, o inimigo em comum.
+         */
+        porAmigoDoInimigo: z.number(),
+        /** Teto, como o do inimigo em comum. */
+        amigoDoInimigoMaximo: z.number(),
       }),
       /**
        * Os choques: o que um ATO faz com a opinião na hora, antes de ela voltar a caminhar.

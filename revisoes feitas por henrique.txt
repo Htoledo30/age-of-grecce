@@ -158,293 +158,56 @@ Primeiro problema encontrado referente a movimentacao da IA no mar, ao sair do m
 Novas Observacoes Por Henrique
 ═══════════════════════════════════════════════════════════════════════════════
 
-   → problema encontrado, mas bem basico, quando clico numa provincia ainda esta muito consufo, qual o nome da provincia, da regiao e do reino, o reino tem que ser o mais importante, e futuramente o nome de cada provincia deve ser escrito diretamente no mapa dentro de cada provincia, saca?
-   → FEITO a primeira metade, e tu tinhas razao pelo pior motivo possivel: "ATENAS ·
-     MEGARIDA" saia numa linha so, MESMA fonte, MESMO tamanho, MESMA cor, separados por um
-     ponto. Os dois nomes eram literalmente indistinguiveis, e o reino — que e o que mais
-     importa — era a coisa mais fraca da ficha.
-     Agora sao tres tratamentos que nao se confundem: uma FAIXA no topo, acima do nome, com
-     o reino a esquerda em maiusculas fortes e o escudo dele com a tinta CHEIA (era um
-     contorno vazio de 14px), e a regiao na outra ponta da mesma faixa, menor e apagada. O
-     nome da provincia continua grande, logo abaixo. Nenhum rotulo dizendo qual e qual — a
-     posicao e o peso ja dizem. Comparativo em capturas/ficha-comparativo.png.
-     → E a SEGUNDA METADE tambem entrou: o nome escrito dentro de cada provincia, com
-     interruptor "Nomes no mapa" no painel da direita.
-     Pesquisei antes, como tu pediste. O Age of History 2 tem o interruptor e faz os nomes
-     aparecerem com o zoom — e a queixa mais repetida dos jogadores dele e "nomes e bandeiras
-     grandes demais"; a resposta da comunidade e diminuir a escala do mapa, ou seja, o jogo
-     empurra o problema para o jogador. O EU4 tem "Display province names" como opcao e o
-     mesmo comportamento; o ponto fraco conhecido dele e o CONTRASTE, tanto que existem mods
-     populares so para engrossar a fonte dos nomes.
-     Duas coisas vieram da cartografia de verdade, e nao dos jogos:
-     1) o ponto do nome NAO e o centro da provincia. O centroide cai FORA da forma em 15 das
-        244 (Itaca, Melos, o Estreito de Salamina) — o nome ficaria escrito no vizinho ou no
-        mar. O certo e o "polo de inacessibilidade", o ponto mais distante da borda. Como o
-        nosso mapa e raster, ele sai exato de graca.
-     2) rotulo de area so se desenha se COUBER na area naquele zoom. Isso da nivel de detalhe
-        sozinho: longe so as grandes tem nome, perto todas cabem. Sem nenhum limiar de zoom
-        escrito a mao, e sem precisar de detector de colisao.
-     E agua vai em ITALICO, convencao de cartografia de seculos — resolve de graca a confusao
-     entre "Mar de Esciros" e "Calcis", que sao coisas de natureza diferente.
-     Prints: capturas/nomes-perto.png e capturas/nomes-longe.png
+ 
 
-   → E DEPOIS TU JOGASTE E ACHASTE TRES COISAS, as tres corrigidas:
-     1) "nao consigo clicar no mapa, perco movimento" — bug meu e feio. O base.css tem
-        "#ui > * { pointer-events: auto }", que e seletor de ID e ANULA o pointer-events:none
-        que eu escrevi so na classe. A camada cobre a tela inteira, entao ela engolia todo
-        clique e todo arrasto assim que os nomes acendiam. Consertado, e agora tem teste de
-        tela guardando (o TypeScript nao ve CSS; so clicando de verdade da para pegar).
-     2) "muitos nomes nao aparecem, tem que aparecer de todas as zonas" — tu tens razao sobre
-        o TEU jogo. A regra da cartografia (rotulo que nao cabe nao se desenha) vale para
-        atlas, onde o nome e enfeite; aqui ele e como tu sabes onde estas. Agora o nome
-        ENCOLHE ate um piso de 8px e nunca some. O tamanho continua vindo do espaco, entao
-        terra grande fica no corpo cheio e terra pequena fica pequena — mas aparece.
-     3) "essa opcao tem que estar ativa 24 horas por dia, o unico jeito de desligar seria indo
-        em opcoes" — feito. Saiu do painel do mapa e foi para o menu de pausa, aba de opcoes
-        (que agora se chama "Audio e interface"), LIGADA por padrao. A preferencia fica
-        guardada no navegador, como os volumes.
-     Print das opcoes: capturas/opcoes-nomes.png
+pode comecar pelo item 1! (o mundo reagir a tua posicao) + "provavelmente precisamos de mais estilos?"
+   → FEITO, e no caminho eu achei um DEFEITO que estava escondido ha muito tempo.
 
-zoom travado em 0.40, liberar mais
-   → FEITO, e tu lembravas certo: camera.zoomMaximo estava em 0,40, e a faixa inteira ia de
-     0,156 (mapa todo na tela) a 0,40 — 2,5x de ponta a ponta.
-     Comparei 0,4 / 0,7 / 1,0 / 1,4 lado a lado antes de escolher (capturas/zoom-comparativo
-     .png). O achado: **passando de 0,4 aparece a vegetacao pintada no terreno.png**, uma
-     camada de arte que tu nunca viste porque o teto nao deixava chegar la. Em 1,0 as arvores
-     aparecem e o traco continua limpo; em 1,4 a textura comeca a papar e as arvores a se
-     repetir. Teto novo: 1,0 — dois e meio vezes mais perto do que dava antes.
-     Mexi tambem no passo da roda (1,12 -> 1,18), porque com a faixa maior o mesmo passo
-     levaria 16 voltas de roda para atravessar em vez de 8. Agora sao 11.
-     Os dois ficam em dados/ajustes.json, em "camera" — se quiseres chegar mais perto ainda,
-     e so subir o zoomMaximo; custa nitidez, nao desempenho.
+   → O DEFEITO: a conta do alvo era ASSIMETRICA, e a opiniao e UM numero por par.
+     "fronteira comum" contava so as provincias DELE que encostam nas minhas — que nao e o mesmo
+     numero que o contrario — e "terra dele na sua mao" so a terra que o primeiro da ORDEM
+     ALFABETICA tirou do segundo. Como o passo da opiniao sempre chama na ordem dos ids, quem
+     decidia qual das duas contas valia era o alfabeto.
+     Medido em 60 turnos: 7 pares divergiam (Argos e Epidauro davam "fronteira comum (1)" num
+     sentido e "(3)" no outro). E o pior: METADE DAS CONQUISTAS DO MAPA NAO ENVENENAVA RELACAO
+     NENHUMA — no par argos|corinto, uma provincia que Corinto tomasse de Argos era invisivel.
+     Consertado: fronteira e a maior das duas contas, terra tomada soma os dois sentidos, e tem
+     teste varrendo o mapa inteiro exigindo que os dois sentidos deem o mesmo numero.
 
-crash do editor de balanceamento (medidas.ts) — CONSERTADO. Era bug meu: escrevi uma quebra
-de linha literal dentro de uma string ao editar o arquivo por script. O build e a suite ja
-passam; a versao empurrada esta correta.
+   → AS DUAS PARCELAS NOVAS:
+     SOMBRA DO MAIOR — a diferenca de porte entre os dois, em provincias. O jogo ja punia
+     tamanho POR DENTRO (corrupcao por tamanho, teto de 50%) e nao tinha nada por fora. E aqui
+     ela nao e importada, e o tema: Tucidides explicando a Guerra do Peloponeso, "o crescimento
+     do poder de Atenas, e o alarme que isso causou em Esparta".
+     AMIGO DO MEU INIMIGO — quantos reinos abracam quem esta em guerra com o outro. E o que faz
+     a diplomacia ser ESCOLHA: sem ela, ser amigo de todo mundo e gratis e sempre certo.
+     ⚠️ Conta acordo MILITAR e nao comercio, de proposito — comercio e o degrau mais barato da
+     escada e foi ele que tirou a mesa de 82% de indiferenca.
+     ⚠️ E a sombra tem LIMIAR. Sem ele ela disparava entre um reino de tres provincias e um de
+     uma, que e o mapa inicial e nao uma ameaca, e a mesa afundava: as PROPOSTAS A TI caiam de
+     54 para ZERO em toda dose que testei. Varri limiar 2, 3 e 4 antes de escolher.
 
-crash- [plugin:vite:oxc] Transform failed with 1 error:
+   → MEDIDO EM TRES PASSOS, 150 turnos:
+                                   antes de hoje | so a simetria | + as duas parcelas
+       guerras declaradas .............. 33 | 41 | 38
+       provincias que mudaram de dono .. 12 | 29 | 28
+       propostas a ti .................. 59 | 54 | 37
+       MAIOR REINO ...................... 8 | 10 | 6
+       PODERES VIVOS DE 18 ............. 12 |  9 | 13
+       maior contra o menor ........... 7,6x | — | 6,2x
+     A simetria sozinha deixou o mundo mais violento, e esta certa — passou a haver mais motivo
+     de guerra do que antes. As duas parcelas sao o que o mundo precisava para absorver isso: o
+     maior reino nao passa de 6, sobrevivem 13 de 18, e a distancia entre o maior e o menor e a
+     MENOR ja medida neste projeto.
 
-[PARSE_ERROR] Unterminated string
-     ╭─[ src/ui/ficha-provincia/medidas.ts:195:83 ]
-     │
- 195 │       corpo: [vista.povos, fraseDaEstranheza(vista)].filter((l) => l !== '').join('
-     │                                                                                   ─┬  
-     │                                                                                    ╰── 
-─────╯
-C:/AgeOfGrecce/src/ui/ficha-provincia/medidas.ts
-    at transformWithOxc (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:4097:19)
-    at TransformPluginContext.transform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:4168:26)
-    at EnvironmentPluginContainer.transform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:30851:51)
-    at async loadAndTransform (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:20619:26)
-    at async viteTransformMiddleware (file:///C:/AgeOfGrecce/node_modules/vite/dist/node/chunks/node.js:25142:20)
-Click outside, press Esc key, or fix the code to dismiss.
-You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
-
-destroi essas arvores ai pelo amor de deus, e outra coisa, o que consegue fazer em relacao as
-linhas? que elas comecam a sumir e quebrar quando dou muito zoom
-   → AS DUAS FEITAS, e eram problemas separados.
-     ARVORES: foram embora inteiras. E eu tinha te contado errado no zoom: elas NAO estavam
-     pintadas no terreno.png, eram uma camada de sprites montada durante a partida a partir
-     de assets/mundo/detalhes.json. O teto de 0,4 ficava logo abaixo do limiar em que ela
-     acendia, entao era arte que custava memoria e quadro sem nunca chegar na tela. Sobrou
-     dela so o GRAO do chao (aquela textura fina que entra com o zoom e tira o achatado das
-     areas grandes de cor); o resto saiu — gerador, json, e o codigo que so ele usava.
-     LINHAS: o defeito nao era a linha ser fina, era a CONTA da distancia.
-     A fronteira nao e desenhada por geometria: ela sai do provincias.png dentro do
-     chuveirinho. Perto, monta-se um campo continuo que vale 1 dentro da provincia e 0 fora,
-     a fronteira e onde ele vale 0,5, e a espessura sai de quanto o campo muda por pixel —
-     a inclinacao. Essa inclinacao vinha de dFdx, a derivada de hardware, que compara dois
-     pixels VIZINHOS. E perto esses dois pixels caem em CELULAS diferentes da grade de
-     texels: cada um interpola quatro amostras diferentes, e a diferenca entre eles nao e
-     inclinacao nenhuma — e o degrau entre duas contas distintas. O numero sai grande, a
-     distancia ate a fronteira infla, e a linha SOME naquele pixel.
-     Isso explica exatamente o que tu viu: numa escada de 45 graus toda celula difere da
-     vizinha, entao o furo cai em todo degrau e a fronteira vira uma fileira de pontos; num
-     trecho mais raso a linha sai inteira com um furo em cada degrau. E explica por que so
-     apareceu agora — com o teto em 0,4 o mapa vivia no outro regime, o de longe, que usa
-     outra medida e nao passa por aqui. Subir para 1,0 pos o jogo num caminho que quase
-     nunca era usado.
-     Consertado calculando a derivada do campo NA MAO: ela tem forma fechada, sai das mesmas
-     quatro amostras que ja estao em maos, e e exata dentro da celula. Com um piso de
-     seguranca para o ponto de sela (o xadrez onde a inclinacao zera de verdade).
-     ⚠️ Um efeito colateral que tu vai notar: a linha ficou mais GROSSA. Nao engrossei nada —
-     a derivada inflada nao fazia so buracos, ela afinava a fronteira inteira, entao o
-     larguraDaLinha: 2.0 que esta em dados/ajustes.json vinha entregando um fio de cabelo.
-     Agora ele entrega 2. Se achar pesado, e esse numero, e da para calibrar sem recarregar.
-     Par de capturas da mesma cena: capturas/par-antes.png e capturas/par-depois.png
-
-uma config que eu gostei foi exercito a partir de 500 soldados ja tira 1 da comida, minha
-unica duvida e a IA ta configurada com o sistema de comida tbm? Ela entende que precisa ter
-mais comida para poder criar mais exercito? Ela se importa com isso?
-   → ESTAVA LIGADA, mas NAO PLANEJAVA. Agora planeja.
-     O que ja existia (quatro lugares): saldo negativo tranca o recrutamento inteiro; o que
-     sobra na despensa vira o TETO da leva, em bocas, dividido pela comida da arma (cavalo
-     come por dois); despensa apertada tira a cavalaria da lista; e a obra de alimento troca
-     de preco.
-     O que NAO existia era o plano. Medi com o teu 500: 21 das 28 fazendas ela erguia com a
-     parede ja nas costas. O ciclo dela era de bombeiro — bater no teto, parar de recrutar,
-     erguer a fazenda, recomecar. A culpa era da regua: "saldo <= limiar" so olha o saldo de
-     HOJE, e saldo de hoje que fecha nao diz nada sobre o exercito de amanha.
-     A REGUA NOVA olha para frente: a despensa aperta quando o EXERCITO QUE A ECONOMIA BANCA
-     nao caberia nela. E a pergunta que faz um reino encher celeiro em tempo de paz.
-     ⚠️ Ela sente o TEU numero. A conta e em bocas, entao baixar de 3.000 para 500 move o
-     gatilho sozinho — a regua velha nao sentia, um ponto ficou seis vezes mais valioso em
-     soldado e o gatilho continuava disparando no mesmo lugar.
-     ⚠️ E a comida passou a ter TRES precos, porque um so quebrou o mundo. Minha primeira
-     tentativa reaproveitou o preco de emergencia (40 moedas/turno) no gatilho novo. Ela
-     plantou, sim — mas em 150 turnos a riqueza do mapa caiu 33% e sobraram 5 poderes vivos
-     de 18, com um reino de treze provincias. Aquele 40 foi calibrado para emergencia rara;
-     cobrado na rotina, a IA construia so fazenda. Agora: gosto (4-6) → gargalo (20-25) →
-     emergencia (40-50), com teste guardando a ordem.
-     MEDIDO com 500, 100 turnos, 18 poderes na IA — regua antiga vs tres degraus:
-       homens em armas ............ 12.151 → 20.167
-       fazendas (quantas na parede)  28 (21) → 43 (20)
-       tropa passando fome ........ 14 turnos → 3 turnos
-       conquistas ................. 22 → 29
-       poderes vivos de 18 ........ 11 → 12
-       riqueza do mapa ............ 7.317 → 6.125
-     Ela planta antes, segura um exercito 66% maior, quase nao passa fome, e o mundo continua
-     tao plural quanto era. A conta que ela paga sao 16% de riqueza — troca Agora por fazenda,
-     que e exatamente a decisao que o teu balanco apertado deveria forcar.
-     ⚠️ E no padrao do repo (3.000 por ponto) NADA se mexeu, nem um digito: `npm run partida
-     100` devolve os mesmos 19.958 homens, as mesmas 3 viradas com fome, os mesmos 6 poderes
-     varridos. A regua nova so morde onde a comida e de fato o gargalo.
-     ⚠️ FALTA UMA COISA TUA: o teu 500 nao esta no repositorio, aqui ainda esta 3.000. Medi
-     por override. Quando quiser, commita o teu valor em dados/ajustes.json.
-     O numero novo (alimentoNoGargalo) esta em dados/ia.json, um por estilo — da para mexer
-     no editor de balanceamento como os outros.
-
-uai quando eu mudo no editor que o chat criou nao muda no repositorio? / oxi que merda o editor entao
-   → ERA VERDADE, e agora nao e mais. O editor gravava so no localStorage do navegador: nao
-     ia pro git, nao ia pro notebook, e NENHUMA ferramenta via (partida, testes e economia
-     leem dados/*.json). Era por isso que eu media o teu 500 por override.
-     Agora o rodape do editor tem "Gravar em dados/", e ele escreve o arquivo de verdade.
-     Tu mexe, joga, gosta, aperta gravar — e o numero esta em dados/ajustes.json pronto pra
-     commitar. So funciona no npm run dev (o jogo empacotado nao carrega rota que escreve em
-     disco), e ele VALIDA antes de gravar: se o numero contradiz o esquema, nada e escrito e
-     o motivo aparece em uma linha, tipo "alimento.soldadosPorPonto: esperava numero".
-     A aba "Perfis" continua desligada — quem faz ela e a outra sessao; eu so abri a porta.
-
-   → E O 500 VIROU O PADRAO DO REPOSITORIO, como tu mandou.
-     ⚠️ Mas tem uma coisa que tu precisa saber, e eu so descobri medindo: NO TURNO 1, ATENAS
-     SUSTENTA 500 HOMENS. Exatamente 500. Tu comeca com o saldo alimentar mais apertado do
-     mapa inteiro — 1 ponto, contra 6 de Megara, 5 de Argos e 5 de Tebas. Erguer exercito
-     agora exige erguer lavoura antes. Se achar apertado demais, e um numero so, e agora tu
-     mesmo muda pelo editor e grava.
-     O mundo ficou MAIS saudavel, nao menos, porque a IA aprendeu a plantar antes:
-       npm run partida 100      3.000/ponto → 500/ponto
-       turnos com fome ........ 3 → 0
-       tropa passando fome .... 29 → 3
-       homens em armas ........ 19.958 → 20.167
-       poderes varridos de 18 . 6 → 6
-       maior contra o menor ... 11,0x → 8,5x
-     ⚠️ E 25 testes ficaram vermelhos de uma vez, em 11 arquivos, nenhum deles sobre comida —
-     folha militar, marcha, cerco, dispensa, milicia. Todos plantavam mil homens em Atenas e
-     passaram a medir fome sem querer. Consertei tirando a comida do caminho onde ela nao e o
-     assunto, e nao encolhendo os exercitos dos testes.
-     Um deles estava VERDE PELO MOTIVO ERRADO, e so apareceu agora: o teste da desercao
-     alistava 3.500 homens e dizia que eles desertavam por falta de pagamento — mas 3.500
-     homens custam 350 por turno contra 774 de renda de Atenas. Quem encolhia aquele exercito
-     era a fome. Agora ele recruta ate a folha passar da renda e mede o que diz medir.
-
-o que mais de diplomacia ta meia boca? Ta faltando? O que mais conseguimos melhorar?
-   → MEDI ANTES DE OPINAR, e o diagnostico cabia num numero: dos 306 pares possiveis entre os
-     18 poderes, so 56 tinham alguma coisa acontecendo. OS OUTROS 250 FICAVAM EM ZERO PARA
-     SEMPRE — 82% da mesa era indiferenca permanente.
-     A causa estava na propria regua:
-       POSITIVAS (todas exigem ASSINAR algo): comercio +10 · pacto +15 · tributo +6
-       NEGATIVAS (todas acontecem sozinhas):  guerra -60 · tregua -15 · fronteira -20
-                                              terra tomada -45 · promessa quebrada -25
-     A unica coisa que a geografia sabia produzir era fronteira comum, e ela e negativa. Quem
-     nao te encosta nao tinha como ter opiniao nenhuma sobre ti. E a IA so abre comercio com
-     opiniao acima de 0 — ou seja, o estado natural da mesa era reprovado de saida. O unico
-     jeito de entrar era presente, e o banco mostrava a IA fazendo isso: 51 presentes e 25.201
-     de ouro em 150 turnos, comprando o direito de existir numa mesa que nascia trancada.
-     Duas consequencias feias: o VIZINHO, que e o parceiro natural, era o pior parceiro
-     possivel (fronteira nunca cicatrizava); e TU PARADO recebia ZERO propostas em 150 turnos,
-     com opiniao 0 contra todo mundo — nao por hostilidade, por inelegibilidade.
-
-   → FEITO: tres razoes de gostar de alguem, e nenhuma delas pede assinatura.
-     1) MESMA GENTE. A tribo grega (jonio, dorio, beocio, locrio) ja estava escrita nas fichas
-        e ja movia a felicidade desde a nacionalidade — e nao havia UMA LINHA dela em toda a
-        pasta de diplomacia. E a razao certa porque e o que a Grecia de 700 a.C. tinha no lugar
-        de nacao. Ser de outra tribo nao afasta: da indiferenca.
-     2) INIMIGO EM COMUM. O motor mais basico do genero, e nao existia. Dois reinos podiam
-        sangrar contra o mesmo agressor por cinquenta turnos e continuar indiferentes. Essa e
-        VIVA: nasce com a guerra e morre com ela.
-     3) PAZ POR DECADA. E o que faz a fronteira parar de ser veneno eterno.
-     Nada disso pediu estado novo: a paz sai do registro de TREGUA, que guarda o turno em que
-     ela vence e nao e apagado depois. Quem nunca guerreou conta desde o comeco da campanha.
-     MEDIDO em 150 turnos, antes → depois:
-       pares em opiniao zero ....... 54% → 0%
-       PROPOSTAS A TI .............. 0 → 34
-       o que os outros acham de ti .. 0 (de 0 a 0) → 6 (de -7 a 12)
-       acordos de comercio abertos .. 52 → 90
-       pactos assinados ............. 88 → 113
-       presentes (o suborno) ........ 51 / 25.201 ouro → 23 / 10.253
-       guerras declaradas ........... 40 → 29
-       provincias que mudaram dono .. 30 → 15
-       poderes varridos de 18 ....... 6 → 6
-     ⚠️ O PRECO: o mundo guerreia menos. As conquistas cairam pela metade. Isso e o que se pede
-     a um sistema cujo trabalho e dar razoes para nao brigar, mas e teu direito achar demais —
-     os cinco numeros novos estao em dados/ajustes.json, em diplomacia.alvo, e varri as doses
-     antes de escolher (a dose dobrada derrubava as conquistas para 10).
-     ⚠️ E SOBROU UM NO, que e o proximo se tu quiser a guerra de volta: relacaoParaDeclarar faz
-     DOIS trabalhos — "acima disto eu nao te ataco" E "acima disto eu comercio contigo". Eles
-     puxam para lados opostos: medido, subindo a barra +8 as conquistas voltam a 42 e as
-     propostas caem a zero. Separar os dois e o conserto, e nao cabia nesta mudanca.
-
-   → O QUE CONTINUA FALTANDO, na ordem em que eu faria:
-     1. ALIANCA. O pacto e so nao-agressao; ninguem entra na guerra de ninguem. E o topo da
-        escada e ele nao existe. Agora existe caminho ate ela, que antes nao existia.
-     2. Separar o gatilho de atacar do gatilho de comerciar (o no acima).
-     3. Os portoes que te deixam inelegivel: pacto so vai para vizinho MAIS FORTE que a IA,
-        entao um jogador sem exercito nunca e candidato.
-     4. A IA nunca rompe pacto — esta documentado como decisao da v1, nao e descuido.
-     5. Espionagem: desenhada no GDD e adiada de proposito ate a diplomacia basica funcionar.
-
-vamos de alianca entao!
-   → FEITA, e ela e o unico acordo do jogo que obriga a FAZER alguma coisa. Todo o resto da
-     mesa e promessa de NAO fazer — nao atacar, nao fechar a estrada, nao cobrar.
-     AS CINCO REGRAS:
-     1. E um pacto que tambem obriga: ninguem ataca ninguem, e a guerra de um vira a do outro.
-     2. A entrada e AUTOMATICA e nao pergunta. Nao e falta de agencia: a agencia foi assinar,
-        e ela continua existindo em romper. Uma convocacao que se recusa de graca seria uma
-        alianca que nao obriga, ou seja, um pacto com nome pomposo.
-     3. So o aliado DIRETO entra. Aliado de aliado nao e aliado — sem isso uma escaramuca de
-        fronteira virava guerra mundial em tres turnos.
-     4. Promessa que ja existe segura a convocacao: quem tem pacto ou tregua com o inimigo nao
-        e arrastado contra ele. A alianca nao te faz quebrar de graca um papel ja assinado.
-     5. A paz e de cada um. Entrar e automatico, sair nao.
-     Romper custa MAIS que romper um pacto. E a resposta honesta a "e se a guerra dele nao me
-     servir?": rompe e fica de fora, pagando por abandonar quem contava contigo.
-
-   → ELA NASCEU MORTA DUAS VEZES, e as duas eu peguei medindo (zero aliancas em 150 turnos, o
-     mesmo sintoma dos zero Portos). Eram dois defeitos independentes:
-     - A OPINIAO MINIMA ERA INALCANCAVEL POR DOIS PONTOS. O prazo mais barato pedia 40, e a
-       maior opiniao que dois poderes atingem em 150 turnos era 38. Numero calibrado contra um
-       teto que ninguem tinha medido. Agora pede 25 e 35.
-     - A RAZAO era exigida dos DOIS lados, o que matava a alianca do fraco por construcao: quem
-       esta ameacado tem motivo, e o forte que poderia salva-lo justamente nao esta ameacado —
-       logo nunca tinha. 9 pares-turno de 13.247 passavam. Agora a razao e do PAR e basta um
-       lado te-la; a VONTADE continua sendo consultada nos dois sentidos.
-     ⚠️ E de quebra: com a alianca em jogo o teto da opiniao subiu de 38 para 47, o que tirou do
-     limbo o PACTO DE 40 TURNOS — ele pedia 45 e nunca tinha sido assinado por ninguem.
-
-   → O QUE ELA FEZ COM O MUNDO, 150 turnos, sem → com:
-       aliancas assinadas / de pe no fim ..... — → 70 / 10
-       propostas a ti ....................... 34 → 59
-       poder-turnos em guerra ................ 4% → 10%
-       TRECHOS DE TRAVESSIA PELO MAR ......... 6 → 118
-       passagens militares concedidas ....... 36 → 68
-       acordos de comercio abertos .......... 90 → 126
-       provincias que mudaram de dono ....... 15 → 12
-       distancia entre o maior e o menor .... 9,8x → 7,6x
-     ⚠️ MAIS GUERRA E MENOS CONQUISTA, e e isso que uma coalizao faz: quem ataca um reino
-     pequeno agora enfrenta o aliado dele. O mapa briga mais e consolida menos.
-     E o efeito que ninguem pediu e que e o mais bonito: as TRAVESSIAS PELO MAR saltaram de 6
-     para 118. A alianca e o primeiro acordo que faz sentido atraves do Egeu — ela nao pede
-     fronteira, so um inimigo em comum —, e foi ela que finalmente pos os exercitos nos barcos.
-     Na aba de Diplomacia ha um grupo "Alianca" ao lado de Pacto, Passagem e Tributo, e a IA
-     te propoe alianca como propoe pacto.
+   → SOBRE OS ESTILOS, que tu levantou: fui medir antes de opinar, e acho que o numero nao e o
+     problema. Sao 4 estilos para 18 poderes — 13 tem estilo escrito (cauteloso 5, mercador 4,
+     guerreiro 4) e 5 caem no equilibrado padrao, o que da uma distribuicao boa. E os quatro sao
+     de fato diferentes: dos 18 campos que um estilo tem, NENHUM e igual nos quatro.
+     O que falta nao e um quinto preset — e que os estilos DECIDEM mas nao JULGAM. Um guerreiro
+     e um mercador tem exatamente a mesma opiniao sobre ti nas mesmas circunstancias. No Civ VI
+     o que faz cada lider parecer unico nao e uma tabela maior, e a AGENDA: uma parcela de
+     opiniao que sai do gosto de quem observa. Um quinto preset ainda repetiria 3 ou 4 vezes; o
+     gosto por estilo faz os quatro que ja existem parecerem diferentes de se jogar contra.
+     E o item 3 da lista que eu te mandei, e continua sendo o que eu faria depois da liga.
 

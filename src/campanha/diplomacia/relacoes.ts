@@ -33,7 +33,7 @@
  */
 
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
-import { rasgarAcessosEntre } from './acesso-militar';
+import { acessoAte, rasgarAcessosEntre } from './acesso-militar';
 import type { Tributo } from '../estado-campanha';
 import { vivo } from '../governo/poderes';
 import { darOuro, gastar, tesouroDe } from '../governo/tesouro';
@@ -294,20 +294,15 @@ function situacaoDaRelacao(
   b: string,
 ): SituacaoDaRelacao {
   const minhas = nucleo.territorios.provinciasDe(a);
-  const delas = new Set(nucleo.territorios.provinciasDe(b));
-  let fronteira = 0;
-  for (const id of [...delas].sort()) {
-    if (nucleo.atlas.provincia(id).vizinhas.some((v) => minhas.includes(v))) fronteira += 1;
-  }
-  // A memória da conquista sem guardar memória: enquanto a bandeira dele estiver na minha
-  // mão, ele lembra. Devolver a terra apaga a mágoa sozinho.
-  const terrasTomadas = minhas.filter((id) => nucleo.atlas.donoInicial(id) === b).length;
+  const delas = nucleo.territorios.provinciasDe(b);
   const povoDeA = povoDoPoder(nucleo, a);
   return {
     emGuerra: emGuerra(nucleo, a, b),
     tregoa: tregoaAte(nucleo, a, b) === undefined ? 0 : 1,
-    fronteira,
-    terrasTomadas,
+    fronteira: fronteiraEntre(nucleo, minhas, delas),
+    terrasTomadas: terrasTomadasEntre(nucleo, minhas, delas, a, b),
+    diferencaDePorte: Math.abs(minhas.length - delas.length),
+    amigosDoMeuInimigo: amigosDoMeuInimigo(nucleo, a, b),
     temPacto: pactoAte(nucleo, a, b) !== undefined,
     temAlianca: aliancaAte(nucleo, a, b) !== undefined,
     temAcordo: temAcordo(nucleo, a, b),
@@ -320,6 +315,78 @@ function situacaoDaRelacao(
     inimigosComuns: inimigosComuns(nucleo, a, b),
     turnosDePaz: turnosDePaz(nucleo, a, b),
   };
+}
+
+/**
+ * Quantas províncias encostam nas do outro — **e a conta é a MESMA nos dois sentidos.**
+ *
+ * ⚠️ **A versão anterior dependia da ordem alfabética, e isso era um defeito.** Ela contava só
+ * as províncias DELE que encostam nas minhas, o que não é o mesmo número que o contrário:
+ * medido numa partida de 60 turnos, Argos e Epidauro tinham *"fronteira comum (1)"* num sentido
+ * e *"(3)"* no outro. Como a opinião é UM número por par e `andarRelacoes` sempre chama na
+ * ordem dos ids, quem decidia qual das duas contas valia era o alfabeto.
+ *
+ * A maior das duas, que é a fronteira vista do lado mais exposto: é ela que dói.
+ */
+function fronteiraEntre(
+  nucleo: NucleoDaCampanha,
+  minhas: readonly string[],
+  delas: readonly string[],
+): number {
+  const encostam = (destas: readonly string[], naquelas: readonly string[]): number => {
+    const outras = new Set(naquelas);
+    return destas.filter((id) => nucleo.atlas.provincia(id).vizinhas.some((v) => outras.has(v)))
+      .length;
+  };
+  return Math.max(encostam(delas, minhas), encostam(minhas, delas));
+}
+
+/**
+ * Terras que um tem e que eram do outro em 700 a.C. — **somando os DOIS sentidos.**
+ *
+ * ⚠️ **E este era o pior efeito da assimetria.** Contava só a terra que o primeiro da ordem
+ * alfabética tirou do segundo, então **metade das conquistas do mapa não envenenava relação
+ * nenhuma**: no par argos–corinto, uma província que Corinto tomasse de Argos era invisível.
+ *
+ * É a memória da conquista sem guardar memória: enquanto a bandeira estiver na mão do outro,
+ * ele lembra. Devolver a terra apaga a mágoa sozinho — dos dois lados.
+ */
+function terrasTomadasEntre(
+  nucleo: NucleoDaCampanha,
+  minhas: readonly string[],
+  delas: readonly string[],
+  a: string,
+  b: string,
+): number {
+  const tomadas = (quais: readonly string[], de: string): number =>
+    quais.filter((id) => nucleo.atlas.donoInicial(id) === de).length;
+  return tomadas(minhas, b) + tomadas(delas, a);
+}
+
+/**
+ * Quantos reinos ABRAÇAM o inimigo de um deles — o "amigo do meu inimigo".
+ *
+ * ⚠️ **É o que transforma diplomacia em ESCOLHA.** Sem ela, ser amigo de todo mundo é grátis e
+ * sempre certo: nada no jogo cobrava por assinar com quem está sangrando o teu vizinho. É a
+ * parcela que o Age of History 2 e o Total War têm — *"tratados com os inimigos dela baixam a
+ * opinião dela"* — e que faltava aqui.
+ *
+ * ⚠️ **Conta acordo MILITAR, e não comércio, de propósito.** Pacto, aliança, tributo e passagem
+ * são compromissos; comércio é a porta de entrada que todo mundo tem com todo mundo, e a mesa
+ * acabou de sair de 82% de indiferença justamente por causa dele. Cobrar por comerciar com um
+ * inimigo trancaria de volta o degrau mais barato da escada.
+ */
+function amigosDoMeuInimigo(nucleo: NucleoDaCampanha, a: string, b: string): number {
+  const abraca = (quem: string, inimigo: string): boolean =>
+    pactoAte(nucleo, quem, inimigo) !== undefined ||
+    aliancaAte(nucleo, quem, inimigo) !== undefined ||
+    tributoEntre(nucleo, quem, inimigo) !== undefined ||
+    // A passagem tem lado; qualquer um dos dois sentidos já é compromisso.
+    acessoAte(nucleo, quem, inimigo) !== undefined ||
+    acessoAte(nucleo, inimigo, quem) !== undefined;
+  const contar = (meu: string, outro: string): number =>
+    guerrasDe(nucleo, meu).filter((inimigo) => inimigo !== outro && abraca(outro, inimigo)).length;
+  return contar(a, b) + contar(b, a);
 }
 
 /** Com quantos reinos os dois estão em guerra ao MESMO tempo. */

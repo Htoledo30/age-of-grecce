@@ -117,6 +117,31 @@ export interface SituacaoDaRelacao {
    * apagar a memória da terra tomada, que essa só se apaga devolvendo.
    */
   turnosDePaz: number;
+  /**
+   * Quantas províncias de diferença há entre os dois — **a sombra do maior.**
+   *
+   * ⚠️ **É a única coisa da conta que reage à POSIÇÃO de alguém no mapa, e não ao que ele fez a
+   * você.** Antes dela, um reino podia engolir meia Grécia e nenhum terceiro sentia nada: a
+   * conquista abalava a opinião de UM par, o da vítima. Os quatro jogos do gênero punem
+   * expansão globalmente — é a expansão agressiva do EU4, o *"poderoso demais"* do Total War,
+   * as grievances do Civ — e é o que impede a bola de neve sem uma regra chamada coalizão.
+   *
+   * E aqui ela não é importada, é o tema: Tucídides explicando a Guerra do Peloponeso —
+   * *"o crescimento do poder de Atenas, e o alarme que isso causou em Esparta"*.
+   *
+   * ⚠️ **Simétrica de propósito, porque a opinião é UM número por par.** "Ele é maior que eu" é
+   * uma frase de um lado só, e este arquivo não tem lados: o que existe é o desequilíbrio entre
+   * os dois, e ele tensiona a relação nas duas direções.
+   */
+  diferencaDePorte: number;
+  /**
+   * Quantos reinos abraçam o inimigo do outro — **o amigo do meu inimigo.**
+   *
+   * ⚠️ **É o que faz a diplomacia ser uma ESCOLHA.** Sem ela, ser amigo de todo mundo é grátis
+   * e sempre certo, e a mesa vira um acúmulo em vez de uma decisão. Age of History 2 e Total
+   * War têm as duas; nós tínhamos só a metade positiva, o inimigo em comum.
+   */
+  amigosDoMeuInimigo: number;
 }
 
 /**
@@ -193,6 +218,26 @@ export function parcelasDaRelacao(
       situacao.inimigosComuns * alvo.porInimigoComum,
     );
     parcelas.push({ rotulo: `inimigo em comum (${situacao.inimigosComuns})`, pontos });
+  }
+
+  // ⚠️ **Com LIMIAR, e ele é o que separa sombra de ruído.** Sem ele a parcela disparava entre
+  // dois reinos pequenos — três províncias contra uma não é ameaça, é o mapa inicial — e o
+  // efeito medido foi a mesa inteira afundar: as propostas ao jogador caíram de 54 para ZERO em
+  // 150 turnos, em toda dose testada. É o mesmo limiar que a corrupção por tamanho já usa.
+  const sombra = situacao.diferencaDePorte - alvo.sombraLimiar;
+  if (sombra > 0) {
+    // Com teto, como a fronteira: passado certo ponto ele já é grande demais, e a vigésima
+    // província de vantagem não assusta mais que a décima.
+    const pontos = Math.max(alvo.sombraMaxima, sombra * alvo.porProvinciaDeVantagem);
+    parcelas.push({ rotulo: `sombra do maior (${situacao.diferencaDePorte})`, pontos });
+  }
+
+  if (situacao.amigosDoMeuInimigo > 0) {
+    const pontos = Math.max(
+      alvo.amigoDoInimigoMaximo,
+      situacao.amigosDoMeuInimigo * alvo.porAmigoDoInimigo,
+    );
+    parcelas.push({ rotulo: `abraça meu inimigo (${situacao.amigosDoMeuInimigo})`, pontos });
   }
 
   // ⚠️ Em guerra não há paz que conte: a parcela sumiria no turno seguinte de qualquer jeito,
