@@ -816,6 +816,36 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## A barra de comida diz o teto do exército, e é a única coisa que ela precisava dizer
+
+Henrique perguntando por que Mégara sustenta mais soldados que Atenas. Fui medir os **três
+tetos** do exército — comida, ouro e gente — nos 18 poderes, no turno 1:
+
+| `soldadosPorPonto` | teto de Atenas | posição dela | o que trava os 18 |
+|---|---|---|---|
+| 3.000 (antigo) | 3.000 homens | 2º de 18 | gente 16 · comida 1 · ouro 1 |
+| **500 (atual)** | **500 homens** | **18º de 18** | comida 8 · ouro 1 · gente 9 |
+
+⚠️ **A mais rica do mapa abre em último lugar em capacidade militar, e nada na tela dizia por
+quê.** Atenas tem renda 774 — o dobro do segundo colocado — e 63.000 bocas numa terra que a
+própria ficha descreve como de azeite e prata. Ela *pode pagar* 7.740 homens e só consegue
+alimentar 500.
+
+A saída existe e é a certa: **a Fazenda**. Medido em Atenas — 2 fazendas (≈12 turnos) levam o
+teto a 1.500, 4 a 2.500, 6 a 3.500 — e aí a comida para de importar, porque o teto de GENTE
+dela é 3.498. **O teto de Atenas é temporário; o de Mégara, que trava em OURO com renda 208, é
+estrutural.** Mégara começa forte e estaciona; Atenas começa de joelhos e não tem teto.
+
+O problema, então, nunca foi o balanço — era o jogo não contar. A correção é **uma linha na
+barra**: onde ela dizia `+1 Abastecido`, ela diz `+1 500 homens`. O `+1` continua onde estava;
+o que mudou é a palavra ao lado. Com saldo zero ou negativo ela volta a mostrar a palavra —
+"Fome" não se traduz em homens que cabem.
+
+⚠️ **E nada além disso**, por pedido explícito: *"quero algo básico, nada de tutorial explicando
+cada centímetro, tem que ser simples e self explanatory"*. Sem texto no painel de recrutar, sem
+travar o recrutamento no teto da comida — passar do que se alimenta continua sendo uma decisão
+do jogador, como é para a IA.
+
 ## O mundo passa a olhar a tua POSIÇÃO — e uma assimetria que estava escondida
 
 Depois da pesquisa nos jogos do gênero, o buraco tinha nome: **a nossa conta só sabia responder

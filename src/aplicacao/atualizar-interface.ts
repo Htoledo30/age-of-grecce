@@ -39,6 +39,7 @@ export function atualizarInterface(jogo: Jogo): void {
           renda: campanha.renda,
           manutencao: campanha.manutencao,
           saldoDeComida: campanha.alimentacao.saldo,
+          homensQueAComidaSustenta: campanha.alimentacao.homensQueSustenta,
           categoriaDeComida: campanha.alimentacao.categoria,
           provincias: campanha.provinciasDe(jogador.id).length,
           // Espelha a regra da virada: o exilado sem chão não tem o que assentar, e o botão

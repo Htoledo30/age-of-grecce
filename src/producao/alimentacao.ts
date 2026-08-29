@@ -57,6 +57,16 @@ export interface BalancoAlimentarDoPoder {
   saldoCivil: number;
   /** O saldo civil menos o exército. É o número da barra. */
   saldo: number;
+  /**
+   * Quantos homens A MAIS a despensa ainda sustenta.
+   *
+   * ⚠️ **É o mesmo saldo, dito na única unidade que o jogador entende.** "+1" não significa
+   * nada para quem abre a partida; "500 homens" significa tudo — e medido, Atenas abre com o
+   * MENOR teto militar do mapa, 18º de 18, sem que nada na tela diga por quê. Ela é a mais rica
+   * (renda 774, o dobro do segundo) e a que menos alimenta, porque tem 63.000 bocas numa terra
+   * de azeite e prata. A resposta é erguer Fazenda, e é o próprio número que a ensina ao subir.
+   */
+  homensQueSustenta: number;
   categoria: CategoriaAlimentar;
 }
 
@@ -107,6 +117,7 @@ export function balancoAlimentar(
     exercito,
     saldoCivil,
     saldo,
+    homensQueSustenta: Math.max(0, saldo) * ajustes.soldadosPorPonto,
     categoria: categoriaAlimentar(saldoCivil, saldo),
   };
 }

@@ -32,6 +32,8 @@ export interface VistaDoTurno {
   manutencao: number;
   saldoDeComida: number;
   categoriaDeComida: CategoriaAlimentar;
+  /** Quantos homens a mais a despensa sustenta. É o saldo dito em soldados. */
+  homensQueAComidaSustenta: number;
   provincias: number;
   /** A capital caiu e o jogador ainda não escolheu outra: a virada fica travada. */
   capitalPerdida: boolean;
@@ -213,11 +215,23 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
     vista.saldoDeComida >= 0 ? `+${vista.saldoDeComida}` : `−${-vista.saldoDeComida}`;
   const categoria = document.createElement('span');
   categoria.className = 'barra-turno__folego-unidade';
-  categoria.textContent = nomeDaCategoria(vista.categoriaDeComida);
+  // ⚠️ **Com folga, a barra diz SOLDADOS; sem folga, ela diz o nome do aperto.** "+1" não
+  // significa nada para quem abre a partida, e o teto militar de um reino é a coisa que esse
+  // número decide: medido, Atenas abre em 18º de 18 em capacidade militar, sendo a mais rica do
+  // mapa, e nada na tela dizia por quê. No vermelho o soldado sai de cena e o que importa é a
+  // palavra — "Fome" não se traduz em homens que cabem.
+  categoria.textContent =
+    vista.saldoDeComida > 0
+      ? `${vista.homensQueAComidaSustenta.toLocaleString('pt-BR')} homens`
+      : nomeDaCategoria(vista.categoriaDeComida);
   comida.append(iconeGrego('celeiro'), saldoDeComida, categoria);
   definirTooltip(comida, {
     titulo: `${comSinal(vista.saldoDeComida)} · ${nomeDaCategoria(vista.categoriaDeComida)}`,
-    corpo: 'Conta completa em Governo › Alimentação.',
+    corpo:
+      (vista.saldoDeComida > 0
+        ? `A despensa ainda sustenta ${vista.homensQueAComidaSustenta.toLocaleString('pt-BR')} homens.
+`
+        : '') + 'Conta completa em Governo › Alimentação.',
     tom: vista.saldoDeComida < 0 ? 'perigo' : 'informacao',
   });
 
@@ -227,7 +241,8 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
   bloco.setAttribute(
     'aria-label',
       `Tesouro ${vista.tesouro}; renda ${vista.renda}; manutenção ${vista.manutencao}; ` +
-      `comida ${vista.saldoDeComida}; ${nomeDaCategoria(vista.categoriaDeComida)}`,
+      `comida ${vista.saldoDeComida}, sustenta ${vista.homensQueAComidaSustenta} homens; ` +
+        `${nomeDaCategoria(vista.categoriaDeComida)}`,
   );
   return bloco;
 }

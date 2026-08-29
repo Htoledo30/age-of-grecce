@@ -211,3 +211,21 @@ pode comecar pelo item 1! (o mundo reagir a tua posicao) + "provavelmente precis
      gosto por estilo faz os quatro que ja existem parecerem diferentes de se jogar contra.
      E o item 3 da lista que eu te mandei, e continua sendo o que eu faria depois da liga.
 
+"quero algo basico, nada de tutorial, simples e self explanatory"
+   → FEITO, e e uma coisa so: a barra de comida passou a dizer QUANTOS HOMENS a despensa
+     sustenta. Antes: "+1 Abastecido". Agora: "+1 500 homens". O +1 continua exatamente onde
+     estava; o que mudou foi a palavra ao lado dele.
+     Com saldo zero ou negativo ela volta a mostrar a palavra — "Fome" nao se traduz em homens
+     que cabem.
+     ⚠️ POR QUE: medi os tres tetos do exercito (comida, ouro e gente) nos 18 poderes, e com
+     a comida a 500 por ponto ATENAS ABRE EM 18o DE 18 em capacidade militar — 500 homens —
+     sendo de longe a mais rica do mapa (renda 774, o dobro do segundo). Ela tem 63.000 bocas
+     numa terra de azeite e prata. E nada na tela dizia por que.
+     A saida existe e e boa: a Fazenda. Medido em Atenas — 2 fazendas (12 turnos) levam o teto
+     a 1.500, 4 fazendas a 2.500, 6 fazendas a 3.500, e ai a comida para de importar porque o
+     teto de GENTE dela e 3.498.
+     E o contrario tambem e verdade: Megara abre com 2.080 (travada em OURO, renda 208) e
+     fazenda nenhuma resolve isso. O teto de Atenas e temporario; o de Megara e estrutural.
+     Nao pus tutorial, nao pus texto no painel de recrutar, nao travei o recrutamento. So o
+     numero na barra, visivel de qualquer tela.
+
