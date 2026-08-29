@@ -217,6 +217,14 @@ export interface EstadoCampanha {
    */
   pactos: Record<string, number>;
   /**
+   * Alianças em curso, pela mesma chave, guardando o turno em que VENCEM.
+   *
+   * ⚠️ **É o único acordo que obriga a FAZER.** Todo o resto do arquivo é promessa de não
+   * fazer — não atacar, não fechar a estrada, não cobrar. Enquanto ela vale, a guerra de um é a
+   * guerra do outro, e a entrada é automática. Ver `diplomacia/alianca.ts`.
+   */
+  aliancas: Record<string, number>;
+  /**
    * Acessos militares em curso, por `concedente>beneficiário`, guardando o turno em que vencem.
    *
    * ⚠️ **A única chave DIRECIONAL do arquivo.** Guerra, trégua, pacto e comércio valem igual
@@ -270,7 +278,7 @@ export interface EstadoCampanha {
 export interface Proposta {
   /** Quem pede. */
   de: string;
-  tipo: 'pacto' | 'comercio' | 'acesso';
+  tipo: 'pacto' | 'alianca' | 'comercio' | 'acesso';
   /** O prazo pedido, quando o acordo tem prazo. */
   turnos?: number | undefined;
 }

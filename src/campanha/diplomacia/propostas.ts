@@ -22,7 +22,14 @@
 import type { Proposta } from '../estado-campanha';
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
 import { concederAcesso, podeConcederAcesso } from './acesso-militar';
-import { acordarComercio, firmarPacto, podeAcordarComercio, podeFirmarPacto } from './relacoes';
+import {
+  acordarComercio,
+  firmarAlianca,
+  firmarPacto,
+  podeAcordarComercio,
+  podeFirmarAlianca,
+  podeFirmarPacto,
+} from './relacoes';
 
 /** O que está na mesa do jogador agora. Ordenado por quem pede, para a tela não dançar. */
 export function propostasAoJogador(nucleo: NucleoDaCampanha): readonly Proposta[] {
@@ -61,6 +68,8 @@ function avaliar(
   switch (proposta.tipo) {
     case 'pacto':
       return podeFirmarPacto(nucleo, jogador, proposta.de, proposta.turnos ?? 0);
+    case 'alianca':
+      return podeFirmarAlianca(nucleo, jogador, proposta.de, proposta.turnos ?? 0);
     case 'comercio':
       return podeAcordarComercio(nucleo, jogador, proposta.de);
     case 'acesso':
@@ -91,6 +100,9 @@ export function aceitarProposta(
   switch (tipo) {
     case 'pacto':
       firmarPacto(nucleo, jogador, de, proposta.turnos ?? 0);
+      break;
+    case 'alianca':
+      firmarAlianca(nucleo, jogador, de, proposta.turnos ?? 0);
       break;
     case 'comercio':
       acordarComercio(nucleo, jogador, de);

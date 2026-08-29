@@ -403,3 +403,48 @@ o que mais de diplomacia ta meia boca? Ta faltando? O que mais conseguimos melho
      4. A IA nunca rompe pacto — esta documentado como decisao da v1, nao e descuido.
      5. Espionagem: desenhada no GDD e adiada de proposito ate a diplomacia basica funcionar.
 
+vamos de alianca entao!
+   → FEITA, e ela e o unico acordo do jogo que obriga a FAZER alguma coisa. Todo o resto da
+     mesa e promessa de NAO fazer — nao atacar, nao fechar a estrada, nao cobrar.
+     AS CINCO REGRAS:
+     1. E um pacto que tambem obriga: ninguem ataca ninguem, e a guerra de um vira a do outro.
+     2. A entrada e AUTOMATICA e nao pergunta. Nao e falta de agencia: a agencia foi assinar,
+        e ela continua existindo em romper. Uma convocacao que se recusa de graca seria uma
+        alianca que nao obriga, ou seja, um pacto com nome pomposo.
+     3. So o aliado DIRETO entra. Aliado de aliado nao e aliado — sem isso uma escaramuca de
+        fronteira virava guerra mundial em tres turnos.
+     4. Promessa que ja existe segura a convocacao: quem tem pacto ou tregua com o inimigo nao
+        e arrastado contra ele. A alianca nao te faz quebrar de graca um papel ja assinado.
+     5. A paz e de cada um. Entrar e automatico, sair nao.
+     Romper custa MAIS que romper um pacto. E a resposta honesta a "e se a guerra dele nao me
+     servir?": rompe e fica de fora, pagando por abandonar quem contava contigo.
+
+   → ELA NASCEU MORTA DUAS VEZES, e as duas eu peguei medindo (zero aliancas em 150 turnos, o
+     mesmo sintoma dos zero Portos). Eram dois defeitos independentes:
+     - A OPINIAO MINIMA ERA INALCANCAVEL POR DOIS PONTOS. O prazo mais barato pedia 40, e a
+       maior opiniao que dois poderes atingem em 150 turnos era 38. Numero calibrado contra um
+       teto que ninguem tinha medido. Agora pede 25 e 35.
+     - A RAZAO era exigida dos DOIS lados, o que matava a alianca do fraco por construcao: quem
+       esta ameacado tem motivo, e o forte que poderia salva-lo justamente nao esta ameacado —
+       logo nunca tinha. 9 pares-turno de 13.247 passavam. Agora a razao e do PAR e basta um
+       lado te-la; a VONTADE continua sendo consultada nos dois sentidos.
+     ⚠️ E de quebra: com a alianca em jogo o teto da opiniao subiu de 38 para 47, o que tirou do
+     limbo o PACTO DE 40 TURNOS — ele pedia 45 e nunca tinha sido assinado por ninguem.
+
+   → O QUE ELA FEZ COM O MUNDO, 150 turnos, sem → com:
+       aliancas assinadas / de pe no fim ..... — → 70 / 10
+       propostas a ti ....................... 34 → 59
+       poder-turnos em guerra ................ 4% → 10%
+       TRECHOS DE TRAVESSIA PELO MAR ......... 6 → 118
+       passagens militares concedidas ....... 36 → 68
+       acordos de comercio abertos .......... 90 → 126
+       provincias que mudaram de dono ....... 15 → 12
+       distancia entre o maior e o menor .... 9,8x → 7,6x
+     ⚠️ MAIS GUERRA E MENOS CONQUISTA, e e isso que uma coalizao faz: quem ataca um reino
+     pequeno agora enfrenta o aliado dele. O mapa briga mais e consolida menos.
+     E o efeito que ninguem pediu e que e o mais bonito: as TRAVESSIAS PELO MAR saltaram de 6
+     para 118. A alianca e o primeiro acordo que faz sentido atraves do Egeu — ela nao pede
+     fronteira, so um inimigo em comum —, e foi ela que finalmente pos os exercitos nos barcos.
+     Na aba de Diplomacia ha um grupo "Alianca" ao lado de Pacto, Passagem e Tributo, e a IA
+     te propoe alianca como propoe pacto.
+

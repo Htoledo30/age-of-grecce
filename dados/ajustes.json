@@ -80,6 +80,15 @@
         "reputacaoDaRuptura": -25,
         "reputacaoPorTurno": 1
       },
+      "alianca": {
+        "prazos": [
+          { "turnos": 15, "opiniaoMinima": 25 },
+          { "turnos": 30, "opiniaoMinima": 35 }
+        ],
+        "pontos": 25,
+        "choqueDeRuptura": -70,
+        "reputacaoDaRuptura": -35
+      },
       "acesso": {
         "prazos": [
           {

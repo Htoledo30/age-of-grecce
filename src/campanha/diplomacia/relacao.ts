@@ -53,6 +53,13 @@ export interface SituacaoDaRelacao {
   terrasTomadas: number;
   /** Há pacto de não-agressão em pé? Fronteira garantida é um fato como qualquer outro. */
   temPacto: boolean;
+  /**
+   * Há ALIANÇA em pé?
+   *
+   * ⚠️ Vale mais que o pacto na conta, e tem de valer: quem entra nas suas guerras sem
+   * perguntar não é apenas alguém que prometeu não te atacar. Ver `alianca.ts`.
+   */
+  temAlianca: boolean;
   /** Há acordo de comércio? Dinheiro entrando dos dois lados é um fato como qualquer outro. */
   temAcordo: boolean;
   /**
@@ -155,7 +162,11 @@ export function parcelasDaRelacao(
     parcelas.push({ rotulo: `fronteira comum (${situacao.fronteira})`, pontos });
   }
 
-  if (situacao.temPacto) {
+  // ⚠️ Uma OU a outra, nunca as duas: a aliança já contém a não-agressão, e somar as duas
+  // pagaria duas vezes pela mesma promessa.
+  if (situacao.temAlianca) {
+    parcelas.push({ rotulo: 'aliança', pontos: ajustes.alianca.pontos });
+  } else if (situacao.temPacto) {
     parcelas.push({ rotulo: 'pacto de não-agressão', pontos: ajustes.pacto.pontos });
   }
 

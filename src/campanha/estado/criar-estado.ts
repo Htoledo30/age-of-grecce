@@ -116,6 +116,7 @@ export function criarEstadoInicial(
     // Indiferença é o padrão: a tabela guarda só quem já se esbarrou.
     relacoes: {},
     pactos: {},
+    aliancas: {},
     acessos: {},
     propostas: [],
     acordos: {},

@@ -97,6 +97,7 @@ let acessos = 0;
 let propostasAoJogador = 0;
 let guerrasDeclaradas = 0;
 let pactos = 0;
+let aliancas = 0;
 let presentes = 0;
 let acordos = 0;
 let tributos = 0;
@@ -176,6 +177,7 @@ for (let turno = 0; turno < TURNOS; turno++) {
     propostasAoJogador += lance.propostas.length;
     if (lance.guerra !== null) guerrasDeclaradas += 1;
     if (lance.pacto !== null) pactos += 1;
+    if (lance.alianca !== null) aliancas += 1;
     if (lance.comercio !== null) acordos += 1;
     if (lance.tributo !== null) {
       tributos += 1;
@@ -280,6 +282,10 @@ console.log(`  homens em armas no mapa: ${n(emArmas)}`);
 console.log(`
   ── A GUERRA ──`);
 console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pazes / 2}`);
+console.log(
+  `  alianças assinadas: ${aliancas}` +
+    ` · aliados no fim: ${poderes.reduce((t, id) => t + c.aliadosDe(id).length, 0) / 2}`,
+);
 // ⚠️ Zero aqui quer dizer que o tributo de pós-guerra é botão que só o jogador aperta: duas
 // IAs em guerra iriam até alguém ser eliminado, que é o que acontecia antes desta linha existir.
 console.log(

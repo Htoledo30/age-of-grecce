@@ -816,6 +816,71 @@ marítima", sem medida nenhuma, e a barra de comandos some — não há obra, le
    intercepta uma travessia alheia — a batalha no mar só acontece quando duas expedições se
    cruzam por acaso. Quem quiser barrar um desembarque hoje é o jogador.
 
+## A ALIANÇA: o único acordo que obriga a fazer
+
+*"Vamos de aliança então!"*. Ela era o degrau que faltava, e a falta dela tinha forma: **todo o
+resto da mesa é promessa de NÃO fazer** — não atacar, não fechar a estrada, não cobrar. Nenhum
+acordo do jogo obrigava alguém a FAZER alguma coisa, e por isso dois reinos podiam sangrar
+cinquenta turnos contra o mesmo agressor lado a lado sem que um levantasse um homem pelo outro.
+
+### As cinco regras
+
+1. **É um pacto que também obriga.** Nenhum dos dois declara guerra ao outro, e **a guerra de um
+   vira a guerra do outro**.
+2. **A entrada é automática, e não pergunta.** ⚠️ Não é falta de agência: a agência foi
+   ASSINAR, e ela continua existindo em `romperAlianca`. Uma convocação recusável de graça seria
+   uma aliança que não obriga — ou seja, um pacto com nome pomposo.
+3. **Só o aliado DIRETO entra.** Aliado de aliado não é aliado; sem isso uma escaramuça de
+   fronteira viraria guerra mundial em três turnos.
+4. **Promessa que já existe segura a convocação.** Quem tem pacto, trégua ou aliança com o
+   inimigo não é arrastado contra ele: a aliança não pode fazer você quebrar de graça uma
+   promessa que te custaria reputação quebrar sozinho.
+5. **A paz é de cada um.** Entrar é automático, sair não — e é isso que impede a aliança de
+   virar um bloco que só existe inteiro.
+
+Romper custa mais que romper um pacto, e é a resposta honesta a *"e se a guerra dele não me
+servir?"*: rompa e fique fora dela, pagando por abandonar quem contava com você.
+
+### Ela nasceu morta duas vezes, e as duas foram medidas
+
+⚠️ **Zero alianças em 150 turnos na primeira versão.** O mesmo sintoma dos zero Portos e dos
+zero presentes, e a mesma disciplina resolveu: contar quantos pares-turno passam em cada
+portão. Eram dois defeitos independentes.
+
+- **A opinião mínima era inalcançável por dois pontos.** O prazo mais barato pedia 40, e a maior
+  opinião que dois poderes atingem em 150 turnos era **38**. Um número calibrado contra um teto
+  que ninguém tinha medido. Passou a pedir 25 e 35.
+- **A RAZÃO era exigida dos dois lados, e isso matava a aliança do fraco por construção**: quem
+  está ameaçado tem motivo, e o forte que poderia salvá-lo justamente não está ameaçado — logo
+  nunca tinha. **9 pares-turno de 13.247 passavam.** Agora a razão é do PAR e basta um lado
+  tê-la; a VONTADE é que continua sendo consultada nos dois sentidos, como no pacto.
+
+⚠️ **E a aliança levantou o teto da própria mesa**: com ela em jogo a maior opinião vista subiu
+de **38 para 47** — o que, de quebra, tirou do limbo o pacto de 40 turnos, que pedia 45 e nunca
+tinha sido assinado por ninguém.
+
+### O que ela fez com o mundo, em 150 turnos
+
+| | sem aliança | com aliança |
+|---|---|---|
+| alianças assinadas · de pé no fim | — | **70 · 10** |
+| propostas ao jogador | 34 | **59** |
+| poder-turnos em guerra | 4% | **10%** |
+| **trechos de travessia pelo mar** | 6 | **118** |
+| passagens militares concedidas | 36 | **68** |
+| acordos de comércio abertos | 90 | **126** |
+| províncias que mudaram de dono | 15 | **12** |
+| distância entre o maior e o menor | 9,8× | **7,6×** |
+
+⚠️ **Mais guerra e MENOS conquista, e é isso que uma coalizão faz.** Os poder-turnos em guerra
+mais que dobraram enquanto as províncias que mudaram de dono caíram — quem ataca um reino
+pequeno agora enfrenta o aliado dele, e a distância entre o maior e o menor encolheu. O mapa
+briga mais e consolida menos.
+
+E o efeito que ninguém pediu e que é o mais bonito: **as travessias pelo mar saltaram de 6 para
+118.** A aliança é o primeiro acordo que faz sentido através do Egeu — ela não pede fronteira,
+só um inimigo em comum —, e foi ela que finalmente pôs os exércitos nos barcos.
+
 ## A mesa diplomática deixa de ser 82% indiferença
 
 Henrique: *"o que mais de diplomacia tá meia-boca? Tá faltando?"*. Fui medir antes de opinar, e

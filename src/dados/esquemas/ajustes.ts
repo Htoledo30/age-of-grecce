@@ -261,6 +261,31 @@ export const Ajustes = z.object({
         reputacaoPorTurno: z.number().positive(),
       }),
       /**
+       * A ALIANÇA: o topo da escada, e o único acordo que obriga a FAZER.
+       *
+       * ⚠️ **Pede muito mais opinião que o pacto, e é por isso que ela não o canibaliza.** O
+       * pacto é de graça e só te impede de atacar; a aliança te põe em guerras que você não
+       * escolheu. Quem quer segurança sem risco assina pacto — e é a resposta certa para quase
+       * todo mundo. Ver `campanha/diplomacia/alianca.ts`.
+       */
+      alianca: z.object({
+        /** Os prazos oferecidos, com a opinião que cada um pede. Guerra emprestada é cara. */
+        prazos: z
+          .array(
+            z.object({
+              turnos: z.number().int().positive(),
+              opiniaoMinima: z.number().min(-100).max(100),
+            }),
+          )
+          .min(1),
+        /** O que uma aliança em pé vale na conta da opinião. Acima do pacto, por definição. */
+        pontos: z.number(),
+        /** O tombo na opinião de quem foi abandonado. Maior que o do pacto. */
+        choqueDeRuptura: z.number(),
+        /** E o tombo na REPUTAÇÃO de quem abandonou — abandonar aliado é pior que romper pacto. */
+        reputacaoDaRuptura: z.number(),
+      }),
+      /**
        * O ACESSO MILITAR: a licença de atravessar a terra de quem não é inimigo.
        *
        * ⚠️ **Exige MAIS confiança que o pacto curto, e menos que o longo.** O pacto é uma

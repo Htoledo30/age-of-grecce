@@ -28,6 +28,7 @@ const NEUTROS: SituacaoDaRelacao = {
   fronteira: 0,
   terrasTomadas: 0,
   temPacto: false,
+  temAlianca: false,
   temAcordo: false,
   temTributo: false,
   reputacao: 0,

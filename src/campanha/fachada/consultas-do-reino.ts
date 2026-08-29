@@ -18,6 +18,7 @@ import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 
 import { capitaisIniciais } from '../capitais';
 import { temPorto } from '../comercio/alcance';
+import { aliadosDe, aliancaAte } from '../diplomacia/alianca';
 import type { NivelDeImposto } from '../economia';
 import type { Tributo } from '../estado-campanha';
 import type { CatalogoDeConstrucoes, NucleoDaCampanha, Permissao, Recusa } from '../nucleo';
@@ -39,11 +40,13 @@ import {
   guerraDesde,
   guerrasDe,
   pactoAte,
+  podeFirmarAlianca,
   parcelasDaRelacaoEntre,
   podeAcordarComercio,
   podeDeclararGuerra,
   podeFirmarPacto,
   podePresentear,
+  prazosDeAlianca,
   prazosDePacto,
   reputacaoDe,
   podeFazerPaz,
@@ -316,6 +319,26 @@ export abstract class ConsultasDoReino {
   /** Até que turno o pacto de não-agressão segura. `undefined` quando não há. */
   pactoAte(a: string, b: string): number | undefined {
     return pactoAte(this.nucleo, a, b);
+  }
+
+  /** Até que turno a aliança segura. `undefined` quando não há. */
+  aliancaAte(a: string, b: string): number | undefined {
+    return aliancaAte(this.nucleo, a, b);
+  }
+
+  /** Com quem este poder está aliado agora. A guerra de um é a guerra do outro. */
+  aliadosDe(idPoder: string): readonly string[] {
+    return aliadosDe(this.nucleo, idPoder);
+  }
+
+  /** Os prazos de aliança que este par consegue assinar hoje, do mais longo ao mais curto. */
+  prazosDeAlianca(a: string, b: string): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+    return prazosDeAlianca(this.nucleo, a, b);
+  }
+
+  /** Esta aliança pode ser assinada, e se não, por quê. */
+  podeFirmarAlianca(com: string, turnos: number, porPoder: string = this.nucleo.estado.jogador ?? ''): Permissao {
+    return podeFirmarAlianca(this.nucleo, porPoder, com, turnos);
   }
 
   /** O tributo em pé entre estes dois, com quem paga, quanto e até quando. */

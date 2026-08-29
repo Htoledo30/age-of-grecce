@@ -204,6 +204,7 @@ function gruposDe(jogo: Jogo, eu: string, id: string): readonly GrupoDaMesa[] {
     grupoDaGuerra(jogo, eu, id),
     grupoDoComercio(jogo, eu, id),
     grupoDoPacto(jogo, eu, id),
+    grupoDaAlianca(jogo, eu, id),
     grupoDaPassagem(jogo, eu, id),
     grupoDoTributo(jogo, eu, id),
     grupoDoPresente(jogo, id),
@@ -221,6 +222,9 @@ function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
   if (!proposta) return null;
   const frase = {
     pacto: `Propõe um pacto de não-agressão por ${proposta.turnos ?? 0} turnos.`,
+    alianca:
+      `Propõe uma ALIANÇA por ${proposta.turnos ?? 0} turnos: ` +
+      'as guerras dele passam a ser suas, e as suas dele.',
     comercio: 'Propõe abrir comércio: rende dos dois lados, e a guerra desfaz.',
     acesso: `Pede passagem pela sua terra por ${proposta.turnos ?? 0} turnos.`,
   }[proposta.tipo];
@@ -374,6 +378,57 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     ],
     fala: tem ? `Rende ${renda} por turno a cada um. A guerra desfaz na hora.` : resposta.fala,
     tom: tem || resposta.aceita ? 'bom' : 'ruim',
+  };
+}
+
+/**
+ * A ALIANÇA: o topo da escada, e o único grupo que promete FAZER alguma coisa.
+ *
+ * ⚠️ **A fala precisa dizer o preço antes do botão**, porque este é o único acordo do jogo cuja
+ * consequência não é uma coisa que deixa de acontecer: as guerras dele passam a ser suas, no
+ * mesmo turno e sem perguntar. Um jogador que assina sem ler isso vai se ver em guerra com um
+ * reino que ele nunca viu, e vai achar que é defeito.
+ */
+function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
+  const { campanha } = jogo;
+  const emPe = Math.max(0, (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno);
+  if (emPe > 0) {
+    const guerras = campanha.guerrasDe(id).length;
+    return {
+      titulo: 'Aliança',
+      propostas: [
+        {
+          acao: 'romper-alianca',
+          rotulo: `Romper · faltam ${emPe} ${emPe === 1 ? 'turno' : 'turnos'}`,
+          valor: 0,
+          pode: true,
+          aceita: true,
+          bloqueio: '',
+        },
+      ],
+      fala:
+        guerras > 0
+          ? `Ele tem ${guerras} ${guerras === 1 ? 'guerra' : 'guerras'} em curso, e elas são suas. Romper custa mais que romper um pacto.`
+          : 'As guerras dele são suas, e as suas dele. Romper custa mais que romper um pacto.',
+      tom: 'bom',
+    };
+  }
+  const resposta = respostaAoPacto(jogo, id, eu);
+  const relacao = campanha.relacaoEntre(eu, id);
+  return {
+    titulo: 'Aliança',
+    propostas: campanha.prazosDeAlianca(eu, id).map((p) => ({
+      acao: 'alianca',
+      rotulo: `${p.turnos} turnos`,
+      valor: p.turnos,
+      pode: p.pode,
+      aceita: resposta.aceita,
+      bloqueio: p.pode ? '' : precoDaConfianca(jogo, id, p.opiniaoMinima - relacao),
+    })),
+    fala: resposta.aceita
+      ? 'As guerras dele passam a ser suas, no mesmo turno e sem perguntar. Pede muito mais confiança que um pacto.'
+      : `«${resposta.fala}» Nenhum presente resolve: ele não empresta o exército dele a você.`,
+    tom: resposta.aceita ? 'bom' : 'ruim',
   };
 }
 

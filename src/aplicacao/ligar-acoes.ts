@@ -234,11 +234,11 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.diplomacia.aoResponderPedido = (idPoder, tipo, aceita) => {
     const nome = campanha.poder(idPoder).nome;
     if (!aceita) {
-      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'comercio' | 'acesso');
+      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'comercio' | 'acesso');
       tela.diplomacia.dizer(`Você recusou ${nome}. Recusar não custa nada.`);
       return;
     }
-    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'comercio' | 'acesso');
+    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'comercio' | 'acesso');
     tela.diplomacia.dizer(r.pode ? `Acertado com ${nome}.` : r.motivo);
   };
 
@@ -268,6 +268,37 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.firmarPacto(idPoder, turnos);
     tela.diplomacia.dizer(
       `Pacto de ${turnos} turnos assinado com ${campanha.poder(idPoder).nome}.`,
+    );
+  };
+
+  tela.diplomacia.aoFirmarAlianca = (idPoder, turnos) => {
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const r = campanha.podeFirmarAlianca(idPoder, turnos);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    // ⚠️ **A opinião abre a porta e ele ainda precisa QUERER** — a mesma trava do pacto, e aqui
+    // ela pesa mais: aliança é exército emprestado, e ninguém empresta o seu a quem não lhe
+    // traz um inimigo em comum. Ver o portão em `ia/diplomacia/aliancas.ts`.
+    if (!aceitaPacto(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder))) {
+      tela.diplomacia.dizer(
+        `${campanha.poder(idPoder).nome} recusou: não empresta o próprio exército a você.`,
+      );
+      return;
+    }
+    campanha.firmarAlianca(idPoder, turnos);
+    tela.diplomacia.dizer(
+      `Aliança de ${turnos} turnos com ${campanha.poder(idPoder).nome}. ` +
+        'As guerras dele passam a ser suas.',
+    );
+  };
+
+  tela.diplomacia.aoRomperAlianca = (idPoder) => {
+    campanha.romperAlianca(idPoder);
+    tela.diplomacia.dizer(
+      `Aliança rompida. Abandonar quem contava com você custa mais que voltar atrás num pacto.`,
     );
   };
 

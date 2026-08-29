@@ -551,6 +551,12 @@ faça alguma coisa com o comércio que passa, e isso é sistema próprio.
 - ⚠️ **Abrir a própria estrada é decisão de quem a abre; conseguir a do outro pede confiança.**
   A regra e a vontade são coisas separadas em toda a mesa, e aqui também: o jogo não trava o
   jogador de tomar uma decisão que é dele — inclusive a ruim.
+- ⚠️ **A ALIANÇA é o topo da escada, e o único acordo que obriga a FAZER.** Guerra, trégua,
+  pacto, comércio e passagem são todos promessas de não fazer; a aliança põe a guerra de um nas
+  costas do outro, automaticamente e sem perguntar. A agência é assinar, e depois romper —
+  abandonar quem contava com você custa mais que voltar atrás num pacto. Só o aliado direto é
+  convocado, e promessa que já existe com o inimigo segura a convocação: nenhuma aliança faz
+  alguém quebrar de graça um papel que já tinha assinado.
 - ⚠️ **A IA PEDE ao jogador o que assinaria com outro reino.** Pacto, comércio e passagem
   chegam como proposta na aba de Diplomacia, com Aceitar e Recusar, e **recusar não custa
   nada** — um "não" que abalasse a opinião faria a resposta certa ser nunca abrir a aba. A

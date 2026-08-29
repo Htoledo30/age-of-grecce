@@ -17,9 +17,11 @@ import {
   desfazerAcordo,
   fazerPaz,
   fazerPazComTributo,
+  firmarAlianca,
   firmarPacto,
   firmarTributo,
   presentear,
+  romperAlianca,
   romperPacto,
   romperTributo,
 } from '../diplomacia/relacoes';
@@ -101,6 +103,30 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    */
   romperPacto(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (romperPacto(this.nucleo, porPoder, com)) this.aoMudar();
+  }
+
+  /**
+   * Assina a ALIANÇA. **É o único acordo que te mete numa guerra que não é tua.**
+   *
+   * ⚠️ A entrada nas guerras dele é AUTOMÁTICA e não pergunta. A agência é esta assinatura, e
+   * depois dela `romperAlianca` — ver `diplomacia/alianca.ts`.
+   */
+  firmarAlianca(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+  ): void {
+    if (firmarAlianca(this.nucleo, porPoder, com, turnos)) this.aoMudar();
+  }
+
+  /**
+   * Rompe a aliança — **e custa mais caro que romper um pacto.**
+   *
+   * É a saída de uma guerra convocada que não te serve: rompa e fique fora dela. Abandonar quem
+   * contava com você é pior que voltar atrás numa promessa de não atacar, e o preço diz isso.
+   */
+  romperAlianca(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (romperAlianca(this.nucleo, porPoder, com)) this.aoMudar();
   }
 
   /**

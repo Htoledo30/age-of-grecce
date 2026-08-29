@@ -42,6 +42,15 @@ import { valorDoTributo } from './tributo';
 import { alcancaComercio, temPorto } from '../comercio/alcance';
 import { povoDoPoder } from '../sociedade/nacionalidade';
 import {
+  aliancaAte,
+  apagarAlianca,
+  assinarAlianca,
+  convocadosPor,
+  limparAliancasVencidas,
+  podeAliar,
+} from './alianca';
+import { parDe } from './par';
+import {
   alvoDaRelacao,
   aproximarRelacao,
   comChoque,
@@ -51,18 +60,6 @@ import {
 } from './relacao';
 import type { ParcelaDaRelacao, SituacaoDaRelacao } from './relacao';
 
-/**
- * A chave de um par de poderes, sempre a mesma nos dois sentidos.
- *
- * Ordenada por id porque a relação não tem lado: Atenas–Mégara e Mégara–Atenas são a mesma
- * guerra, e duas chaves para uma coisa só seriam duas verdades sobre ela.
- *
- * Fica privada de propósito: quem pergunta pela relação usa `emGuerra`, e a forma da chave é
- * assunto deste arquivo — no dia em que ela mudar, nada fora daqui precisa saber.
- */
-function parDe(a: string, b: string): string {
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
 
 /** Estes dois estão em guerra agora? */
 export function emGuerra(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
@@ -112,6 +109,16 @@ export function podeDeclararGuerra(
   }
   if (emGuerra(nucleo, de, contra)) {
     return { pode: false, motivo: 'a guerra já está declarada' };
+  }
+  // ⚠️ A ALIANÇA trava antes do pacto, e a mensagem é outra de propósito: quem está prestes a
+  // atacar um aliado precisa ler a palavra aliado, não a palavra pacto.
+  const alianca = aliancaAte(nucleo, de, contra);
+  if (alianca !== undefined) {
+    const faltam = alianca - nucleo.estado.turno;
+    return {
+      pode: false,
+      motivo: `ele é seu ALIADO por mais ${faltam} ${faltam === 1 ? 'turno' : 'turnos'} — rompa antes`,
+    };
   }
   // ⚠️ O pacto TRAVA a guerra, como a trégua. A diferença é que ele tem uma saída explícita —
   // `romperPacto` — e ela custa a reputação com o mapa inteiro.
@@ -170,6 +177,24 @@ export function declararGuerra(
     return true;
   }
   if (!podeDeclararGuerra(nucleo, de, contra).pode) return false;
+  abrirGuerra(nucleo, de, contra);
+  // ⚠️ **A ALIANÇA convoca, e é aqui que ela cobra o que promete.** Os aliados dos dois lados
+  // entram no MESMO turno, sem perguntar: a agência foi assinar, e ela continua existindo em
+  // `romperAlianca`. Ver `alianca.ts`.
+  //
+  // ⚠️ E as guerras convocadas NÃO convocam de novo. Aliado de aliado não é aliado; a chamada
+  // sai daqui e morre aqui, senão uma escaramuça de fronteira viraria guerra mundial em três
+  // turnos. É por isso que este laço chama `abrirGuerra` e não `declararGuerra`.
+  for (const convocado of convocadosPor(nucleo, de, contra, jaPrometido(nucleo))) {
+    if (emGuerra(nucleo, convocado.poder, convocado.inimigo)) continue;
+    if (!vivo(nucleo, convocado.poder) || !vivo(nucleo, convocado.inimigo)) continue;
+    abrirGuerra(nucleo, convocado.poder, convocado.inimigo);
+  }
+  return true;
+}
+
+/** Registra a guerra e rasga o que ela rasga. Sem convocar ninguém: ver `declararGuerra`. */
+function abrirGuerra(nucleo: NucleoDaCampanha, de: string, contra: string): void {
   nucleo.estado.guerras[parDe(de, contra)] = nucleo.estado.turno;
   // ⚠️ A guerra rasga a passagem nos DOIS sentidos, e sem preço: quem declara guerra ao dono
   // da estrada não continua andando por ela com licença dele. Ver `acesso-militar.ts`.
@@ -177,7 +202,21 @@ export function declararGuerra(
   // ⚠️ A guerra desfaz o comércio na hora, e é isso que dá ao acordo um peso que não é só
   // dinheiro: quem declara vê a renda cair no mesmo turno em que ganha um inimigo.
   desfazerAcordo(nucleo, de, contra);
-  return true;
+}
+
+/**
+ * Há papel assinado entre estes dois que a convocação não pode rasgar de graça?
+ *
+ * ⚠️ **É a regra 4 da aliança, e ela mora aqui porque quem sabe o que existe entre dois poderes
+ * é este arquivo.** Pacto, trégua ou aliança com o inimigo seguram a chamada: a aliança não faz
+ * você quebrar sem custo uma promessa que te custaria reputação quebrar sozinho. Quem quiser
+ * entrar mesmo assim rompe o que atrapalha, e paga por isso.
+ */
+function jaPrometido(nucleo: NucleoDaCampanha): (a: string, b: string) => boolean {
+  return (a, b) =>
+    pactoAte(nucleo, a, b) !== undefined ||
+    tregoaAte(nucleo, a, b) !== undefined ||
+    aliancaAte(nucleo, a, b) !== undefined;
 }
 
 export function podeFazerPaz(
@@ -270,6 +309,7 @@ function situacaoDaRelacao(
     fronteira,
     terrasTomadas,
     temPacto: pactoAte(nucleo, a, b) !== undefined,
+    temAlianca: aliancaAte(nucleo, a, b) !== undefined,
     temAcordo: temAcordo(nucleo, a, b),
     temTributo: tributoEntre(nucleo, a, b) !== undefined,
     // A PIOR das duas: o que envenena a relação é haver um quebrador de promessas nela.
@@ -463,6 +503,69 @@ export function romperPacto(nucleo: NucleoDaCampanha, quem: string, com: string)
   return true;
 }
 
+/** Os prazos de aliança que ESTE par consegue assinar hoje, do mais longo ao mais curto. */
+export function prazosDeAlianca(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+  const opiniao = relacaoEntre(nucleo, a, b);
+  const livre = aliancaAte(nucleo, a, b) === undefined && !emGuerra(nucleo, a, b);
+  return [...nucleo.ajustes.diplomacia.alianca.prazos]
+    .sort((x, y) => y.turnos - x.turnos)
+    .map((prazo) => ({ ...prazo, pode: livre && opiniao >= prazo.opiniaoMinima }));
+}
+
+/** Esta aliança pode ser assinada? Ver `alianca.ts` — a regra mora lá. */
+export function podeFirmarAlianca(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  turnos: number,
+): Permissao {
+  return podeAliar(
+    nucleo,
+    a,
+    b,
+    turnos,
+    (x, y) => emGuerra(nucleo, x, y),
+    (id) => vivo(nucleo, id),
+    relacaoEntre(nucleo, a, b),
+  );
+}
+
+/** Assina a aliança. Devolve `false` quando ela não podia ser assinada. */
+export function firmarAlianca(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  turnos: number,
+): boolean {
+  if (!podeFirmarAlianca(nucleo, a, b, turnos).pode) return false;
+  assinarAlianca(nucleo, a, b, turnos);
+  return true;
+}
+
+/**
+ * Rompe a aliança — **e custa mais caro que romper um pacto.**
+ *
+ * ⚠️ É a saída, e é ela que responde "e se a guerra do meu aliado não me servir?". Serve: rompa
+ * e fique fora dela. Mas abandonar quem contava com você é pior que voltar atrás numa promessa
+ * de não atacar, e o preço diz isso — o choque na opinião do abandonado e a REPUTAÇÃO com o
+ * mapa inteiro caem mais que no pacto.
+ */
+export function romperAlianca(nucleo: NucleoDaCampanha, quem: string, com: string): boolean {
+  if (aliancaAte(nucleo, quem, com) === undefined) return false;
+  const alianca = nucleo.ajustes.diplomacia.alianca;
+  apagarAlianca(nucleo, quem, com);
+  abalarRelacao(nucleo, quem, com, alianca.choqueDeRuptura);
+  nucleo.estado.reputacao[quem] = Math.max(
+    -100,
+    reputacaoDe(nucleo, quem) + alianca.reputacaoDaRuptura,
+  );
+  return true;
+}
+
 /**
  * A reputação volta devagar para zero, e os pactos vencidos somem.
  *
@@ -479,6 +582,7 @@ export function andarReputacao(nucleo: NucleoDaCampanha): void {
   for (const [par, ate] of Object.entries(nucleo.estado.pactos)) {
     if (ate <= nucleo.estado.turno) delete nucleo.estado.pactos[par];
   }
+  limparAliancasVencidas(nucleo);
 }
 
 /** A conta do alvo, parcela a parcela — é o que a tela mostra linha a linha. */

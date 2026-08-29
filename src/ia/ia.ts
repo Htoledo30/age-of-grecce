@@ -47,6 +47,7 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
 import { acessoPedido } from './diplomacia/acesso';
+import { aliancaEscolhida } from './diplomacia/aliancas';
 import { comercioEscolhido, pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
 import { tributoEscolhido } from './diplomacia/tributos';
 import { querPaz, querPazComTributo } from './diplomacia/paz';
@@ -73,6 +74,8 @@ export interface LanceDaIa {
   guerra: string | null;
   /** Com quem ela assinou pacto de não-agressão nesta virada, e por quantos turnos. */
   pacto: { com: string; turnos: number } | null;
+  /** E com quem ela se ALIOU — o acordo que a mete nas guerras do outro. */
+  alianca: { com: string; turnos: number } | null;
   /** O presente que ela mandou nesta virada, se mandou. */
   presente: { para: string; ouro: number } | null;
   /** Com quem ela abriu comércio nesta virada, se abriu. */
@@ -195,6 +198,19 @@ export function jogarIA(
       }
     }
 
+    // ⚠️ **A ALIANÇA depois do pacto, e nunca antes.** Ela é o degrau caro: põe este reino nas
+    // guerras do outro sem perguntar. Tentá-la antes do pacto faria uma IA comprar guerra alheia
+    // onde uma assinatura de graça já lhe garantiria a fronteira. Ver `diplomacia/aliancas.ts`,
+    // que tem um portão próprio — inimigo em comum ou ameaça na porta — antes de olhar opinião.
+    const alianca = aliancaEscolhida(campanha, idPoder, estilo, dados);
+    if (alianca !== null) {
+      if (alianca.com === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'alianca', turnos: alianca.turnos });
+      } else {
+        campanha.firmarAlianca(alianca.com, alianca.turnos, idPoder);
+      }
+    }
+
     // ⚠️ O TRIBUTO depois do pacto, e a ordem é a regra inteira: o pacto é de graça e o tributo
     // custa o cofre todo turno. Tentar o caro antes do grátis faria o reino pagar por aquilo
     // que uma assinatura lhe daria sem moeda nenhuma — e `podeFirmarTributo` já recusa quem
@@ -279,6 +295,7 @@ export function jogarIA(
       leva: leva ? { provincia: leva.provincia, arma: leva.arma, homens: leva.homens } : null,
       guerra,
       pacto,
+      alianca,
       presente,
       comercio,
       acesso,

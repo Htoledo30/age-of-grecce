@@ -109,6 +109,8 @@ export class Diplomacia {
   aoRevogarAcesso: (idPoder: string) => void = () => {};
   aoResponderPedido: (idPoder: string, tipo: string, aceita: boolean) => void = () => {};
   aoRomperPacto: (idPoder: string) => void = () => {};
+  aoFirmarAlianca: (idPoder: string, turnos: number) => void = () => {};
+  aoRomperAlianca: (idPoder: string) => void = () => {};
   aoPagarTributo: (idPoder: string, turnos: number) => void = () => {};
   aoExigirTributo: (idPoder: string, turnos: number) => void = () => {};
   aoRomperTributo: (idPoder: string) => void = () => {};
@@ -747,6 +749,10 @@ export class Diplomacia {
         return this.aoFirmarPacto(id, proposta.valor);
       case 'romper':
         return this.aoRomperPacto(id);
+      case 'alianca':
+        return this.aoFirmarAlianca(id, proposta.valor);
+      case 'romper-alianca':
+        return this.aoRomperAlianca(id);
       case 'pagar-tributo':
         return this.aoPagarTributo(id, proposta.valor);
       case 'exigir-tributo':
