@@ -49,39 +49,63 @@ A campanha básica, a economia provincial, a alimentação, as construções, o 
 capital, a corrupção, a felicidade, as revoltas, a guerra terrestre, **o mar**, o áudio e a IA
 econômica, defensiva e ofensiva já existem. O resumo completo está em `ESTADO_DO_JOGO.md`.
 
-A diplomacia tem relação, presente, pacto, comércio, tributo, **acesso militar** e uma **mesa
-de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com aceitar e
-recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
+A diplomacia tem relação, presente, pacto, **aliança**, comércio, tributo, **acesso militar** e
+uma **mesa de propostas**: o que a IA assinaria com outro reino ela PEDE ao jogador, com aceitar
+e recusar. O ritmo dela vive em `dados/ia.json` e é balanço, não código: mexer nele é editar
 JSON e rodar `npm run partida`.
 
-⚠️ **NÃO HÁ TRABALHO AUTORIZADO NOVO — a lista de Henrique está riscada.** A
-nacionalidade no humor, que era a última, entrou. A peça natural seguinte é a **ASSIMILAÇÃO**:
-hoje o povo conquistado nunca deixa de ser quem é, e o preço da conquista é permanente. Ela é
-decisão nova — não comece sem ele dizer.
+⚠️ **A conta da opinião reage à POSIÇÃO de cada um, e não só ao que ele fez a você.** Além dos
+fatos bilaterais, ela tem hoje: mesma tribo, inimigo em comum, paz por década, **sombra do
+maior** (a diferença de porte, com limiar) e **amigo do meu inimigo**. As cinco vieram de
+medição ou de pesquisa nos jogos do gênero, e cada uma tem o número que a justifica no
+`ESTADO_DO_JOGO.md`.
+
+⚠️ **A conta é SIMÉTRICA e tem de continuar sendo.** A opinião é um número por par; antes de
+28/08 duas parcelas olhavam um lado só e quem decidia qual valia era a ordem alfabética.
+`testes/diplomacia/posicao-no-mapa.test.ts` varre o mapa inteiro exigindo que os dois sentidos
+deem o mesmo número.
+
+⚠️ **TRABALHO COMBINADO PARA A PRÓXIMA SESSÃO (28/08/2026): a LIGA.** Henrique decidiu fechar o
+dia e retomar pela diplomacia. A peça é a **liga hegemônica — vassalagem em roupa grega**: o
+membro mantém o próprio governo, paga tributo, entra nas guerras do hegemon, e tem um *desejo de
+sair* que sobe com tributo alto e derrota e cai com tributo baixo, presente e vitória. Ela
+reaproveita tributo + aliança + felicidade, que já existem.
+
+⚠️ **E há UMA pergunta aberta que ele precisa responder antes da primeira linha: o hegemon pode
+ANEXAR o membro no fim, ou nunca?** Se pode, a liga é conquista barata em duas etapas; se não
+pode, ela é um jeito de mandar EM VEZ de conquistar. Muda o balanço inteiro.
+
+Depois dela, na ordem que ele viu: **gosto por estilo** (os estilos decidem mas não julgam — um
+guerreiro e um mercador têm hoje a mesma opinião sobre você nas mesmas circunstâncias; ele
+observou que a 130 poderes vão faltar estilos, e tem razão), as **arestas da aliança** (aliança
+defensiva, recusar a convocação pagando reputação, romper acordo longo doer menos que curto) e a
+**trégua violada com memória longa**.
 
 O que ele ainda não julgou com o olho está na seção abaixo. **Perguntar antes de abrir frente
 nova** vale mais do que adivinhar a próxima peça.
 
 ### A leitura de balanço de hoje, e o alvo que ela ainda não cumpre
 
-`npm run partida 100`, com tudo ligado:
+`npm run partida 100`, com tudo ligado (leitura de 28/08/2026, depois da comida a 500 e da
+diplomacia refeita):
 
-- 25 províncias trocando de dono · **4 poderes eliminados de 18** · maior reino com 6
-  (começou com 3) · distância entre maior e menor 10,0× contra 6,2× no turno 1;
-- 11% dos poder-turnos em guerra · 28 guerras · 86 pactos · 47 acordos de comércio de pé ·
-  39 passagens militares · 47 trechos de travessia pelo mar;
-- decretos: baixo 79 · normal 19 · alto 70 · **confisco 19** (a alavanca de emergência dispara,
-  e dispara raro, que é o desenho).
+- 27 províncias trocando de dono · **5 poderes eliminados de 18** · maior reino com 5
+  (começou com 2) · distância entre maior e menor **4,9×** contra 6,2× no turno 1 — o mapa
+  termina MENOS desigual do que começa, e é a sombra do maior fazendo isso;
+- 10% dos poder-turnos em guerra · 30 guerras · 78 pactos · **45 alianças (8 de pé no fim)** ·
+  52 acordos de comércio de pé · 47 passagens militares · **53 trechos de travessia pelo mar**;
+- 18 propostas ao jogador parado, contra ZERO antes da mesa ser refeita;
+- decretos: baixo 156 · normal 14 · alto 143 · confisco 5.
 
 ⚠️ **O ALVO, decidido por Henrique, continua sendo:** a curva desce até o turno 100 e lá **já
 tem de haver alguns impérios APARECENDO — mas não reinos imensos.** Cem turnos são meia hora de
 partida; não é um mapa consolidado, é um mapa em que já dá para apontar quem está ganhando.
 
-⚠️ **E a leitura de hoje pode estar plana demais para esse alvo.** O reforço do imposto deixou
-a IA mais rica, e mundo rico é mundo estável: a guerra caiu de 18% para 11% dos poder-turnos, as
-conquistas de 40 para 25 e os reinos eliminados de 11 para 4. Argos termina com 6 províncias
-onde antes terminava com 12. **Não mexer nisso sem Henrique jogar primeiro** — ele pode achar
-bom ter vizinhos vivos, e o número que resolve é o olho dele, não a medição.
+⚠️ **E a leitura de hoje pode estar plana demais para esse alvo — agora por outro motivo.** Não
+é mais riqueza: é que a diplomacia passou a dar razões para não brigar, e a sombra do maior
+freia quem cresce. O maior reino não passa de 5 em 100 turnos e a desigualdade DIMINUI ao longo
+da partida. **Não mexer nisso sem Henrique jogar primeiro** — ele pode achar bom ter vizinhos
+vivos, e o número que resolve é o olho dele, não a medição.
 
 ⚠️ **Cuidado ao mexer nos números da IA sem medir.** A resposta é caótica: uma conquista cedo
 vira bola de neve, e andar na mesma direção de um dial já deu 20 conquistas numa configuração e
@@ -93,9 +117,9 @@ parcela dele, que é 13% a 48% do total. Foi assim que o imposto alto chegou a s
 equilíbrio: um botão que prometia mais dinheiro e entregava menos. Qualquer alavanca nova que
 se pague em humor tem de refazer essa conta dos dois lados.
 
-Não começar espionagem, migração, governadores, vassalagem ou suserania sem uma nova decisão
-de Henrique. **A IA não EXIGE tributo nem rompe o que recebe** — as duas coisas foram deixadas
-de fora de propósito e são decisão nova.
+Não começar espionagem, migração nem governadores sem uma nova decisão de Henrique. **A IA não
+EXIGE tributo nem rompe o que recebe** — as duas coisas foram deixadas de fora de propósito e
+são decisão nova. (Vassalagem/suserania saiu desta lista: virou a **liga**, combinada acima.)
 
 ⚠️ **O naval está DE PÉ, e sem frota — decisão de Henrique (28/08/2026).** O exército anda
 pelas 48 zonas de mar como anda por terra, embarcar exige Porto, e todo encontro na água é
@@ -103,7 +127,8 @@ batalha sem conquista. A IA atravessa. O que continua fora, e é decisão nova: 
 desgaste por FICAR parado na água (hoje só a folha de campanha), e a IA patrulhar ou
 interceptar travessia alheia.
 
-⚠️ **Aliança** continua sendo o topo da régua: acima de +45 ainda não há nada a comprar.
+⚠️ **A aliança FECHOU o topo da régua** (28/08/2026): ela obriga, a convocação é automática, e
+romper custa mais que romper um pacto. O que resta acima dela é a **liga**.
 
 ## O que depende de Henrique testar
 
@@ -140,6 +165,22 @@ interceptar travessia alheia.
 - **a nacionalidade pesando**: conquistar a Eubeia jônia sai barato o bastante para valer a
   pena, e o Istmo dório sai caro o bastante para doer? O preço permanente frustra ou dá o
   formato de império que ele quer?
+- ⚠️ **a comida a 500 por ponto**, que é a mudança de balanço mais pesada da semana: Atenas
+  abre alimentando **500 homens** e podendo pagar 7.740 — o pior teto militar do mapa, no reino
+  mais rico dele. A saída é a Fazenda (2 delas triplicam o teto em ~12 turnos), e o aviso agora
+  aparece no painel de recrutar. **Isso é sentir, não medir**: a abertura de Atenas ficou dura
+  demais, ou virou a decisão que ela deveria ser?
+- **o aviso da despensa no recrutamento**: o número vermelho e a frase dizem o suficiente sem
+  virar tutorial? Henrique matou a primeira versão, que punha o número na barra do topo —
+  *"aqueles 1500 jogados na UI é ridículo"*;
+- **o editor gravando em disco** (F2 › "Gravar em dados/"): o ciclo mexer-jogar-gravar-commitar
+  fecha? A recusa por dado inválido diz o que precisa dizer?
+- **a aliança**: a convocação automática é peso bom ou frustração? Romper como única saída
+  basta, ou falta a aliança defensiva?
+- **a sombra do maior**: crescer passou a custar amizade — isso dá a tensão que a Grécia pede,
+  ou atrapalha quem quer jogar de império?
+- **jogar de MÉGARA em vez de Atenas**: comida 6 contra 1, duas províncias contra três. É um
+  jogo bem diferente e ninguém experimentou ainda.
 
 ⚠️ **NUNCA use `transform: scale()` no palco.** Ele desliga o antialiasing de subpixel de
 toda a interface e deixa o texto fino e lavado. A escala vive em `src/estilo/escala.ts` e usa
