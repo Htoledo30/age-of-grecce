@@ -43,6 +43,27 @@ Se documento e código discordarem sobre o que existe, o código vence e
 `ESTADO_DO_JOGO.md` deve ser corrigido. Se a visão mudar, edite o GDD e remova a versão
 antiga da ideia.
 
+## ⚠️ Na dúvida, PERGUNTE — e pergunte de um jeito que dê para responder
+
+**Instrução de Henrique (29/08/2026).** Quando faltar uma decisão, não adivinhe e não escolha
+sozinho: leve a pergunta a ele. Mas o jeito de perguntar é metade do trabalho, porque uma
+pergunta que ele não entende é uma pergunta que ele não pode responder.
+
+- **Sem jargão.** Ele pediu isto depois de eu escrever *"o hegemon pode anexar o membro?"* —
+  "hegemon" é palavra minha, não do jogo dele, e a pergunta ficou ilegível por causa de uma
+  palavra. Se o termo não está na tela do jogo, não use o termo: diga **"o chefe da liga"**.
+- **Diga o que muda em cada resposta**, com o efeito no jogo dele, não na arquitetura. "Se
+  sim, dominar vira um caminho de conquista mais barato; se não, tu manda sem o mapa ficar da
+  tua cor" responde melhor que qualquer descrição de mecânica.
+- **Use o mapa dele como exemplo.** Atenas, Mégara, Argos, com os números reais — `npm run
+  partida`, `npm run economia` e um script de medida são baratos e transformam uma pergunta
+  abstrata numa concreta.
+- **Uma pergunta por vez, e só as que mudam o trabalho.** O que tem resposta óbvia ou
+  convenção estabelecida, decida e siga; conte a decisão em uma linha.
+
+Ele responde sobre **o que quer, o que espera e o que imagina** — e é essa a informação que
+não está em lugar nenhum do código. Perguntar mal é desperdiçar a única fonte dela.
+
 ## Trabalho atual
 
 A campanha básica, a economia provincial, a alimentação, as construções, o save/load, a
@@ -76,9 +97,11 @@ membro mantém o próprio governo, paga tributo, entra nas guerras do hegemon, e
 sair* que sobe com tributo alto e derrota e cai com tributo baixo, presente e vitória. Ela
 reaproveita tributo + aliança + felicidade, que já existem.
 
-⚠️ **E há UMA pergunta aberta que ele precisa responder antes da primeira linha: o hegemon pode
-ANEXAR o membro no fim, ou nunca?** Se pode, a liga é conquista barata em duas etapas; se não
-pode, ela é um jeito de mandar EM VEZ de conquistar. Muda o balanço inteiro.
+⚠️ **E há UMA pergunta aberta que ele precisa responder antes da primeira linha: o CHEFE DA
+LIGA pode um dia ANEXAR um membro, ou nunca?** Se pode, a liga vira um caminho de conquista
+mais barato — domina, espera, anexa. Se não pode, ela é um jeito de mandar sem o mapa ficar da
+tua cor. Muda o balanço inteiro. (E "hegemon", que eu usei antes, é jargão: ver a seção sobre
+perguntar.)
 
 Depois dela, na ordem que ele viu: **gosto por estilo** (os estilos decidem mas não julgam — um
 guerreiro e um mercador têm hoje a mesma opinião sobre você nas mesmas circunstâncias; ele
