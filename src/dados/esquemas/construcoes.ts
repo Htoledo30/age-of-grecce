@@ -34,6 +34,16 @@ export const Construcoes = z.object({
     z.string().min(1),
     z.object({
       nome: z.string().min(1),
+      /**
+       * Exceção ao teto geral I–III. Obras que apenas liberam uma capacidade binária não
+       * vendem melhorias sem efeito: ficam no nível I.
+       */
+      nivelMaximo: z.number().int().min(1).max(3).optional(),
+      /**
+       * Por padrão, custo e manutenção acompanham o peso econômico da terra. `false` reserva
+       * o mesmo preço final em qualquer província para obras cujo efeito é idêntico em todas.
+       */
+      escalaPorProvincia: z.literal(false).optional(),
       /** Custo e prazo explícitos de I, II e III. Upgrade paga somente o nível novo. */
       custos: TresNiveisPositivos,
       turnos: TresPrazosPositivos,

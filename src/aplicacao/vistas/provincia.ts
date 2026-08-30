@@ -231,7 +231,8 @@ export function vistaDeConstrucoes(jogo: Jogo): VistaDeConstrucoes | null {
       const conta = campanha.retornoDaConstrucaoEm(alvo, id);
       const r = campanha.podeConstruir(alvo, id);
       const nivelAtual = campanha.nivelDaConstrucaoEm(alvo, id);
-      const nivelAlvo = Math.min(ajustes.jogo.construcoes.nivelMaximo, nivelAtual + 1);
+      const nivelMaximo = c.nivelMaximo ?? ajustes.jogo.construcoes.nivelMaximo;
+      const nivelAlvo = Math.min(nivelMaximo, nivelAtual + 1);
       return {
         id,
         nome: c.nome,
@@ -239,7 +240,7 @@ export function vistaDeConstrucoes(jogo: Jogo): VistaDeConstrucoes | null {
         turnos: c.turnos[nivelAlvo - 1] ?? c.turnos[2],
         nivelAtual,
         nivelAlvo,
-        nivelMaximo: ajustes.jogo.construcoes.nivelMaximo,
+        nivelMaximo,
         emObra: obra?.construcao === id ? obra.turnosRestantes : null,
         recusa: r.pode ? null : r.motivo,
         motivo: c.motivo,

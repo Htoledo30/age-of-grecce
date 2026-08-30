@@ -64,14 +64,19 @@ export function escalaDeObra(pesoEconomico: number, ajustes: AjustesConstrucoes)
   return Math.min(ajustes.escalaMaxima, Math.max(ajustes.escalaMinima, bruta));
 }
 
-/** O que esta obra custa à vista nesta terra, no nível pedido. */
+/**
+ * O que esta obra custa à vista nesta terra, no nível pedido.
+ *
+ * A regra comum usa a escala da terra. Uma obra com `escalaPorProvincia: false` declara que
+ * compra a mesma capacidade em qualquer lugar e, portanto, cobra o preço de catálogo inteiro.
+ */
 export function custoDaObra(
   construcao: Construcao,
   nivel: number,
   escala: number,
 ): number {
   const base = construcao.custos[Math.max(0, Math.min(2, nivel - 1))] ?? construcao.custos[2];
-  return Math.round(base * escala);
+  return Math.round(base * (construcao.escalaPorProvincia === false ? 1 : escala));
 }
 
 /**
@@ -79,7 +84,8 @@ export function custoDaObra(
  *
  * Escala junto com o custo, e não podia ser diferente: obra grande com folha de obra
  * pequena faria a cidade grande construir caro e manter barato, e o pequeno pagaria
- * proporcionalmente mais para sustentar o que ergueu.
+ * proporcionalmente mais para sustentar o que ergueu. A mesma exceção de escala do custo vale
+ * para a folha: capacidade idêntica cobra manutenção idêntica.
  */
 export function manutencaoDaObra(
   construcao: Construcao,
@@ -88,5 +94,5 @@ export function manutencaoDaObra(
 ): number {
   const base =
     construcao.manutencao[Math.max(0, Math.min(2, nivel - 1))] ?? construcao.manutencao[2];
-  return Math.round(base * escala);
+  return Math.round(base * (construcao.escalaPorProvincia === false ? 1 : escala));
 }

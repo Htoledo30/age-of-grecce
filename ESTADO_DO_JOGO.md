@@ -385,9 +385,11 @@ sitiada marcada "fora da circulação". Não há estoque ou deterioração.
 
 ### Construções
 
-Cada província possui quatro slots e cada prédio sobe de I a III. Upgrade ocupa o mesmo
-slot, paga apenas o nível novo e respeita uma obra por vez. Construções concluídas
-normalmente sobrevivem à conquista.
+Cada província possui quatro slots e, em regra, cada prédio sobe de I a III. Upgrade ocupa o
+mesmo slot, paga apenas o nível novo e respeita uma obra por vez. Construções concluídas
+normalmente sobrevivem à conquista. **Armaria, Acampamento de arqueiro e Treinamento de
+cavaleiros têm somente o nível I:** cada uma custa 8.000 e cobra sua folha fixa em qualquer
+província, porque a arma liberada é a mesma numa vila e numa metrópole.
 
 Toda construção de pé cobra manutenção em ouro por turno (números em
 `dados/construcoes.json`): a renda provincial é LÍQUIDA e uma província pode render
@@ -415,7 +417,7 @@ fatores `1,1/1,2/1,3` sobre o TREINO da tropa levantada naquela província. Ele 
 tempo escondido por vender promessa — a regra segue valendo para qualquer prédio com
 `efeito.tipo === 'futuro'`, que fica fora de todo catálogo até entregar alguma coisa.
 
-**Três obras novas liberam armas, e a liberação é por PROVÍNCIA:** `armaria` (hoplita, sem
+**Três obras de nível único liberam armas, e a liberação é por PROVÍNCIA:** `armaria` (hoplita, sem
 requisito de produto), `acampamento-de-arqueiro` (arqueiro, só onde há madeira) e
 `treinamento-de-cavaleiros` (cavalaria, só onde há cavalos). O efeito é
 `{ tipo: 'arma', arma }`, e `campanha/provincia/armas-da-provincia.ts` é quem lê o catálogo

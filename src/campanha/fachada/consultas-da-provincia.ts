@@ -272,14 +272,14 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
     return this.nucleo.catalogo[idConstrucao]?.nome ?? idConstrucao;
   }
 
-  /** O que esta obra custa à vista NESTA terra: o catálogo vezes a escala da província. */
+  /** O custo final nesta terra; normalmente escalado, ou fixo quando o catálogo assim declara. */
   custoDaObraEm(idProvincia: string, idConstrucao: string, nivel: number): number {
     const construcao = this.nucleo.catalogo[idConstrucao];
     if (!construcao) return 0;
     return custoDaObra(construcao, nivel, escalaDeObraEm(this.nucleo, idProvincia));
   }
 
-  /** O que ela cobra por turno nesta terra, na mesma escala. */
+  /** O que ela cobra por turno nesta terra, respeitando a mesma regra de escala do custo. */
   manutencaoDaObraEm(idProvincia: string, idConstrucao: string, nivel: number): number {
     const construcao = this.nucleo.catalogo[idConstrucao];
     if (!construcao) return 0;

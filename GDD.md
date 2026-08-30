@@ -314,6 +314,12 @@ A base usa quatro slots por província e níveis I, II e III, forçando especial
 Upgrades não consomem outro slot, pagam somente o nível novo e levam prazo próprio.
 Construções normalmente sobrevivem à conquista.
 
+**As três obras que liberam armas são a exceção: têm somente o nível I.** Liberar uma
+arma é uma capacidade binária, e vender níveis II e III sem efeito adicional seria uma
+armadilha. Armaria, Acampamento de arqueiro e Treinamento de cavaleiros custam 8.000 moedas e
+mantêm o mesmo preço e a mesma folha em qualquer província: Atenas não compra a mesma arma
+mais barato erguendo o prédio numa vila conquistada.
+
 **Todo prédio comprável tem que servir AGORA.** O que só promete fica escondido do catálogo
 até ter função. Vender promessa é pior que não vender nada: o jogador paga, não vê diferença,
 e passa a duvidar do resto do catálogo. O Quartel já esteve escondido por esse motivo e
@@ -341,10 +347,12 @@ paga a encruzilhada; a nacional paga o império.**
 - Mercado: a praça — multiplica a rede de trocas do REINO e o trânsito desta terra;
 - Quartel: não é requisito para recrutar — multiplica o TREINO da tropa levantada naquela
   província, e o treino é carimbado na leva;
-- Armaria: libera o hoplita naquela província, e não pede produto nenhum — é escolha de
-  slot, não permissão do mapa;
-- Acampamento de arqueiro: libera o arqueiro, e só nasce onde há madeira;
-- Treinamento de cavaleiros: libera a cavalaria, e só nasce onde há cavalos;
+- Armaria: construção de nível único que libera o hoplita naquela província, e não pede
+  produto nenhum — é escolha de slot, não permissão do mapa;
+- Acampamento de arqueiro: construção de nível único que libera o arqueiro, e só nasce onde
+  há madeira;
+- Treinamento de cavaleiros: construção de nível único que libera a cavalaria, e só nasce
+  onde há cavalos;
 - Muralha: fortalece milícia e impede assalto imediato;
 - Templo: aumenta a felicidade; cultura ou estabilidade só entram se ganharem função própria;
 - Porto: **a porta do mar do reino** — liga esta terra ao reino por mar (precisa de porto nos

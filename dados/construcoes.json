@@ -1,6 +1,6 @@
 {
   "versao": 1,
-  "comentario": "Cada provincia tem quatro slots. Predios sobem de I a III; explorar um recurso exige que ele exista como produto principal ou secundario da terra. Ouro e slots sao os custos de entrada; manutencao e o custo permanente que torna a renda liquida e permite provincia no vermelho. Recursos nao viram chaves obrigatorias de construcao.",
+  "comentario": "Cada provincia tem quatro slots. Predios sobem de I a III, salvo obras de nivel unico declaradas no proprio catalogo; explorar um recurso exige que ele exista como produto principal ou secundario da terra. Ouro e slots sao os custos de entrada; manutencao e o custo permanente que torna a renda liquida e permite provincia no vermelho. Recursos nao viram chaves obrigatorias de construcao.",
   "construcoes": {
     "agora": {
       "nome": "Ágora",
@@ -61,20 +61,22 @@
     },
     "armaria": {
       "nome": "Armaria",
+      "nivelMaximo": 1,
+      "escalaPorProvincia": false,
       "custos": [
-        1600,
-        3200,
-        5800
+        8000,
+        8000,
+        8000
       ],
       "turnos": [
         2,
-        3,
-        4
+        2,
+        2
       ],
       "manutencao": [
         5,
-        10,
-        16
+        5,
+        5
       ],
       "efeito": {
         "tipo": "arma",
@@ -85,20 +87,22 @@
     },
     "acampamento-de-arqueiro": {
       "nome": "Acampamento de arqueiro",
+      "nivelMaximo": 1,
+      "escalaPorProvincia": false,
       "custos": [
-        1400,
-        2800,
-        5000
+        8000,
+        8000,
+        8000
       ],
       "turnos": [
         2,
-        3,
-        4
+        2,
+        2
       ],
       "manutencao": [
         4,
-        8,
-        14
+        4,
+        4
       ],
       "requisito": {
         "produtos": [
@@ -114,20 +118,22 @@
     },
     "treinamento-de-cavaleiros": {
       "nome": "Treinamento de cavaleiros",
+      "nivelMaximo": 1,
+      "escalaPorProvincia": false,
       "custos": [
-        2200,
-        4400,
-        7500
+        8000,
+        8000,
+        8000
       ],
       "turnos": [
         3,
-        4,
-        5
+        3,
+        3
       ],
       "manutencao": [
         7,
-        14,
-        22
+        7,
+        7
       ],
       "requisito": {
         "produtos": [

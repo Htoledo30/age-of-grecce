@@ -133,7 +133,8 @@ export function podeConstruir(
     return { pode: false, motivo: 'esta terra não cumpre os requisitos' };
   }
   const nivelAtual = nivelDaConstrucaoEm(nucleo, idProvincia, idConstrucao);
-  if (nivelAtual >= nucleo.ajustes.construcoes.nivelMaximo) {
+  const nivelMaximo = construcao.nivelMaximo ?? nucleo.ajustes.construcoes.nivelMaximo;
+  if (nivelAtual >= nivelMaximo) {
     return { pode: false, motivo: 'nível máximo' };
   }
   if (

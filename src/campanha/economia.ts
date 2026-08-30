@@ -337,7 +337,7 @@ export function retornoDaConstrucao(
 
   const erguidas = base.construcoes;
   const nivelAtual = erguidas[idConstrucao] ?? 0;
-  const nivelAlvo = Math.min(3, nivelAtual + 1);
+  const nivelAlvo = Math.min(construcao.nivelMaximo ?? 3, nivelAtual + 1);
 
   const antes = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, base).total;
   const depois = rendaDaProvincia(ficha, catalogo, construcoes, ajustes, {

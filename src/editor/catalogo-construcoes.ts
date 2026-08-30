@@ -270,7 +270,10 @@ export function camposDasConstrucoes(
         id: `${base}.custos.crescente`,
         grupo,
         nome: `${construcao.nome} · custo`,
-        descricao: 'Preço de catálogo antes da escala econômica da província.',
+        descricao:
+          construcao.escalaPorProvincia === false
+            ? 'Preço final fixo em qualquer província. Somente os níveis permitidos pela obra entram no jogo.'
+            : 'Preço de catálogo antes da escala econômica da província.',
         unidade: 'moedas',
         valores: construcao.custos,
         minimo: 1,
@@ -283,7 +286,10 @@ export function camposDasConstrucoes(
         id: `${base}.turnos.crescente`,
         grupo,
         nome: `${construcao.nome} · duração`,
-        descricao: 'Turnos necessários para concluir cada nível.',
+        descricao:
+          construcao.nivelMaximo === 1
+            ? 'Obra de nível único: somente a coluna I entra no jogo.'
+            : 'Turnos necessários para concluir cada nível.',
         unidade: 'turnos',
         valores: construcao.turnos,
         minimo: 1,
@@ -297,7 +303,10 @@ export function camposDasConstrucoes(
         id: `${base}.manutencao.crescente`,
         grupo,
         nome: `${construcao.nome} · manutenção`,
-        descricao: 'Ouro retirado por turno enquanto a construção estiver de pé.',
+        descricao:
+          construcao.escalaPorProvincia === false
+            ? 'Folha final fixa em qualquer província. Somente os níveis permitidos pela obra entram no jogo.'
+            : 'Ouro retirado por turno enquanto a construção estiver de pé.',
         unidade: 'moedas',
         valores: construcao.manutencao,
         minimo: 1,
