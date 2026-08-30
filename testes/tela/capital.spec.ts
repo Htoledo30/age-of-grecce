@@ -6,6 +6,8 @@ import { expect, test } from '@playwright/test';
  */
 
 interface Ganchos {
+  /** Tira a comida do caminho: ver a nota acima de `test`. */
+  saciar: () => void;
   conquistar: (idProvincia: string, idPoder: string) => void;
   capitalDe: (idPoder: string) => string | undefined;
   centroDe: (idProvincia: string) => { x: number; y: number };
@@ -13,6 +15,13 @@ interface Ganchos {
   campanha: () => { tesouro: number };
 }
 
+/**
+ * ⚠️ **`saciar()` antes de plantar tropa, e a razão é de 31/08/2026.** Com
+ * `subsistenciaPorReino` em 1, Atenas abre com saldo alimentar ZERO e não sustenta um soldado
+ * antes de erguer comida: 900 homens plantados viravam 855 na tela — 5%, uma virada de fome —
+ * e este arquivo passava a medir despensa em vez do que ele veio medir. É o mesmo andaime que
+ * `ajustesFartos` é para os testes de unidade. Quem TESTA comida não chama.
+ */
 test('a capital caída trava o turno até o jogador assentar outra', async ({ page }) => {
   const erros: string[] = [];
   page.on('console', (m) => {
@@ -36,6 +45,7 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   // Tanagra toma Atenas: a barra trava a virada e diz por quê.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     i.conquistar('atenas', 'tanagra');
   });
   const passar = page.getByRole('button', { name: /Passar o turno/ });
@@ -45,12 +55,13 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   // O jogador aponta a câmera pra Maratona, que ainda é dele, e assenta a nova sede.
   const tesouroAntes = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     const centro = i.centroDe('maratona');
     i.posicionar(centro.x, centro.y, 0.4);
     return i.campanha().tesouro;
   });
   await page.mouse.click(960, 540);
-  const assentar = page.getByRole('button', { name: 'Assentar capital aqui' });
+  const assentar = page.getByRole('button', { name: 'Assentar a capital aqui' });
   await expect(assentar).toBeVisible();
   await expect(assentar).toHaveAttribute('data-urgente', 'sim');
   await assentar.click();
@@ -61,6 +72,7 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   await expect(page.locator('.ficha__selo[data-tom="ouro"]')).toHaveText('capital');
   const estadoFinal = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     return { capital: i.capitalDe('atenas'), tesouro: i.campanha().tesouro };
   });
   expect(estadoFinal.capital).toBe('maratona');

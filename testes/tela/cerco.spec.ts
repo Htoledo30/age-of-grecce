@@ -9,6 +9,8 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Tira a comida do caminho: ver a nota acima de `test`. */
+  saciar: () => void;
   populacaoDe: (idProvincia: string) => number;
   crescimentoDe: (idProvincia: string) => number;
   disponivelParaLevaEm: (idProvincia: string) => number;
@@ -37,6 +39,13 @@ interface Ganchos {
   ) => void;
 }
 
+/**
+ * ⚠️ **`saciar()` antes de plantar tropa, e a razão é de 31/08/2026.** Com
+ * `subsistenciaPorReino` em 1, Atenas abre com saldo alimentar ZERO e não sustenta um soldado
+ * antes de erguer comida: 900 homens plantados viravam 855 na tela — 5%, uma virada de fome —
+ * e este arquivo passava a medir despensa em vez do que ele veio medir. É o mesmo andaime que
+ * `ajustesFartos` é para os testes de unidade. Quem TESTA comida não chama.
+ */
 test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', async ({ page }) => {
   const erros: string[] = [];
   page.on('console', (m) => {
@@ -53,11 +62,16 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
-    i.plantarHoste('eleusis', 'eleusis', 500);
+    i.saciar();
     i.darOuro(60_000);
-    i.construir('atenas', 'quartel');
-    for (let n = 0; n < 4; n++) i.passarTurno();
+    // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
+    // bloco erguia um Quartel e virava QUATRO turnos antes de recrutar. Medido: com o jogador
+    // parado, Atenas cai na virada 3 ou 4 — para Tanagra no balanço de ontem, para Mégara no
+    // de hoje — e o teste morria em "esta província não é sua", que não diz nada sobre cerco.
+    // `correrIA` já avisa com todas as letras: jogador imóvel PERDE a capital, e isso é o jogo
+    // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
+    // falta: nenhuma afirmação daqui é sobre arma ou treino.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.recrutar('atenas', 700);
     i.passarTurno(); // a leva leva uma rodada para virar hoste
   });
@@ -88,6 +102,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
       return { dono: i.donoDe('eleusis'), forca: i.forcaEm('eleusis') };
     }),
   ).toMatchObject({ dono: 'eleusis' });
@@ -110,6 +125,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   // A cidade sitiada perde produção e comércio e mantém só o imposto.
   const sitiada = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     return i.economiaDe('eleusis');
   });
   expect(sitiada?.producao).toBe(0);
@@ -149,11 +165,16 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   // Elêusis mantém a guarnição de pé de propósito: é ela que faz a segunda peça existir.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
-    i.plantarHoste('eleusis', 'eleusis', 500);
+    i.saciar();
     i.darOuro(60_000);
-    i.construir('atenas', 'quartel');
-    for (let n = 0; n < 4; n++) i.passarTurno();
+    // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
+    // bloco erguia um Quartel e virava QUATRO turnos antes de recrutar. Medido: com o jogador
+    // parado, Atenas cai na virada 3 ou 4 — para Tanagra no balanço de ontem, para Mégara no
+    // de hoje — e o teste morria em "esta província não é sua", que não diz nada sobre cerco.
+    // `correrIA` já avisa com todas as letras: jogador imóvel PERDE a capital, e isso é o jogo
+    // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
+    // falta: nenhuma afirmação daqui é sobre arma ou treino.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.recrutar('atenas', 900);
     i.passarTurno();
   });
@@ -166,12 +187,12 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
   // Duas peças no mesmo lugar, e são de poderes diferentes.
-  const emEleusis = page.locator('.hostes__marca[data-provincia="eleusis"]');
-  await expect(emEleusis).toHaveCount(2);
+  const emElêusis = page.locator('.hostes__marca[data-provincia="eleusis"]');
+  await expect(emElêusis).toHaveCount(2);
 
   // A do defensor abre a ficha do exército DELE: é do inimigo, então não aceita comando.
   await page.locator('.hostes__marca[data-provincia="eleusis"][data-minha="nao"]').click();
-  await expect(page.locator('.exercito__nome-do-poder')).toHaveText('Eleusis');
+  await expect(page.locator('.exercito__nome-do-poder')).toHaveText('Elêusis');
   await expect(page.getByRole('button', { name: 'Passar ao assalto' })).toBeHidden();
 
   // A do sitiante abre a ficha da hoste ateniense, com o comando do cerco em pé. Antes,
@@ -186,6 +207,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
       return i.donoDe('eleusis');
     }),
   ).toBe('atenas');
@@ -215,11 +237,16 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    // O mapa abre EM PAZ: a guarnição eleusina de que este teste fala é plantada por ele.
-    i.plantarHoste('eleusis', 'eleusis', 500);
+    i.saciar();
     i.darOuro(60_000);
-    i.construir('atenas', 'quartel');
-    for (let n = 0; n < 4; n++) i.passarTurno();
+    // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
+    // bloco erguia um Quartel e virava QUATRO turnos antes de recrutar. Medido: com o jogador
+    // parado, Atenas cai na virada 3 ou 4 — para Tanagra no balanço de ontem, para Mégara no
+    // de hoje — e o teste morria em "esta província não é sua", que não diz nada sobre cerco.
+    // `correrIA` já avisa com todas as letras: jogador imóvel PERDE a capital, e isso é o jogo
+    // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
+    // falta: nenhuma afirmação daqui é sobre arma ou treino.
+    i.plantarHoste('eleusis', 'eleusis', 500);
     i.recrutar('atenas', 700);
     i.passarTurno(); // a leva vira hoste
 
@@ -242,15 +269,16 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
   await expect(page.locator('.cercos__marca[data-provincia="atenas"]')).toHaveCount(1);
 
   await minha.click();
-  const surtida = page.getByRole('button', { name: /Surtida contra Eleusis/ });
+  const surtida = page.getByRole('button', { name: /Surtida contra Elêusis/ });
   await expect(surtida).toBeVisible();
   await surtida.click();
 
   // Nada se move no clique: a surtida é ordem como qualquer outra.
-  await expect(page.locator('.exercito__ordem')).toContainText('sai para atacar Eleusis');
+  await expect(page.locator('.exercito__ordem')).toContainText('sai para atacar Elêusis');
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
       return i.forcaEm('atenas', 'atenas');
     }),
   ).toBe(700);
@@ -270,6 +298,7 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
       return { meus: i.forcaEm('atenas', 'atenas'), deles: i.forcaEm('atenas', 'eleusis') };
     }),
     // ⚠️ Era `{ meus: 490 }`, um número da lei quadrada cravado aqui. Ela morreu: o que

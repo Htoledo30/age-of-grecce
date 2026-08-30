@@ -11,6 +11,32 @@ interface Balanco {
   categoria: string;
 }
 
+/**
+ * O rótulo de cada categoria, como a barra escreve.
+ *
+ * ⚠️ **Repetido aqui de propósito, e é o que faz o teste sobreviver ao balanço.** Ele afirmava
+ * "Abastecido" cravado, e em 31/08/2026 a subsistência caiu para 1: Atenas passou a abrir com
+ * saldo ZERO — "No limite" — e o teste quebrou sem que nada estivesse errado. O que ele guarda
+ * é a LIGAÇÃO entre o saldo que a regra calcula e o par número/rótulo que a barra desenha; o
+ * número de abertura é balanço e pertence aos testes de unidade.
+ */
+const ROTULO: Record<string, string> = {
+  fome: 'Fome',
+  'exercito-sem-mantimentos': 'Exército sem mantimentos',
+  'no-limite': 'No limite',
+  abastecido: 'Abastecido',
+};
+
+/** O sinal que a barra usa: `+3`, `+0`, `−2` — com o menos tipográfico, não o hífen. */
+function comSinal(n: number): string {
+  return n >= 0 ? `+${n}` : `−${-n}`;
+}
+
+/** O tom que a barra pinta a partir do saldo. */
+function tomDoSaldo(n: number): string {
+  return n < 0 ? 'fome' : n === 0 ? 'aperto' : 'folga';
+}
+
 interface Ganchos {
   darOuro: (valor: number) => void;
   passarTurno: () => void;
@@ -34,16 +60,17 @@ test('a barra mostra o saldo inteiro e a categoria ao lado do ouro', async ({ pa
   // ⚠️ Derivado da campanha, nunca cravado: o saldo de abertura é balanço e muda quando as
   // faixas de população ou a subsistência mudam. O que o teste guarda é a LIGAÇÃO entre o
   // que a regra diz e o que a barra desenha.
-  const aberto = await page.evaluate(
-    () => (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao().saldo,
+  const abertura = await page.evaluate(() =>
+    (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao(),
   );
-  expect(aberto).toBeGreaterThan(0);
+  // O reino abre sem fome — quanto de folga ele tem é balanço, e muda.
+  expect(abertura.saldo).toBeGreaterThanOrEqual(0);
 
   const comida = page.locator('.barra-turno__contas .barra-turno__folego');
   await expect(comida).toBeVisible();
-  await expect(comida).toContainText(`+${aberto}`);
-  await expect(comida).toContainText('Abastecido');
-  await expect(comida).toHaveAttribute('data-tom', 'folga');
+  await expect(comida).toContainText(comSinal(abertura.saldo));
+  await expect(comida).toContainText(ROTULO[abertura.categoria] ?? abertura.categoria);
+  await expect(comida).toHaveAttribute('data-tom', tomDoSaldo(abertura.saldo));
   await expect(comida).not.toContainText(',');
 
   // Uma hoste come da mesma mesa: o saldo desce e a barra acompanha.
@@ -55,8 +82,8 @@ test('a barra mostra o saldo inteiro e a categoria ao lado do ouro', async ({ pa
   const comTropa = await page.evaluate(
     () => (window as unknown as { inspecao: Ganchos }).inspecao.alimentacao().saldo,
   );
-  expect(comTropa).toBeLessThan(aberto);
-  await expect(comida).toContainText(`+${comTropa}`);
+  expect(comTropa).toBeLessThan(abertura.saldo);
+  await expect(comida).toContainText(comSinal(comTropa));
 });
 
 test('déficit só do exército fica vermelho, diz o nome certo e não mata civil', async ({
@@ -109,7 +136,9 @@ test('o Governo decompõe a mesma conta e mostra o papel de cada terra', async (
   await expect(resumo).toContainText(`população −${dados.populacao}`);
   await expect(resumo).toContainText(`civil +${dados.saldoCivil}`);
   await expect(resumo).toContainText(`exército −${dados.exercito}`);
-  await expect(resumo).toContainText(`+${dados.saldo} · Abastecido`);
+  await expect(resumo).toContainText(
+    `${comSinal(dados.saldo)} · ${ROTULO[dados.categoria] ?? dados.categoria}`,
+  );
 
   const sounion = aba.locator('tbody tr', { hasText: 'Sunião' });
   await expect(sounion).toHaveAttribute('data-tom', 'deficit');

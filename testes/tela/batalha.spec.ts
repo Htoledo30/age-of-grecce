@@ -10,6 +10,8 @@ import { expect, test } from '@playwright/test';
  */
 
 interface Ganchos {
+  /** Tira a comida do caminho: ver a nota acima de `test`. */
+  saciar: () => void;
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -32,6 +34,13 @@ interface Ganchos {
   ) => void;
 }
 
+/**
+ * ⚠️ **`saciar()` antes de plantar tropa, e a razão é de 31/08/2026.** Com
+ * `subsistenciaPorReino` em 1, Atenas abre com saldo alimentar ZERO e não sustenta um soldado
+ * antes de erguer comida: 900 homens plantados viravam 855 na tela — 5%, uma virada de fome —
+ * e este arquivo passava a medir despensa em vez do que ele veio medir. É o mesmo andaime que
+ * `ajustesFartos` é para os testes de unidade. Quem TESTA comida não chama.
+ */
 test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu', async ({
   page,
 }) => {
@@ -56,6 +65,7 @@ test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu
   // planta os dois lados dela.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     i.darOuro(60_000);
     i.plantarHoste('atenas', 'atenas', 900);
     i.plantarHoste('eleusis', 'eleusis', 800);
@@ -108,6 +118,7 @@ test('a batalha do jogador abre uma janela, e ela reproduz o que a regra decidiu
   );
   const naRegra = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     return [i.forcaEm('atenas', 'atenas'), i.forcaEm('atenas', 'eleusis')];
   });
   // A conta da tela é "X de Y"; o primeiro número é o que sobrou.
@@ -148,6 +159,7 @@ test('a janela mostra as armas de cada lado, e as faixas encolhem com a barra', 
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.saciar();
     i.darOuro(60_000);
     // Atenas põe em campo um exército MISTO; Elêusis vem só com hoplitas.
     i.plantarHoste('atenas', 'atenas', 600, 'leve');

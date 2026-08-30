@@ -15,8 +15,23 @@ import type { Jogo } from './contexto';
 import { virarTurno } from './virar-turno';
 
 export function instalarInspecao(jogo: Jogo): void {
-  const { campanha, atlas, cena } = jogo;
+  const { campanha, atlas, cena, ajustes } = jogo;
   (window as unknown as { inspecao?: unknown }).inspecao = {
+    /**
+     * Tira a COMIDA do caminho para o resto do teste. O andaime dos testes de TELA.
+     *
+     * ⚠️ **Tem a mesma razão do `ajustesFartos` dos testes de unidade, e a mesma data.** Desde
+     * que `subsistenciaPorReino` caiu para 1, Atenas abre com saldo ZERO e não sustenta um
+     * soldado antes de erguer comida — então um teste de BATALHA que planta 900 homens via 855
+     * na tela e passava a medir fome em vez de batalha. O teste de tela não tem como trocar os
+     * ajustes na carga: ele abre o jogo de verdade, com o `dados/ajustes.json` de verdade.
+     *
+     * Quem TESTA comida não chama isto: é lá que a régua tem de doer.
+     */
+    saciar: () => {
+      ajustes.jogo.alimento.soldadosPorPonto = 1_000_000;
+      ajustes.jogo.alimento.subsistenciaPorReino = 1_000;
+    },
     posicionar: (x: number, y: number, zoom: number) => cena.posicionar(x, y, zoom),
     calibrarFronteira: (largura?: number, forca?: number, cor?: string) =>
       cena.calibrarFronteira(largura, forca, cor),
