@@ -59,6 +59,7 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   estado.relacoes = { ...salvo.relacoes };
   estado.pactos = { ...salvo.pactos };
   estado.aliancas = { ...salvo.aliancas };
+  estado.ligas = { ...salvo.ligas };
   estado.acordos = { ...salvo.acordos };
   estado.tributos = { ...salvo.tributos };
   estado.reputacao = { ...salvo.reputacao };

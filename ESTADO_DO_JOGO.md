@@ -1118,6 +1118,85 @@ o maior e o menor é a menor já medida neste projeto.
 O preço são as propostas ao jogador caindo de 59 para 37 — a mesa ficou mais desconfiada com
 todo mundo, inclusive contigo. Continua sendo dez vezes o que era antes da semana começar (zero).
 
+## A LIGA: mandar num reino sem tomá-lo
+
+Até aqui um vizinho tinha dois estados possíveis — independente ou conquistado — e um caminho
+só entre eles: exército. A liga é o terceiro estado, e é o que a Grécia tinha no lugar de
+império: a Liga do Peloponeso e a de Delos, em que o chefe manda e o membro **continua sendo
+ele mesmo**.
+
+⚠️ **"Vassalagem" é a mesma mecânica em outro século**, e a palavra não se usa porque é feudal.
+Na tela e na conversa é **chefe** e **membro**.
+
+### O que fica de cada lado
+
+O membro mantém governo, províncias, exército, tesouro e despensa; o chefe não constrói na
+terra dele, não define o imposto dele e não move a hoste dele. O que passa a ser do chefe é
+**tributo** (uma fatia da renda, todo turno), **as guerras** (o membro entra nelas como um
+aliado entra) e **a paz entre os dois**.
+
+⚠️ **E o tributo é para o membro o que o imposto é para uma província**, de propósito: mais
+ouro agora, mais vontade de sair depois. É uma forma que Henrique já conhece.
+
+### O desejo de sair é a terceira aparição da mesma máquina
+
+Um valor que anda um passo por turno em direção a um alvo feito de parcelas com nome — como o
+humor do povo e como a opinião entre reinos. As parcelas: *servir a alguém* (positiva, a base —
+ninguém serve por gosto), o nível do tributo, *mesma gente*, *ele é maior* (a sombra do chefe,
+que aqui SEGURA em vez de afastar), *décadas de costume* e *a guerra dele*.
+
+Cheio, ele se revolta: sai da liga **e declara guerra**. No chão, ele aceita virar província.
+
+### Anexar só acontece com o SIM do membro
+
+⚠️ **Esta regra nasceu de uma pergunta de Henrique que derrubou o primeiro desenho.** Eu havia
+proposto que o chefe pudesse anexar à força pagando reputação; ele perguntou *"e se eu fosse
+Mégara nessa situação?"* — e a resposta era que o jogador perderia o reino por um botão que
+outro apertou, sem batalha e sem reação. E abrir exceção para o jogador seria pior ainda: seria
+regra diferente para ele.
+
+Então o chefe **pede** e o membro responde. O membro da IA diz sim quando o desejo está no
+chão; o jogador recebe a proposta como recebe pacto e aliança, e **recusar não custa nada**.
+Recusado, o chefe tem um caminho só: romper a liga, pagar a reputação, e invadir.
+
+⚠️ **E não se anexa quem entrou ontem.** `turnosParaAnexar` existe porque sem ele, medido em
+150 turnos, as 6 ligas formadas terminaram em 4 anexações e **nenhum membro de pé** — entrar e
+ser engolido virou um passo só, e o degrau que a liga deveria ser desapareceu.
+
+Quem passa de mão por acordo NÃO leva o choque de humor da queda: usa `trocarDono` e não
+`conquistar`. O preço permanente é outro e continua existindo — a nacionalidade. Mégara é
+dória; na liga de Atenas a infelicidade dela é problema dela, anexada ela custa −18 de humor
+por povo estrangeiro para sempre.
+
+### Três coisas nasceram mortas e as três apareceram medindo
+
+1. **Zero ligas em 150 turnos.** `opiniaoMinima` era 45 e passava em **10 de 23.890
+   pares-turno**; a maior opinião que existe no jogo é 50. Foi para 40.
+2. **Zero revoltas, em toda dose.** O desejo só variava de 17 a 33 porque a alavanca do tributo
+   era fraca demais e as parcelas que acalmam comiam tudo. Pesado subiu de +15 para +30, leve
+   de −10 para −18, e a guerra do chefe de +12 para +18 — o intervalo abriu e a IA passou a
+   usar os três níveis.
+3. ⚠️ **A revolta saía em SILÊNCIO.** O membro deixava a liga no turno 6 e a guerra
+   simplesmente não nascia, porque o **pacto** entre os dois a recusava. Um reino que se
+   revolta e não luta é um reino que sumiu do mapa por um defeito. Agora a revolta rasga o
+   papel, como o levante de uma província já fazia.
+
+### O que ela fez com o mundo, 150 turnos
+
+| | sem liga | com liga |
+|---|---|---|
+| ligas formadas · membros no fim | — | **7 · 1** |
+| anexações | — | **4** |
+| guerras declaradas | 51 | **46** |
+| províncias que mudaram de dono | 23 | **20** |
+| **maior reino** | **11** | **7** |
+| poderes vivos de 18 | 8 | 7 |
+
+⚠️ **A liga converte CONQUISTA em domínio**, e é isso que a última linha mostra: o maior reino
+cai de 11 para 7 províncias porque os pequenos que seriam engolidos viram membros — e membro
+mantém a própria terra. O preço é um poder a menos vivo no fim, que são os que aceitaram virar
+província depois de décadas bem tratadas.
+
 ## A ALIANÇA: o único acordo que obriga a fazer
 
 *"Vamos de aliança então!"*. Ela era o degrau que faltava, e a falta dela tinha forma: **todo o

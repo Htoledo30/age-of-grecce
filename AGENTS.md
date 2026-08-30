@@ -91,19 +91,20 @@ notebook, puxou o repositório e apontou o mar como incompleto. As fases 0 a 2 e
 abaixo, na seção do naval. **A LIGA continua sendo o trabalho combinado**, e a pergunta aberta
 dela continua aberta.
 
-⚠️ **TRABALHO COMBINADO PARA A PRÓXIMA SESSÃO (28/08/2026): a LIGA.** Henrique decidiu fechar o
-dia e retomar pela diplomacia. A peça é a **liga hegemônica — vassalagem em roupa grega**: o
-membro mantém o próprio governo, paga tributo, entra nas guerras do hegemon, e tem um *desejo de
-sair* que sobe com tributo alto e derrota e cai com tributo baixo, presente e vitória. Ela
-reaproveita tributo + aliança + felicidade, que já existem.
+⚠️ **A LIGA ENTROU (29/08/2026).** O terceiro estado de um vizinho, entre independente e
+conquistado: o chefe manda, o membro continua sendo ele mesmo. Tributo, guerras e paz passam ao
+chefe; o que segura o membro é o *desejo de sair*, a terceira aparição da máquina do humor.
+**Anexar exige o SIM do membro** — a resposta que Henrique deu à pergunta aberta, e a regra
+nasceu da pergunta dele *"e se eu fosse Mégara nessa situação?"*.
 
-⚠️ **E há UMA pergunta aberta que ele precisa responder antes da primeira linha: o CHEFE DA
-LIGA pode um dia ANEXAR um membro, ou nunca?** Se pode, a liga vira um caminho de conquista
-mais barato — domina, espera, anexa. Se não pode, ela é um jeito de mandar sem o mapa ficar da
-tua cor. Muda o balanço inteiro. (E "hegemon", que eu usei antes, é jargão: ver a seção sobre
-perguntar.)
+⚠️ **Três coisas dela nasceram mortas e as três só apareceram MEDINDO** — é o padrão desta
+base, e vale repetir antes de qualquer peça nova: `opiniaoMinima` pedia 45 quando a maior
+opinião do jogo é 50 (10 de 23.890 pares-turno passavam); o desejo de sair só variava de 17 a 33
+porque a alavanca do tributo era fraca; e a revolta saía em SILÊNCIO porque o pacto entre chefe
+e membro recusava a guerra. **Contar quantos pares-turno passam em cada portão** é o corte que
+achou as três.
 
-Depois dela, na ordem que ele viu: **gosto por estilo** (os estilos decidem mas não julgam — um
+Na fila, na ordem que ele viu: **gosto por estilo** (os estilos decidem mas não julgam — um
 guerreiro e um mercador têm hoje a mesma opinião sobre você nas mesmas circunstâncias; ele
 observou que a 130 poderes vão faltar estilos, e tem razão), as **arestas da aliança** (aliança
 defensiva, recusar a convocação pagando reputação, romper acordo longo doer menos que curto) e a
@@ -156,7 +157,7 @@ se pague em humor tem de refazer essa conta dos dois lados.
 
 Não começar espionagem, migração nem governadores sem uma nova decisão de Henrique. **A IA não
 EXIGE tributo nem rompe o que recebe** — as duas coisas foram deixadas de fora de propósito e
-são decisão nova. (Vassalagem/suserania saiu desta lista: virou a **liga**, combinada acima.)
+são decisão nova.
 
 ⚠️ **O naval está DE PÉ, e sem frota — decisão de Henrique (28/08/2026).** O exército anda
 pelas 48 zonas de mar como anda por terra, embarcar exige Porto, e todo encontro na água é
@@ -196,8 +197,8 @@ terminavam. O conserto certo é a memória da IA, e ela precisa de campo no ESTA
 marcha com a força inteira renasce com id novo a cada virada. Os três números estão no
 `ESTADO_DO_JOGO.md`.
 
-⚠️ **A aliança FECHOU o topo da régua** (28/08/2026): ela obriga, a convocação é automática, e
-romper custa mais que romper um pacto. O que resta acima dela é a **liga**.
+⚠️ **A régua está fechada de ponta a ponta**: comércio, pacto, aliança e, no topo, a **liga**,
+que pede a opinião mais alta da mesa (40) e é a única coisa que não é um acordo entre iguais.
 
 ## O que depende de Henrique testar
 
@@ -254,7 +255,11 @@ romper custa mais que romper um pacto. O que resta acima dela é a **liga**.
 - **a sombra do maior**: crescer passou a custar amizade — isso dá a tensão que a Grécia pede,
   ou atrapalha quem quer jogar de império?
 - **jogar de MÉGARA em vez de Atenas**: comida 6 contra 1, duas províncias contra três. É um
-  jogo bem diferente e ninguém experimentou ainda.
+  jogo bem diferente e ninguém experimentou ainda;
+- **a LIGA jogando**: o tributo é uma decisão de verdade ou o nível leve é sempre a resposta? A
+  vontade de sair sobe rápido o bastante para assustar? Anexar depois de décadas dá a sensação
+  de conquista, ou parece um prêmio de participação? E do outro lado: entrar numa liga como
+  MEMBRO é aceitável, ou é sempre melhor morrer de pé?
 
 ⚠️ **NUNCA use `transform: scale()` no palco.** Ele desliga o antialiasing de subpixel de
 toda a interface e deixa o texto fino e lavado. A escala vive em `src/estilo/escala.ts` e usa

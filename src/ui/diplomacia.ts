@@ -111,6 +111,11 @@ export class Diplomacia {
   aoRomperPacto: (idPoder: string) => void = () => {};
   aoFirmarAlianca: (idPoder: string, turnos: number) => void = () => {};
   aoRomperAlianca: (idPoder: string) => void = () => {};
+  aoFormarLiga: (idPoder: string) => void = () => {};
+  aoSairDaLiga: (idPoder: string) => void = () => {};
+  aoSoltarMembro: (idPoder: string) => void = () => {};
+  aoAnexarMembro: (idPoder: string) => void = () => {};
+  aoMudarTributoDaLiga: (idPoder: string, nivel: string) => void = () => {};
   aoPagarTributo: (idPoder: string, turnos: number) => void = () => {};
   aoExigirTributo: (idPoder: string, turnos: number) => void = () => {};
   aoRomperTributo: (idPoder: string) => void = () => {};
@@ -749,6 +754,14 @@ export class Diplomacia {
         return this.aoFirmarPacto(id, proposta.valor);
       case 'romper':
         return this.aoRomperPacto(id);
+      case 'formar-liga':
+        return this.aoFormarLiga(id);
+      case 'sair-da-liga':
+        return this.aoSairDaLiga(id);
+      case 'soltar-membro':
+        return this.aoSoltarMembro(id);
+      case 'anexar-membro':
+        return this.aoAnexarMembro(id);
       case 'alianca':
         return this.aoFirmarAlianca(id, proposta.valor);
       case 'romper-alianca':
@@ -762,6 +775,13 @@ export class Diplomacia {
       case 'presente':
         return this.aoPresentear(id, proposta.valor);
       default:
+        // ⚠️ **O nível do tributo viaja DENTRO da ação**, e não num número: `tributo-liga:leve`.
+        // Os níveis vêm dos dados e podem mudar de nome ou de quantidade; um índice numérico
+        // criaria uma ordem combinada entre a vista e a tela, e no dia em que alguém
+        // acrescentasse um nível as duas discordariam em silêncio.
+        if (proposta.acao.startsWith('tributo-liga:')) {
+          this.aoMudarTributoDaLiga(id, proposta.acao.slice('tributo-liga:'.length));
+        }
         return;
     }
   }

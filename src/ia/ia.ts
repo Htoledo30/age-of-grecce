@@ -48,6 +48,7 @@ import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
 import { acessoPedido } from './diplomacia/acesso';
 import { aliancaEscolhida } from './diplomacia/aliancas';
+import { anexacaoEscolhida, ligaEscolhida, tributoEscolhidoDaLiga } from './diplomacia/ligas';
 import { comercioEscolhido, pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
 import { tributoEscolhido } from './diplomacia/tributos';
 import { querPaz, querPazComTributo } from './diplomacia/paz';
@@ -77,6 +78,10 @@ export interface LanceDaIa {
   pacto: { com: string; turnos: number } | null;
   /** E com quem ela se ALIOU — o acordo que a mete nas guerras do outro. */
   alianca: { com: string; turnos: number } | null;
+  /** Quem ela pôs na LIGA dela nesta virada — mandar sem tomar. */
+  liga: string | null;
+  /** E que membro ela pediu para anexar. Só acontece com o sim dele. */
+  anexacao: string | null;
   /** O presente que ela mandou nesta virada, se mandou. */
   presente: { para: string; ouro: number } | null;
   /** Com quem ela abriu comércio nesta virada, se abriu. */
@@ -241,6 +246,41 @@ export function jogarIA(
       }
     }
 
+    // ⚠️ **A LIGA depois da aliança, e ela é o degrau mais caro da mesa.** Entre iguais a
+    // aliança já resolve e sai de graça; a liga só faz sentido quando um é MUITO maior, e é
+    // esse portão que `ligas.ts` guarda antes de olhar opinião.
+    const liga = ligaEscolhida(campanha, idPoder, estilo, dados);
+    if (liga !== null) {
+      if (liga === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'liga' });
+      } else {
+        campanha.formarLiga(liga, idPoder);
+      }
+    }
+
+    // O chefe aperta quem está contente e alivia quem está prestes a sair — a mesma política
+    // do imposto de uma província. Sem isto o tributo ficaria para sempre no nível de estreia.
+    const regraDaLiga = ajustes.diplomacia.liga;
+    for (const membro of campanha.membrosDe(idPoder)) {
+      const nivel = tributoEscolhidoDaLiga(
+        campanha,
+        membro,
+        regraDaLiga.niveisDeTributo,
+        regraDaLiga.limiarDaRevolta,
+      );
+      if (nivel !== null) campanha.mudarTributoDaLiga(membro, nivel);
+    }
+
+    // ⚠️ E a ANEXAÇÃO só vai a quem já diria sim. Ver `anexacaoEscolhida`.
+    const anexacao = anexacaoEscolhida(campanha, idPoder);
+    if (anexacao !== null) {
+      if (anexacao === campanha.jogador?.id) {
+        campanha.proporAoJogador({ de: idPoder, tipo: 'anexacao' });
+      } else {
+        campanha.anexarMembro(anexacao, idPoder);
+      }
+    }
+
     // ⚠️ O TRIBUTO depois do pacto, e a ordem é a regra inteira: o pacto é de graça e o tributo
     // custa o cofre todo turno. Tentar o caro antes do grátis faria o reino pagar por aquilo
     // que uma assinatura lhe daria sem moeda nenhuma — e `podeFirmarTributo` já recusa quem
@@ -326,6 +366,8 @@ export function jogarIA(
       guerra,
       pacto,
       alianca,
+      liga,
+      anexacao,
       presente,
       comercio,
       acesso,

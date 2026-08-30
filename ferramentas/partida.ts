@@ -126,6 +126,9 @@ let propostasAoJogador = 0;
 let guerrasDeclaradas = 0;
 let pactos = 0;
 let aliancas = 0;
+let ligas = 0;
+let anexacoes = 0;
+let revoltasDaLiga = 0;
 let presentes = 0;
 let acordos = 0;
 let tributos = 0;
@@ -209,6 +212,8 @@ for (let turno = 0; turno < TURNOS; turno++) {
     if (lance.guerra !== null) guerrasDeclaradas += 1;
     if (lance.pacto !== null) pactos += 1;
     if (lance.alianca !== null) aliancas += 1;
+    if (lance.liga !== null) ligas += 1;
+    if (lance.anexacao !== null) anexacoes += 1;
     if (lance.comercio !== null) acordos += 1;
     if (lance.tributo !== null) {
       tributos += 1;
@@ -252,6 +257,7 @@ for (let turno = 0; turno < TURNOS; turno++) {
   if (c.rodada.conquistas.length > 0 && conquistas === 0) primeiraConquista = turno;
   conquistas += c.rodada.conquistas.length;
   cercoTurnos += c.cercos().length;
+  revoltasDaLiga += c.revoltasDaLiga.length;
   for (const m of c.rodada.marchas) {
     for (let i = 1; i < m.trilha.length; i++) {
       const de = m.trilha[i - 1];
@@ -325,6 +331,10 @@ console.log(`  homens em armas no mapa: ${n(emArmas)}`);
 console.log(`
   ── A GUERRA ──`);
 console.log(`  guerras declaradas: ${guerrasDeclaradas} · pazes assinadas: ${pazes / 2}`);
+console.log(
+  `  ligas formadas: ${ligas} · membros no fim: ${poderes.filter((id) => c.chefeDe(id) !== undefined).length}` +
+    ` · anexações: ${anexacoes} · revoltas de liga: ${revoltasDaLiga}`,
+);
 console.log(
   `  alianças assinadas: ${aliancas}` +
     ` · aliados no fim: ${poderes.reduce((t, id) => t + c.aliadosDe(id).length, 0) / 2}`,

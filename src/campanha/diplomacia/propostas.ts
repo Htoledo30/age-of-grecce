@@ -22,13 +22,17 @@
 import type { Proposta } from '../estado-campanha';
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
 import { concederAcesso, podeConcederAcesso } from './acesso-militar';
+import { chefeDe } from './liga';
 import {
   acordarComercio,
+  anexarMembro,
   firmarAlianca,
+  formarLiga,
   firmarPacto,
   podeAcordarComercio,
   podeFirmarAlianca,
   podeFirmarPacto,
+  podeFormarLiga,
 } from './relacoes';
 
 /** O que está na mesa do jogador agora. Ordenado por quem pede, para a tela não dançar. */
@@ -70,6 +74,15 @@ function avaliar(
       return podeFirmarPacto(nucleo, jogador, proposta.de, proposta.turnos ?? 0);
     case 'alianca':
       return podeFirmarAlianca(nucleo, jogador, proposta.de, proposta.turnos ?? 0);
+    case 'liga':
+      // ⚠️ Quem lidera é QUEM PEDE: o jogador é o membro, e é ele que se dobra.
+      return podeFormarLiga(nucleo, proposta.de, jogador);
+    case 'anexacao':
+      // ⚠️ **O único pedido que tira um reino do mapa**, e por isso é o único que exige o sim.
+      // A permissão aqui só checa que ele é mesmo o chefe; o SIM é o clique do jogador.
+      return chefeDe(nucleo, jogador) === proposta.de
+        ? { pode: true }
+        : { pode: false, motivo: 'ele não lidera a sua liga' };
     case 'comercio':
       return podeAcordarComercio(nucleo, jogador, proposta.de);
     case 'acesso':
@@ -103,6 +116,14 @@ export function aceitarProposta(
       break;
     case 'alianca':
       firmarAlianca(nucleo, jogador, de, proposta.turnos ?? 0);
+      break;
+    case 'liga':
+      formarLiga(nucleo, de, jogador);
+      break;
+    case 'anexacao':
+      // ⚠️ Aceitar aqui é entregar o reino. O jogador sabe — a frase da mesa diz isso com
+      // todas as letras — e recusar não custa nada, como em toda proposta.
+      anexarMembro(nucleo, de, jogador);
       break;
     case 'comercio':
       acordarComercio(nucleo, jogador, de);

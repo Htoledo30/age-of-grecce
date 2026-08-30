@@ -19,6 +19,18 @@ import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 import { capitaisIniciais } from '../capitais';
 import { temPorto } from '../comercio/alcance';
 import { aliadosDe, aliancaAte } from '../diplomacia/alianca';
+import {
+  aceitaSerAnexado,
+  alvoDoDesejo,
+  chefeDe,
+  ligaDe,
+  membrosDe,
+  parcelasDoDesejo,
+  tributoDaLiga,
+} from '../diplomacia/liga';
+import type { ParcelaDoDesejo, VinculoDaLiga } from '../diplomacia/liga';
+import { povoDoPoder } from '../sociedade/nacionalidade';
+import type { RevoltaDaLiga } from '../turno/andar-ligas';
 import type { NivelDeImposto } from '../economia';
 import type { Tributo } from '../estado-campanha';
 import type { CatalogoDeConstrucoes, NucleoDaCampanha, Permissao, Recusa } from '../nucleo';
@@ -41,6 +53,7 @@ import {
   guerrasDe,
   pactoAte,
   podeFirmarAlianca,
+  podeFormarLiga,
   parcelasDaRelacaoEntre,
   podeAcordarComercio,
   podeDeclararGuerra,
@@ -331,6 +344,61 @@ export abstract class ConsultasDoReino {
     return aliadosDe(this.nucleo, idPoder);
   }
 
+  /** A liga deste poder como MEMBRO, ou `undefined` se ele não serve a ninguém. */
+  ligaDe(membro: string): VinculoDaLiga | undefined {
+    return ligaDe(this.nucleo, membro);
+  }
+
+  /** Quem manda neste poder, ou `undefined`. */
+  chefeDe(membro: string): string | undefined {
+    return chefeDe(this.nucleo, membro);
+  }
+
+  /** Os membros da liga deste chefe, em ordem de id. */
+  membrosDe(chefe: string): readonly string[] {
+    return membrosDe(this.nucleo, chefe);
+  }
+
+  /** Esta liga pode ser formada, e se não, por quê. */
+  podeFormarLiga(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): Permissao {
+    return podeFormarLiga(this.nucleo, porPoder, membro);
+  }
+
+  /** O que este membro paga por turno ao chefe dele. */
+  tributoDaLigaDe(membro: string): number {
+    return tributoDaLiga(this.nucleo, membro, rendaBaseDe(this.nucleo, membro));
+  }
+
+  /**
+   * A conta do desejo de sair deste membro, parcela a parcela.
+   *
+   * A mesma legibilidade do humor do povo e da opinião entre reinos: um alvo feito de parcelas
+   * com nome, e um valor que caminha até ele.
+   */
+  parcelasDoDesejoDe(membro: string): readonly ParcelaDoDesejo[] {
+    const vinculo = ligaDe(this.nucleo, membro);
+    if (vinculo === undefined) return [];
+    const povo = povoDoPoder(this.nucleo, membro);
+    return parcelasDoDesejo(
+      this.nucleo,
+      membro,
+      povo !== undefined && povo === povoDoPoder(this.nucleo, vinculo.chefe),
+      this.nucleo.territorios.provinciasDe(vinculo.chefe).length,
+      this.nucleo.territorios.provinciasDe(membro).length,
+      guerrasDe(this.nucleo, vinculo.chefe).length > 0,
+    );
+  }
+
+  /** Para onde o desejo de sair deste membro caminha. */
+  alvoDoDesejoDe(membro: string): number {
+    return alvoDoDesejo(this.parcelasDoDesejoDe(membro));
+  }
+
+  /** Ele aceitaria virar província do chefe? É o desejo de sair no chão. */
+  aceitaSerAnexado(membro: string): boolean {
+    return aceitaSerAnexado(this.nucleo, membro);
+  }
+
   /** Os prazos de aliança que este par consegue assinar hoje, do mais longo ao mais curto. */
   prazosDeAlianca(a: string, b: string): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
     return prazosDeAlianca(this.nucleo, a, b);
@@ -513,6 +581,11 @@ export abstract class ConsultasDoReino {
   /** Os levantes da última virada. Vazio quando o povo se aguentou. */
   get revoltas(): readonly Levante[] {
     return this.efemeros.revoltas;
+  }
+
+  /** Os membros que romperam a liga à força nesta virada, e de quem. */
+  get revoltasDaLiga(): readonly RevoltaDaLiga[] {
+    return this.efemeros.revoltasDaLiga;
   }
 
   /** Guerras declaradas e pazes assinadas nesta virada. Notícia, não partida. */

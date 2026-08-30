@@ -30,6 +30,7 @@ import { arrecadar } from './arrecadar';
 import { pagarTropa } from './pagar-tropa';
 import { processarObras } from './processar-obras';
 import { resolverMarchas } from './resolver-marchas';
+import { andarLigas, limparLigasMortas } from './andar-ligas';
 
 /** Vira o turno e devolve tudo o que virou notícia. */
 import {
@@ -84,8 +85,12 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   andarReputacao(nucleo);
   // E a guerra contra quem não existe mais acaba sozinha: ver `limparGuerrasMortas`.
   limparGuerrasMortas(nucleo);
+  // ⚠️ A liga anda DEPOIS da limpeza das guerras: quem perdeu o chão sai dela sem revolta e sem
+  // preço, e só então o desejo de quem sobrou dá o passo do turno.
+  limparLigasMortas(nucleo);
+  const revoltasDaLiga = andarLigas(nucleo);
 
   // ⚠️ A notícia diplomática NÃO nasce aqui: ela é anotada quando a guerra é declarada, antes
   // de o turno virar. A fachada a carrega por cima desta lista — ver `Campanha.passarTurno`.
-  return { rodada, fome, quedasDeCapital, revoltas, diplomacia: [] };
+  return { rodada, fome, quedasDeCapital, revoltas, revoltasDaLiga, diplomacia: [] };
 }

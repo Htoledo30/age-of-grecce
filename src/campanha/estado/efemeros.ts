@@ -10,6 +10,7 @@ import type { RelatorioDaRodada } from '@/movimento/resolucao/relatorio';
 import type { RelatorioDaFome } from '../alimentacao/aplicar-fome';
 import type { QuedaDeCapital } from '../governo/capital';
 import type { Levante } from '../sociedade/processar-revoltas';
+import type { RevoltaDaLiga } from '../turno/andar-ligas';
 
 /** Uma guerra declarada ou uma paz assinada — notícia da virada, não partida. */
 export interface NoticiaDiplomatica {
@@ -23,6 +24,8 @@ export interface EfemerosDaCampanha {
   fome: RelatorioDaFome;
   quedasDeCapital: readonly QuedaDeCapital[];
   revoltas: readonly Levante[];
+  /** Os membros que romperam a liga à força nesta virada, e de quem. */
+  revoltasDaLiga: readonly RevoltaDaLiga[];
   /**
    * O que mudou de relação nesta virada.
    *
@@ -51,6 +54,7 @@ export function efemerosVazios(): EfemerosDaCampanha {
     fome: { provincias: [], tropas: [] },
     quedasDeCapital: [],
     revoltas: [],
+    revoltasDaLiga: [],
     diplomacia: [],
   };
 }

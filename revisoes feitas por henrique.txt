@@ -377,3 +377,43 @@ Novas Observacoes Por Henrique
  
  problema encontrado: eu mando recrutar tropas certo?é 1 round para eu poder mover essas tropas, porem atualmente o jogo le diferente, se eu sou atacado durante e troca de rodada essas tropas recrutadas nao defendem a minha localizacao, isso esta errado, era para elas ja existirem e porntas para defender, mas so vou poder mexer elas na rodada seguinte da que eu recrutei elas, faz sentido? outra coisas precisamos ajustar por ordem alfabetico ou algo do tipo que movimenta depois de mim, saca? estilo rome total war, ter uma ordem de turnos acho que as IA nao tem turno nao sei.
  outra coisa que preciso saber, caso eu faca alianca com outro reino, ambos os reinos ja estao liberados em anadar em cima da provincia um do outro ? deveria ja possuir acesso militar por conta da alianca.
+
+"comece" — a LIGA (e a resposta dele: pode anexar, mas so com o sim do membro)
+   → FEITA. O terceiro estado de um vizinho, entre independente e conquistado.
+     O MEMBRO mantem tudo: governo, provincias, exercito, tesouro e despensa. Tu nao constroi
+     na terra dele, nao define o imposto dele, nao move a hoste dele.
+     O CHEFE leva tres coisas: tributo (fatia da renda, todo turno, com o nivel escolhido por
+     ti), as guerras (o membro entra nelas como um aliado entra) e a paz entre os dois.
+     O que segura o membro e o DESEJO DE SAIR, que e a terceira vez que a mesma maquina
+     aparece: um valor que anda um passo por turno rumo a um alvo de parcelas com nome. Sobe
+     com tributo pesado e com as tuas guerras; desce com costume, tribo comum e a tua sombra.
+     Cheio, ele SAI E TE DECLARA GUERRA.
+     ANEXAR so com o sim dele, como tu decidiu — e nao se anexa quem entrou ontem: sao 30
+     turnos de liga antes de a pergunta sequer existir. Quem passa de mao por acordo nao leva o
+     choque de humor da queda (usa trocarDono e nao conquistar); o preco permanente continua
+     sendo a nacionalidade, que nao se apaga.
+
+   → TRES COISAS NASCERAM MORTAS, e as tres so apareceram medindo:
+     1. ZERO LIGAS em 150 turnos. A opiniao minima pedia 45 e passava em 10 de 23.890
+        pares-turno — a maior opiniao que existe no jogo e 50. Foi para 40.
+     2. ZERO REVOLTAS em toda dose. O desejo so variava de 17 a 33: a alavanca do tributo era
+        fraca demais e as parcelas que acalmam comiam tudo. Pesado subiu de +15 para +30, leve
+        de -10 para -18, a tua guerra de +12 para +18 — e a IA passou a usar os tres niveis.
+     3. ⚠️ A REVOLTA SAIA EM SILENCIO. O membro deixava a liga no turno 6 e a guerra nao
+        nascia, porque o PACTO entre os dois a recusava. Um reino que se revolta e nao luta e
+        um reino que sumiu do mapa por um defeito. Agora a revolta rasga o papel, como o
+        levante de uma provincia ja fazia.
+
+   → O QUE ELA FEZ COM O MUNDO, 150 turnos, sem → com:
+       ligas formadas / membros no fim ... — → 7 / 1
+       anexacoes ........................ — → 4
+       guerras declaradas ............... 51 → 46
+       provincias que mudaram de dono ... 23 → 20
+       MAIOR REINO ...................... 11 → 7
+       poderes vivos de 18 ............... 8 → 7
+     A liga converte CONQUISTA em dominio: o maior reino cai de 11 para 7 porque os pequenos
+     que seriam engolidos viram membros, e membro mantem a propria terra. O preco e um poder a
+     menos vivo no fim — os que aceitaram virar provincia depois de decadas bem tratadas.
+     Na aba de Diplomacia ha um grupo "Liga" com TRES caras: liderar (os niveis de tributo,
+     Anexar e Soltar), servir (Sair da liga) e nenhum dos dois (Por na minha liga).
+

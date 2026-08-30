@@ -135,10 +135,18 @@ export function convocadosPor(
   de: string,
   contra: string,
   jaPrometido: (a: string, b: string) => boolean,
+  /**
+   * Quem entra na guerra de alguém por vínculo.
+   *
+   * ⚠️ **Recebido de fora porque a LIGA convoca pela mesma porta.** Aliança e liga são laços
+   * diferentes com a mesma consequência militar; ter dois laços chamando por dois caminhos
+   * seria a mesma regra escrita duas vezes, e um dia elas discordariam.
+   */
+  vinculadosDe: (poder: string) => readonly string[] = (poder) => aliadosDe(nucleo, poder),
 ): readonly { poder: string; inimigo: string }[] {
   const convocados: { poder: string; inimigo: string }[] = [];
   const chamar = (lado: string, inimigo: string): void => {
-    for (const aliado of aliadosDe(nucleo, lado)) {
+    for (const aliado of vinculadosDe(lado)) {
       if (aliado === inimigo) continue;
       if (jaPrometido(aliado, inimigo)) continue;
       convocados.push({ poder: aliado, inimigo });

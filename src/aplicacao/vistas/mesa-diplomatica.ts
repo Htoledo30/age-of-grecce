@@ -205,6 +205,7 @@ function gruposDe(jogo: Jogo, eu: string, id: string): readonly GrupoDaMesa[] {
     grupoDoComercio(jogo, eu, id),
     grupoDoPacto(jogo, eu, id),
     grupoDaAlianca(jogo, eu, id),
+    grupoDaLiga(jogo, eu, id),
     grupoDaPassagem(jogo, eu, id),
     grupoDoTributo(jogo, eu, id),
     grupoDoPresente(jogo, id),
@@ -225,6 +226,13 @@ function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
     alianca:
       `Propõe uma ALIANÇA por ${proposta.turnos ?? 0} turnos: ` +
       'as guerras dele passam a ser suas, e as suas dele.',
+    liga:
+      'Convida você para a LIGA dele: você continua sendo você, mas paga tributo todo turno ' +
+      'e entra nas guerras dele. Em troca, ninguém te ataca sem enfrentá-lo.',
+    // ⚠️ A frase mais pesada da mesa, e ela tem de doer ao ler: aceitar é ENTREGAR o reino.
+    anexacao:
+      'Pede que o seu reino passe a fazer parte do dele. Aceitar é o fim da sua campanha — ' +
+      'recusar não custa nada, e ele só pode insistir rompendo a liga e invadindo.',
     comercio: 'Propõe abrir comércio: rende dos dois lados, e a guerra desfaz.',
     acesso: `Pede passagem pela sua terra por ${proposta.turnos ?? 0} turnos.`,
   }[proposta.tipo];
@@ -378,6 +386,96 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     ],
     fala: tem ? `Rende ${renda} por turno a cada um. A guerra desfaz na hora.` : resposta.fala,
     tom: tem || resposta.aceita ? 'bom' : 'ruim',
+  };
+}
+
+/**
+ * A LIGA: mandar nele sem tomá-lo — e o único grupo com TRÊS caras.
+ *
+ * Ele muda inteiro conforme quem manda em quem, porque as três situações são jogos diferentes:
+ * liderar é escolher quanto apertar; servir é decidir quando fugir; e nenhum dos dois é a
+ * decisão de entrar. Um grupo só com tudo dentro seria uma tela que ninguém lê.
+ */
+function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
+  const { campanha } = jogo;
+  const niveis = Object.entries(jogo.ajustes.jogo.diplomacia.liga.niveisDeTributo).sort(
+    (a, b) => a[1].desejo - b[1].desejo,
+  );
+
+  // ── eu lidero ele ──────────────────────────────────────────────────────────
+  if (campanha.chefeDe(id) === eu) {
+    const vinculo = campanha.ligaDe(id);
+    const desejo = Math.round(vinculo?.desejoDeSair ?? 0);
+    const paga = campanha.tributoDaLigaDe(id);
+    const aceita = campanha.aceitaSerAnexado(id);
+    return {
+      titulo: 'Liga',
+      propostas: [
+        ...niveis.map(([nome]) => ({
+          acao: `tributo-liga:${nome}`,
+          rotulo: vinculo?.tributo === nome ? `▸ ${nome}` : nome,
+          valor: 0,
+          pode: vinculo?.tributo !== nome,
+          aceita: true,
+          bloqueio: '',
+        })),
+        {
+          acao: 'anexar-membro',
+          rotulo: 'Anexar',
+          valor: 0,
+          pode: aceita,
+          aceita: true,
+          // ⚠️ A recusa vira PRAZO ou PREÇO, e não veredito — a mesma lição do pacto.
+          bloqueio: aceita ? '' : 'ele ainda não aceitaria: baixe o tributo e espere',
+        },
+        { acao: 'soltar-membro', rotulo: 'Soltar', valor: 0, pode: true, aceita: true, bloqueio: '' },
+      ],
+      fala:
+        `Ele te paga ${paga} por turno e entra nas suas guerras. Vontade de sair: ${desejo}/100 — ` +
+        'apertar rende mais agora e o empurra para a revolta.',
+      tom: desejo >= 40 ? 'ruim' : 'bom',
+    };
+  }
+
+  // ── ele lidera a mim ───────────────────────────────────────────────────────
+  if (campanha.chefeDe(eu) === id) {
+    const vinculo = campanha.ligaDe(eu);
+    return {
+      titulo: 'Liga',
+      propostas: [
+        { acao: 'sair-da-liga', rotulo: 'Sair da liga', valor: 0, pode: true, aceita: true, bloqueio: '' },
+      ],
+      fala:
+        `Você paga ${campanha.tributoDaLigaDe(eu)} por turno e entra nas guerras dele. Sua vontade ` +
+        `de sair: ${Math.round(vinculo?.desejoDeSair ?? 0)}/100. Fugir custa a sua palavra com o mapa inteiro.`,
+      tom: 'ruim',
+    };
+  }
+
+  // ── nem um nem outro ───────────────────────────────────────────────────────
+  const permissao = campanha.podeFormarLiga(id);
+  const relacao = campanha.relacaoEntre(eu, id);
+  const minima = jogo.ajustes.jogo.diplomacia.liga.opiniaoMinima;
+  return {
+    titulo: 'Liga',
+    propostas: [
+      {
+        acao: 'formar-liga',
+        rotulo: 'Pôr na minha liga',
+        valor: 0,
+        pode: permissao.pode,
+        aceita: true,
+        bloqueio: permissao.pode
+          ? ''
+          : relacao < minima
+            ? precoDaConfianca(jogo, id, minima - relacao)
+            : permissao.motivo,
+      },
+    ],
+    fala:
+      'Ele continua sendo ele: governo, terra e exército. O que passa a ser seu é o tributo e ' +
+      'as guerras dele. É o acordo que pede mais confiança da mesa inteira.',
+    tom: permissao.pode ? 'bom' : 'ruim',
   };
 }
 

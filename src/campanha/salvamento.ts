@@ -147,6 +147,18 @@ const SalvamentoCampanha = z.object({
     pactos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     // ⚠️ `default({})` e não campo obrigatório: salvamento anterior à aliança abre sem ela.
     aliancas: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    /** Pela mesma razão: salvamento anterior à liga abre sem liga nenhuma. */
+    ligas: z
+      .record(
+        z.string().min(1),
+        z.object({
+          chefe: z.string().min(1),
+          desde: z.number().int().nonnegative(),
+          tributo: z.string().min(1),
+          desejoDeSair: z.number().min(0).max(100),
+        }),
+      )
+      .default({}),
     // A chave aqui é DIRECIONAL — `concedente>beneficiário` —, e é o único registro do
     // arquivo que não usa o par ordenado: dar passagem não é receber passagem.
     acessos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),

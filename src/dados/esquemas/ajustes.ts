@@ -314,6 +314,66 @@ export const Ajustes = z.object({
         reputacaoDaRuptura: z.number(),
       }),
       /**
+       * A LIGA: mandar num reino sem tomá-lo. Ver `campanha/diplomacia/liga.ts`.
+       *
+       * ⚠️ **O tributo daqui é para o membro o que o imposto é para uma província**, e a forma
+       * é a mesma de propósito: mais ouro agora, mais vontade de sair depois. E o *desejo de
+       * sair* é a terceira aparição da máquina do humor — um valor que anda em direção a um
+       * alvo feito de parcelas com nome.
+       */
+      liga: z.object({
+        /** Quanto cada nível tira da renda do membro, e o quanto ele empurra o desejo de sair. */
+        niveisDeTributo: z.record(
+          z.string().min(1),
+          z.object({
+            fracaoDaRenda: z.number().min(0).max(1),
+            desejo: z.number(),
+          }),
+        ),
+        /** O nível com que uma liga nasce. Tem de existir em `niveisDeTributo`. */
+        tributoInicial: z.string().min(1),
+        /** Passos do desejo por turno. Ninguém se revolta da noite para o dia. */
+        passoPorTurno: z.number().positive(),
+        alvo: z.object({
+          /** Ninguém serve por gosto: a base é POSITIVA, e o resto empurra dela. */
+          base: z.number(),
+          /** Servir a quem é da tua tribo pesa menos. */
+          mesmoPovo: z.number(),
+          /**
+           * Por província de vantagem do chefe. NEGATIVO: a sombra dele SEGURA o membro.
+           *
+           * ⚠️ Ao contrário da sombra do maior na opinião entre reinos, que afasta. Não é
+           * contradição: lá o grande dá medo a quem o vê de fora; aqui o membro já está
+           * dentro, e o mesmo medo é o que o faz pensar duas vezes antes de sair.
+           */
+          porProvinciaDeVantagem: z.number(),
+          sombraMaxima: z.number(),
+          /** Por década de liga. Costume acalma. */
+          porDecadaNaLiga: z.number(),
+          costumeMaximo: z.number(),
+          /** A guerra do chefe é a parte da conta que o membro não escolheu. */
+          chefeEmGuerra: z.number(),
+        }),
+        /** Cheio o desejo, ele sai e pega em armas. */
+        limiarDaRevolta: z.number().min(0).max(100),
+        /** No chão, ele aceita virar província — se o chefe pedir. */
+        limiarDoSim: z.number().min(0).max(100),
+        /**
+         * Turnos de liga antes de a anexação ser sequer possível.
+         *
+         * ⚠️ **"Não se anexa quem entrou ontem", e sem esta linha a liga virava um cano.**
+         * Medido em 150 turnos: as 6 ligas formadas terminaram em 4 anexações e nenhum membro
+         * de pé — entrar e ser engolido virou um passo só, e o degrau que a liga deveria ser
+         * desapareceu. Com o prazo, converter um membro é um investimento de décadas, que é o
+         * que a Liga de Delos levou para virar império.
+         */
+        turnosParaAnexar: z.number().int().nonnegative(),
+        /** Opinião mínima para entrar. Servir pede mais confiança que qualquer acordo. */
+        opiniaoMinima: z.number().min(-100).max(100),
+        /** O tombo na REPUTAÇÃO de quem rompe a liga antes da hora. */
+        reputacaoDaRuptura: z.number(),
+      }),
+      /**
        * O ACESSO MILITAR: a licença de atravessar a terra de quem não é inimigo.
        *
        * ⚠️ **Exige MAIS confiança que o pacto curto, e menos que o longo.** O pacto é uma

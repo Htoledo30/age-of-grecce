@@ -1,3 +1,4 @@
+import type { VinculoDaLiga } from './diplomacia/liga';
 import type { NivelDeImposto } from './economia';
 import type { Cerco } from '@/combate/cerco';
 import type { Exercito } from '@/combate/exercito';
@@ -225,6 +226,17 @@ export interface EstadoCampanha {
    */
   aliancas: Record<string, number>;
   /**
+   * As ligas em curso, **pelo ID DO MEMBRO**.
+   *
+   * ⚠️ **A chave é o membro, e não o par, porque é a tabela que garante a regra**: um membro tem
+   * um chefe só. Guardado pelo par, nada impediria dois chefes cobrando o mesmo reino, e a
+   * convocação de guerra andaria por uma corrente de suseranias.
+   *
+   * Ver `diplomacia/liga.ts`: o membro mantém governo, terra, exército e despensa; o que o
+   * chefe leva é tributo, as guerras e a paz entre os dois.
+   */
+  ligas: Record<string, VinculoDaLiga>;
+  /**
    * Acessos militares em curso, por `concedente>beneficiário`, guardando o turno em que vencem.
    *
    * ⚠️ **A única chave DIRECIONAL do arquivo.** Guerra, trégua, pacto e comércio valem igual
@@ -278,7 +290,7 @@ export interface EstadoCampanha {
 export interface Proposta {
   /** Quem pede. */
   de: string;
-  tipo: 'pacto' | 'alianca' | 'comercio' | 'acesso';
+  tipo: 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso';
   /** O prazo pedido, quando o acordo tem prazo. */
   turnos?: number | undefined;
 }

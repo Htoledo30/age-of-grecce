@@ -583,7 +583,18 @@ do CAIS, e não da rota no meio do mar.
 - ⚠️ **Abrir a própria estrada é decisão de quem a abre; conseguir a do outro pede confiança.**
   A regra e a vontade são coisas separadas em toda a mesa, e aqui também: o jogo não trava o
   jogador de tomar uma decisão que é dele — inclusive a ruim.
-- ⚠️ **A ALIANÇA é o topo da escada, e o único acordo que obriga a FAZER.** Guerra, trégua,
+- ⚠️ **A LIGA é o terceiro estado de um vizinho**, entre independente e conquistado, e é a
+  forma grega de império: o chefe manda, o membro continua sendo ele mesmo — governo, terra,
+  exército e tesouro dele. O que passa ao chefe é tributo, as guerras e a paz entre os dois. O
+  que segura o membro é o **desejo de sair**, que sobe com tributo pesado e com as guerras do
+  chefe e desce com costume, tribo comum e a sombra dele. Cheio, o membro se revolta e pega em
+  armas.
+- ⚠️ **E ANEXAR um membro exige o SIM dele.** Nunca à força: recusado, o único caminho é romper
+  a liga e invadir. **Ninguém perde um reino por diplomacia neste jogo** — a regra existe porque
+  o contrário significaria o jogador perder a campanha por um botão que outro apertou, e porque
+  abrir exceção para o jogador seria dar-lhe regra própria. Também não se anexa quem entrou
+  ontem: converter um membro é investimento de décadas, como a Liga de Delos foi.
+- ⚠️ **A ALIANÇA é o topo da escada dos ACORDOS, e o único que obriga a FAZER.** Guerra, trégua,
   pacto, comércio e passagem são todos promessas de não fazer; a aliança põe a guerra de um nas
   costas do outro, automaticamente e sem perguntar. A agência é assinar, e depois romper —
   abandonar quem contava com você custa mais que voltar atrás num pacto. Só o aliado direto é

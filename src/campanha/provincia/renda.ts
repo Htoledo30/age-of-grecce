@@ -13,6 +13,7 @@ import type { BaseDaProvincia, RendaDaProvincia } from '../economia';
 import type { NucleoDaCampanha } from '../nucleo';
 import { ligadaACapital } from '../comercio/circulacao';
 import { rendaDeAcordos, rendaDeTrocas } from '../comercio/rede-de-trocas';
+import { saldoDaLigaDe } from '../diplomacia/liga';
 import { saldoDeTributosDe } from '../diplomacia/relacoes';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
@@ -67,7 +68,11 @@ export function economiaDe(
  */
 export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
   return (
-    rendaBaseDe(nucleo, idPoder) + rendaDeAcordos(nucleo, idPoder) + saldoDeTributosDe(nucleo, idPoder)
+    rendaBaseDe(nucleo, idPoder) +
+    rendaDeAcordos(nucleo, idPoder) +
+    saldoDeTributosDe(nucleo, idPoder) +
+    // A liga é a quarta parcela: o membro paga a fatia, o chefe recebe a dos membros dele.
+    saldoDaLigaDe(nucleo, idPoder, (id) => rendaBaseDe(nucleo, id))
   );
 }
 

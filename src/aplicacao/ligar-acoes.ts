@@ -234,11 +234,11 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.diplomacia.aoResponderPedido = (idPoder, tipo, aceita) => {
     const nome = campanha.poder(idPoder).nome;
     if (!aceita) {
-      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'comercio' | 'acesso');
+      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso');
       tela.diplomacia.dizer(`Você recusou ${nome}. Recusar não custa nada.`);
       return;
     }
-    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'comercio' | 'acesso');
+    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso');
     tela.diplomacia.dizer(r.pode ? `Acertado com ${nome}.` : r.motivo);
   };
 
@@ -299,6 +299,46 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.romperAlianca(idPoder);
     tela.diplomacia.dizer(
       `Aliança rompida. Abandonar quem contava com você custa mais que voltar atrás num pacto.`,
+    );
+  };
+
+  tela.diplomacia.aoFormarLiga = (idPoder) => {
+    const r = campanha.podeFormarLiga(idPoder);
+    if (!r.pode) {
+      tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    campanha.formarLiga(idPoder);
+    tela.diplomacia.dizer(
+      `${campanha.poder(idPoder).nome} entrou na sua liga: paga tributo e luta nas suas guerras.`,
+    );
+  };
+
+  tela.diplomacia.aoSairDaLiga = (idPoder) => {
+    campanha.romperLiga(idPoder);
+    tela.diplomacia.dizer('Você saiu da liga. O mapa inteiro viu quem quebrou a palavra.');
+  };
+
+  tela.diplomacia.aoSoltarMembro = (idPoder) => {
+    campanha.romperLiga(idPoder);
+    tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} está livre. Soltar não custa nada.`);
+  };
+
+  tela.diplomacia.aoAnexarMembro = (idPoder) => {
+    const nome = campanha.poder(idPoder).nome;
+    // ⚠️ A recusa é do MEMBRO, e ela é a regra inteira: ninguém perde um reino por diplomacia.
+    if (!campanha.aceitaSerAnexado(idPoder)) {
+      tela.diplomacia.dizer(`${nome} não aceita. Baixe o tributo e dê tempo — ou rompa e invada.`);
+      return;
+    }
+    campanha.anexarMembro(idPoder);
+    tela.diplomacia.dizer(`${nome} passou a fazer parte do seu reino, e sem uma batalha.`);
+  };
+
+  tela.diplomacia.aoMudarTributoDaLiga = (idPoder, nivel) => {
+    campanha.mudarTributoDaLiga(idPoder, nivel);
+    tela.diplomacia.dizer(
+      `Tributo ${nivel} para ${campanha.poder(idPoder).nome}. Mais ouro agora, mais vontade de sair depois.`,
     );
   };
 

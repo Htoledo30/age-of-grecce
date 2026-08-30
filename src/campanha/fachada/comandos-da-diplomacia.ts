@@ -11,17 +11,21 @@
  * marchas —, então a crônica não teria como saber deles se eles não se anunciassem aqui.
  */
 
+import { mudarTributoDaLiga } from '../diplomacia/liga';
 import {
   acordarComercio,
   declararGuerra,
   desfazerAcordo,
   fazerPaz,
   fazerPazComTributo,
+  anexarMembro,
   firmarAlianca,
+  formarLiga,
   firmarPacto,
   firmarTributo,
   presentear,
   romperAlianca,
+  romperLiga,
   romperPacto,
   romperTributo,
 } from '../diplomacia/relacoes';
@@ -127,6 +131,41 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    */
   romperAlianca(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (romperAlianca(this.nucleo, porPoder, com)) this.aoMudar();
+  }
+
+  /**
+   * Põe um reino na SUA liga: ele continua sendo ele, e passa a te pagar e a lutar contigo.
+   *
+   * ⚠️ A opinião dele é a aceitação, e ela pede mais que qualquer outro acordo — o que se
+   * assina aqui é obediência. Ver `diplomacia/liga.ts`.
+   */
+  formarLiga(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (formarLiga(this.nucleo, porPoder, membro)) this.aoMudar();
+  }
+
+  /**
+   * Desfaz a liga entre você e ele.
+   *
+   * ⚠️ **Soltar um membro é de graça; fugir do próprio chefe custa reputação.** A promessa é
+   * do membro, que trocou obediência por proteção: quem liberta devolveu, quem foge quebrou.
+   */
+  romperLiga(outro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (romperLiga(this.nucleo, porPoder, outro)) this.aoMudar();
+  }
+
+  /** O chefe cobra mais ou menos deste membro. Mais ouro agora, mais vontade de sair depois. */
+  mudarTributoDaLiga(membro: string, nivel: string): void {
+    if (mudarTributoDaLiga(this.nucleo, membro, nivel)) this.aoMudar();
+  }
+
+  /**
+   * O membro vira província sua — **e só se ele aceitar.**
+   *
+   * Nunca à força: recusado, o único caminho é romper a liga e invadir. Ninguém perde um reino
+   * por diplomacia neste jogo. Ver o comentário no topo de `diplomacia/liga.ts`.
+   */
+  anexarMembro(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
+    if (anexarMembro(this.nucleo, porPoder, membro)) this.aoMudar();
   }
 
   /**

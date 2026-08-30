@@ -117,6 +117,7 @@ export function criarEstadoInicial(
     relacoes: {},
     pactos: {},
     aliancas: {},
+    ligas: {},
     acessos: {},
     propostas: [],
     acordos: {},

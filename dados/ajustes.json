@@ -80,6 +80,29 @@
         "reputacaoDaRuptura": -25,
         "reputacaoPorTurno": 1
       },
+      "liga": {
+        "niveisDeTributo": {
+          "leve": { "fracaoDaRenda": 0.08, "desejo": -18 },
+          "normal": { "fracaoDaRenda": 0.15, "desejo": 0 },
+          "pesado": { "fracaoDaRenda": 0.25, "desejo": 30 }
+        },
+        "tributoInicial": "normal",
+        "passoPorTurno": 3,
+        "alvo": {
+          "base": 35,
+          "mesmoPovo": -10,
+          "porProvinciaDeVantagem": -3,
+          "sombraMaxima": -18,
+          "porDecadaNaLiga": -4,
+          "costumeMaximo": -16,
+          "chefeEmGuerra": 18
+        },
+        "limiarDaRevolta": 55,
+        "limiarDoSim": 20,
+        "turnosParaAnexar": 30,
+        "opiniaoMinima": 40,
+        "reputacaoDaRuptura": -20
+      },
       "alianca": {
         "prazos": [
           {

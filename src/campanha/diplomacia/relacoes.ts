@@ -42,6 +42,16 @@ import { valorDoTributo } from './tributo';
 import { alcancaComercio, temPorto } from '../comercio/alcance';
 import { povoDoPoder } from '../sociedade/nacionalidade';
 import {
+  aceitaSerAnexado,
+  apagarVinculo,
+  chefeDe,
+  entrarNaLiga,
+  ligadosDe,
+  podeEntrarNaLiga,
+} from './liga';
+import { trocarDono } from '../provincia/posse';
+import {
+  aliadosDe,
   aliancaAte,
   apagarAlianca,
   assinarAlianca,
@@ -109,6 +119,14 @@ export function podeDeclararGuerra(
   }
   if (emGuerra(nucleo, de, contra)) {
     return { pode: false, motivo: 'a guerra já está declarada' };
+  }
+  // ⚠️ A LIGA trava antes de tudo: chefe e membro não se atacam enquanto ela dura. Quem quiser
+  // atacar tem de romper — e romper é o que já custa reputação com o mapa inteiro.
+  if (chefeDe(nucleo, de) === contra) {
+    return { pode: false, motivo: 'ele é o CHEFE da sua liga — saia dela antes' };
+  }
+  if (chefeDe(nucleo, contra) === de) {
+    return { pode: false, motivo: 'ele é MEMBRO da sua liga — solte-o antes' };
   }
   // ⚠️ A ALIANÇA trava antes do pacto, e a mensagem é outra de propósito: quem está prestes a
   // atacar um aliado precisa ler a palavra aliado, não a palavra pacto.
@@ -185,7 +203,10 @@ export function declararGuerra(
   // ⚠️ E as guerras convocadas NÃO convocam de novo. Aliado de aliado não é aliado; a chamada
   // sai daqui e morre aqui, senão uma escaramuça de fronteira viraria guerra mundial em três
   // turnos. É por isso que este laço chama `abrirGuerra` e não `declararGuerra`.
-  for (const convocado of convocadosPor(nucleo, de, contra, jaPrometido(nucleo))) {
+  for (const convocado of convocadosPor(nucleo, de, contra, jaPrometido(nucleo), (poder) => [
+    ...aliadosDe(nucleo, poder),
+    ...ligadosDe(nucleo, poder),
+  ])) {
     if (emGuerra(nucleo, convocado.poder, convocado.inimigo)) continue;
     if (!vivo(nucleo, convocado.poder) || !vivo(nucleo, convocado.inimigo)) continue;
     abrirGuerra(nucleo, convocado.poder, convocado.inimigo);
@@ -216,7 +237,10 @@ function jaPrometido(nucleo: NucleoDaCampanha): (a: string, b: string) => boolea
   return (a, b) =>
     pactoAte(nucleo, a, b) !== undefined ||
     tregoaAte(nucleo, a, b) !== undefined ||
-    aliancaAte(nucleo, a, b) !== undefined;
+    aliancaAte(nucleo, a, b) !== undefined ||
+    // Ninguém é arrastado contra o próprio chefe nem contra o próprio membro.
+    chefeDe(nucleo, a) === b ||
+    chefeDe(nucleo, b) === a;
 }
 
 export function podeFazerPaz(
@@ -630,6 +654,69 @@ export function romperAlianca(nucleo: NucleoDaCampanha, quem: string, com: strin
     -100,
     reputacaoDe(nucleo, quem) + alianca.reputacaoDaRuptura,
   );
+  return true;
+}
+
+/** Esta liga pode ser formada? A regra mora em `liga.ts`. */
+export function podeFormarLiga(
+  nucleo: NucleoDaCampanha,
+  chefe: string,
+  membro: string,
+): Permissao {
+  return podeEntrarNaLiga(
+    nucleo,
+    chefe,
+    membro,
+    emGuerra(nucleo, chefe, membro),
+    vivo(nucleo, chefe) && vivo(nucleo, membro),
+    relacaoEntre(nucleo, chefe, membro),
+  );
+}
+
+/** Forma a liga. Devolve `false` quando ela não podia ser formada. */
+export function formarLiga(nucleo: NucleoDaCampanha, chefe: string, membro: string): boolean {
+  if (!podeFormarLiga(nucleo, chefe, membro).pode) return false;
+  entrarNaLiga(nucleo, chefe, membro);
+  return true;
+}
+
+/**
+ * Desfaz a liga — **e o preço depende de QUEM desfaz.**
+ *
+ * ⚠️ **O chefe soltar é de graça; o membro fugir custa.** Não é favorecimento: a promessa da
+ * liga é do membro, que trocou obediência por proteção. Quem liberta não quebrou nada —
+ * devolveu. Quem foge no meio quebrou, e paga a mesma reputação que pagaria rompendo um pacto.
+ */
+export function romperLiga(nucleo: NucleoDaCampanha, quem: string, outro: string): boolean {
+  const membro = chefeDe(nucleo, quem) === outro ? quem : chefeDe(nucleo, outro) === quem ? outro : undefined;
+  if (membro === undefined) return false;
+  const fugiu = membro === quem;
+  apagarVinculo(nucleo, membro);
+  if (fugiu) {
+    const liga = nucleo.ajustes.diplomacia.liga;
+    nucleo.estado.reputacao[quem] = Math.max(
+      -100,
+      reputacaoDe(nucleo, quem) + liga.reputacaoDaRuptura,
+    );
+  }
+  return true;
+}
+
+/**
+ * O membro vira província do chefe — **e só com o SIM dele.**
+ *
+ * ⚠️ **Usa `trocarDono` e não `conquistar`**, e a diferença é o choque de humor da queda: uma
+ * cidade que ACEITOU passar não é uma cidade tomada. O preço permanente continua existindo e é
+ * outro — a nacionalidade, que não se apaga: Mégara é dória, e sob Atenas ela custa o humor de
+ * povo estrangeiro para sempre.
+ */
+export function anexarMembro(nucleo: NucleoDaCampanha, chefe: string, membro: string): boolean {
+  if (chefeDe(nucleo, membro) !== chefe) return false;
+  if (!aceitaSerAnexado(nucleo, membro)) return false;
+  for (const provincia of [...nucleo.territorios.provinciasDe(membro)].sort()) {
+    trocarDono(nucleo, provincia, chefe);
+  }
+  apagarVinculo(nucleo, membro);
   return true;
 }
 
