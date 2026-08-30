@@ -148,7 +148,7 @@
   color: var(--ui-bronze-claro);
 }
 
-@media (max-width: 900px), (max-height: 700px) {
+@container palco ((max-width: 900px) or (max-height: 700px)) {
   .exercito {
     right: 14px;
     bottom: 74px;

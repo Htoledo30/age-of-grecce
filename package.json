@@ -1,6 +1,6 @@
 {
   "name": "age-of-grecce",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Jogo de estratégia por província na Grécia antiga",
   "scripts": {
     "gerar-mapa": "tsx gerador/gerar-mapa.ts",
@@ -26,7 +26,8 @@
     "gerar-provincias": "tsx --max-old-space-size=8192 gerador/gerar-provincias.ts",
     "ver-provincias": "python ferramentas/ver-provincias.py",
     "calibrar-fronteira": "node ferramentas/calibrar-fronteira.mjs",
-    "medir-diplomacia": "tsx ferramentas/medir-diplomacia.ts"
+    "medir-diplomacia": "tsx ferramentas/medir-diplomacia.ts",
+    "medir-tamanho": "tsx ferramentas/medir-tamanho.ts"
   },
   "type": "module",
   "dependencies": {

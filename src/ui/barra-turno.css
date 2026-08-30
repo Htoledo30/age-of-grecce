@@ -230,7 +230,7 @@
   filter: brightness(1.22) saturate(1.1) drop-shadow(0 1px 3px rgb(0 0 0 / 60%));
 }
 
-@media (max-width: 760px) {
+@container palco (max-width: 760px) {
   .barra-turno__nacao {
     min-width: min(420px, 100%);
   }

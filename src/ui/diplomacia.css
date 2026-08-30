@@ -31,8 +31,8 @@
      e ao abrir a aba nenhum botão estava visível — 975 px de conteúdo escondido em 651 px de
      janela. Três colunas cabem em 1180, e 1180 cabe num monitor de 1366. */
   width: 1180px;
-  max-width: calc(100vw - 48px);
-  max-height: min(760px, calc(100vh - 48px));
+  max-width: calc(var(--palco-largura, 1920px) - 48px);
+  max-height: min(760px, calc(var(--palco-altura, 1080px) - 48px));
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
   background: var(--ui-fundo-elevado);
@@ -98,7 +98,7 @@
 }
 /* Abaixo de 1180 de viewport a coluna das ações passa a rolar sozinha, e só ela: é degradação
    declarada, não acidente. As outras duas continuam inteiras. */
-@media (max-width: 1180px) {
+@container palco (max-width: 1180px) {
   .diplomacia__colunas {
     grid-template-columns: 208px 300px 1fr;
     gap: 14px;

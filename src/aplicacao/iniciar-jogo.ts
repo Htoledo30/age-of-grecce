@@ -6,7 +6,8 @@
  * `ligar-acoes.ts` conecta clique a regra, `salvamento-local.ts` pergunta pelo disco.
  */
 
-import { iniciarEscala } from '@/estilo/escala';
+import { definirTamanhoDaInterface, iniciarEscala } from '@/estilo/escala';
+import { tamanhoDaInterface } from '@/ui/menu-pausa';
 import { Entrada } from '@/nucleo/entrada';
 import { iniciarLaco } from '@/nucleo/tempo';
 import {
@@ -45,6 +46,9 @@ export async function iniciarJogo(): Promise<void> {
   const canvas = exigir<HTMLCanvasElement>('#mundo');
   const ui = exigir<HTMLElement>('#ui');
 
+  // O tamanho escolhido vale ANTES de o palco existir: montá-lo em 1920 para logo em seguida
+  // refazê-lo em 1477 faria o mapa nascer no tamanho errado e pular na cara do jogador.
+  definirTamanhoDaInterface(tamanhoDaInterface());
   iniciarEscala(palco);
   // Uma camada única substitui os balões nativos do navegador. Todo componente apenas declara
   // o conteúdo; atraso, posição, moldura e fechamento pertencem a ela.

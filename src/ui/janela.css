@@ -15,8 +15,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  max-width: calc(100vw - 160px);
-  max-height: calc(100vh - 200px);
+  max-width: calc(var(--palco-largura, 1920px) - 160px);
+  max-height: calc(var(--palco-altura, 1080px) - 200px);
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
   background: var(--ui-fundo-elevado);

@@ -6,7 +6,7 @@
  * elemento declara somente conteúdo e tom; esta classe decide toda a apresentação.
  */
 
-import { ALTURA_BASE, LARGURA_BASE, paraPalco } from '@/estilo/escala';
+import { alturaDoPalco, larguraDoPalco, paraPalco } from '@/estilo/escala';
 
 type TomDeTooltip = 'informacao' | 'custo' | 'perigo' | 'bloqueio';
 
@@ -124,10 +124,10 @@ export class Tooltips {
     const largura = this.raiz.offsetWidth;
     const altura = this.raiz.offsetHeight;
 
-    if (x + largura + margem > LARGURA_BASE) x = this.ponto.x - largura - afastamento;
-    if (y + altura + margem > ALTURA_BASE) y = this.ponto.y - altura - afastamento;
-    x = Math.max(margem, Math.min(x, LARGURA_BASE - largura - margem));
-    y = Math.max(margem, Math.min(y, ALTURA_BASE - altura - margem));
+    if (x + largura + margem > larguraDoPalco()) x = this.ponto.x - largura - afastamento;
+    if (y + altura + margem > alturaDoPalco()) y = this.ponto.y - altura - afastamento;
+    x = Math.max(margem, Math.min(x, larguraDoPalco() - largura - margem));
+    y = Math.max(margem, Math.min(y, alturaDoPalco() - altura - margem));
     this.raiz.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
   }
 

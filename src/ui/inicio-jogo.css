@@ -170,7 +170,7 @@ body[data-fase-jogo='escolha'] .ficha {
   display: none;
 }
 
-@media (max-width: 760px), (max-height: 620px) {
+@container palco ((max-width: 760px) or (max-height: 620px)) {
   .inicio-jogo__cartao-menu {
     width: min(650px, calc(100% - 40px));
     padding: 42px 36px 36px;

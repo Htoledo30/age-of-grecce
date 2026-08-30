@@ -3,7 +3,7 @@
  *  Quando um mundo é definido por `prenderAoMundo`, o zoom mínimo mostra o mapa
  *  inteiro. Em aproximações maiores, a posição é presa aos limites do mundo. */
 
-import { ALTURA_BASE, LARGURA_BASE } from '@/estilo/escala';
+import { alturaDoPalco, larguraDoPalco } from '@/estilo/escala';
 
 export class Camera {
   /** Ponto do mundo que está no centro da tela. */
@@ -21,22 +21,22 @@ export class Camera {
   prenderAoMundo(largura: number, altura: number): void {
     this.mundoLargura = largura;
     this.mundoAltura = altura;
-    this.zoomMinimo = Math.min(LARGURA_BASE / largura, ALTURA_BASE / altura);
+    this.zoomMinimo = Math.min(larguraDoPalco() / largura, alturaDoPalco() / altura);
     this.zoom = Math.min(this.zoomMaximo, Math.max(this.zoom, this.zoomMinimo));
     this.prender();
   }
 
   mundoParaPalco(mx: number, my: number): { x: number; y: number } {
     return {
-      x: (mx - this.x) * this.zoom + LARGURA_BASE / 2,
-      y: (my - this.y) * this.zoom + ALTURA_BASE / 2,
+      x: (mx - this.x) * this.zoom + larguraDoPalco() / 2,
+      y: (my - this.y) * this.zoom + alturaDoPalco() / 2,
     };
   }
 
   palcoParaMundo(px: number, py: number): { x: number; y: number } {
     return {
-      x: (px - LARGURA_BASE / 2) / this.zoom + this.x,
-      y: (py - ALTURA_BASE / 2) / this.zoom + this.y,
+      x: (px - larguraDoPalco() / 2) / this.zoom + this.x,
+      y: (py - alturaDoPalco() / 2) / this.zoom + this.y,
     };
   }
 
@@ -66,8 +66,8 @@ export class Camera {
 
   private prender(): void {
     if (this.mundoLargura <= 0 || this.mundoAltura <= 0) return;
-    const meiaLargura = LARGURA_BASE / 2 / this.zoom;
-    const meiaAltura = ALTURA_BASE / 2 / this.zoom;
+    const meiaLargura = larguraDoPalco() / 2 / this.zoom;
+    const meiaAltura = alturaDoPalco() / 2 / this.zoom;
     this.x = prenderEixo(this.x, meiaLargura, this.mundoLargura);
     this.y = prenderEixo(this.y, meiaAltura, this.mundoAltura);
   }

@@ -16,7 +16,7 @@
 
 .menu-pausa__cartao {
   width: 430px;
-  max-width: calc(100vw - 48px);
+  max-width: calc(var(--palco-largura, 1920px) - 48px);
   padding: 28px;
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
@@ -163,4 +163,48 @@
   height: 20px;
   accent-color: var(--ui-bronze);
   cursor: pointer;
+}
+
+/* ── O tamanho da interface, em paradas ───────────────────────────────────────────────────
+   Botões e não uma barra: a escolha se aplica na hora, e arrastar refaria o palco a cada
+   pixel percorrido. Quatro paradas, clica e compara. */
+/* ⚠️ As paradas ficam EMBAIXO, em faixa inteira, e não ao lado do texto. Ao lado, a nota
+   quebrava em três linhas estreitas e os botões ficavam do tamanho de uma unha — num controle
+   que existe justamente para quem tem dificuldade de enxergar e de acertar o clique. */
+.menu-pausa__escolha {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  cursor: default;
+}
+
+.menu-pausa__paradas {
+  display: flex;
+  gap: 6px;
+}
+
+.menu-pausa__parada {
+  flex: 1;
+  padding: 9px 8px;
+  border: 1px solid var(--ui-borda);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ui-texto-tenue);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.menu-pausa__parada:hover {
+  color: var(--ui-texto);
+  border-color: var(--ui-bronze);
+}
+
+.menu-pausa__parada[aria-pressed='true'] {
+  border-color: var(--ui-bronze);
+  background: color-mix(in srgb, var(--ui-bronze) 22%, transparent);
+  color: var(--ui-texto);
+  font-weight: 600;
 }

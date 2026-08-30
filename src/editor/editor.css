@@ -7,8 +7,8 @@
 .editor-balanceamento__janela {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  width: min(1500px, calc(100vw - 80px));
-  height: min(880px, calc(100vh - 80px));
+  width: min(1500px, calc(var(--palco-largura, 1920px) - 80px));
+  height: min(880px, calc(var(--palco-altura, 1080px) - 80px));
   overflow: hidden;
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
@@ -351,10 +351,10 @@
   color: var(--ui-texto);
 }
 
-@media (max-width: 1150px) {
+@container palco (max-width: 1150px) {
   .editor-balanceamento__janela {
-    width: calc(100vw - 32px);
-    height: calc(100vh - 32px);
+    width: calc(var(--palco-largura, 1920px) - 32px);
+    height: calc(var(--palco-altura, 1080px) - 32px);
   }
 
   .editor-balanceamento__cabecalho {

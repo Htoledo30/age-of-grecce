@@ -1,6 +1,11 @@
 /** Menu de pausa e opções locais da sessão. Não conhece campanha nem salvamento. */
 
 import type { MotorDeAudio } from '@/audio/motor-de-audio';
+import {
+  definirTamanhoDaInterface,
+  TAMANHOS_DA_INTERFACE,
+  type TamanhoDaInterface,
+} from '@/estilo/escala';
 import { iconeGrego } from './icones-gregos';
 
 type TelaDaPausa = 'menu' | 'opcoes';
@@ -93,6 +98,15 @@ export class MenuPausa {
       this.volume('Efeitos', 'efeitos', this.audio.volumes.efeitos, (n) =>
         this.audio.definirEfeitos(n),
       ),
+      this.escolha(
+        'Tamanho da interface',
+        'Aumenta o texto e os painéis sem perder nitidez. Em troca, cabe menos mapa na tela.',
+        tamanhoDaInterface(),
+        (tamanho) => {
+          guardarTamanhoDaInterface(tamanho);
+          definirTamanhoDaInterface(tamanho);
+        },
+      ),
       this.chave(
         'Nomes das províncias no mapa',
         'nomes',
@@ -168,6 +182,55 @@ export class MenuPausa {
     controle.checked = ligado;
     controle.addEventListener('change', () => aoMudar(controle.checked));
     linha.append(textos, controle);
+    return linha;
+  }
+
+  /**
+   * O tamanho da interface, em quatro botões.
+   *
+   * ⚠️ **Botões e não uma barra deslizante, e a razão é que a escolha se APLICA na hora.**
+   * Arrastar uma barra refaria o palco inteiro a cada pixel percorrido — e o jogador veria a
+   * tela pulsando em vez de comparar dois tamanhos. Com quatro paradas ele clica, olha, e
+   * clica na vizinha se não gostou.
+   *
+   * A porcentagem é o rótulo inteiro porque é o que ele veio procurar. "Grande" não diz quanto.
+   */
+  private escolha(
+    rotulo: string,
+    explicacao: string,
+    atual: TamanhoDaInterface,
+    aoMudar: (tamanho: TamanhoDaInterface) => void,
+  ): HTMLElement {
+    const linha = document.createElement('div');
+    linha.className = 'menu-pausa__chave menu-pausa__escolha';
+    const textos = document.createElement('div');
+    const nome = document.createElement('span');
+    nome.className = 'menu-pausa__chave-nome';
+    nome.textContent = rotulo;
+    const nota = document.createElement('span');
+    nota.className = 'menu-pausa__chave-nota';
+    nota.textContent = explicacao;
+    textos.append(nome, nota);
+
+    const paradas = document.createElement('div');
+    paradas.className = 'menu-pausa__paradas';
+    const nomes = Object.keys(TAMANHOS_DA_INTERFACE) as TamanhoDaInterface[];
+    const botoes = nomes.map((tamanho) => {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'menu-pausa__parada';
+      botao.dataset['tamanho'] = tamanho;
+      botao.textContent = `${Math.round(TAMANHOS_DA_INTERFACE[tamanho] * 100)}%`;
+      botao.setAttribute('aria-pressed', String(tamanho === atual));
+      botao.addEventListener('click', () => {
+        for (const outro of botoes) outro.setAttribute('aria-pressed', String(outro === botao));
+        aoMudar(tamanho);
+      });
+      paradas.appendChild(botao);
+      return botao;
+    });
+
+    linha.append(textos, paradas);
     return linha;
   }
 
@@ -263,6 +326,33 @@ export function nomesNoMapa(): boolean {
 function guardarNomesNoMapa(ligados: boolean): void {
   try {
     localStorage.setItem(CHAVE_NOMES, ligados ? 'sim' : 'nao');
+  } catch {
+    // Navegador sem armazenamento: a escolha vale esta sessão e pronto.
+  }
+}
+
+/**
+ * O tamanho da interface escolhido, guardado entre partidas.
+ *
+ * ⚠️ **Quem precisa de letra maior precisa dela SEMPRE**, e não uma vez por sessão. Um valor
+ * estranho no armazenamento — de uma versão antiga, ou de um dedo no console — cai em `normal`
+ * em vez de quebrar o palco.
+ */
+const CHAVE_TAMANHO = 'grecce:tamanho-da-interface';
+
+export function tamanhoDaInterface(): TamanhoDaInterface {
+  try {
+    const guardado = localStorage.getItem(CHAVE_TAMANHO);
+    if (guardado && guardado in TAMANHOS_DA_INTERFACE) return guardado as TamanhoDaInterface;
+  } catch {
+    // Navegador sem armazenamento: o tamanho padrão serve.
+  }
+  return 'normal';
+}
+
+function guardarTamanhoDaInterface(tamanho: TamanhoDaInterface): void {
+  try {
+    localStorage.setItem(CHAVE_TAMANHO, tamanho);
   } catch {
     // Navegador sem armazenamento: a escolha vale esta sessão e pronto.
   }

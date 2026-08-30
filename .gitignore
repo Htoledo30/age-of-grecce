@@ -1,7 +1,7 @@
 node_modules/
 dist/
 dist-app/
-capturas/*.png
+capturas/**/*.png
 gerador/cache/
 .vite/
 *.log

@@ -148,7 +148,7 @@
   font-weight: 650;
 }
 
-@media (max-height: 820px) {
+@container palco (max-height: 820px) {
   .acoes {
     margin-top: 10px;
     padding-top: 10px;

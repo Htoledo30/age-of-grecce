@@ -39,7 +39,12 @@ input:focus-visible {
 
 /* Posição e escala vêm de `escala.ts`, que usa `zoom` — ver o porquê lá. Nada de
    `transform` aqui: ele desliga o antialiasing de subpixel de toda a interface. */
+/* ⚠️ **O palco é o CONTENEDOR de consulta, e `@media` não serve mais.** Uma consulta de mídia
+   mede a JANELA; o palco tem tamanho próprio, que muda com o tamanho de interface escolhido.
+   No tamanho maior o palco tem 831px de altura dentro de uma janela de 1080 — os recuos de
+   painel apertado precisam disparar pelos 831, que é a altura em que o painel é desenhado. */
 #palco {
+  container: palco / size;
   position: fixed;
   top: 0;
   left: 0;

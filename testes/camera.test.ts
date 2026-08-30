@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Camera } from '../src/nucleo/camera';
-import { ALTURA_BASE, LARGURA_BASE } from '../src/estilo/escala';
+import { alturaDoPalco, larguraDoPalco } from '../src/estilo/escala';
 
 describe('Camera', () => {
   it('o centro da câmera cai no centro do palco', () => {
@@ -8,7 +8,7 @@ describe('Camera', () => {
     c.x = 500;
     c.y = 300;
     c.zoom = 2;
-    expect(c.mundoParaPalco(500, 300)).toEqual({ x: LARGURA_BASE / 2, y: ALTURA_BASE / 2 });
+    expect(c.mundoParaPalco(500, 300)).toEqual({ x: larguraDoPalco() / 2, y: alturaDoPalco() / 2 });
   });
 
   it('converter ida e volta devolve o mesmo ponto', () => {
@@ -49,9 +49,9 @@ describe('Camera', () => {
   it('o zoom mínimo é o que faz o mapa inteiro caber na tela', () => {
     const c = new Camera();
     c.prenderAoMundo(4096, 4096);
-    expect(c.zoomMinimo).toBeCloseTo(ALTURA_BASE / 4096, 6);
+    expect(c.zoomMinimo).toBeCloseTo(alturaDoPalco() / 4096, 6);
     for (let i = 0; i < 50; i++) c.aproximar(0.5, 0, 0);
-    expect(c.zoom).toBeCloseTo(ALTURA_BASE / 4096, 6);
+    expect(c.zoom).toBeCloseTo(alturaDoPalco() / 4096, 6);
   });
 
   it('a vista nunca sai do mapa', () => {
@@ -59,11 +59,11 @@ describe('Camera', () => {
     c.prenderAoMundo(4096, 4096);
     c.zoom = 1;
     c.arrastar(99_999, 99_999);
-    expect(c.x).toBe(LARGURA_BASE / 2);
-    expect(c.y).toBe(ALTURA_BASE / 2);
+    expect(c.x).toBe(larguraDoPalco() / 2);
+    expect(c.y).toBe(alturaDoPalco() / 2);
     c.arrastar(-99_999, -99_999);
-    expect(c.x).toBe(4096 - LARGURA_BASE / 2);
-    expect(c.y).toBe(4096 - ALTURA_BASE / 2);
+    expect(c.x).toBe(4096 - larguraDoPalco() / 2);
+    expect(c.y).toBe(4096 - alturaDoPalco() / 2);
   });
 
   it('quando a vista é maior que o mapa num eixo, centraliza nele', () => {

@@ -15,7 +15,7 @@ import type { Texture } from 'pixi.js';
 import { Camera } from '@/nucleo/camera';
 import type { Entrada } from '@/nucleo/entrada';
 import type { Relogio } from '@/nucleo/tempo';
-import { ALTURA_BASE, LARGURA_BASE, aoMudarEscala, densidadeEfetiva } from '@/estilo/escala';
+import { alturaDoPalco, larguraDoPalco, aoMudarEscala, densidadeEfetiva } from '@/estilo/escala';
 import type { Ajustes, Mundo, Provincias } from '@/dados/esquema';
 import { GraoDoMapa } from './grao-do-mapa';
 import { ProvinciasMapa } from './provincias-mapa/provincias-mapa';
@@ -68,8 +68,8 @@ export class CenaMapa {
   private async montar(canvas: HTMLCanvasElement): Promise<void> {
     await this.app.init({
       canvas,
-      width: LARGURA_BASE,
-      height: ALTURA_BASE,
+      width: larguraDoPalco(),
+      height: alturaDoPalco(),
       // a mesma cor do mar fundo do terreno: a sobra dos lados vira mar aberto, não moldura
       backgroundColor: 0x586f70,
       antialias: true,
@@ -82,7 +82,7 @@ export class CenaMapa {
 
     aoMudarEscala(() => {
       this.app.renderer.resolution = densidadeEfetiva();
-      this.app.renderer.resize(LARGURA_BASE, ALTURA_BASE);
+      this.app.renderer.resize(larguraDoPalco(), alturaDoPalco());
     });
 
     const { largura, altura } = this.dados.dimensoes;
@@ -130,6 +130,11 @@ export class CenaMapa {
    * `atualizar` drena isso uma vez por quadro. Vinte conquistas numa virada de turno
    * viram um envio, não vinte.
    */
+  /** Ensina à paleta os poderes de agora — inclusive os que nasceram de uma independência. */
+  aprenderPoderes(poderes: readonly { id: string; cor: string }[]): void {
+    this.camadaProvincias.aprenderPoderes(poderes);
+  }
+
   pintarDonos(donoDe: (idProvincia: string) => string): void {
     this.camadaProvincias.pintarDonos(donoDe);
     this.camadaProvincias.intensificar(false);
