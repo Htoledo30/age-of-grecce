@@ -42,6 +42,16 @@ export class PaletaDeDonos {
   }
 
   /**
+   * Ensina à paleta uma cor de poder que não veio do arquivo.
+   *
+   * ⚠️ **Sem isto, o reino que nasce de uma independência pinta o mapa de exceção**: `escrever`
+   * estoura com "poder inexistente" na primeira província que trocar de mão para ele.
+   */
+  registrar(poder: { id: string; cor: string }): void {
+    this.corDoPoder.set(poder.id, separarCor(poder.cor));
+  }
+
+  /**
    * Pinta o índice com a cor do dono.
    *
    * ⚠️ **Dono vazio é ZONA MARÍTIMA, e ela fica TRANSPARENTE.** A água não é de ninguém: ela

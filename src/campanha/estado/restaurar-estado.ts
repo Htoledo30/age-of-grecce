@@ -13,8 +13,15 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { validarSalvamento } from './validar-estado';
 
 export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha): void {
+  // ⚠️ **Os reinos que a partida criou voltam ao mapa ANTES da validação, e a ordem é o
+  // ponto.** A conferência recusa província de dono desconhecido — e uma terra que declarou
+  // independência pertence justamente a um dono que o arquivo do mundo nunca teve. Registrar
+  // depois faria todo salvamento com uma independência dentro ser recusado como corrompido.
+  for (const poder of salvo.poderesNascidos) nucleo.atlas.registrarPoder(poder);
+
   validarSalvamento(nucleo, salvo);
   const estado = nucleo.estado;
+  estado.poderesNascidos = salvo.poderesNascidos.map((p) => ({ ...p }));
 
   estado.jogador = salvo.jogador;
   estado.ano = salvo.ano;

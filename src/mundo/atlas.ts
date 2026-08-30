@@ -48,12 +48,25 @@ export class Atlas {
   private readonly quantosComponentes: number;
 
   readonly provincias: readonly Provincia[];
-  readonly poderes: readonly Poder[];
   readonly impressaoDigital: ImpressaoDigital;
+
+  /**
+   * Os poderes do arquivo MAIS os que nasceram durante a partida.
+   *
+   * ⚠️ **É uma lista viva desde 31/08/2026, e antes era o arquivo e ponto.** Uma província que
+   * se levanta contra o próprio rei vira um reino novo — não havia contra quem levantar, e
+   * Henrique: *"se eu meter o louco tem q se revoltar sim"*. O reino livre não existe em
+   * `provincias.json` porque ele não existia em 700 a.C.: ele nasce do jogo.
+   */
+  get poderes(): readonly Poder[] {
+    return this.todosOsPoderes;
+  }
+
+  private todosOsPoderes: Poder[] = [];
 
   constructor(dados: Provincias) {
     this.provincias = dados.provincias;
-    this.poderes = dados.poderes;
+    this.todosOsPoderes = [...dados.poderes];
 
     for (const poder of dados.poderes) this.porIdPoder.set(poder.id, poder);
     for (const p of dados.provincias) {
@@ -131,6 +144,21 @@ export class Atlas {
     const p = this.porIdProvincia.get(idProvincia);
     if (!p) throw new Error(`província inexistente: ${idProvincia}`);
     return p;
+  }
+
+  /**
+   * Põe no mapa um poder que não estava no arquivo. Devolve `false` se o id já existe.
+   *
+   * ⚠️ **A impressão digital NÃO se mexe, e isso é de propósito.** Ela existe para pegar
+   * salvamento feito sobre outro recorte do mundo; contar aqui os reinos que a própria partida
+   * criou faria todo salvamento com uma independência dentro parecer de outro mundo, e recusar
+   * a carga.
+   */
+  registrarPoder(poder: Poder): boolean {
+    if (this.porIdPoder.has(poder.id)) return false;
+    this.todosOsPoderes.push(poder);
+    this.porIdPoder.set(poder.id, poder);
+    return true;
   }
 
   poder(idPoder: string): Poder {

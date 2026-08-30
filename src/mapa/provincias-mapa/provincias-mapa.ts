@@ -141,6 +141,18 @@ export class ProvinciasMapa {
     return new ProvinciasMapa(dados, indice, indices, larguraDoMundo, alturaDoMundo, ajustes);
   }
 
+  /**
+   * Ensina ao mapa os poderes que existem AGORA, inclusive os que nasceram jogando.
+   *
+   * ⚠️ **Sem esta linha, a primeira independência apaga o mapa.** A paleta é montada com os
+   * poderes do arquivo; uma província que se libertou pertence a um reino que não estava lá, e
+   * `escrever` estoura com "poder inexistente" no meio da repintura — levando junto as 243
+   * províncias que não têm nada com o assunto.
+   */
+  aprenderPoderes(poderes: readonly { id: string; cor: string }[]): void {
+    for (const poder of poderes) this.paleta.registrar(poder);
+  }
+
   /** Passa uma província para outro dono. Custa quatro bytes na paleta. */
   trocarDono(idProvincia: string, idPoder: string): void {
     const indice = this.indiceDaProvincia.get(idProvincia);

@@ -1,4 +1,5 @@
 import type { VinculoDaLiga } from './diplomacia/liga';
+import type { PoderLivre } from './sociedade/independencia';
 import type { NivelDeImposto } from './economia';
 import type { Cerco } from '@/combate/cerco';
 import type { Exercito } from '@/combate/exercito';
@@ -89,6 +90,15 @@ export interface EstadoCampanha {
    * do registro assim que o humor sai da faixa — revolta não guarda rancor pela metade.
    */
   revoltas: Record<string, number>;
+  /**
+   * Os reinos que NASCERAM nesta partida — hoje, os que saíram de uma independência.
+   *
+   * ⚠️ **Mora no estado, e não no atlas, porque tem de sobreviver ao salvamento.** O atlas é o
+   * mundo de 700 a.C., igual em toda partida; um reino que se libertou existe só nesta. Sem
+   * este registro, carregar o jogo devolveria províncias pertencentes a um poder que ninguém
+   * conhece — e o mapa estouraria na primeira pintura.
+   */
+  poderesNascidos: PoderLivre[];
   /**
    * Exércitos em pé, pela província onde estão.
    *

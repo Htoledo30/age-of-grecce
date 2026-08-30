@@ -126,10 +126,29 @@ const SalvamentoCampanha = z.object({
     // `default` e não obrigatório: salvamentos de antes do sistema de revoltas ainda
     // carregam — o pavio deles simplesmente começa apagado.
     revoltas: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
+    // ⚠️ **Os reinos que a PARTIDA criou, e sem eles o mapa não volta.** Uma província que
+    // declarou independência pertence a um poder que não existe em `provincias.json`; carregar
+    // sem esta lista devolveria terra de dono desconhecido, e a pintura estouraria na hora.
+    // `default` pela mesma razão dos outros: salvamento de antes da independência ainda carrega,
+    // e o mundo dele simplesmente não teve nenhuma.
+    poderesNascidos: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          nome: z.string().min(1),
+          povo: z.string().min(1),
+          cor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+        }),
+      )
+      .default([]),
     // `default` pelo mesmo motivo das revoltas: salvamentos de antes do decreto de
     // imposto ainda carregam — toda terra volta cobrando o normal.
+    // ⚠️ **`confisco` faltava aqui, e isso quebrava o jogo salvo.** O decreto existe desde que
+    // o imposto foi refeito, mas o esquema ficou nos três antigos: qualquer partida com uma
+    // província confiscada era recusada na carga como salvamento corrompido. Achado em
+    // 31/08/2026 ao escrever o teste da independência, que confisca para azedar a cidade.
     nivelDeImposto: z
-      .record(z.string().min(1), z.enum(['baixo', 'normal', 'alto']))
+      .record(z.string().min(1), z.enum(['baixo', 'normal', 'alto', 'confisco']))
       .default({}),
     construcoes: z.record(
       z.string().min(1),

@@ -79,6 +79,11 @@ export class Territorios {
    * território e tropa ao mesmo tempo.
    */
   temTerritorio(idPoder: string): boolean {
+    // ⚠️ Poder que o mundo não conhece não tem chão — e isso é uma RESPOSTA, não um erro.
+    // Desde que um reino pode nascer no meio da partida, "aquela independência já aconteceu?"
+    // é pergunta legítima antes de ela existir. O portão contra id errado continua em
+    // `provinciasDe`, que é onde uma varredura pagaria caro por um engano.
+    if (!this.atlas.existePoder(idPoder)) return false;
     return this.provinciasDe(idPoder).length > 0;
   }
 

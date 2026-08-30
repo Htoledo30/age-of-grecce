@@ -126,5 +126,6 @@ export function criarEstadoInicial(
     // Ninguém quebrou promessa nenhuma ainda.
     reputacao: {},
     revoltas: {},
+    poderesNascidos: [],
   };
 }

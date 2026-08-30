@@ -196,6 +196,19 @@ export function turnosAteOLevante(valor: number, ajustes: AjustesFelicidade): nu
   return faixaDe(valor, ajustes)?.levanteEm ?? null;
 }
 
+/**
+ * O povo está no FUNDO da régua — a faixa mais baixa que existe.
+ *
+ * ⚠️ **É o portão da revolta contra o PRÓPRIO rei, e Henrique escolheu que fosse só ele.** A
+ * faixa de cima ("Insatisfeita") já acende o pavio de quem vive sob bandeira estrangeira; a
+ * terra de sempre só pega em armas no fundo do poço. A consequência aceita: o Confisco sozinho
+ * não derruba ninguém até aqui — precisa somar guerra, fome ou cerco.
+ */
+export function noFundoDaRegua(valor: number, ajustes: AjustesFelicidade): boolean {
+  const fundo = ajustes.faixas[0];
+  return fundo !== undefined && valor <= fundo.ate;
+}
+
 /** "de outro povo (85%)" — o rótulo com o tamanho da fatia que ele descreve. */
 function fatia(rotulo: string, fracao: number): string {
   return `${rotulo} (${Math.round(fracao * 100)}%)`;

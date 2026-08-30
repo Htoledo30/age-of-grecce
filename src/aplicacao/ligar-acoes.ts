@@ -38,6 +38,9 @@ export function ligarAcoes(jogo: Jogo): void {
    * conquista.
    */
   const repintarMapa = (): void => {
+    // Um reino pode ter NASCIDO desde a última pintura: uma província que se levantou contra o
+    // próprio rei vira poder, e a paleta precisa da cor dele antes de qualquer escrita.
+    cena.aprenderPoderes(jogo.atlas.poderes);
     const sujeito = selecao.relacoesDe;
     if (sujeito === null) cena.pintarDonos((id) => campanha.donoDe(id));
     else cena.pintarCores(coresDasRelacoes(jogo, sujeito));

@@ -9,7 +9,9 @@
 
 import type { NucleoDaCampanha } from '../nucleo';
 import { declararGuerra } from '../diplomacia/relacoes';
+import { noFundoDaRegua } from '../felicidade';
 import { donoDe, populacaoDe } from '../provincia/consultas';
+import { poderLivreDe } from './independencia';
 import { povoEstranhoManda } from './nacionalidade';
 
 export interface Levante {
@@ -30,11 +32,20 @@ export function acenderPavioEm(
   idProvincia: string,
   /** Turnos até o levante NESTA faixa de humor: a revoltosa ferve rápido, a de cima devagar. */
   prazo: number,
+  /** O humor que decide a faixa — o de hoje ou o alvo, o que for melhor para o rei. */
+  humor: number,
 ): Levante | null {
-  // ⚠️ **Quem levanta é a terra cuja MAIORIA não reconhece o dono**, e não a que trocou de
-  // bandeira em algum momento. Uma cidade não pega em armas contra o próprio governo por
-  // causa de um quinto dela — ver `nacionalidade.ts`.
-  if (!povoEstranhoManda(nucleo, idProvincia)) return null;
+  // ⚠️ **Duas revoltas diferentes, e a diferença é CONTRA QUEM.**
+  //
+  // Terra sob bandeira estrangeira — maioria que não reconhece o dono — levanta em nome de
+  // quem mandava em 700 a.C., e basta ela ferver. Uma cidade não pega em armas contra o
+  // próprio governo por causa de um quinto dela: ver `nacionalidade.ts`.
+  //
+  // Terra do PRÓPRIO povo levanta contra o próprio rei, e aí não há dono antigo para chamar:
+  // ela declara independência e vira reino. Por escolha de Henrique isso exige o fundo da
+  // régua — apertar até "Insatisfeita" azeda a cidade, mas não arma ninguém.
+  const contraOProprioRei = !povoEstranhoManda(nucleo, idProvincia);
+  if (contraOProprioRei && !noFundoDaRegua(humor, nucleo.ajustes.felicidade)) return null;
 
   const pavio = (nucleo.estado.revoltas[idProvincia] ?? 0) + 1;
   if (pavio < prazo) {
@@ -43,7 +54,10 @@ export function acenderPavioEm(
   }
   // Não empilha levante sobre levante: enquanto os rebeldes anteriores estiverem de pé na
   // província, o pavio fica aceso mas nada nasce.
-  const donoAntigo = nucleo.atlas.donoInicial(idProvincia);
+  // A bandeira que os rebeldes erguem: o rei de 700 a.C., ou um reino que nasce agora.
+  const donoAntigo = contraOProprioRei
+    ? poderLivreDe(nucleo, idProvincia)
+    : nucleo.atlas.donoInicial(idProvincia);
   if (nucleo.mobilizacao.hostesEm(idProvincia).some((h) => h.poder === donoAntigo)) {
     nucleo.estado.revoltas[idProvincia] = pavio;
     return null;

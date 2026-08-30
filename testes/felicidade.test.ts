@@ -10,6 +10,7 @@ import {
   parcelasDoAlvo,
   revoltosa,
 } from '../src/campanha/felicidade';
+import { idLivreDe } from '../src/campanha/sociedade/independencia';
 import { lerSalvamento } from '../src/campanha/salvamento';
 import { Atlas } from '../src/mundo/atlas';
 import { ordenar } from './apoio/hostes';
@@ -279,12 +280,73 @@ describe('o humor dentro da campanha', () => {
     expect(c.donoDe('eleusis')).toBe('atenas');
   });
 
-  it('província revoltosa de dono legítimo faz greve, mas não arma levante', () => {
-    const c = comHumor(nova(), 'atenas', 5);
-    for (let i = 0; i < prazoDaRevoltosa + 2; i++) c.passarTurno();
-    // Não há bandeira antiga contra a atual: ninguém pega em armas.
-    expect(c.hostesEm('atenas').length).toBe(0);
+  /**
+   * Uma terra do PRÓPRIO rei empurrada até o fundo da régua.
+   *
+   * ⚠️ **Confisco sozinho NÃO chega aqui, e isso é a escolha de Henrique.** Medido no mapa de
+   * hoje: o alvo de Maratona é 53, o decreto tira 20 e a guerra tira 6 — para 27, que ainda é
+   * "Insatisfeita". Só somando o cerco (−15) a conta cruza os 19. É o que separa "apertei
+   * demais" de "perdi a província": é preciso o mundo inteiro desabar em cima dela.
+   */
+  function espremida(): Campanha {
+    const c = nova();
+    c.definirImposto('maratona', 'confisco');
+    c.plantarHoste('tanagra', 'tanagra', 500);
+    ordenar(c, 'tanagra', 'maratona', 500, 'tanagra', 'sitiar');
+    c.passarTurno();
+    return comHumor(c, 'maratona', 5);
+  }
+
+  it('no fundo do poço, a terra do PRÓPRIO rei declara independência', () => {
+    // ⚠️ **Esta regra era o contrário até 31/08/2026, e a virada é de Henrique.** O levante
+    // nascia em nome do dono de 700 a.C., e na terra de sempre esse dono é o próprio rei —
+    // então ela nunca podia se levantar, por mais que fosse espremida. Ele, ao descobrir:
+    // *"revolta ali é impossível? não era para ser impossível, se eu meter o louco tem q se
+    // revoltar sim"*. A saída foi dar bandeira aos rebeldes: a província vira reino.
+    const c = espremida();
+    const livre = idLivreDe('maratona');
+    expect(c.vivo(livre)).toBe(false);
+    // O cenário só vale se ele de fato chega ao fundo: se o balanço mudar e não chegar mais,
+    // é aqui que se descobre, e não numa afirmação sobre rebeldes que nunca nasceram.
+    expect(c.alvoDeFelicidadeEm('maratona')).toBeLessThanOrEqual(felicidade.faixas[0]?.ate ?? 0);
+
+    // ⚠️ Exatamente o prazo, e nem uma virada a mais: os rebeldes nascem cercados por quem
+    // sitiava a cidade, e o sitiante os desfaz na virada seguinte. O que este teste guarda é
+    // que eles NASCEM — quanto duram é assunto do combate, e ele já tem os testes dele.
+    for (let i = 0; i < prazoDaRevoltosa; i++) c.passarTurno();
+
+    // Um reino que não existia em 700 a.C. está no mapa, com gente em armas na cidade.
+    expect(c.hostesEm('maratona').some((h) => h.poder === livre)).toBe(true);
+    expect(c.vivo(livre)).toBe(true);
+    // E ele não nasce mudo: pegar em armas contra o rei é guerra declarada.
+    expect(c.emGuerra(livre, 'atenas')).toBe(true);
   });
+
+  it('apertar até "Insatisfeita" azeda a cidade, mas não arma ninguém', () => {
+    // A escolha de Henrique: só o FUNDO da régua arma o próprio povo. É o que separa "o
+    // Confisco dói" de "o Confisco te custa a província".
+    const c = nova();
+    c.definirImposto('maratona', 'confisco');
+    const acimaDoFundo = (felicidade.faixas[0]?.ate ?? 0) + 1;
+    comHumor(c, 'maratona', acimaDoFundo);
+    for (let i = 0; i < prazoDaCondenada + 2; i++) c.passarTurno();
+    expect(c.hostesEm('maratona').length).toBe(0);
+    expect(c.vivo(idLivreDe('maratona'))).toBe(false);
+  });
+
+  it('o reino livre volta do salvamento — sem ele, o mapa carrega sem dono', () => {
+    const c = espremida();
+    for (let i = 0; i < prazoDaRevoltosa; i++) c.passarTurno();
+    const livre = idLivreDe('maratona');
+
+    const outra = nova();
+    outra.restaurar(lerSalvamento(c.serializar()));
+    // ⚠️ O poder nasceu na PARTIDA e não no arquivo do mundo: se ele não viajar no
+    // salvamento, a terra dele volta pertencendo a um reino que ninguém conhece.
+    expect(outra.vivo(livre)).toBe(true);
+    expect(outra.hostesEm('maratona').some((h) => h.poder === livre)).toBe(true);
+  });
+
 });
 
 describe('vitória e derrota mínimas', () => {

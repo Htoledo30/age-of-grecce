@@ -47,12 +47,13 @@ export function atualizarFelicidade(nucleo: NucleoDaCampanha): readonly Levante[
     // queda joga a cidade para o fundo de uma vez, ela sobe quatro pontos por turno, e o
     // pavio de três turnos queimava antes. Com o alvo na conta, a cidade que está a caminho
     // de um lugar melhor não pega em armas: quem ferve é quem vai FICAR fervendo.
-    const prazo = turnosAteOLevante(Math.max(novo, alvo), nucleo.ajustes.felicidade);
+    const oQueDecide = Math.max(novo, alvo);
+    const prazo = turnosAteOLevante(oQueDecide, nucleo.ajustes.felicidade);
     if (prazo === null) {
       delete nucleo.estado.revoltas[id];
       continue;
     }
-    const levante = acenderPavioEm(nucleo, id, prazo);
+    const levante = acenderPavioEm(nucleo, id, prazo, oQueDecide);
     if (levante) levantes.push(levante);
   }
   return levantes;
