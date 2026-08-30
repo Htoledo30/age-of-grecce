@@ -74,7 +74,7 @@ export function resolverRodada(
     );
   }
   const identidadeAoPousar = pousar(estado, forcas, relatorio.marchas);
-  resolverCidades(estado, ajustes, mundo, posturas, relatorio);
+  resolverCidades(estado, mundo, posturas, relatorio);
 
   // Uma ordem distante é uma VIAGEM: anda os trechos permitidos nesta rodada e conserva o
   // restante. Choque em província e recuo substituem `rota`; morte ou desvio também cancelam.

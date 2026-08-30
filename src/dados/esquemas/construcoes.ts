@@ -211,6 +211,35 @@ export const Construcoes = z.object({
        */
       impedeAssaltoImediato: z.boolean().optional(),
       /**
+       * Rodadas completas de cerco exigidas antes do assalto, por nível da obra.
+       *
+       * Fica no catálogo porque é propriedade da fortificação, não uma regra global: uma
+       * Muralha I compra menos tempo que a mesma obra no nível III.
+       */
+      rodadasParaAssaltar: TresPrazosPositivos.optional(),
+      /**
+       * Fração abatida da folha da tropa parada NESTA província, por nível.
+       *
+       * Só vale em território próprio. Estrada abastece a guarnição local; não barateia
+       * campanha em terra alheia nem tropa parada em outra província do reino.
+       */
+      descontoDaFolhaEmCasa: z
+        .tuple([z.number().min(0).max(1), z.number().min(0).max(1), z.number().min(0).max(1)])
+        .optional(),
+      /**
+       * Pontos extras por turno quando o humor sobe em direção ao alvo, por nível.
+       *
+       * Não impede a queda causada por fome, cerco ou imposto: acelera recuperação da ordem,
+       * que é o papel cívico do Templo depois de uma conquista.
+       */
+      recuperacaoDaOrdem: z
+        .tuple([
+          z.number().int().nonnegative(),
+          z.number().int().nonnegative(),
+          z.number().int().nonnegative(),
+        ])
+        .optional(),
+      /**
        * Esta obra liga a província ao resto do reino POR MAR.
        *
        * ⚠️ **Fora do `efeito`, pela mesma razão do `impedeAssaltoImediato`.** Multiplicar

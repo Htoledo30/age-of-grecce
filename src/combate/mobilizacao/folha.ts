@@ -29,15 +29,20 @@ type AjustesCombate = Ajustes['jogo']['combate'];
  * do mapa político para calcular um número.
  */
 export type EmCasa = (exercito: Exercito) => boolean;
+/** Multiplicador local da taxa de casa. 0,93 representa desconto de 7%. */
+export type FatorDaFolhaEmCasa = (idProvincia: string) => number;
 
 /** A taxa que ESTA hoste paga, pelo chão em que ela está. */
 export function taxaDe(
   exercito: Exercito,
   ajustes: AjustesCombate,
   emCasa: EmCasa,
+  fatorDaFolhaEmCasa: FatorDaFolhaEmCasa,
 ): number {
   const taxas = ajustes.manutencaoPorHomem;
-  return emCasa(exercito) ? taxas.emCasa : taxas.emCampanha;
+  return emCasa(exercito)
+    ? taxas.emCasa * fatorDaFolhaEmCasa(exercito.posicao)
+    : taxas.emCampanha;
 }
 
 export function manutencaoDe(
@@ -45,11 +50,14 @@ export function manutencaoDe(
   ajustes: AjustesCombate,
   idPoder: string,
   emCasa: EmCasa,
+  fatorDaFolhaEmCasa: FatorDaFolhaEmCasa,
 ): number {
   // Soma em ponto flutuante e arredonda UMA vez: arredondar hoste a hoste faria o total
   // do reino mudar por dividir a mesma tropa em duas colunas.
   let devido = 0;
-  for (const h of doPoder(estado, idPoder)) devido += forcaDe(h) * taxaDe(h, ajustes, emCasa);
+  for (const h of doPoder(estado, idPoder)) {
+    devido += forcaDe(h) * taxaDe(h, ajustes, emCasa, fatorDaFolhaEmCasa);
+  }
   return Math.round(devido);
 }
 
@@ -64,8 +72,9 @@ export function pagarManutencao(
   ajustes: AjustesCombate,
   idPoder: string,
   emCasa: EmCasa,
+  fatorDaFolhaEmCasa: FatorDaFolhaEmCasa,
 ): number {
-  const devido = manutencaoDe(estado, ajustes, idPoder, emCasa);
+  const devido = manutencaoDe(estado, ajustes, idPoder, emCasa, fatorDaFolhaEmCasa);
   if (devido <= 0) return 0;
 
   const caixa = tesouroDe(estado, idPoder);

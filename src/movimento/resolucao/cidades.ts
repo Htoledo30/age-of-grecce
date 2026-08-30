@@ -12,15 +12,11 @@
 
 import { rodadasAteOAssalto } from '@/combate/cerco';
 import type { Cerco, Postura } from '@/combate/cerco';
-import type { Ajustes } from '@/dados/esquema';
 import { assaltar } from './assalto';
 import type { EstadoDaResolucao, MundoDaResolucao, RelatorioEmConstrucao } from './relatorio';
 
-type AjustesCombate = Ajustes['jogo']['combate'];
-
 export function resolverCidades(
   estado: EstadoDaResolucao,
-  ajustes: AjustesCombate,
   mundo: MundoDaResolucao,
   posturas: Map<string, Postura>,
   relatorio: RelatorioEmConstrucao,
@@ -130,9 +126,8 @@ export function resolverCidades(
     // marcha — e uma ordem que a tela não deixaria dar continuaria podendo vir da IA, de um
     // salvamento antigo ou do gancho de inspeção.
     const faltam = rodadasAteOAssalto(
-      mundo.impedeAssaltoImediato(provincia),
+      mundo.rodadasParaAssaltar(provincia),
       meu ? cerco.rodadas : 0,
-      ajustes.cerco,
     );
     // ⚠️ **O assalto só sai se o CAMPO já foi ganho.** Quem quis assaltar já brigou no passo
     // anterior, contra a guarnição e contra qualquer outro invasor; chegar aqui com um deles

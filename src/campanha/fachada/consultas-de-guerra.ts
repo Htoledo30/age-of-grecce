@@ -109,6 +109,16 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
     return this.nucleo.mobilizacao.custoDaTropaDe(idProvincia);
   }
 
+  /** Taxa por homem em casa nesta província, já com o benefício da Estrada local. */
+  taxaDaTropaEmCasaEm(idProvincia: string): number {
+    return this.nucleo.mobilizacao.taxaEmCasaEm(idProvincia);
+  }
+
+  /** Folha desta hoste no chão em que ela está agora. */
+  manutencaoDaHoste(idHoste: string): number {
+    return this.nucleo.mobilizacao.manutencaoDaHoste(idHoste);
+  }
+
   // ── Levas ───────────────────────────────────────────────────────────────────────────
   disponivelParaLevaEm(idProvincia: string): number {
     return this.nucleo.mobilizacao.disponivelParaLevaEm(idProvincia);

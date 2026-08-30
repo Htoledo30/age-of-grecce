@@ -167,23 +167,6 @@ export function camposDoCombate(ajustes: AjustesDoJogo): readonly CampoNumerico[
         batalha.armas.counter = valor;
       },
     },
-    {
-      id: 'combate.cerco.rodadasParaAssaltarMuralha',
-      aba: 'combate',
-      grupo: 'Cerco',
-      nome: 'Preparação contra Muralha',
-      descricao: 'Rodadas que o sitiante precisa esperar antes de poder assaltar a praça.',
-      unidade: 'rodadas',
-      minimo: 0,
-      maximo: 20,
-      passo: 1,
-      casas: 0,
-      aplica: 'Próximo assalto',
-      ler: () => combate.cerco.rodadasParaAssaltarMuralha,
-      escrever: (valor) => {
-        combate.cerco.rodadasParaAssaltarMuralha = Math.round(valor);
-      },
-    },
   ];
 
   const armas = [

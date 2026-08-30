@@ -28,7 +28,7 @@
           0.15
         ]
       },
-      "promessa": "Corta a corrupção que vem de haver gente demais para administrar. Vale mais onde há mais gente.",
+      "promessa": "Corta a corrupção que vem de haver gente demais para administrar e recupera impostos que se perderiam no caminho. Vale mais onde há mais gente.",
       "motivo": "Administração, cobrança e vida cívica onde há gente para organizar. Quanto maior a cidade, mais se perde no caminho — e mais ela devolve."
     },
     "mercado": {
@@ -200,8 +200,13 @@
           1.75
         ]
       },
-      "promessa": "Melhora a milícia local e impede assalto imediato.",
+      "promessa": "Melhora a milícia local e exige 2/3/4 rodadas de cerco antes do assalto.",
       "impedeAssaltoImediato": true,
+      "rodadasParaAssaltar": [
+        2,
+        3,
+        4
+      ],
       "motivo": "Defesa permanente que ocupa um slot mesmo nos anos de paz."
     },
     "templo": {
@@ -229,7 +234,12 @@
           22
         ]
       },
-      "promessa": "Eleva a felicidade da província em +9/+15/+22 — e felicidade é renda, não só ordem.",
+      "recuperacaoDaOrdem": [
+        1,
+        2,
+        3
+      ],
+      "promessa": "Eleva a felicidade em +9/+15/+22 e acelera em +1/+2/+3 pontos por turno a recuperação da ordem — especialmente após uma conquista.",
       "motivo": "Centro religioso e cívico: onde o deus mora, o povo aguenta mais."
     },
     "porto": {
@@ -291,7 +301,12 @@
           0.15
         ]
       },
-      "promessa": "Corta a corrupção da DISTÂNCIA até a capital. Não rende nada na própria capital: ela existe para a terra conquistada longe.",
+      "descontoDaFolhaEmCasa": [
+        0.03,
+        0.05,
+        0.07
+      ],
+      "promessa": "Corta a corrupção da DISTÂNCIA até a capital e reduz em 3%/5%/7% a folha da tropa parada nesta província. Na capital, só o desconto militar tem efeito.",
       "motivo": "Liga o interior: encurta a terra distante para quem governa. Prédio de imperio, nao de cidade-estado — na capital ela nao tem o que encurtar."
     },
     "fazenda": {

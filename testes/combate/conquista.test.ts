@@ -111,7 +111,8 @@ describe('tomar à força quebra a cidade', () => {
     // exigidas a escada sobe. É a própria muralha marcando a hora do estrago dela.
     c.passarTurno();
     expect(c.cercoEm('tanagra')).toBeDefined();
-    for (let i = 0; i < ajustes.combate.cerco.rodadasParaAssaltarMuralha; i++) c.passarTurno();
+    const espera = c.assaltoEm('tanagra').faltam;
+    for (let i = 0; i < espera; i++) c.passarTurno();
     c.mudarPostura('tanagra', 'assaltar');
     c.passarTurno();
     expect(c.donoDe('tanagra')).toBe('atenas');

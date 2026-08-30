@@ -75,13 +75,8 @@ export interface MundoDaResolucao {
   };
   /** Quantos milicianos esta província põe em pé. Zero onde não há população. */
   miliciaDe: (idProvincia: string) => number;
-  /**
-   * Esta província tem obra que obriga a sitiar antes de assaltar?
-   *
-   * A resolução não conhece catálogo de construções — pergunta e recebe sim ou não. Quem
-   * responde é a campanha, lendo o campo `impedeAssaltoImediato` do dado.
-   */
-  impedeAssaltoImediato: (idProvincia: string) => boolean;
+  /** Rodadas completas exigidas pelas fortificações antes de assaltar esta província. */
+  rodadasParaAssaltar: (idProvincia: string) => number;
   /**
    * Avisa quantos milicianos a província PERDEU no choque.
    *

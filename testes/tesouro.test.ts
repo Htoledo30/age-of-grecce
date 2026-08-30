@@ -131,6 +131,30 @@ describe('a manutenção é cobrada de todos, pela mesma regra', () => {
     // Atenas não tem tropa e não gasta nada com a de Tanagra.
     expect(c.tesouro).toBe(doJogador + renda);
   });
+
+  it('a Estrada reduz pouco a folha apenas da tropa parada naquela província própria', () => {
+    const c = emCampanha();
+    c.darOuro(100_000);
+    const estrada = construcoes.construcoes['estrada'];
+    const taxaBase = ajustes.combate.manutencaoPorHomem.emCasa;
+
+    c.construir('maratona', 'estrada');
+    for (let i = 0; i < (estrada?.turnos[0] ?? 0); i++) c.passarTurno();
+
+    const desconto = estrada?.descontoDaFolhaEmCasa?.[0] ?? 0;
+    expect(c.taxaDaTropaEmCasaEm('maratona')).toBeCloseTo(taxaBase * (1 - desconto), 12);
+    const hoste = c.plantarHoste('maratona', 'atenas', 1000);
+    expect(c.manutencaoDaHoste(hoste)).toBe(
+      Math.round(1000 * taxaBase * (1 - desconto)),
+    );
+
+    // A obra fica no chão, mas o desconto é de abastecimento EM CASA: ao perder a terra, a
+    // hoste ateniense ali passa a pagar campanha cheia.
+    c.trocarDono('maratona', 'eleusis');
+    expect(c.manutencaoDaHoste(hoste)).toBe(
+      Math.round(1000 * ajustes.combate.manutencaoPorHomem.emCampanha),
+    );
+  });
 });
 
 describe('gastar cobra o cofre do DONO da província', () => {

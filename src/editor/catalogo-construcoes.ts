@@ -319,6 +319,60 @@ export function camposDasConstrucoes(
     );
     const efeito = serieDoEfeito(id, grupo, construcao);
     if (efeito) itens.push(efeito);
+    if (construcao.rodadasParaAssaltar) {
+      itens.push(
+        serieDeNiveis({
+          id: `${base}.rodadasParaAssaltar.crescente`,
+          grupo,
+          nome: `${construcao.nome} · preparação do assalto`,
+          descricao: 'Rodadas completas de cerco exigidas antes de o inimigo poder assaltar.',
+          unidade: 'rodadas',
+          valores: construcao.rodadasParaAssaltar,
+          minimo: 1,
+          maximo: 20,
+          passo: 1,
+          casas: 0,
+          inteiro: true,
+          aplica: 'Próximo assalto',
+        }),
+      );
+    }
+    if (construcao.descontoDaFolhaEmCasa) {
+      itens.push(
+        serieDeNiveis({
+          id: `${base}.descontoDaFolhaEmCasa.crescente`,
+          grupo,
+          nome: `${construcao.nome} · folha em casa`,
+          descricao: 'Desconto da folha da tropa parada nesta província própria.',
+          unidade: '% de desconto',
+          valores: construcao.descontoDaFolhaEmCasa,
+          minimo: 0,
+          maximo: 0.9,
+          passo: 0.01,
+          casas: 0,
+          fatorVisual: 100,
+          aplica: 'Próxima conta',
+        }),
+      );
+    }
+    if (construcao.recuperacaoDaOrdem) {
+      itens.push(
+        serieDeNiveis({
+          id: `${base}.recuperacaoDaOrdem.crescente`,
+          grupo,
+          nome: `${construcao.nome} · recuperação da ordem`,
+          descricao: 'Pontos extras por turno quando o humor sobe em direção ao alvo.',
+          unidade: 'de humor',
+          valores: construcao.recuperacaoDaOrdem,
+          minimo: 0,
+          maximo: 20,
+          passo: 1,
+          casas: 0,
+          inteiro: true,
+          aplica: 'Próximo turno',
+        }),
+      );
+    }
   }
 
   return itens;

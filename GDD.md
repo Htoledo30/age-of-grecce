@@ -333,9 +333,10 @@ interessante, é a terra pequena ficando sem decisão nenhuma. A escala sai do d
 nunca do estado vivo, senão mobilizar baratearia as obras.
 
 Cada prédio ataca uma pergunta diferente, e nenhum é o outro com números trocados: a Ágora
-corta a corrupção de TAMANHO (engolir população), a Estrada corta a de DISTÂNCIA (espalhar o
-império, e por isso ela não rende nada na própria capital), o Porto abre a rota de MAR, e o
-Mercado é a praça — ele multiplica a rede do REINO e o trânsito da própria terra.
+corta a corrupção de TAMANHO (engolir população) e, assim, recupera imposto que se perderia;
+a Estrada corta a de DISTÂNCIA e barateia um pouco a tropa parada naquela terra; o Porto abre
+a rota de MAR; e o Mercado é a praça — ele multiplica a rede do REINO e o trânsito da própria
+terra. Na capital a Estrada não tem distância para encurtar, mas ainda serve à guarnição.
 
 ⚠️ **O Mercado tem duas pernas de propósito, e cada uma sozinha já foi armadilha.** Só local,
 ele não pagava onde o trânsito é pequeno; só nacional, ele não pagava na encruzilhada rica de
@@ -353,12 +354,15 @@ paga a encruzilhada; a nacional paga o império.**
   há madeira;
 - Treinamento de cavaleiros: construção de nível único que libera a cavalaria, e só nasce
   onde há cavalos;
-- Muralha: fortalece milícia e impede assalto imediato;
-- Templo: aumenta a felicidade; cultura ou estabilidade só entram se ganharem função própria;
+- Muralha: fortalece a milícia e exige 2/3/4 rodadas completas de cerco antes do assalto nos
+  níveis I/II/III;
+- Templo: eleva o alvo da felicidade e acelera em +1/+2/+3 o passo de RECUPERAÇÃO da ordem.
+  Não mascara fome, cerco nem imposto abusivo: quando o alvo cai, o humor cai no passo normal;
 - Porto: **a porta do mar do reino** — liga esta terra ao reino por mar (precisa de porto nos
   dois lados), põe a mercadoria ao alcance de quem não faz fronteira, deixa o exército
   embarcar daqui, e aumenta o trânsito local;
-- Estradas: reduzem a corrupção por distância; movimento e logística continuam possibilidades;
+- Estradas: reduzem a corrupção por distância e cortam 3%/5%/7% da folha da tropa parada
+  NESTA província própria. Não barateiam campanha em terra alheia;
 - construções de exploração são liberadas pelos produtos principal e secundário: Fazenda
   para Grãos, Pastagem para Gado, Porto pesqueiro para Peixe, Lagar para Azeite, Vinhedo
   para Vinho, Serraria para Madeira, Mina para Ferro e metais preciosos e Pedreira para
@@ -374,6 +378,13 @@ de guerra pela porta dos fundos.
 
 Não criar um atributo genérico de desenvolvimento quando população, economia e construções
 já conseguem explicar o resultado.
+
+**A falta de manutenção já tem direção fechada, mas ainda não está implementada:** obra que o
+reino não conseguir sustentar fica INATIVA naquele turno, sem ser destruída. O jogador deve ver
+a folha total e quais obras pararam; a IA não deve erguer uma obra cuja folha coloque o reino
+em risco; e conquistar uma província transfere tanto o prédio quanto a conta. Se uma folha fixa
+virar troco no late game, o ajuste deve entrar no USO da capacidade — por exemplo, no custo de
+levantar a arma — e nunca baratear ou encarecer a mesma obra conforme a riqueza atual do reino.
 
 ## Guerra terrestre
 
@@ -722,7 +733,7 @@ Estas ideias não têm ordem nem garantia de implementação:
 - preços, oferta e demanda regionais;
 - extensão dos danos a construções além da perda atual de um nível na conquista;
 - migração e governadores;
-- estradas, logística militar e abastecimento por distância;
+- abastecimento militar por distância além do desconto local já dado pela Estrada;
 - expansão autoral das outras 200 províncias;
 - duração definitiva de uma rodada e ritmo completo da campanha.
 

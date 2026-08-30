@@ -305,7 +305,7 @@ export function vistaDeRecrutamento(jogo: Jogo): VistaDeRecrutamento | null {
      * pertence ao instante da decisão, quando a mão já está na barra do recrutamento.
      */
     homensQueAComidaSustenta: campanha.alimentacao.homensQueSustenta,
-    manutencaoPorHomem: ajustes.jogo.combate.manutencaoPorHomem.emCasa,
+    manutencaoPorHomem: campanha.taxaDaTropaEmCasaEm(alvo),
     manutencaoEmCampanha: ajustes.jogo.combate.manutencaoPorHomem.emCampanha,
     avaliar: (homens, arma) => campanha.podeRecrutar(alvo, homens, arma),
   };

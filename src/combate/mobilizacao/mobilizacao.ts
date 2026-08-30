@@ -38,8 +38,8 @@ import {
 import { dispensar, dispensarDe } from './dispensa';
 import { populacaoDe, proximoId, tesouroDe } from './estado';
 import type { EstadoDeMobilizacao } from './estado';
-import { manutencaoDe, pagarManutencao } from './folha';
-import type { EmCasa } from './folha';
+import { manutencaoDe, pagarManutencao, taxaDe } from './folha';
+import type { EmCasa, FatorDaFolhaEmCasa } from './folha';
 import { concluirFormacoes, levantarRebeldes, plantar, recrutar } from './levas';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
@@ -56,6 +56,8 @@ export class Mobilizacao {
      * amarraria mobilização a mapa político por um número.
      */
     private readonly donoDe: (idProvincia: string) => string,
+    /** Quanto da taxa de casa sobra nesta província depois das obras locais. */
+    private readonly fatorDaFolhaEmCasa: FatorDaFolhaEmCasa,
   ) {}
 
   /** A hoste pisa em terra do próprio poder? É isto que decide a taxa da folha. */
@@ -118,7 +120,28 @@ export class Mobilizacao {
   }
 
   custoDaTropaDe(idProvincia: string): number {
-    return custoDaTropaDe(this.estado, this.ajustes, idProvincia, this.emCasa);
+    return custoDaTropaDe(
+      this.estado,
+      this.ajustes,
+      idProvincia,
+      this.emCasa,
+      this.fatorDaFolhaEmCasa,
+    );
+  }
+
+  /** Taxa por homem parado nesta província própria, já com o benefício local da Estrada. */
+  taxaEmCasaEm(idProvincia: string): number {
+    return this.ajustes.manutencaoPorHomem.emCasa * this.fatorDaFolhaEmCasa(idProvincia);
+  }
+
+  /** Folha exata desta hoste no chão onde ela está agora. */
+  manutencaoDaHoste(idHoste: string): number {
+    const exercito = hoste(this.estado, idHoste);
+    if (!exercito) return 0;
+    return Math.round(
+      forcaDaHoste(this.estado, idHoste) *
+        taxaDe(exercito, this.ajustes, this.emCasa, this.fatorDaFolhaEmCasa),
+    );
   }
 
   disponivelParaLevaEm(idProvincia: string): number {
@@ -227,11 +250,23 @@ export class Mobilizacao {
 
   // ── Folha ───────────────────────────────────────────────────────────────────────────
   manutencaoDe(idPoder: string): number {
-    return manutencaoDe(this.estado, this.ajustes, idPoder, this.emCasa);
+    return manutencaoDe(
+      this.estado,
+      this.ajustes,
+      idPoder,
+      this.emCasa,
+      this.fatorDaFolhaEmCasa,
+    );
   }
 
   /** Paga a folha de um poder e devolve quantos desertaram. */
   pagarManutencao(idPoder: string): number {
-    return pagarManutencao(this.estado, this.ajustes, idPoder, this.emCasa);
+    return pagarManutencao(
+      this.estado,
+      this.ajustes,
+      idPoder,
+      this.emCasa,
+      this.fatorDaFolhaEmCasa,
+    );
   }
 }

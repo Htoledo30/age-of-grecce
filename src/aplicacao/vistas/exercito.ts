@@ -8,12 +8,11 @@
 import { ARMAS, forcaDe, porTerra } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import { NOME_DA_ARMA } from '@/ui/armas';
-import type { Ajustes } from '@/dados/esquema';
 import type { VistaDoExercito } from '@/ui/exercito-ficha/exercito-ficha';
 import type { Jogo } from '../contexto';
 
 export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
-  const { campanha, atlas, ajustes, selecao } = jogo;
+  const { campanha, atlas, selecao } = jogo;
   if (selecao.fase !== 'campanha' || selecao.hoste === null) return null;
   const exercito = campanha.hoste(selecao.hoste);
   if (!exercito) return null;
@@ -32,7 +31,7 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
     forca,
     // A folha desta hoste pela taxa do chão em que ela pisa: o número na ficha SOBE no
     // turno em que ela cruza a fronteira, e é assim que o jogador aprende a regra.
-    manutencao: Math.round(forca * taxaDaHoste(ajustes, emTerraAlheia)),
+    manutencao: campanha.manutencaoDaHoste(exercito.id),
     emTerraAlheia,
     minha: campanha.jogador?.id === exercito.poder,
     destinos: campanha.rotasLongasDaHoste(exercito.id).size,
@@ -114,10 +113,4 @@ function motivoDaRecusa(jogo: Jogo, exercito: Exercito): string {
     selecao.homensParaMarchar,
   );
   return r.pode ? '' : r.motivo;
-}
-
-/** Casa ou campanha: é o chão que decide o soldo. */
-function taxaDaHoste(ajustes: Ajustes, emTerraAlheia: boolean): number {
-  const taxas = ajustes.jogo.combate.manutencaoPorHomem;
-  return emTerraAlheia ? taxas.emCampanha : taxas.emCasa;
 }

@@ -13,7 +13,7 @@ import { homensEmFormacao } from '../formacao-de-leva';
 import type { LevaEmFormacao } from '../formacao-de-leva';
 import { disponivelParaLeva } from '../recrutamento';
 import { taxaDe } from './folha';
-import type { EmCasa } from './folha';
+import type { EmCasa, FatorDaFolhaEmCasa } from './folha';
 import { populacaoDe } from './estado';
 import type { EstadoDeMobilizacao } from './estado';
 
@@ -191,11 +191,12 @@ export function custoDaTropaDe(
   ajustes: AjustesCombate,
   idProvincia: string,
   emCasa: EmCasa,
+  fatorDaFolhaEmCasa: FatorDaFolhaEmCasa,
 ): number {
   let devido = 0;
   for (const exercito of Object.values(estado.hostes)) {
     const daqui = porTerra(exercito)[idProvincia] ?? 0;
-    if (daqui > 0) devido += daqui * taxaDe(exercito, ajustes, emCasa);
+    if (daqui > 0) devido += daqui * taxaDe(exercito, ajustes, emCasa, fatorDaFolhaEmCasa);
   }
   return Math.round(devido);
 }

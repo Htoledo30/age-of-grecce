@@ -10,6 +10,7 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { alvoDeFelicidadeEm } from './humor';
 import { acenderPavioEm } from './processar-revoltas';
 import type { Levante } from './processar-revoltas';
+import { recuperacaoDaOrdem } from '../provincia/beneficios-das-construcoes';
 
 /** Anda o humor de todas as províncias simuladas e devolve os levantes que nasceram. */
 export function atualizarFelicidade(nucleo: NucleoDaCampanha): readonly Levante[] {
@@ -18,7 +19,20 @@ export function atualizarFelicidade(nucleo: NucleoDaCampanha): readonly Levante[
     const atual = nucleo.estado.felicidade[id];
     if (atual === undefined) continue;
     const alvo = alvoDeFelicidadeEm(nucleo, id);
-    const novo = aproximarFelicidade(atual, alvo, nucleo.ajustes.felicidade.passoPorTurno);
+    // O Templo acelera somente a RECUPERAÇÃO. Se fome, cerco ou imposto empurram o alvo para
+    // baixo, ele não amortece a queda: templo não apaga a causa material da desordem.
+    const bonus =
+      atual < alvo
+        ? recuperacaoDaOrdem(
+            nucleo.catalogo,
+            nucleo.estado.construcoes[id] ?? {},
+          )
+        : 0;
+    const novo = aproximarFelicidade(
+      atual,
+      alvo,
+      nucleo.ajustes.felicidade.passoPorTurno + bonus,
+    );
     nucleo.estado.felicidade[id] = novo;
 
     // ⚠️ **Duas faixas fervem, e em ritmos diferentes.** A revoltosa acende rápido; a

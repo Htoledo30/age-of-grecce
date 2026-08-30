@@ -57,7 +57,6 @@ import type { ResultadoDaBatalha } from './batalha';
 import { leves, valorEmCampo } from './composicao';
 import type { GrupoEmCampo } from './composicao';
 
-type AjustesCerco = Ajustes['jogo']['combate']['cerco'];
 type AjustesDaBatalha = Ajustes['jogo']['combate']['batalha'];
 
 /** O que o sitiante está fazendo neste turno. */
@@ -108,12 +107,10 @@ export interface Cerco {
  * iguais escritas à mão acabariam discordando no dia em que o valor mudasse.
  */
 export function rodadasAteOAssalto(
-  impedeAssaltoImediato: boolean,
+  rodadasExigidas: number,
   rodadasDeCerco: number,
-  ajustes: AjustesCerco,
 ): number {
-  if (!impedeAssaltoImediato) return 0;
-  return Math.max(0, ajustes.rodadasParaAssaltarMuralha - rodadasDeCerco);
+  return Math.max(0, rodadasExigidas - rodadasDeCerco);
 }
 
 /**

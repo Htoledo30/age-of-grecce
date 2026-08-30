@@ -92,7 +92,7 @@ export function levaEscolhida(
     if (arma === null) continue;
     const teto = Math.min(
       campanha.maximoParaLevaEm(provincia, arma.arma),
-      Math.floor(folgaNaFolha / combate.manutencaoPorHomem.emCasa),
+      Math.floor(folgaNaFolha / campanha.taxaDaTropaEmCasaEm(provincia)),
       // Bocas em homens: cavalo come por vários, e por isso um ponto de comida compra menos
       // cavaleiros do que hoplitas.
       Math.floor(bocasQueSobram / combate.batalha.armas[arma.arma].comida),

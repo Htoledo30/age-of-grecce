@@ -852,11 +852,9 @@ export const Ajustes = z.object({
        */
       cerco: z.object({
         /**
-         * Quantas rodadas de cerco uma cidade fortificada exige antes de poder ser
-         * assaltada.
-         *
-         * Vale só para as construções marcadas com `impedeAssaltoImediato`; cidade aberta
-         * cai no primeiro assalto. Valor inicial de teste, não de balanceamento final.
+         * Compatibilidade com catálogos antigos que marcavam apenas
+         * `impedeAssaltoImediato`. O catálogo atual declara 2/3/4 por nível diretamente na
+         * construção; cidade aberta continua caindo no primeiro assalto.
          */
         rodadasParaAssaltarMuralha: z.number().int().min(0),
       }),

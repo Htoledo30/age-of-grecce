@@ -72,7 +72,7 @@ export function mundoDe(
     ehMar: () => false,
     // Nenhuma província do mundo mínimo é fortificada: quem testa muralha é
     // `testes/cerco/`, contra os dados de verdade.
-    impedeAssaltoImediato: () => false,
+    rodadasParaAssaltar: () => 0,
     miliciaPerdida: (id: string, n: number) => {
       mortos[id] = (mortos[id] ?? 0) + n;
     },

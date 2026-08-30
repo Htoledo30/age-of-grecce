@@ -395,9 +395,10 @@ Toda construção de pé cobra manutenção em ouro por turno (números em
 `dados/construcoes.json`): a renda provincial é LÍQUIDA e uma província pode render
 negativo — um Mercado numa terra pobre custa mais do que devolve, e a interface avisa
 ("custaria N por turno a mais do que rende"). A manutenção é cobrada inclusive sob cerco;
-obra em andamento ainda não cobra. O tesouro não desce de zero pela arrecadação — o que
-acontece com construção sem manutenção paga é a questão aberta "danos a construções" do
-GDD. A ficha, o Governo (coluna própria) e a tabela do `checar.ts` mostram a folha.
+obra em andamento ainda não cobra. O tesouro não desce de zero pela arrecadação e, hoje, a
+obra continua funcionando mesmo sem caixa: já está decidido no GDD, mas ainda não implementado,
+que ela deverá ficar inativa naquele turno, sem ser destruída. A ficha, o Governo (coluna
+própria) e a tabela do `checar.ts` mostram a folha.
 
 **O preço de uma obra acompanha a riqueza da terra que a ergue**, e a folha dela junto
 (`campanha/custo-de-obra.ts`). A escala sai do peso econômico AUTORAL da província — nunca do
@@ -424,9 +425,14 @@ requisito de produto), `acampamento-de-arqueiro` (arqueiro, só onde há madeira
 e responde o que a terra levanta. Nenhuma delas consome mercadoria: o produto é REQUISITO,
 como em Mina só onde há ferro.
 
-Templo soma pontos ao ALVO de felicidade da província (+5/+8/+12). Muralha melhora a milícia
-e impede assalto imediato. O número de milicianos mostrado na ficha é exatamente a força
-enfrentada no assalto; não existe outro multiplicador escondido.
+Ágora corta a corrupção causada pelo tamanho e, por isso, recupera impostos que seriam
+perdidos — ela não aplica um segundo multiplicador secreto. Templo soma +9/+15/+22 ao ALVO de
+felicidade e, quando o humor está subindo, acrescenta +1/+2/+3 ao passo de recuperação; fome,
+cerco e imposto ainda derrubam o humor no passo normal. Estrada corta a corrupção da distância
+e reduz em 3%/5%/7% a folha das hostes paradas naquela província própria; em terra alheia a
+taxa de campanha continua cheia. Muralha melhora a milícia e exige 2/3/4 rodadas completas de
+cerco antes do assalto nos níveis I/II/III. O número de milicianos mostrado na ficha é
+exatamente a força enfrentada no assalto; não existe outro multiplicador escondido.
 
 ### Felicidade, revoltas e fim de campanha
 

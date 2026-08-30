@@ -94,6 +94,7 @@ import { nivelDeImpostoEm } from '../governo/nivel-de-imposto';
 import { noExilio, poderesVivos, vivo } from '../governo/poderes';
 import { tesouroDe } from '../governo/tesouro';
 import { donoDe } from '../provincia/consultas';
+import { descontoDaFolhaEmCasa } from '../provincia/beneficios-das-construcoes';
 import { rendaDe, semEconomia } from '../provincia/renda';
 import type { Levante } from '../sociedade/processar-revoltas';
 
@@ -128,7 +129,13 @@ export abstract class ConsultasDoReino {
       ajustes,
       estado,
       territorios,
-      mobilizacao: new Mobilizacao(estado, ajustes.combate, (id) => territorios.donoDe(id)),
+      mobilizacao: new Mobilizacao(
+        estado,
+        ajustes.combate,
+        (id) => territorios.donoDe(id),
+        (id) =>
+          1 - descontoDaFolhaEmCasa(catalogo, estado.construcoes[id] ?? {}),
+      ),
       saltosPorCapital: new Map(),
     };
   }

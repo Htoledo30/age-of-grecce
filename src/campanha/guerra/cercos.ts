@@ -10,6 +10,7 @@ import { rodadasAteOAssalto } from '@/combate/cerco';
 import type { Cerco, Postura } from '@/combate/cerco';
 import type { NucleoDaCampanha } from '../nucleo';
 import { construcoesEm } from '../provincia/consultas';
+import { rodadasParaAssaltar } from '../provincia/beneficios-das-construcoes';
 
 /** O cerco em curso nesta província, se houver. */
 export function cercoEm(nucleo: NucleoDaCampanha, idProvincia: string): Cerco | undefined {
@@ -41,9 +42,23 @@ export function impedeAssaltoImediatoEm(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
 ): boolean {
-  return construcoesEm(nucleo, idProvincia).some(
+  return rodadasParaAssaltarEm(nucleo, idProvincia) > 0;
+}
+
+/** Quantas rodadas completas as fortificações erguidas exigem antes do assalto. */
+export function rodadasParaAssaltarEm(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+): number {
+  const erguidas = nucleo.estado.construcoes[idProvincia] ?? {};
+  const porNivel = rodadasParaAssaltar(nucleo.catalogo, erguidas);
+  if (porNivel > 0) return porNivel;
+
+  // Compatibilidade com catálogos antigos que declaravam só a trava binária.
+  const travaAntiga = construcoesEm(nucleo, idProvincia).some(
     (id) => nucleo.catalogo[id]?.impedeAssaltoImediato === true,
   );
+  return travaAntiga ? nucleo.ajustes.combate.cerco.rodadasParaAssaltarMuralha : 0;
 }
 
 /**
@@ -58,9 +73,8 @@ export function assaltoEm(
   idProvincia: string,
 ): { pode: boolean; faltam: number } {
   const faltam = rodadasAteOAssalto(
-    impedeAssaltoImediatoEm(nucleo, idProvincia),
+    rodadasParaAssaltarEm(nucleo, idProvincia),
     nucleo.estado.cercos[idProvincia]?.rodadas ?? 0,
-    nucleo.ajustes.combate.cerco,
   );
   return { pode: faltam === 0, faltam };
 }

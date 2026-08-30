@@ -176,6 +176,29 @@ describe('o humor dentro da campanha', () => {
     );
   });
 
+  it('o Templo acelera a recuperação da ordem, mas não mascara uma situação que piora', () => {
+    const c = nova();
+    c.darOuro(100_000);
+    c.construir('atenas', 'templo');
+    const templo = construcoes.construcoes['templo'];
+    for (let i = 0; i < (templo?.turnos[0] ?? 0); i++) c.passarTurno();
+
+    const bonus = templo?.recuperacaoDaOrdem?.[0] ?? 0;
+    comHumor(c, 'atenas', 20);
+    const alvoDeRecuperacao = c.alvoDeFelicidadeEm('atenas');
+    c.passarTurno();
+    expect(c.felicidadeEm('atenas')).toBe(
+      aproximarFelicidade(20, alvoDeRecuperacao, felicidade.passoPorTurno + bonus),
+    );
+
+    comHumor(c, 'atenas', 100);
+    const alvoDeQueda = c.alvoDeFelicidadeEm('atenas');
+    c.passarTurno();
+    expect(c.felicidadeEm('atenas')).toBe(
+      aproximarFelicidade(100, alvoDeQueda, felicidade.passoPorTurno),
+    );
+  });
+
   it('a conquista dá o choque na hora, e o humor segue dali gradualmente', () => {
     const c = nova();
     c.darOuro(100_000);

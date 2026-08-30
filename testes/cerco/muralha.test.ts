@@ -4,8 +4,6 @@ import type { Campanha } from '../../src/campanha/campanha';
 import { ordenar } from '../apoio/hostes';
 import { ajustes, construcoes, novaCampanhaFarta as nova } from '../apoio/mundo';
 
-const cercoAjustes = ajustes.combate.cerco;
-
 /**
  * A MURALHA — o que separa uma província fortificada de uma que não é.
  *
@@ -17,7 +15,8 @@ const cercoAjustes = ajustes.combate.cerco;
  * a diferença ser vista de um lado para o outro sem inventar cenário nenhum.
  */
 describe('A MURALHA: cidade aberta cai hoje, cidade murada faz esperar', () => {
-  const rodadasExigidas = cercoAjustes.rodadasParaAssaltarMuralha;
+  const muralha = construcoes.construcoes['muralha'];
+  const rodadasExigidas = muralha?.rodadasParaAssaltar?.[0] ?? 0;
 
   /** Atenas com ouro e uma hoste plantada. O alvo não tem tropa: o mapa abre em paz. */
   function contra(_alvo: string, homens: number): Campanha {
@@ -40,6 +39,21 @@ describe('A MURALHA: cidade aberta cai hoje, cidade murada faz esperar', () => {
           (fator?.tipo === 'milicia' ? fator.fatores[0] : 1),
       ),
     );
+  });
+
+  it('cada nível compra mais tempo: 2/3/4 segundo o catálogo', () => {
+    const c = nova();
+    c.comecar('tanagra');
+    c.darOuro(200_000, 'tanagra');
+
+    for (let nivel = 1; nivel <= 3; nivel++) {
+      expect(c.nivelDaConstrucaoEm('tanagra', 'muralha')).toBe(nivel);
+      expect(c.assaltoEm('tanagra').faltam).toBe(muralha?.rodadasParaAssaltar?.[nivel - 1]);
+      if (nivel === 3) break;
+      c.construir('tanagra', 'muralha', 'tanagra');
+      const prazo = muralha?.turnos[nivel] ?? 0;
+      for (let turno = 0; turno < prazo; turno++) c.passarTurno();
+    }
   });
 
   it('Elêusis é aberta: o assalto sai na chegada, sem sentar antes', () => {

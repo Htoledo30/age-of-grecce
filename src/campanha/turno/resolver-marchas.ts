@@ -12,7 +12,7 @@ import { mortosDaMilicia } from '@/combate/milicia';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe, populacaoDe } from '../provincia/consultas';
 import { conquistar } from '../provincia/posse';
-import { impedeAssaltoImediatoEm } from '../guerra/cercos';
+import { rodadasParaAssaltarEm } from '../guerra/cercos';
 import { abalarRelacao, emGuerra } from '../diplomacia/relacoes';
 import { temAcessoA } from '../diplomacia/acesso-militar';
 import { miliciaEm } from '../guerra/defesa-local';
@@ -67,7 +67,7 @@ export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
     emGuerra: (a, b) => emGuerra(nucleo, a, b),
     miliciaDe: (id) => miliciaEm(nucleo, id),
     ehMar: (id) => nucleo.atlas.ehMar(id),
-    impedeAssaltoImediato: (id) => impedeAssaltoImediatoEm(nucleo, id),
+    rodadasParaAssaltar: (id) => rodadasParaAssaltarEm(nucleo, id),
     // ⚠️ Quebrar custa o EXÉRCITO, não a geração: quem escapou da perseguição volta para a
     // terra natal e torna a pagar tributo e a poder ser recrutado. Sem isto, perder uma
     // batalha apagava aqueles homens do mundo — e a província que levantou a leva pagava
