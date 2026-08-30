@@ -4,6 +4,11 @@ Este documento descreve a visão atual do jogo, não uma promessa nem uma ordem 
 implementação. Ele pode ser alterado, reduzido ou ampliado conforme os testes mostrarem o
 que combina com Age of Grecce. O Git guarda as ideias antigas.
 
+**Versão de desenvolvimento atual: `0.2.0`.** A `0.1.0` provou o ciclo mínimo de campanha.
+A `0.2.0` já é um jogo sistêmico: economia, alimentação, construções, guerra terrestre, mar,
+diplomacia, comércio, alianças, ligas e IA funcionam juntos. O trabalho atual é aprofundar,
+equilibrar e preencher esse jogo — não terminar um protótipo mínimo.
+
 ## Proposta
 
 Age of Grecce é um grand strategy ambientado no mundo grego por volta de 700 a.C. O
@@ -24,7 +29,7 @@ O jogador deve conseguir:
 
 1. escolher um poder e entender suas forças e carências;
 2. administrar províncias sem repetir ações cansativas;
-3. produzir, consumir, armazenar e fazer recursos circularem;
+3. produzir, consumir e fazer recursos circularem sem estoque manual;
 4. arrecadar, construir e sustentar forças militares;
 5. planejar ordens e resolver uma rodada anual;
 6. lutar, cercar, conquistar e perder território;
@@ -33,8 +38,10 @@ O jogador deve conseguir:
 9. negociar quando diplomacia for necessária;
 10. salvar, carregar, vencer e perder uma campanha.
 
-A primeira campanha completa pode ser simples. Profundidade militar, política, naval e
-comercial vem depois que esse ciclo existir de ponta a ponta.
+Esse ciclo já existe de ponta a ponta. A régua agora é outra: cada sistema precisa criar uma
+decisão própria, comunicar suas consequências e continuar relevante do início ao fim da
+campanha. Complexidade nova só entra quando acrescenta uma decisão que os sistemas atuais não
+conseguem produzir.
 
 ## Mundo e tempo
 
@@ -53,8 +60,11 @@ comercial vem depois que esse ciclo existir de ponta a ponta.
   é a cor LAVADA — a que sobra depois da opacidade do mapa político —, e a distância mínima
   vale entre vizinhos e entre quaisquer dois poderes a menos de 120 km.
 - Um turno/rodada representa aproximadamente um ano.
-- A validação começa em Atenas, Maratona, Sunião, Elêusis e Tanagra; o restante do mundo é
-  preenchido gradualmente depois que as regras provarem seu valor.
+- O mapa tem 196 províncias de terra, 48 zonas marítimas, 53 regiões e 139 poderes. A simulação
+  autoral cobre hoje 25 províncias e 18 poderes jogáveis da Grécia central; as outras 171 terras
+  permanecem desenhadas, mas sem economia e população, até receberem autoria completa.
+- **Ritmo da campanha:** início até o turno 79; meio entre 80 e 150; fim depois de 150. No turno
+  100 já devem existir alguns impérios aparecendo, mas nenhum reino imenso ou mapa consolidado.
 - Classificações só existem quando produzem consequência de gameplay.
 - Poder sem território pode sobreviver no exílio enquanto possuir hostes.
 
@@ -68,7 +78,8 @@ lugares e um mapa com um censo. As três parcelas:
 imposto  = população × taxa × nível de imposto × construções
 produção = (valor_principal × nível + valor_secundário × nível × peso) × construções
 trânsito = transitoBase × escala × construções     (zero sem rota até a capital)
-renda    = (imposto + produção + trânsito) × (1 − corrupção) − folha das construções
+renda provincial = (imposto + produção + trânsito) × (1 − corrupção) × humor
+                   − folha das construções
 ```
 
 - **O trânsito não é uma fatia da produção.** Ele é POSIÇÃO, porto e rota: uma vila de porto
@@ -93,18 +104,19 @@ renda    = (imposto + produção + trânsito) × (1 − corrupção) − folha d
   conferir isso com `npm run economia`.
 ### Comércio interno e externo
 
-São **duas coisas**, e hoje só uma existe de verdade. Escrito aqui para entrar em patches
-pequenos no futuro, não agora.
+São **duas coisas implementadas e deliberadamente separadas**. A rede interna responde quais
+bens o reino alcança; os acordos externos respondem quanto dois mercados conseguem ganhar em
+conjunto. Assinar um acordo nunca transfere o bem do parceiro para a sua rede.
 
-**Interno — construído.** A rede de trocas: cada bem DISTINTO que o reino alcança rende uma
+**Interno.** A rede de trocas: cada bem DISTINTO que o reino alcança rende uma
 vez por turno. Ele circula se a terra é sua, não está sitiada e chega à capital — por terra
 própria **ou por mar, entre dois Portos seus**. Tem risco de verdade: sitiar a terra que dá o
 bem, partir o reino ao meio ou tomar a capital cortam a rede.
 
-**A parcela agora se chama TRÂNSITO, e o nome é honesto.** Ela nasceu chamada de "comércio"
-pensando em comércio externo — `transitoBase` é o pedágio da posição, e a ficha de Corinto diz
-isso na cara ("tudo que cruza da Itália ao Egeu paga passagem aqui"). Mas comércio pressupõe
-alguém do outro lado, e não há ninguém: a palavra ficou reservada para quando houver.
+**A parcela se chama TRÂNSITO, e o nome é honesto.** `transitoBase` é o pedágio da posição, e a
+ficha de Corinto diz isso na cara ("tudo que cruza da Itália ao Egeu paga passagem aqui").
+COMÉRCIO é o acordo entre dois reinos; TRÂNSITO é o valor de uma encruzilhada mesmo antes de
+qualquer assinatura. As duas rendas se somam sem fingir que são a mesma coisa.
 
 **E ela ganhou risco.** Era um valor fixo que só o cerco reduzia — Corinto rendia o mesmo em
 paz com toda a Grécia ou em guerra com toda ela. Agora o trânsito **exige rota até a
@@ -115,17 +127,14 @@ continuam, que o lavrador colhe e o coletor cobra mesmo com o reino partido ao m
 ⚠️ **Partir um império ao meio passa a custar caro a ele**, e um segundo Porto costura a
 ferida. É consequência econômica de guerra sem precisar de diplomacia nenhuma.
 
-**Externo — ainda não existe, e não pode existir sozinho.** Comércio com parceiro precisa de:
+**Externo.** Um acordo de comércio acrescenta renda aos dois lados. O valor bruto parte de uma
+fração da renda do menor mercado; a carteira inteira tem retorno decrescente, mas acrescentar
+um parceiro rentável nunca reduz o total. A rota é conferida todo turno: os reinos precisam se
+tocar por terra ou possuir Portos abertos nos dois lados. Guerra desfaz o acordo; fronteira
+perdida, Porto destruído ou bloqueio naval suspendem a renda enquanto a rota não existir.
 
-- **Diplomacia**, que dá a contraparte: com quem se comercia, quanto vale cada acordo, e o que
-  a guerra corta. É aqui que o **acordo de grãos** encaixa — romper o acordo é arma de guerra
-  sem disparar flecha.
-- **Mar e zonas marítimas**, que dão o alcance — feito — e o **bloqueio**, também feito: fechar
-  o Euripo e Cálcis sente. Ver **Naval**.
-
-⚠️ A cadeia de dependência é **IA → diplomacia → comércio externo**, e ela é o inverso da
-ordem em que os itens foram planejados. Por isso o item 4 foi partido em dois, como o 3 foi:
-o que não precisa de parceiro foi construído; o resto espera quem esteja do outro lado.
+O acordo não compartilha produtos nem comida. Quem quer o mármore do outro ainda precisa tomar
+a terra; um acordo compra renda e paz, não a capacidade estratégica da província.
 
 - Produtos representam a capacidade anual e a identidade econômica da terra, não um
   inventário de unidades acumuladas.
@@ -143,7 +152,7 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
 - Produtos alimentares somam seus níveis principal e secundário; construções alimentares
   somam por cima.
 - **O tamanho da província pesa na mesa**: cada terra cai numa FAIXA de população absoluta
-  (`ajustes.json`) e come os pontos dela. Não é upgrade — não se compra faixa, não há prédio
+  (`dados/ajustes.json`) e come os pontos dela. Não é upgrade — não se compra faixa, não há prédio
   de governo que a suba e não existe punição por não construir; quem faz a província evoluir
   são as construções. A faixa só lê a população e diz quanto ela consome, e o nome dela é a
   régua que a ficha mostra ao lado do número cru de habitantes.
@@ -194,26 +203,24 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
   é abstrata: Porto nas duas pontas e pronto. A hoste é peça concreta, com posição e batalha,
   e por isso ela ANDA — zona de mar por zona de mar, um salto por rodada, podendo ser
   interceptada no caminho. Ver **Naval**.
-- O produto SECUNDÁRIO da província entra por aqui — é o que ele sempre esperou para servir
-  a alguma coisa. Ele continua fora da renda da terra, que é do principal.
-- Escassez é distribuída de forma compreensível, com prioridade limitada da capital.
+- O produto SECUNDÁRIO entra tanto na produção da terra, com peso menor, quanto na rede de
+  bens distintos. Ele não é decoração nem estoque.
 - Recursos só devem circular por conexões válidas; conexão marítima completa exige Porto.
-- Comércio internacional depende de tratado e transforma capacidade produtiva em renda,
-  sem inventário ou barter manual. Um acordo futuro pode cobrir no máximo `+1` comida de
-  um parceiro que preserve pelo menos `+2` para si.
-- Preços-base simples bastam inicialmente; oferta, demanda e preços regionais só entram se
+- Comércio internacional depende de tratado e transforma o encontro entre dois mercados em
+  renda, sem inventário ou troca manual. Alimento não atravessa o acordo hoje.
+- Preços-base simples bastam; oferta, demanda e preços regionais só entram se
   trouxerem decisões melhores.
 - O mesmo produto pode sustentar o reino e gerar comércio porque ambos representam fluxos
   anuais; não existe venda de estoque acumulado.
 
 ## População, sociedade e governo
 
-- População é provincial e fornece trabalhadores, contribuintes, recrutas e milícia.
+- População é provincial e fornece contribuintes, recrutas e milícia.
 - Soldados preservam origem provincial; desmobilização devolve cada homem à sua terra.
-- Felicidade é provincial, guardada numericamente e mostrada em categorias compreensíveis.
-- Impostos, alimento, conquista, nacionalidade, prosperidade, guerra e presença militar
-  podem afetar felicidade quando seus sistemas existirem.
-- Nacionalidade pertence à população, pode ser misturada e muda lentamente.
+- Felicidade é provincial, guardada numericamente e mostrada em categorias compreensíveis. Ela
+  caminha para um alvo formado por imposto, fome, cerco, guerra, isolamento, tamanho,
+  nacionalidade, guarnição e Templo; também multiplica a renda inteira da província.
+- Nacionalidade pertence à população e pode ser misturada. Ela não muda hoje.
 - ⚠️ **E ela tem DUAS camadas, e é o degrau entre elas que dá direção à expansão.** A
   nacionalidade é a cidade — ateniense, megarense, tebano —, com fração da população em cada
   uma; o **povo** é a tribo grega dela: jônio, dório, beócio, lócrio. Mandar no próprio povo
@@ -224,12 +231,13 @@ o que não precisa de parceiro foi construído; o resto espera quem esteja do ou
   uma coisa e não um rótulo.
 - Diferença entre governante e população cria tensão, não uma trava artificial de uso da
   província conquistada.
-- ⚠️ **A ASSIMILAÇÃO ainda não existe, e é a peça natural seguinte.** Hoje o povo conquistado
+- ⚠️ **A ASSIMILAÇÃO ainda não existe e não entra sem nova decisão.** Hoje o povo conquistado
   não deixa de ser quem é: o preço é permanente e se paga com Templo, imposto baixo e
-  guarnição. No dia em que a nacionalidade caminhar, ela caminha devagar e nunca some de todo.
-- Insatisfação persistente pode gerar revoltas; migração pode responder a fome,
-  prosperidade, guerra e segurança no futuro.
-- Cada poder possui uma capital. Perdê-la deve obrigar a escolher outra antes de continuar.
+  guarnição. Se a nacionalidade um dia caminhar, será devagar e nunca sumirá de todo.
+- Insatisfação persistente gera greve fiscal e, sob dono estrangeiro, pode levantar uma hoste
+  rebelde. Migração continua fora e exige decisão própria antes de entrar.
+- Cada poder possui uma capital. O jogador que a perde escolhe outra antes de continuar; a IA
+  reassenta automaticamente. Mudança voluntária custa ouro e terra sitiada não pode virar sede.
 - Distância da capital e tamanho da província viram **corrupção**: o que se perde entre o
   campo e o tesouro. Ver a seção de dinheiro.
 
@@ -246,13 +254,14 @@ seja maior que o ganho fiscal é um botão que mente, e o jogo já teve um: mexe
 sem refazer a conta dos dois lados o traz de volta.
 
 - Tesouro pertence ao poder, nunca à província.
-- Impostos devem possuir níveis baixo, normal e alto, trocando receita por pressão social.
+- Impostos possuem quatro níveis: baixo, normal, alto e confisco. O último é uma alavanca de
+  emergência com prazo social curto, não apenas um degrau maior.
 - Receita considera população, atividade e **corrupção**.
 - Atividade econômica pode gerar dinheiro automaticamente; não exigir venda manual de toda
   colheita.
 - Batalha por si só não gera saque; **tomar a cidade à força, sim** — e o saque é destruição,
-  não lucro: o vencedor herda menos gente e uma obra quebrada, não um baú. Conquista poderá dar dinheiro com perdas quando o
-  saque existir; não há estoque de produtos para capturar.
+  não lucro: o vencedor herda menos gente e uma obra quebrada, não um baú. Não há ouro nem
+  estoque de produtos para capturar.
 
 ### Corrupção
 
@@ -263,8 +272,8 @@ entra na economia.
 
 Dois fatores a alimentam, e o segundo é o que dá sentido geográfico ao mapa:
 
-- **tamanho**: quanto mais gente, mais se perde no caminho. Nada abaixo de um limiar,
-  crescendo depois numa curva que satura sozinha;
+- **tamanho**: quanto mais gente, mais se perde no caminho, desde a menor província, numa curva
+  que satura sozinha;
 - **distância da capital**, em saltos pelo território: a província no fim do mundo é
   fodida duas vezes — é pobre e ainda entrega menos do pouco que arrecada.
 
@@ -273,7 +282,7 @@ passe de 100% sem precisar de teto artificial:
 
 ```
 corrupção = 1 − (1 − por tamanho) × (1 − por distância)
-imposto   = população × taxa × (1 − corrupção)
+renda líquida antes das folhas = (imposto + produção + trânsito) × (1 − corrupção) × humor
 ```
 
 Ordem de grandeza pretendida, com o mapa atual (Elêusis a 1 salto de Atenas, Corinto a 3,
@@ -327,10 +336,8 @@ voltou quando passou a carimbar treino na leva — a regra é essa: some enquant
 volta quando entregar.
 
 **O preço de uma obra acompanha a riqueza da terra que a ergue**, e a folha dela junto. Preço
-fixo contra renda variável nunca serve província pequena: com o preço igual para todos, a
-maior potência juntava a obra mais barata em 3 turnos e a menor em 17 — não é assimetria
-interessante, é a terra pequena ficando sem decisão nenhuma. A escala sai do dado AUTORAL,
-nunca do estado vivo, senão mobilizar baratearia as obras.
+fixo contra renda variável tira as obras da mesa das províncias pequenas. A escala sai do dado
+AUTORAL, nunca do estado vivo, senão mobilizar baratearia as obras.
 
 Cada prédio ataca uma pergunta diferente, e nenhum é o outro com números trocados: a Ágora
 corta a corrupção de TAMANHO (engolir população) e, assim, recupera imposto que se perderia;
@@ -467,7 +474,7 @@ exército de graça. Só a Muralha a fortalece — obra de defesa, não obra de 
   qualquer coisa, e cobrava folha das cidades que a autoria fez fortes e pobres.
 - **A folha militar depende de onde o homem pisa.** Em província do próprio poder ele é
   cidadão-lavrador e paga a taxa de CASA; em terra alheia — inclusive sitiando — paga a de
-  CAMPANHA, várias vezes maior. É sair de casa que custa, e é isso que dá à economia duas
+  CAMPANHA, maior. É sair de casa que custa, e é isso que dá à economia duas
   perguntas em vez de uma: em paz, qual construção e se vale ir atrás de comércio; em
   guerra, quanta tropa se sustenta e se sobra ouro para a próxima leva.
 - Consequência: cerco longo drena o cofre, e TOMAR a província faz a mesma tropa virar
@@ -490,17 +497,13 @@ exército de graça. Só a Muralha a fortalece — obra de defesa, não obra de 
   que faz sitiar ESTRANGULAR em vez de só esperar. A cidade sitiada continua cobrando
   imposto e levantando leva.
 
-A matemática básica é provisória. Possíveis aprofundamentos, somente depois da base:
+O núcleo militar já está fechado de ponta a ponta: quatro armas, treino, linha de quebra,
+recuo, perseguição, muralha, cerco, surtida, saque e uma janela que reproduz os mesmos rounds
+que resolveram o mapa. Não há batalha tática separada.
 
-- tipos de tropas, qualidade e equipamento;
-- moral, retirada e perseguição;
-- aleatoriedade controlada;
-- terreno com dados confiáveis;
-- generais, líderes e árvore familiar;
-- apresentação de batalha com lados, números, barras, velocidade e opção de pular.
-
-O visor de batalha pode inicialmente reproduzir visualmente um resultado já calculado; não
-é necessário criar batalha tática ou resolução iterativa apenas para gerar espetáculo.
+Terreno com dados confiáveis, generais, líderes, árvore familiar e equipamento mais profundo
+são expansões possíveis, não buracos da versão atual. Nenhuma entra apenas para aumentar a
+quantidade de modificadores.
 
 ## Naval
 
@@ -531,18 +534,17 @@ vizinhos nunca a conteria. Duas peças resolvem, e as duas são pequenas:
 
 - **a rota longa** (`rotasLongasDaHoste`) responde *"por onde eu chegaria lá, um dia?"* com as
   mesmas regras da marcha, e a expedição anda o primeiro trecho dela por virada;
-- **o preço da porta** (`valorDoMar` no estilo): o Porto custa 2.500 e paga em trânsito, a
-  menor parcela da renda. Medido, nenhum dos dezoito poderes erguia um em cem turnos — o mar
-  existia, o exército sabia navegar, e nenhum reino chegava à porta. Só o PRIMEIRO Porto vale
-  isso; do segundo em diante a porta já está aberta.
+- **o preço da porta** (`valorDoMar` no estilo): o Porto tem preço-base de 2.500 e paga em
+  trânsito, uma parcela pequena da renda. A IA dá valor estratégico somente ao PRIMEIRO Porto;
+  do segundo em diante a porta já está aberta e cada novo cais precisa justificar o próprio
+  lugar.
 
-Medido em 100 turnos: sem o mar, 24 províncias mudaram de dono; com ele, 45 — e a distância
-entre o maior e o menor reino DIMINUIU (8,0× → 6,9×). O mar não faz ninguém disparar: ele
-abre uma segunda frente para todo mundo ao mesmo tempo.
+O mar deve abrir uma segunda frente para vários poderes, não entregar crescimento automático a
+quem ergueu o primeiro cais.
 
 ### O BLOQUEIO — a razão de FICAR numa água
 
-> **Frota inimiga parada na água que banha o teu Porto fecha aquele Porto.**
+> **Hoste inimiga parada na água que banha o teu Porto fecha aquele Porto.**
 
 Sem ele a água era estrada, e estrada não se ocupa: uma zona de mar não tem dono e não se
 conquista, então segurar uma não comprava nada. O bloqueio dá a ela a única coisa que ela pode
@@ -558,33 +560,37 @@ razões de existir do Porto:
 
 ⚠️ **EMBARCAR continua livre, e é deliberado.** Um bloqueio que trancasse o cais seria
 inquebrável — o bloqueado não teria como sair para atacar quem o bloqueia, e a única defesa
-contra uma frota seria não ter porto. Do jeito que está, **sair é atacar**: a água que se
+contra uma força no mar seria não ter porto. Do jeito que está, **sair é atacar**: a água que se
 precisa cruzar é justamente a ocupada, e o encontro no mar já é batalha.
 
 ⚠️ **É o mesmo desenho do cerco em terra.** Sitiar não toma a cidade: corta a produção e o
 comércio dela e espera. Bloquear não toma a água: corta o que passa por ela.
 
-⚠️ **Uma zona banha meia dúzia de províncias**, então uma frota fecha vários cais de uma vez. É
+⚠️ **Uma zona banha meia dúzia de províncias**, então uma hoste fecha vários cais de uma vez. É
 a geografia falando — e é o que faz o Golfo Sarônico valer uma guerra e o Mar de Rodes não.
 
 **A IA disputa o mar**: ela intercepta expedição inimiga parada na água que encosta no chão
 dela, e vai buscar a água que fecha mais cais inimigos. Quem não tem Porto não disputa — a
 mesma porta serve às duas coisas.
 
-**O que continua fora:** o **desgaste por FICAR** na água (hoje o embarcado paga só a folha de
-campanha, três vezes a de casa) e a **proteção de rota escoltada** — o que existe é o bloqueio
+**O que continua fora:** o **desgaste por FICAR** na água (hoje o embarcado paga só a folha
+maior de campanha) e a **proteção de rota escoltada** — o que existe é o bloqueio
 do CAIS, e não da rota no meio do mar.
 
 ## IA e diplomacia
 
 - IA usa as mesmas regras do jogador: tesouro, população, alimento, recrutamento,
-  manutenção, movimento, cerco e conquista.
-- A IA básica permanece simples: sobreviver, recrutar, formar hostes, mover, escolher
-  alvos, lutar, cercar e conquistar.
-- Personalidades, cheats, comportamento histórico e estratégia sofisticada não pertencem à
-  primeira versão.
-- Diplomacia começa depois da IA mínima e contém apenas o necessário para a campanha
-  funcionar; sistemas diplomáticos profundos são evolução posterior.
+  manutenção, movimento, cerco, conquista, mar e diplomacia. Ela constrói, decreta imposto,
+  planeja comida, recruta, defende, ataca, sitia, faz surtida, desembarca, intercepta e bloqueia.
+- Os estilos guerreiro, mercador, cauteloso e equilibrado mudam prioridades e tolerância a
+  risco. Eles ainda não mudam o que cada personalidade admira ou despreza diplomaticamente;
+  esse gosto por estilo é aprofundamento pendente.
+- Não há bônus secretos de IA. A diferença entre jogador e IA é a decisão automática, não a
+  regra econômica ou militar.
+- Relação é simétrica por par e caminha para um alvo legível. Além dos atos bilaterais, pesam
+  tribo comum, inimigo em comum, paz longa, diferença de porte e amizade com inimigos.
+- A régua diplomática está fechada de ponta a ponta: presente, pacto, comércio, tributo,
+  acesso militar, aliança e liga. Guerra, paz e quebra de acordos alteram opinião e reputação.
 - ⚠️ **A TRIBO é a razão de aproximação que a Grécia tinha no lugar de nação.** Jônio, dório,
   beócio e lócrio já decidiam a felicidade de quem é governado por estranho; eles decidem também
   quem reconhece quem na mesa. Ser de outra tribo não afasta — a tribo dá razão para gostar, e a
@@ -619,10 +625,15 @@ do CAIS, e não da rota no meio do mar.
   abandonar quem contava com você custa mais que voltar atrás num pacto. Só o aliado direto é
   convocado, e promessa que já existe com o inimigo segura a convocação: nenhuma aliança faz
   alguém quebrar de graça um papel que já tinha assinado.
-- ⚠️ **A IA PEDE ao jogador o que assinaria com outro reino.** Pacto, comércio e passagem
-  chegam como proposta na aba de Diplomacia, com Aceitar e Recusar, e **recusar não custa
-  nada** — um "não" que abalasse a opinião faria a resposta certa ser nunca abrir a aba. A
-  mesa é do turno: a virada a esvazia, para o jogador nunca responder a um mundo que já mudou.
+- ⚠️ **A IA PEDE ao jogador o que não pode decidir por ele.** Pacto, comércio, passagem,
+  aliança, entrada em liga e anexação chegam como proposta na aba de Diplomacia, com Aceitar e
+  Recusar, e **recusar não custa nada** — um "não" que abalasse a opinião faria a resposta certa
+  ser nunca abrir a aba. A mesa é do turno: a virada a esvazia, para o jogador nunca responder
+  a um mundo que já mudou.
+- A IA não exige tributo e não rompe o tributo que recebe. Essas duas ações continuam fora por
+  decisão, não por esquecimento.
+- Arestas ainda abertas: aliança defensiva, recusar convocação pagando reputação, fazer o custo
+  de romper acordo cair com a idade e guardar memória longa de trégua violada.
 
 ### Espionagem futura: sabotagem sem personagem no mapa
 
@@ -642,23 +653,19 @@ mostrada antes da confirmação.
 - Sabotar Fazenda, Muralha, Mercado, Porto ou outra construção deve preparar decisões de
   comida, cerco e economia; não cria agentes, experiência, equipamentos ou contraespiões.
 
-Essa camada entra somente depois da diplomacia básica — relações, acordos, comércio, guerra
-e paz — estar funcionando. Custos, intervalo e probabilidades ficam para balanceamento
-quando a mecânica for implementada.
+Relações, acordos, comércio, guerra e paz já funcionam, mas espionagem não entra
+automaticamente por causa disso. Ela continua uma direção futura que exige nova autorização;
+custos, intervalo e probabilidades só serão definidos se a mecânica for escolhida.
 
-## Campanha completa
+## Campanha atual
 
-O primeiro grande marco é uma campanha que começa e termina:
+A fundação da campanha está completa: seleção de poder, administração, economia, população,
+construções, guerra, mar, diplomacia, IA, salvamento e condições claras de vitória e derrota.
+O jogador pode continuar observando o mundo depois do encerramento.
 
-- seleção de poder;
-- administração básica;
-- economia, população e guerra integradas;
-- IA mínima e diplomacia necessária;
-- save/load;
-- condições claras de vitória e derrota.
-
-Isso não significa jogo finalizado. Significa que existe um ciclo completo sobre o qual
-novos sistemas podem ser julgados jogando, não apenas imaginando.
+Isso não significa jogo finalizado. Significa que qualquer sistema novo agora precisa provar
+seu valor dentro de uma partida real, especialmente nas três fases: início até 79, meio entre
+80 e 150 e fim depois de 150.
 
 ## Direção visual
 
@@ -723,19 +730,25 @@ over-explicar. O porquê da regra migra para a crônica, para o painel de Govern
 - Música e efeitos têm volumes separados no menu de pausa. Zero cumpre o papel de mute sem
   acrescentar outro botão para representar o mesmo estado.
 
-## Questões abertas
+## Direções futuras
 
-Estas ideias não têm ordem nem garantia de implementação:
+Sem ordem de implementação. Uma direção decidida não autoriza abrir a frente sem o pedido de
+Henrique; uma possibilidade pode ser removida se não combinar com o jogo.
 
-- quantidade e desenho das zonas marítimas;
-- profundidade adequada de moral, retirada e generais;
-- quanto da capacidade anual vira comércio automático;
+**Direções fechadas, ainda não implementadas:**
+
+- obra cuja manutenção não cabe no tesouro fica inativa naquele turno, sem ser destruída;
+- expansão autoral gradual das outras 171 províncias de terra;
+- limpeza das tooltips para que nenhuma carregue o manual inteiro.
+
+**Possibilidades que ainda exigem decisão:**
+
+- desgaste por permanecer no mar e proteção de rota escoltada;
+- generais, líderes e o papel de terreno confiável no combate;
+- gosto diplomático próprio de cada estilo de IA;
+- arestas da aliança e memória longa de trégua violada;
+- assimilação, migração, governadores e espionagem;
 - preços, oferta e demanda regionais;
 - extensão dos danos a construções além da perda atual de um nível na conquista;
-- migração e governadores;
 - abastecimento militar por distância além do desconto local já dado pela Estrada;
-- expansão autoral das outras 200 províncias;
 - duração definitiva de uma rodada e ritmo completo da campanha.
-
-Uma questão deixa esta lista quando Henrique decidir testá-la. Se a ideia não combinar com
-o jogo, ela é removida sem obrigação de substituição.
