@@ -106,6 +106,18 @@ sem encarecer o soldado mata a leve, e encarecer o QUARTEL não resolve — a co
 soldado. `limiarDeQuebra` fica em 0,70: em 0,75 a linha aguenta uma rodada a mais e a cavalaria
 derrotada é aniquilada até o último homem, sozinha entre as armas.
 
+`combate.manutencaoPorHomem.emCasa` fica em 0,10. Medido com `npm run partida 100`, que é
+determinístico: em 0,15 o mapa vai a 9 poderes eliminados de 18, maior reino com 8 províncias e
+desigualdade 11,8×; em 0,10, a 5, 5 e 7,2×. O soldo em casa é um imposto sobre o fraco — quem
+tem pouca renda deixa de bancar defensor e é comido. Foi o ÚNICO dos cinco valores de combate
+que mexeu no resultado: hoplita, cavalaria e rodadas de choque não mudaram nada, e a letalidade
+da perseguição só mexe na desigualdade quando o soldo já está em 0,10.
+
+⚠️ Ao isolar balanço, varie um grupo por vez em `dados/*.json` e compare com `npm run partida
+100`: ele é determinístico, então duas variantes são comparáveis sem repetição. E as
+interações dominam — as construções novas MELHORAM o mapa quando o soldo está alto e o pioram
+quando ele está baixo, então nunca conclua por um grupo isolado sem conferir a combinação.
+
 Só a faixa mais baixa de humor arma o próprio povo. Medido em Maratona: alvo 53, Confisco leva a
 33, a guerra do reino a 27, e só o cerco cruza para 12. Confisco sozinho não custa província a
 ninguém.

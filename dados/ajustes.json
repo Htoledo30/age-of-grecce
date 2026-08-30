@@ -291,7 +291,7 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": {
-        "emCasa": 0.15,
+        "emCasa": 0.1,
         "emCampanha": 0.3
       },
       "populacaoMinima": 2000,
