@@ -388,8 +388,8 @@ sitiada marcada "fora da circulação". Não há estoque ou deterioração.
 Cada província possui quatro slots e, em regra, cada prédio sobe de I a III. Upgrade ocupa o
 mesmo slot, paga apenas o nível novo e respeita uma obra por vez. Construções concluídas
 normalmente sobrevivem à conquista. **Armaria, Acampamento de arqueiro e Treinamento de
-cavaleiros têm somente o nível I:** cada uma custa 8.000 e cobra sua folha fixa em qualquer
-província, porque a arma liberada é a mesma numa vila e numa metrópole.
+cavaleiros têm somente o nível I:** cada uma custa 8.000 e cobra sua folha fixa de 25 moedas
+por turno em qualquer província, porque a arma liberada é a mesma numa vila e numa metrópole.
 
 Toda construção de pé cobra manutenção em ouro por turno (números em
 `dados/construcoes.json`): a renda provincial é LÍQUIDA e uma província pode render

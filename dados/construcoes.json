@@ -74,9 +74,9 @@
         2
       ],
       "manutencao": [
-        5,
-        5,
-        5
+        25,
+        25,
+        25
       ],
       "efeito": {
         "tipo": "arma",
@@ -100,9 +100,9 @@
         2
       ],
       "manutencao": [
-        4,
-        4,
-        4
+        25,
+        25,
+        25
       ],
       "requisito": {
         "produtos": [
@@ -131,9 +131,9 @@
         3
       ],
       "manutencao": [
-        7,
-        7,
-        7
+        25,
+        25,
+        25
       ],
       "requisito": {
         "produtos": [
