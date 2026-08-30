@@ -513,18 +513,61 @@ export function reputacaoDe(nucleo: NucleoDaCampanha, idPoder: string): number {
 }
 
 /** Os prazos de pacto que ESTE par consegue assinar hoje, do mais longo ao mais curto. */
+/**
+ * O INTERESSE basta para o pacto mais curto, mesmo sem simpatia nenhuma.
+ *
+ * ⚠️ **Henrique, e ele tem razão:** *"pacto de não agressão ter que precisar ter relacionamento
+ * não faz o menor sentido, olha na vida real quantos países se odeiam e fazem pactos de não
+ * agressão"*. Não-agressão nunca foi confiança — é **medo e conveniência**. Molotov-Ribbentrop
+ * foi assinado entre dois que se odiavam, e justamente por isso.
+ *
+ * São duas razões, e basta UMA:
+ *
+ * - **medo**: um dos dois é claramente menor no mapa. Quem é menor assina para não ser o
+ *   próximo; quem é maior assina porque não custa nada prometer não invadir agora;
+ * - **mãos ocupadas**: um dos dois já tem guerra em outro lugar. Ninguém quer duas.
+ *
+ * ⚠️ **Só o prazo mais CURTO entra por aqui.** Quarenta ou oitenta turnos são confiança, e
+ * confiança continua se comprando com opinião — senão o medo de um momento amarraria meia
+ * campanha, e o pacto longo deixaria de ser a coisa cara que ele é.
+ */
+function interesseBastaParaOPacto(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
+  const limiar = nucleo.ajustes.diplomacia.pacto.vantagemQueAssusta;
+  const daqui = nucleo.territorios.provinciasDe(a).length;
+  const dele = nucleo.territorios.provinciasDe(b).length;
+  if (Math.abs(daqui - dele) >= limiar) return true;
+  return (
+    guerrasDe(nucleo, a).some((id) => id !== b) || guerrasDe(nucleo, b).some((id) => id !== a)
+  );
+}
+
+/** O prazo mais curto da escada — é por ele que o interesse entra. */
+function menorPrazoDePacto(nucleo: NucleoDaCampanha): number {
+  return Math.min(...nucleo.ajustes.diplomacia.pacto.prazos.map((p) => p.turnos));
+}
+
+/** Ele assina ESTE prazo? Confiança, ou interesse quando o prazo é o curto. */
+function aceitaOPacto(
+  nucleo: NucleoDaCampanha,
+  a: string,
+  b: string,
+  prazo: { turnos: number; opiniaoMinima: number },
+): boolean {
+  if (relacaoEntre(nucleo, a, b) >= prazo.opiniaoMinima) return true;
+  return prazo.turnos === menorPrazoDePacto(nucleo) && interesseBastaParaOPacto(nucleo, a, b);
+}
+
 export function prazosDePacto(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
 ): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
-  const opiniao = relacaoEntre(nucleo, a, b);
   const livre = podeFirmarPacto(nucleo, a, b, 0).pode || pactoAte(nucleo, a, b) === undefined;
   return [...nucleo.ajustes.diplomacia.pacto.prazos]
     .sort((x, y) => y.turnos - x.turnos)
     .map((prazo) => ({
       ...prazo,
-      pode: livre && !emGuerra(nucleo, a, b) && opiniao >= prazo.opiniaoMinima,
+      pode: livre && !emGuerra(nucleo, a, b) && aceitaOPacto(nucleo, a, b, prazo),
     }));
 }
 
@@ -552,8 +595,7 @@ export function podeFirmarPacto(
   }
   const prazo = nucleo.ajustes.diplomacia.pacto.prazos.find((p) => p.turnos === turnos);
   if (!prazo) return { pode: false, motivo: 'este prazo não existe' };
-  const opiniao = relacaoEntre(nucleo, a, b);
-  if (opiniao < prazo.opiniaoMinima) {
+  if (!aceitaOPacto(nucleo, a, b, prazo)) {
     return {
       pode: false,
       motivo: `ele não confia tanto assim: ${prazo.turnos} turnos exigem opinião ${prazo.opiniaoMinima}`,
@@ -600,11 +642,13 @@ export function prazosDeAlianca(
   a: string,
   b: string,
 ): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
-  const opiniao = relacaoEntre(nucleo, a, b);
   const livre = aliancaAte(nucleo, a, b) === undefined && !emGuerra(nucleo, a, b);
   return [...nucleo.ajustes.diplomacia.alianca.prazos]
     .sort((x, y) => y.turnos - x.turnos)
-    .map((prazo) => ({ ...prazo, pode: livre && opiniao >= prazo.opiniaoMinima }));
+    .map((prazo) => ({
+      ...prazo,
+      pode: livre && podeFirmarAlianca(nucleo, a, b, prazo.turnos).pode,
+    }));
 }
 
 /** Esta aliança pode ser assinada? Ver `alianca.ts` — a regra mora lá. */
@@ -622,6 +666,7 @@ export function podeFirmarAlianca(
     (x, y) => emGuerra(nucleo, x, y),
     (id) => vivo(nucleo, id),
     relacaoEntre(nucleo, a, b),
+    inimigosComuns(nucleo, a, b),
   );
 }
 

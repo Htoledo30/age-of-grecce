@@ -30,7 +30,7 @@
       }
     },
     "diplomacia": {
-      "tregoaEmTurnos": 12,
+      "tregoaEmTurnos": 20,
       "passoPorTurno": 3,
       "alvo": {
         "base": 0,
@@ -63,37 +63,39 @@
       "pacto": {
         "prazos": [
           {
-            "turnos": 10,
+            "turnos": 20,
             "opiniaoMinima": -20
           },
           {
-            "turnos": 20,
+            "turnos": 40,
             "opiniaoMinima": 15
           },
           {
-            "turnos": 40,
+            "turnos": 80,
             "opiniaoMinima": 45
           }
         ],
         "pontos": 15,
         "choqueDeRuptura": -50,
         "reputacaoDaRuptura": -25,
-        "reputacaoPorTurno": 1
+        "reputacaoPorTurno": 1,
+        "vantagemQueAssusta": 3
       },
       "alianca": {
         "prazos": [
           {
-            "turnos": 15,
+            "turnos": 20,
             "opiniaoMinima": 25
           },
           {
-            "turnos": 30,
+            "turnos": 40,
             "opiniaoMinima": 35
           }
         ],
         "pontos": 25,
         "choqueDeRuptura": -70,
-        "reputacaoDaRuptura": -35
+        "reputacaoDaRuptura": -35,
+        "opiniaoComInimigoComum": 0
       },
       "liga": {
         "niveisDeTributo": {
@@ -130,11 +132,11 @@
       "acesso": {
         "prazos": [
           {
-            "turnos": 10,
+            "turnos": 20,
             "opiniaoMinima": 10
           },
           {
-            "turnos": 25,
+            "turnos": 50,
             "opiniaoMinima": 35
           }
         ],
@@ -144,15 +146,15 @@
       "tributo": {
         "prazos": [
           {
-            "turnos": 10,
+            "turnos": 20,
             "fracaoDaRenda": 0.2
           },
           {
-            "turnos": 20,
+            "turnos": 40,
             "fracaoDaRenda": 0.15
           },
           {
-            "turnos": 40,
+            "turnos": 80,
             "fracaoDaRenda": 0.12
           }
         ],

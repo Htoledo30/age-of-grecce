@@ -77,6 +77,8 @@ export function podeAliar(
   emGuerra: (a: string, b: string) => boolean,
   vivo: (id: string) => boolean,
   opiniao: number,
+  /** Com quantos reinos os dois estão em guerra ao mesmo tempo. */
+  inimigosComuns: number,
 ): Permissao {
   if (a === b) return { pode: false, motivo: 'não se faz aliança consigo mesmo' };
   if (!vivo(a) || !vivo(b)) return { pode: false, motivo: 'este poder não está mais no jogo' };
@@ -86,7 +88,17 @@ export function podeAliar(
   }
   const prazo = nucleo.ajustes.diplomacia.alianca.prazos.find((p) => p.turnos === turnos);
   if (!prazo) return { pode: false, motivo: 'este prazo não existe' };
-  if (opiniao < prazo.opiniaoMinima) {
+  // ⚠️ **O medo do mesmo terceiro une quem não se gosta, e é a aliança mais comum da
+  // história.** Sem esta porta, aliar-se era prêmio de amizade: só quem já gostava de você em
+  // +25 fechava, e dois vizinhos frios diante do mesmo gigante ficavam cada um por si — que é
+  // exatamente o que a sombra do maior existe para impedir. Vale só no prazo mais CURTO: uma
+  // guerra em comum é uma razão de agora, e amarrar o dobro do tempo continua sendo confiança.
+  const curto = prazo.turnos === Math.min(...nucleo.ajustes.diplomacia.alianca.prazos.map((p) => p.turnos));
+  const porInimigoComum =
+    curto &&
+    inimigosComuns > 0 &&
+    opiniao >= nucleo.ajustes.diplomacia.alianca.opiniaoComInimigoComum;
+  if (opiniao < prazo.opiniaoMinima && !porInimigoComum) {
     return {
       pode: false,
       motivo: `aliança é guerra emprestada: ${prazo.turnos} turnos exigem opinião ${prazo.opiniaoMinima}`,

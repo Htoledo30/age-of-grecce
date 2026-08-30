@@ -287,6 +287,20 @@ export const Ajustes = z.object({
         reputacaoDaRuptura: z.number(),
         /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
         reputacaoPorTurno: z.number().positive(),
+        /**
+         * De quantas províncias de vantagem sobre ele você precisa para que o MEDO baste.
+         *
+         * ⚠️ **É o portão que faz o pacto parar de ser um prêmio por amizade.** Henrique:
+         * *"olha na vida real quantos países se odeiam e fazem pactos de não agressão, wtf"*. E
+         * ele tem razão: não-agressão não é confiança, é medo e conveniência — Molotov-Ribbentrop
+         * foi assinado entre dois que se odiavam, justamente por isso. Quem é claramente menor
+         * que você assina para não ser o próximo; quem já tem uma guerra nas costas assina para
+         * não ter duas. O caminho da opinião continua existindo ao lado, para quem gosta de você.
+         *
+         * É o mesmo número da `sombraLimiar`: abaixo dele a diferença é o mapa inicial, não
+         * ameaça.
+         */
+        vantagemQueAssusta: z.number().int().positive(),
       }),
       /**
        * A ALIANÇA: o topo da escada, e o único acordo que obriga a FAZER.
@@ -312,6 +326,15 @@ export const Ajustes = z.object({
         choqueDeRuptura: z.number(),
         /** E o tombo na REPUTAÇÃO de quem abandonou — abandonar aliado é pior que romper pacto. */
         reputacaoDaRuptura: z.number(),
+        /**
+         * A opinião que basta quando os dois têm o MESMO inimigo.
+         *
+         * ⚠️ **Medo do mesmo terceiro une quem não se gosta**, e é a aliança mais comum da
+         * história. Sem isto, aliar-se era prêmio de amizade: só quem já gostava de você em +25
+         * fechava, e dois vizinhos frios diante do mesmo gigante ficavam cada um por si — que é
+         * exatamente o que a sombra do maior existe para impedir.
+         */
+        opiniaoComInimigoComum: z.number(),
       }),
       /**
        * A LIGA: mandar num reino sem tomá-lo. Ver `campanha/diplomacia/liga.ts`.
