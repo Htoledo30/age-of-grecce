@@ -360,7 +360,12 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
 function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const { campanha } = jogo;
   const tem = campanha.acordosDe(eu).includes(id);
-  const renda = campanha.rendaDeUmAcordoCom(id);
+  const minhaRenda = campanha.rendaDeUmAcordoCom(id, eu);
+  const rendaDele = campanha.rendaDeUmAcordoCom(eu, id);
+  const valores =
+    minhaRenda === rendaDele
+      ? `+${minhaRenda}/turno para os dois`
+      : `você +${minhaRenda} · ele +${rendaDele}/turno`;
   const permissao = campanha.podeAcordarComercio(id);
   const resposta = respostaAoComercio(jogo, id, eu);
   return {
@@ -369,7 +374,7 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       tem
         ? {
             acao: 'desfazer-acordo',
-            rotulo: `Encerrar · rende ${renda}/turno`,
+            rotulo: `Encerrar · você perde ${minhaRenda}/turno`,
             valor: 0,
             pode: true,
             aceita: true,
@@ -377,14 +382,14 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           }
         : {
             acao: 'acordo',
-            rotulo: `Acordo · +${renda}/turno para os dois`,
+            rotulo: `Acordo · ${valores}`,
             valor: 0,
             pode: permissao.pode,
             aceita: resposta.aceita,
             bloqueio: permissao.pode ? '' : permissao.motivo,
           },
     ],
-    fala: tem ? `Rende ${renda} por turno a cada um. A guerra desfaz na hora.` : resposta.fala,
+    fala: tem ? `Em curso: ${valores}. A guerra desfaz na hora.` : resposta.fala,
     tom: tem || resposta.aceita ? 'bom' : 'ruim',
   };
 }

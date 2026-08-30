@@ -42,10 +42,10 @@ import {
   acordosDe,
   bensAusentes,
   bensEmCirculacao,
+  impactoDoAcordo,
   rendaDeAcordos,
   rendaDeTrocas,
 } from '../comercio/rede-de-trocas';
-import { rendaDoAcordo } from '../comercio/acordos';
 import { rendaBaseDe } from '../provincia/renda';
 import {
   emGuerra,
@@ -478,17 +478,14 @@ export abstract class ConsultasDoReino {
   }
 
   /**
-   * O que um acordo com este poder renderia por turno, para CADA um dos dois.
+   * O que este acordo acrescentaria à renda de `porPoder` hoje — ou quanto ele perderia ao
+   * romper, se o acordo já estiver de pé.
    *
-   * A tela mostra antes de assinar: uma parcela de renda que ninguém sabe medir é uma parcela
-   * que o jogador ignora.
+   * Inclui a saturação dos parceiros anteriores e a rota atual. Os dois lados podem receber
+   * valores diferentes porque não possuem a mesma carteira de acordos.
    */
   rendaDeUmAcordoCom(outro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): number {
-    return rendaDoAcordo(
-      rendaBaseDe(this.nucleo, porPoder),
-      rendaBaseDe(this.nucleo, outro),
-      this.nucleo.ajustes.acordoDeComercio,
-    );
+    return impactoDoAcordo(this.nucleo, porPoder, outro);
   }
 
   podeAcordarComercio(

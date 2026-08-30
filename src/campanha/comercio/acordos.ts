@@ -7,8 +7,9 @@
  *
  * ## A regra, numa linha
  *
- * O acordo rende, por turno, **uma fração da renda do MENOR dos dois — e os dois recebem o
- * mesmo número.**
+ * O acordo tem, por turno, um valor bruto igual para os dois: **uma fração da renda do MENOR
+ * dos dois**. O que ele acrescenta ao total de cada reino pode diferir, porque cada lado tem
+ * uma carteira diferente de parceiros e a saturação é aplicada ao conjunto.
  *
  * ⚠️ **O menor dos dois, e é o que faz a conta ser justa dos dois lados.** Um parceiro minúsculo
  * não tem mercado para oferecer, por mais rico que você seja; e um parceiro gigante não
@@ -36,7 +37,7 @@ import type { Ajustes } from '@/dados/esquema';
 type AjustesComercio = Ajustes['jogo']['acordoDeComercio'];
 
 /**
- * O que um acordo entre estes dois rende por turno, para CADA UM deles.
+ * O valor BRUTO de um acordo entre estes dois, igual para cada lado antes da saturação.
  *
  * As rendas que entram aqui são as de PROVÍNCIA, sem os acordos — senão a conta se morderia:
  * o acordo aumentaria a renda, que aumentaria o acordo, que aumentaria a renda.
@@ -56,15 +57,26 @@ export function rendaDoAcordo(
  *
  * ⚠️ **O quinto parceiro rende menos que o primeiro**, e sem isso a diplomacia viraria um
  * concurso de assinaturas: cinco acordos a 12% da própria renda somariam mais da metade dela de
- * novo, e comerciar passaria a pagar melhor que administrar. A curva é a mesma da perseguição da
- * cavalaria e a do presente — quem já a leu uma vez não precisa aprendê-la outra.
+ * novo, e comerciar passaria a pagar melhor que administrar.
+ *
+ * A saturação usa o melhor acordo como escala e o total bruto como volume. Com parceiros do
+ * mesmo porte, ela reproduz exatamente a curva antiga. Com parceiros diferentes, porém, tem a
+ * propriedade que faltava: **somar um valor positivo nunca reduz o total**. A fórmula antiga
+ * multiplicava toda a carteira por um fator menor a cada assinatura; um parceiro pequeno podia
+ * rebaixar os acordos grandes que já estavam de pé e fazer o botão "+27" entregar −1.
+ *
+ * O teto tende a `meiosParceiros × melhor acordo`. Assim o caminho pacífico continua forte sem
+ * ultrapassar a administração do próprio reino, e acordo novo deixa de ser uma roleta.
  */
 export function rendaTotalDeAcordos(
   rendas: readonly number[],
   ajustes: AjustesComercio,
 ): number {
-  const bruto = rendas.reduce((soma, valor) => soma + valor, 0);
+  const positivas = rendas.filter((valor) => valor > 0);
+  const bruto = positivas.reduce((soma, valor) => soma + valor, 0);
   if (bruto <= 0) return 0;
   const meia = ajustes.meiosParceiros;
-  return Math.round(bruto * (meia / (meia + Math.max(0, rendas.length - 1))));
+  const melhor = Math.max(...positivas);
+  const capacidade = meia * melhor;
+  return Math.round((bruto * capacidade) / (capacidade + bruto - melhor));
 }

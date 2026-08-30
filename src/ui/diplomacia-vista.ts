@@ -128,6 +128,7 @@ export interface VizinhoNaMesa {
   /** Turnos de pacto que ainda faltam, ou 0. */
   pacto: number;
   temAcordo: boolean;
+  /** Ganho marginal do acordo para o jogador, já com a carteira e a rota atuais. */
   rendaDoAcordo: number;
   /**
    * O que ELE está te pedindo nesta virada, e que espera um sim ou um não.

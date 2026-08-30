@@ -111,14 +111,16 @@ opinião sobe sozinha, porque fronteira garantida é um fato. Romper é a única
 prazo, e custa a opinião do traído **e a sua REPUTAÇÃO com o mapa inteiro** — sem esse preço,
 pacto seria papel.
 
-**Acordo de comércio** — **mais uma fonte de renda, e os dois lados ganham o mesmo número
-sempre.** Rende por turno uma fração da renda do MENOR dos dois: um parceiro minúsculo não tem
-mercado a oferecer, e um gigante não despeja em você mais do que você absorve. Daí caem três
-coisas: comerciar com o grande vale mais que com o pequeno; crescer melhora todos os seus
-acordos; e **existe um caminho pacífico de verdade** — quem faz as pazes com o mapa e assina com
-todos vive de comércio. O quinto parceiro rende menos que o primeiro (saturação), a guerra
-desfaz o acordo na hora, e a exigência de opinião é baixa de propósito: mercador atravessa
-fronteira que exército não atravessa.
+**Acordo de comércio** — **mais uma fonte de renda para os dois lados.** O valor bruto é uma
+fração da renda do MENOR dos dois: um parceiro minúsculo não tem mercado a oferecer, e um gigante
+não despeja em você mais do que você absorve. A carteira inteira satura, mas é MONOTÔNICA: acordo
+novo nunca reduz a renda nem rebaixa os anteriores. Como cada reino já tem parceiros
+diferentes, o ganho marginal pode ser diferente dos dois lados; a mesa mostra **quanto você
+ganha e quanto ele ganha**, já contando os acordos em pé. Daí caem três coisas: comerciar com o
+grande vale mais que com o pequeno; crescer melhora todos os seus acordos; e **existe um caminho
+pacífico de verdade** — quem faz as pazes com o mapa e assina com todos vive de comércio. O
+quinto parceiro rende menos que o primeiro, a guerra desfaz o acordo na hora, e a exigência de
+opinião é baixa de propósito: mercador atravessa fronteira que exército não atravessa.
 
 ⚠️ **A rede de bens distintos continua sendo só a SUA.** O acordo não faz o mármore dele
 circular no seu reino — quem quer o bem toma a terra. É essa separação que mantém a conquista

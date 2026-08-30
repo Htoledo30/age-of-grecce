@@ -199,10 +199,15 @@ export function ligarAcoes(jogo: Jogo): void {
       tela.diplomacia.dizer(r.motivo);
       return;
     }
-    const renda = campanha.rendaDeUmAcordoCom(idPoder);
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    const minhaRenda = campanha.rendaDeUmAcordoCom(idPoder, eu);
+    const rendaDele = campanha.rendaDeUmAcordoCom(eu, idPoder);
     campanha.acordarComercio(idPoder);
     tela.diplomacia.dizer(
-      `Comércio aberto com ${campanha.poder(idPoder).nome}: +${renda} por turno para os dois.`,
+      minhaRenda === rendaDele
+        ? `Comércio aberto com ${campanha.poder(idPoder).nome}: +${minhaRenda} por turno para os dois.`
+        : `Comércio aberto com ${campanha.poder(idPoder).nome}: você recebe +${minhaRenda} e ele +${rendaDele} por turno.`,
     );
   };
 

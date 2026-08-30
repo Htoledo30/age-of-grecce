@@ -422,7 +422,7 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
   it('rende o mesmo para os dois, e o teto é o MENOR dos dois', () => {
     // ⚠️ Decisão de Henrique, e ela reescreveu o desenho: pagar só pelo bem que falta ao outro
     // deixava metade dos pares do mapa ganhando zero, porque quase todo mundo faz grãos.
-    const c = nova();
+    const c = comPortoEm(nova(), 'atenas', 'plateia', 'argos');
     const grande = c.rendaDe('atenas');
     const pequeno = c.rendaDe('plateia');
     expect(grande).toBeGreaterThan(pequeno);
@@ -478,13 +478,68 @@ describe('o acordo de comércio: mais uma fonte de renda, e os DOIS ganham', () 
     let anterior = c.rendaDe('atenas');
     for (const parceiro of parceiros) {
       if (!c.podeAcordarComercio(parceiro).pode) continue;
+      const prometido = c.rendaDeUmAcordoCom(parceiro);
       c.acordarComercio(parceiro);
       const agora = c.rendaDe('atenas');
       ganhos.push(agora - anterior);
+      expect(agora - anterior).toBe(prometido);
       anterior = agora;
     }
     expect(ganhos.length).toBeGreaterThan(2);
+    expect(ganhos.every((ganho) => ganho > 0)).toBe(true);
     expect(ganhos[ganhos.length - 1]!).toBeLessThan(ganhos[0]!);
+  });
+
+  it('a mesa promete o ganho MARGINAL, e não o valor isolado do segundo acordo', () => {
+    const c = nova();
+    // Os dois fazem fronteira com Atenas: rota não é o assunto deste teste.
+    c.acordarComercio('eleusis');
+
+    const antes = c.rendaDe('atenas');
+    const paraMim = c.rendaDeUmAcordoCom('tanagra', 'atenas');
+    const paraEle = c.rendaDeUmAcordoCom('atenas', 'tanagra');
+    expect(paraMim).toBeGreaterThan(0);
+    // Tanagra ainda não tem parceiro; as carteiras são diferentes e a mesa precisa dizer os
+    // dois números em vez de prometer o bruto simétrico.
+    expect(paraEle).toBeGreaterThan(paraMim);
+
+    c.acordarComercio('tanagra');
+    expect(c.rendaDe('atenas') - antes).toBe(paraMim);
+  });
+
+  it('nenhum parceiro menor rebaixa os acordos que já estavam de pé', () => {
+    const c = nova();
+    const parceiros = c.poderesComFicha().filter((id) => id !== 'atenas');
+    comPortoEm(
+      c,
+      'atenas',
+      ...parceiros.flatMap((p) => c.provinciasDe(p).slice(0, 1)),
+    );
+
+    let assinados = 0;
+    for (const parceiro of parceiros.sort(
+      (a, b) => c.rendaDeUmAcordoCom(b) - c.rendaDeUmAcordoCom(a),
+    )) {
+      if (!c.podeAcordarComercio(parceiro).pode) continue;
+      const prometido = c.rendaDeUmAcordoCom(parceiro);
+      const antes = c.rendaDe('atenas');
+      c.acordarComercio(parceiro);
+      expect(c.rendaDe('atenas') - antes).toBe(prometido);
+      expect(prometido).toBeGreaterThan(0);
+      assinados++;
+    }
+    expect(assinados).toBeGreaterThan(5);
+  });
+
+  it('ao encerrar, mostra quanto ESTE acordo realmente sustentava na carteira', () => {
+    const c = nova();
+    c.acordarComercio('eleusis');
+    c.acordarComercio('tanagra');
+
+    const antes = c.rendaDe('atenas');
+    const perdido = c.rendaDeUmAcordoCom('tanagra');
+    c.desfazerAcordo('tanagra');
+    expect(antes - c.rendaDe('atenas')).toBe(perdido);
   });
 
   it('e a rede de bens distintos continua sendo só a SUA', () => {

@@ -121,9 +121,20 @@ export function bensAusentes(
  * alcança; o acordo é o que a diplomacia abriu.** Quem quer o bem toma a terra.
  */
 export function rendaDeAcordos(nucleo: NucleoDaCampanha, idPoder: string): number {
+  return rendaTotalDeAcordos(
+    [...valoresAtivosDosAcordos(nucleo, idPoder).values()],
+    nucleo.ajustes.acordoDeComercio,
+  );
+}
+
+/** O valor bruto de cada acordo que possui uma rota funcionando neste turno. */
+function valoresAtivosDosAcordos(
+  nucleo: NucleoDaCampanha,
+  idPoder: string,
+): ReadonlyMap<string, number> {
   const ajustes = nucleo.ajustes.acordoDeComercio;
   const minha = rendaBaseDe(nucleo, idPoder);
-  const valores: number[] = [];
+  const valores = new Map<string, number>();
   for (const par of Object.keys(nucleo.estado.acordos).sort()) {
     const [a, b] = par.split('|');
     if (a === undefined || b === undefined) continue;
@@ -136,9 +147,41 @@ export function rendaDeAcordos(nucleo: NucleoDaCampanha, idPoder: string): numbe
     // água que banha o cais cortam a renda do acordo sem precisar rasgá-lo. É por aqui que o
     // BLOQUEIO NAVAL chega ao bolso.
     if (!alcancaComercio(nucleo, idPoder, outro)) continue;
-    valores.push(rendaDoAcordo(minha, rendaBaseDe(nucleo, outro), ajustes));
+    valores.set(outro, rendaDoAcordo(minha, rendaBaseDe(nucleo, outro), ajustes));
   }
-  return rendaTotalDeAcordos(valores, ajustes);
+  return valores;
+}
+
+/**
+ * Quanto ESTE acordo acrescenta hoje à renda deste poder.
+ *
+ * Para uma proposta, compara a carteira atual com a carteira depois da assinatura. Para um
+ * acordo em pé, compara a carteira atual com ela sem o parceiro — é quanto se perde ao romper.
+ * A conta inclui saturação, parceiros anteriores e rota. É o número que a IA deve escolher e
+ * que a mesa deve prometer; o valor bruto isolado não responde nenhuma dessas duas perguntas.
+ */
+export function impactoDoAcordo(
+  nucleo: NucleoDaCampanha,
+  idPoder: string,
+  outro: string,
+): number {
+  const ajustes = nucleo.ajustes.acordoDeComercio;
+  const ativos = new Map(valoresAtivosDosAcordos(nucleo, idPoder));
+  const atual = rendaTotalDeAcordos([...ativos.values()], ajustes);
+  const existe = acordosDe(nucleo, idPoder).includes(outro);
+
+  if (existe) {
+    // Acordo sem rota continua diplomaticamente em pé, mas não põe moeda no cofre.
+    if (!ativos.delete(outro)) return 0;
+    return atual - rendaTotalDeAcordos([...ativos.values()], ajustes);
+  }
+
+  if (!alcancaComercio(nucleo, idPoder, outro)) return 0;
+  ativos.set(
+    outro,
+    rendaDoAcordo(rendaBaseDe(nucleo, idPoder), rendaBaseDe(nucleo, outro), ajustes),
+  );
+  return rendaTotalDeAcordos([...ativos.values()], ajustes) - atual;
 }
 
 /** Com quem este poder tem acordo de comércio, em ordem de id. */
