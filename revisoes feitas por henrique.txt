@@ -464,3 +464,25 @@ simples, minimalista, e que de para entender sem precisar de um milhao de textos
      diplo-t20-corte.png (guerra, com a lista agrupada mostrando EM GUERRA / AMEACAM / SEM
      VINCULO). O teste de tela da diplomacia passou.
 
+"arruma os nomes do que der, so pelo nome tenho que saber o que e aquela acao, atualmente
+temos 'pacto' -- pacto do que? escreve pacto de nao agressao, o nome tem que entregar o que e"
+   -> FEITO, e a regra e boa:
+       Pacto                    -> Pacto de nao-agressao
+       Alianca                  -> Alianca militar
+       Passagem                 -> Passagem militar
+       Liga                     -> Liga (vassalagem)
+       Ouro                     -> Presente em ouro
+       leve / normal / pesado   -> tributo leve / ... (estavam ao lado de Anexar e Soltar)
+       Soltar                   -> Soltar da liga
+     "Liga" ganhou a palavra familiar entre parenteses de proposito: liga e o termo do jogo,
+     grego e nao feudal, mas nao ensina nada sozinho a quem abre a tela pela primeira vez.
+     Vassalagem ensina, e some da conversa assim que tu aprendeu.
+     E o contrario tambem vale: desde que os grupos viraram FICHAS com cabecalho, o botao
+     herda o contexto do titulo. E por isso que "10 turnos" sob PACTO DE NAO-AGRESSAO deixou
+     de ser ambiguo sem ganhar uma palavra -- e por isso eu VOLTEI ATRAS em "Comprar a paz",
+     que aparecia tres vezes dentro de uma ficha ja chamada PAZ.
+     De quebra: a largura da ficha dependia do TEXTO do titulo (uma lista ['guerra','paz',
+     'ouro'] no codigo da tela). Renomear "Ouro" teria quebrado o layout em silencio. Virou
+     um campo da vista.
+     Print: capturas/diplo-nomes-corte.png
+

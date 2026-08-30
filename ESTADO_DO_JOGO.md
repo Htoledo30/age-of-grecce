@@ -1203,6 +1203,34 @@ só aparece onde a decisão é a guerra.
 botões do tributo diziam *"as regras não deixam agora"* enquanto a regra sabia dizer *"há pacto
 em pé: você já tem esse sossego de graça"*. Cinco motivos morriam numa linha.
 
+### E os nomes passaram a entregar o que a ação é
+
+Henrique, olhando a tela nova: *"arruma os nomes do que der, só pelo nome tenho que saber o que
+é aquela ação — atualmente temos 'pacto'. Pacto do quê?"*.
+
+| antes | depois |
+|---|---|
+| Pacto | **Pacto de não-agressão** |
+| Aliança | **Aliança militar** |
+| Passagem | **Passagem militar** |
+| Liga | **Liga (vassalagem)** |
+| Ouro | **Presente em ouro** |
+| `leve` · `normal` · `pesado` | **`tributo leve`** · … (estavam ao lado de *Anexar* e *Soltar*) |
+| Soltar | **Soltar da liga** |
+
+⚠️ **"Liga" ganhou a palavra familiar entre parênteses, e é deliberado.** *Liga* é o termo do
+jogo — grego, não feudal —, mas ele não ensina nada sozinho a quem abre a tela pela primeira
+vez. *Vassalagem* ensina, e some da conversa assim que o jogador aprendeu.
+
+⚠️ **E o contrário também vale: desde que os grupos viraram fichas com cabeçalho, o botão herda
+o contexto do título.** É por isso que `10 turnos` sob PACTO DE NÃO-AGRESSÃO deixou de ser
+ambíguo sem ganhar uma palavra — e por isso *"Comprar a paz"* três vezes dentro de uma ficha
+chamada PAZ foi revertido para `Comprar`: era o título dito de novo.
+
+⚠️ **A largura da ficha deixou de depender do TEXTO do título.** Ela era decidida por uma lista
+de nomes (`['guerra', 'paz', 'ouro']`) no código da tela; renomear "Ouro" para "Presente em
+ouro" teria quebrado o layout em silêncio. Virou um campo da vista, `vao: 'cheio'`.
+
 Comparativo lado a lado em `capturas/diplo-comparativo.png`.
 
 ## A LIGA: mandar num reino sem tomá-lo

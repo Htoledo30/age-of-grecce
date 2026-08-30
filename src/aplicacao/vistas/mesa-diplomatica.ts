@@ -279,7 +279,7 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const nota = recebida > 0 ? ` · ele te dá ${recebida}t` : '';
   if (dada > 0) {
     return {
-      titulo: 'Passagem',
+      titulo: 'Passagem militar',
       propostas: [
         {
           acao: 'revogar-acesso',
@@ -311,7 +311,7 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   // você. Quem precisa de confiança é o contrário: ele abrir a dele.
   const travado = propostas.every((p) => !p.pode);
   return {
-    titulo: 'Passagem',
+    titulo: 'Passagem militar',
     propostas,
     // Travado, o motivo já está no `bloqueio` de cada prazo — repeti-lo aqui era dizer duas vezes.
     fala: travado ? '' : `ele atravessa sem guerra${nota}`,
@@ -324,7 +324,7 @@ function grupoDaGuerra(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const permissao = campanha.podeDeclararGuerra(id, eu);
   const tregoa = Math.max(0, (campanha.tregoaAte(eu, id) ?? campanha.turno) - campanha.turno);
   return {
-    titulo: 'Guerra',
+    titulo: 'Guerra', vao: 'cheio',
     propostas: [
       {
         acao: 'guerra',
@@ -359,7 +359,10 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     },
     ...prazos.map((p) => ({
       acao: 'paz-com-tributo',
-      rotulo: `Comprar ${p.ouro} · ${p.turnos}t`,
+      // ⚠️ "Comprar a paz" três vezes dentro de uma ficha chamada PAZ é o título dito de novo.
+      // Desde que os grupos viraram fichas com cabeçalho, o botão herda o contexto do título —
+      // e é por isso que `10 turnos` sob PACTO DE NÃO-AGRESSÃO deixou de ser ambíguo.
+      rotulo: `Comprar · ${p.ouro} por ${p.turnos}t`,
       valor: p.turnos,
       pode: p.pode,
       aceita: p.resposta.aceita,
@@ -370,7 +373,7 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   // e o jogador precisa saber QUAL parcela o demoveria, não só que ele recusou.
   const comprada = prazos.find((p) => p.pode && p.resposta.aceita);
   return {
-    titulo: 'Paz',
+    titulo: 'Paz', vao: 'cheio',
     propostas,
     // ⚠️ **A ÚNICA voz que sobrou na tela inteira, e ela mora aqui de propósito**: a fala dele
     // só aparece onde a decisão é a guerra. Em todo o resto da mesa, o estado é factual.
@@ -441,11 +444,12 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     const paga = campanha.tributoDaLigaDe(id);
     const aceita = campanha.aceitaSerAnexado(id);
     return {
-      titulo: 'Liga',
+      titulo: 'Liga (vassalagem)',
       propostas: [
         ...niveis.map(([nome]) => ({
           acao: `tributo-liga:${nome}`,
-          rotulo: vinculo?.tributo === nome ? `▸ ${nome}` : nome,
+          // ⚠️ `leve` ao lado de `Anexar` e `Soltar` não dizia leve O QUÊ. O substantivo entra.
+          rotulo: vinculo?.tributo === nome ? `▸ tributo ${nome}` : `tributo ${nome}`,
           valor: 0,
           pode: vinculo?.tributo !== nome,
           aceita: true,
@@ -460,7 +464,14 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           // ⚠️ A recusa vira PRAZO ou PREÇO, e não veredito — a mesma lição do pacto.
           bloqueio: aceita ? '' : 'ele ainda não aceitaria: baixe o tributo e espere',
         },
-        { acao: 'soltar-membro', rotulo: 'Soltar', valor: 0, pode: true, aceita: true, bloqueio: '' },
+        {
+          acao: 'soltar-membro',
+          rotulo: 'Soltar da liga',
+          valor: 0,
+          pode: true,
+          aceita: true,
+          bloqueio: '',
+        },
       ],
       // Os NÚMEROS sobrevivem, a explicação vai para o tooltip do título. A regra da liga se
       // aprende uma vez; o tributo e a vontade de sair mudam todo turno.
@@ -473,7 +484,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   if (campanha.chefeDe(eu) === id) {
     const vinculo = campanha.ligaDe(eu);
     return {
-      titulo: 'Liga',
+      titulo: 'Liga (vassalagem)',
       propostas: [
         { acao: 'sair-da-liga', rotulo: 'Sair da liga', valor: 0, pode: true, aceita: true, bloqueio: '' },
       ],
@@ -489,7 +500,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const relacao = campanha.relacaoEntre(eu, id);
   const minima = jogo.ajustes.jogo.diplomacia.liga.opiniaoMinima;
   return {
-    titulo: 'Liga',
+    titulo: 'Liga (vassalagem)',
     propostas: [
       {
         acao: 'formar-liga',
@@ -523,7 +534,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   if (emPe > 0) {
     const guerras = campanha.guerrasDe(id).length;
     return {
-      titulo: 'Aliança',
+      titulo: 'Aliança militar',
       propostas: [
         {
           acao: 'romper-alianca',
@@ -541,7 +552,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const resposta = respostaAoPacto(jogo, id, eu);
   const relacao = campanha.relacaoEntre(eu, id);
   return {
-    titulo: 'Aliança',
+    titulo: 'Aliança militar',
     propostas: campanha.prazosDeAlianca(eu, id).map((p) => ({
       acao: 'alianca',
       rotulo: `${p.turnos} turnos`,
@@ -560,7 +571,7 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const emPe = Math.max(0, (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno);
   if (emPe > 0) {
     return {
-      titulo: 'Pacto',
+      titulo: 'Pacto de não-agressão',
       propostas: [
         {
           acao: 'romper',
@@ -578,7 +589,7 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const resposta = respostaAoPacto(jogo, id, eu);
   const relacao = campanha.relacaoEntre(eu, id);
   return {
-    titulo: 'Pacto',
+    titulo: 'Pacto de não-agressão',
     propostas: campanha.prazosDePacto(id).map((p) => ({
       acao: 'pacto',
       rotulo: `${p.turnos} turnos`,
@@ -696,7 +707,7 @@ function grupoDoPresente(jogo: Jogo, id: string): GrupoDaMesa {
       };
     });
   return {
-    titulo: 'Ouro',
+    titulo: 'Presente em ouro', vao: 'cheio',
     propostas,
     // "Presente compra tempo, não amizade" é regra que se aprende uma vez: vai para o tooltip.
     fala: '',

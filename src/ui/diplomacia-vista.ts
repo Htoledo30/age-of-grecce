@@ -67,6 +67,14 @@ export interface Proposta {
  * parado. Se ele vai recusar, o jogador lê o motivo sem precisar caçar.
  */
 export interface GrupoDaMesa {
+  /**
+   * A ficha atravessa as duas colunas da grade.
+   *
+   * ⚠️ **Um campo, e não uma lista de títulos no CSS.** A largura da ficha é decisão da VISTA —
+   * guerra, paz e presente não são acordo com prazo, são atos unilaterais — e amarrá-la ao
+   * texto do título faria renomear "Ouro" para "Presente em ouro" quebrar o layout em silêncio.
+   */
+  vao?: 'cheio';
   titulo: string;
   propostas: readonly Proposta[];
   /** O que ele diria sobre este grupo. Nunca vazia. */

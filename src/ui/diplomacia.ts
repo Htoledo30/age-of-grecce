@@ -746,11 +746,9 @@ ${dele.nome}: ${dele.palavra}`,
     const caixa = document.createElement('div');
     caixa.className = 'diplomacia__grupo';
     caixa.dataset['grupo'] = grupo.titulo.toLowerCase();
-    // Guerra, Paz e Ouro atravessam a grade: são os únicos que não são acordo com prazo — dois
+    // Guerra, Paz e Presente atravessam a grade: são os únicos que não são acordo com prazo —
     // atos unilaterais, um destrutivo e um gratuito —, e ficam nos extremos da coluna.
-    if (['guerra', 'paz', 'ouro'].includes(grupo.titulo.toLowerCase())) {
-      caixa.dataset['vao'] = 'cheio';
-    }
+    if (grupo.vao) caixa.dataset['vao'] = grupo.vao;
 
     const livres = grupo.propostas.filter((p) => p.pode);
     const mesmoVeredito =
