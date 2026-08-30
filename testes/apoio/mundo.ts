@@ -51,10 +51,21 @@ export function novaCampanha(): Campanha {
  * que estes testes guardam continua sendo o que eles sempre guardaram, e o dia em que o
  * balanço da comida mudar de novo eles não têm por que se mexer. **Quem testa comida usa
  * `novaCampanha` e os ajustes de verdade** — é lá que a régua tem de doer.
+ *
+ * ⚠️ **E ele cresceu em 31/08/2026, pelo mesmo motivo e com outro número.** Henrique baixou
+ * `subsistenciaPorReino` de 2 para 1 — o pão que todo reino ganha de graça — e Atenas, que já
+ * abria no fio, passou a abrir com saldo ZERO. Mais 34 testes vermelhos em 16 arquivos, quase
+ * nenhum sobre comida: cerco, marcha, dispensa, milícia, propriedade. O andaime tem de tirar a
+ * comida do caminho pelos DOIS lados — o que o exército come e o que o reino recebe —, senão
+ * ele deixa de proteger no dia seguinte ao ajuste.
  */
 export const ajustesFartos = {
   ...ajustes,
-  alimento: { ...ajustes.alimento, soldadosPorPonto: 1_000_000 },
+  alimento: {
+    ...ajustes.alimento,
+    soldadosPorPonto: 1_000_000,
+    subsistenciaPorReino: 1_000,
+  },
 };
 
 /** Uma campanha em que a comida nunca é o assunto. Ver `ajustesFartos`. */

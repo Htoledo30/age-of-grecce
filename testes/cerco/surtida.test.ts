@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { Campanha } from '../../src/campanha/campanha';
 import { ordenar, podeOrdenar, podeSurtir, surtir } from '../apoio/hostes';
-import { novaCampanha as nova } from '../apoio/mundo';
+// ⚠️ Comida farta: este arquivo guarda a SURTIDA, e não a despensa. Com a subsistência em 1
+// a hoste plantada aqui definhava de 800 para 285 antes do teste chegar ao que ele mede.
+import { novaCampanhaFarta as nova } from '../apoio/mundo';
 
 /**
  * A SURTIDA — o sitiado sai para atacar quem o cerca.

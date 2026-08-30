@@ -55,6 +55,14 @@ describe('a cidade sitiada vive da própria despensa, fora da circulação', () 
     // do reino nem derreter o exército do jogador no mapa todo. A sitiada sai da
     // circulação — não contribui, não pesa — e paga só o próprio relógio.
     const campanha = nova();
+    // ⚠️ **A Fazenda vem ANTES do exército, e isso é a regra nova de 31/08/2026.** Henrique
+    // baixou `subsistenciaPorReino` para 1: Atenas passa a abrir com saldo ZERO, e um reino em
+    // zero não sustenta soldado nenhum — o primeiro homem recrutado já é um ponto de comida a
+    // descoberto. Sem a Fazenda, este teste mediria o exército passando fome por CONTA PRÓPRIA,
+    // que é justamente o contrário do que ele afirma: que o cerco não atravessa a muralha.
+    campanha.darOuro(50_000);
+    campanha.construir('maratona', 'fazenda');
+    for (let i = 0; i < 3; i++) campanha.passarTurno();
     // ⚠️ A hoste é do TAMANHO DE UM PONTO de comida, e não um número redondo: ela está aqui
     // para o exército aparecer na conta (`saldo = saldoCivil − exercito`), não para derrubá-la.
     // Escrita como 2.000 fixos, ela quebrava no dia em que um ponto passou a sustentar 500

@@ -23,8 +23,8 @@
             "humor": -10
           },
           "confisco": {
-            "fator": 3,
-            "humor": -25
+            "fator": 2.5,
+            "humor": -20
           }
         }
       }
@@ -80,11 +80,35 @@
         "reputacaoDaRuptura": -25,
         "reputacaoPorTurno": 1
       },
+      "alianca": {
+        "prazos": [
+          {
+            "turnos": 15,
+            "opiniaoMinima": 25
+          },
+          {
+            "turnos": 30,
+            "opiniaoMinima": 35
+          }
+        ],
+        "pontos": 25,
+        "choqueDeRuptura": -70,
+        "reputacaoDaRuptura": -35
+      },
       "liga": {
         "niveisDeTributo": {
-          "leve": { "fracaoDaRenda": 0.08, "desejo": -18 },
-          "normal": { "fracaoDaRenda": 0.15, "desejo": 0 },
-          "pesado": { "fracaoDaRenda": 0.25, "desejo": 30 }
+          "leve": {
+            "fracaoDaRenda": 0.08,
+            "desejo": -18
+          },
+          "normal": {
+            "fracaoDaRenda": 0.15,
+            "desejo": 0
+          },
+          "pesado": {
+            "fracaoDaRenda": 0.25,
+            "desejo": 30
+          }
         },
         "tributoInicial": "normal",
         "passoPorTurno": 3,
@@ -102,21 +126,6 @@
         "turnosParaAnexar": 30,
         "opiniaoMinima": 40,
         "reputacaoDaRuptura": -20
-      },
-      "alianca": {
-        "prazos": [
-          {
-            "turnos": 15,
-            "opiniaoMinima": 25
-          },
-          {
-            "turnos": 30,
-            "opiniaoMinima": 35
-          }
-        ],
-        "pontos": 25,
-        "choqueDeRuptura": -70,
-        "reputacaoDaRuptura": -35
       },
       "acesso": {
         "prazos": [
@@ -163,7 +172,7 @@
       "opiniaoMinima": -25
     },
     "populacao": {
-      "taxaNatural": 0.005,
+      "taxaNatural": 0.003,
       "faixas": [
         {
           "ate": 14999,
@@ -214,7 +223,7 @@
       "custoDeMudanca": 2000
     },
     "alimento": {
-      "subsistenciaPorReino": 2,
+      "subsistenciaPorReino": 1,
       "soldadosPorPonto": 500,
       "mortePorFome": 0.01,
       "mortePorFomeNaTropa": 0.05,
@@ -280,7 +289,7 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": {
-        "emCasa": 0.1,
+        "emCasa": 0.15,
         "emCampanha": 0.3
       },
       "populacaoMinima": 2000,
@@ -288,10 +297,10 @@
         "rodadasParaAssaltarMuralha": 2
       },
       "batalha": {
-        "rodadasDeChoque": 8,
+        "rodadasDeChoque": 10,
         "letalidadeDoChoque": 0.15,
         "limiarDeQuebra": 0.7,
-        "letalidadeDaPerseguicao": 0.6,
+        "letalidadeDaPerseguicao": 0.7,
         "fracaoDoRecuo": 0.1,
         "limiarDeRecuo": 0.3,
         "armas": {
@@ -302,9 +311,9 @@
             "comida": 1
           },
           "hoplita": {
-            "ataque": 1,
+            "ataque": 1.1,
             "aguento": 1.5,
-            "custo": 1.25,
+            "custo": 1.29,
             "comida": 1
           },
           "arqueiro": {
@@ -315,7 +324,7 @@
           },
           "cavalaria": {
             "ataque": 1.55,
-            "aguento": 1,
+            "aguento": 1.05,
             "custo": 1.6,
             "comida": 1.8
           },

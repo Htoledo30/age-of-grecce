@@ -103,14 +103,19 @@ describe('a região configurada está completa', () => {
 });
 
 describe('o que está escrito obedece às regras que tornam a região jogável', () => {
-  it('Atenas abre no fio, e a conta fecha com números inteiros', () => {
+  it('Atenas abre EXATAMENTE no fio, e a conta fecha com números inteiros', () => {
     const c = nova();
     c.comecar('atenas');
-    // Positiva, mas apertada: 63.000 pessoas numa terra pobre em cereal. Sem exército, o
-    // saldo final é o civil — nada come além do povo.
-    expect(c.alimentacao.saldo).toBeGreaterThan(0);
+    // ⚠️ **No fio quer dizer ZERO, e isto é decisão de Henrique de 31/08/2026.** Com
+    // `subsistenciaPorReino` em 1, as 63.000 pessoas de Atenas comem exatamente o que a terra
+    // dá: o reino abre "no limite", sem folga e sem fome. A consequência que ele aceitou de
+    // olhos abertos é que Atenas **não cresce um habitante** enquanto não erguer comida — a
+    // Fazenda deixa de ser conforto e vira a primeira obra da partida.
+    //
+    // Sem exército, o saldo final é o civil — nada come além do povo.
+    expect(c.alimentacao.saldo).toBe(0);
     expect(c.alimentacao.saldoCivil).toBe(c.alimentacao.saldo);
-    expect(c.alimentacao.categoria).toBe('abastecido');
+    expect(c.alimentacao.categoria).toBe('no-limite');
     expect(c.alimentacao.saldo).toBe(
       c.alimentacao.subsistencia +
         c.alimentacao.producao -

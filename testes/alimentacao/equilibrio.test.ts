@@ -21,8 +21,11 @@ describe('o equilíbrio alimentar: crescer nunca pode virar fome', () => {
     expect(comida.exercito).toBe(0);
     expect(comida.saldoCivil).toBe(comida.subsistencia + comida.producao - comida.populacao);
     expect(comida.saldo).toBe(comida.saldoCivil);
-    // Positiva, mas no fio: é a mais apertada entre os poderes jogáveis.
-    expect(comida.saldo).toBeGreaterThan(0);
+    // ⚠️ **No fio virou ZERO em 31/08/2026**, quando Henrique baixou `subsistenciaPorReino`
+    // para 1: Atenas come exatamente o que a terra dá. Continua sendo a mais apertada do mapa —
+    // a comparação com Argos, abaixo, é que guarda isso — mas agora sem um grão de folga, o que
+    // significa que ela não cresce nem sustenta um soldado antes de erguer comida.
+    expect(comida.saldo).toBe(0);
     expect(comida.saldo).toBeLessThan(c.balancoAlimentarDe('argos').saldo);
   });
 

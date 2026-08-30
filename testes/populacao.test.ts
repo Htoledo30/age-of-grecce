@@ -46,7 +46,14 @@ describe('crescimento populacional', () => {
       });
     }
     // E é um número de verdade, não zero por acidente.
-    expect(c.crescimentoDe('atenas')?.crescimento).toBeGreaterThan(0);
+    //
+    // ⚠️ **Mudou de terra em 31/08/2026, e a mudança é a REGRA e não o defeito.** Henrique
+    // baixou `subsistenciaPorReino` para 1: Atenas abre com saldo ZERO e, por decisão dele,
+    // não cresce mesmo enquanto não erguer comida. Quem prova que a fórmula produz número de
+    // verdade passou a ser uma terra com folga na despensa.
+    const comFolga = nova();
+    comFolga.comecar('megara');
+    expect(comFolga.crescimentoDe('megara')?.crescimento).toBeGreaterThan(0);
   });
 
   it('cresce todas as províncias configuradas ao passar o turno', () => {
