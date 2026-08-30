@@ -26,9 +26,13 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 960px;
+  /* ⚠️ **1180 e não 960, e a largura é o que estava sobrando na tela.** A janela antiga era
+     estreita e alta: os oito grupos de proposta caíam numa coluna só, empilhados sob a leitura,
+     e ao abrir a aba nenhum botão estava visível — 975 px de conteúdo escondido em 651 px de
+     janela. Três colunas cabem em 1180, e 1180 cabe num monitor de 1366. */
+  width: 1180px;
   max-width: calc(100vw - 48px);
-  max-height: min(780px, calc(100vh - 48px));
+  max-height: min(760px, calc(100vh - 48px));
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
   background: var(--ui-fundo-elevado);
@@ -81,11 +85,24 @@
 /* ⚠️ Lista à esquerda, mesa à direita: a pergunta do jogador é sempre "o que eu faço com
    Corinto?" — reino primeiro, ação depois. Abas por TIPO de ação foram recusadas por
    responderem a pergunta ao contrário, obrigando a procurar Corinto em quatro lugares. */
+/* ── TRÊS COLUNAS, e a ordem é a sequência da decisão ──
+   A · com quem falo · B · o que somos um do outro · C · o que eu faço com ele.
+   ⚠️ **A regra que impede a tela de voltar a ser o que era: nenhum botão em B, nenhuma prosa
+   narrativa em C.** Enquanto leitura e ação dividiam o mesmo eixo vertical, a leitura ganhava
+   sempre — e a ação, que é o motivo de a tela existir, ficava abaixo do corte. */
 .diplomacia__colunas {
   display: grid;
-  grid-template-columns: 212px 1fr;
+  grid-template-columns: 248px 340px 1fr;
   gap: 20px;
   min-height: 0;
+}
+/* Abaixo de 1180 de viewport a coluna das ações passa a rolar sozinha, e só ela: é degradação
+   declarada, não acidente. As outras duas continuam inteiras. */
+@media (max-width: 1180px) {
+  .diplomacia__colunas {
+    grid-template-columns: 208px 300px 1fr;
+    gap: 14px;
+  }
 }
 
 /* ── A lista: uma TABELA de vizinhos, e não uma fileira de nomes ──
@@ -103,10 +120,11 @@
 .diplomacia__nome {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   font: inherit;
   text-align: left;
-  padding: 7px 9px;
+  /* Apertado de propósito: são dezoito linhas, e a lista é a única coluna que ainda rola. */
+  padding: 4px 9px;
   border: 1px solid transparent;
   border-left: 3px solid transparent;
   border-radius: var(--raio-1);
@@ -132,11 +150,12 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__nome-forca {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 /* A postura pinta a borda esquerda: o mapa inteiro se lê de relance, de bronze a sangue. */
 .diplomacia__nome[data-tom='bom'] {
@@ -162,9 +181,96 @@
 .diplomacia__dossie {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  min-height: 0;
+  /* ⚠️ **Sem rolagem, de propósito.** Era `overflow-y: auto`, e foi essa linha que escondeu as
+     ações por meses: a coluna aceitava conteúdo infinito e cortava em silêncio. Se a leitura
+     transborda agora, é bug de layout — e tem de doer. */
+  overflow: visible;
+}
+
+/* A coluna das AÇÕES. Ela pode rolar, e é a única que pode: o catálogo de tratados cresce com
+   o jogo (a liga entrou depois da aliança, que entrou depois do pacto) e a leitura não. */
+.diplomacia__acoes-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
+}
+
+/* ── Os cabeçalhos de grupo da lista ── */
+.diplomacia__grupo-lista {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 10px 0 2px;
+  padding: 0 4px;
+  font-family: var(--fonte-micro, var(--fonte-interface));
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__grupo-lista:first-child {
+  margin-top: 0;
+}
+
+/* ── A TIRA DE CONFRONTO ──
+   Rótulos no EIXO CENTRAL, um por linha em vez de um de cada lado: o olho compara na
+   horizontal e cada substantivo aparece uma vez só. É a mesa de negociação do Total War, com
+   metade dos rótulos. */
+.diplomacia__confronto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 13px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+.diplomacia__confronto-nomes {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+.diplomacia__confronto-linha {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.diplomacia__confronto-meu {
+  text-align: left;
+  color: var(--ui-texto);
+}
+.diplomacia__confronto-dele {
+  text-align: right;
+  color: var(--ui-texto);
+}
+.diplomacia__confronto-rotulo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  min-width: 96px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__confronto-linha[data-forca='sim'] .diplomacia__barra-forca {
+  width: 96px;
+}
+.diplomacia__confronto-rodape {
+  margin: 4px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
 }
 
 /* ── OS DOIS CARTÕES ──
@@ -508,43 +614,57 @@
 /* ── AS PROPOSTAS ──
    Agrupadas por assunto e nunca numa lista plana: com cinco grupos de botão do mesmo tamanho,
    a decisão que abre o resto do jogo vira mais uma linha entre outras. */
+/* ── A GRADE DE FICHAS ──
+   ⚠️ **Duas colunas, e a coluna é o que estava sobrando.** Empilhados numa coluna só, os oito
+   grupos precisavam de 1.000 px de altura e a janela tinha 650. Lado a lado, cabem.
+
+   A ordem dos lugares é mnemônica: à esquerda a ESCADA DA CONFIANÇA (pacto → aliança → liga,
+   cada degrau pedindo mais opinião que o anterior); à direita O QUE PASSA ENTRE VOCÊS
+   (comércio → tributo → passagem: renda, ouro, estrada). Guerra e Ouro atravessam as duas
+   porque não são acordo com prazo — são atos unilaterais, e ficam nos extremos. */
 .diplomacia__acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-content: start;
 }
 .diplomacia__grupo {
-  display: grid;
-  grid-template-columns: 76px 1fr;
-  gap: 3px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 9px 11px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--ui-fundo-suave);
+}
+.diplomacia__grupo[data-vao='cheio'] {
+  grid-column: 1 / -1;
+}
+.diplomacia__ficha-topo {
+  display: flex;
   align-items: baseline;
-  padding: 10px 0;
-  border-top: 1px solid var(--ui-borda-fraca);
+  justify-content: space-between;
+  gap: 8px;
 }
 .diplomacia__rotulo {
-  grid-column: 1;
-  grid-row: 1;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__botoes {
-  grid-column: 2;
-  grid-row: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 /* ⚠️ A fala fica NA TELA, e não num tooltip. A crítica mais repetida sobre estas telas em todos
    os jogos pesquisados é informação que devia estar à vista escondida atrás do mouse parado.
    Se ele vai recusar, o jogador lê o motivo sem precisar caçar. */
+/* A linha de estado da ficha: curta, factual, e ausente quando não há o que dizer. */
 .diplomacia__fala {
-  grid-column: 2;
-  grid-row: 2;
-  margin: 2px 0 0;
-  font-size: 13px;
-  font-style: italic;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__fala[data-tom='bom'] {
@@ -557,11 +677,11 @@
 .diplomacia__acao {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ui-texto-fraco);
-  padding: 6px 12px;
+  padding: 5px 9px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
@@ -643,6 +763,10 @@
   color: var(--ui-sangue-claro);
 }
 
+/* ⚠️ Vazio, ele não existe: uma moldura sem texto na ponta da coluna lê como caixa quebrada. */
+.diplomacia__aviso:empty {
+  display: none;
+}
 .diplomacia__aviso {
   margin: 10px 0 0;
   min-height: 1.2em;
@@ -728,4 +852,13 @@
   text-transform: uppercase;
   color: var(--ui-bronze-claro);
   vertical-align: middle;
+}
+
+/* A opinião da lista pega o tom do sinal: o olho corre a coluna e vê onde estão os problemas
+   sem ler um número sequer. */
+.diplomacia__nome-forca[data-tom='bom'] {
+  color: var(--ui-verde-claro);
+}
+.diplomacia__nome-forca[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
 }

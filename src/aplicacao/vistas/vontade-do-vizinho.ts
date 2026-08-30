@@ -40,6 +40,8 @@ export interface PrazoComResposta {
   ouro: number;
   /** As regras permitem? Cofre, guerra, pacto em pé, travas. */
   pode: boolean;
+  /** E, quando não permitem, POR QUÊ — a frase que a própria regra escreveu. */
+  motivo: string;
   /** E ELE quer? Só faz sentido perguntar quando `pode` é verdadeiro. */
   resposta: Resposta;
 }
@@ -279,35 +281,3 @@ export function ouroQueCobre(jogo: Jogo, id: string, pontos: number): number | n
   return null;
 }
 
-/**
- * A frase com que ele ABRE a conversa — antes de qualquer botão.
- *
- * ⚠️ **Porque só uma pessoa tinha voz nesta tela: você.** Todo elemento era um comando seu, e
- * a contraparte era o rótulo do dossiê e depois o silêncio contra o qual se apertavam botões.
- * Uma linha dita por ele, no alto, converte a IA de juiz em parte interessada — e é ancoragem
- * de negociação: quem fala primeiro define o enquadramento.
- *
- * ⚠️ **E ela é GERADA dos mesmos números que decidem**, nunca escrita à mão por vizinho. Uma
- * personalidade anunciada e não cumprida é pior do que nenhuma: se a fala promete um mercador
- * conciliador e a mecânica entrega um invasor, o jogador aprende a não ler a tela.
- */
-export function aberturaDe(jogo: Jogo, id: string, eu: string): string {
-  const { campanha } = jogo;
-  if (campanha.emGuerra(eu, id)) {
-    return respostaAPaz(jogo, id, eu).aceita
-      ? 'Já sangramos o bastante. Diga o que propõe.'
-      : 'Não vim conversar. Vim tomar o que é meu.';
-  }
-  const relacao = campanha.relacaoEntre(eu, id);
-  const linha = linhaDeAtaqueDe(jogo, id);
-  const temperamento = estiloDe(jogo.ia, id);
-  // Abaixo da linha dele a conversa é outra: ele já está pesando a marcha.
-  if (relacao <= linha) {
-    return temperamento.arma === 'melhor'
-      ? 'Falo com você porque ainda não decidi. Não confunda isso com amizade.'
-      : 'Escute rápido. A paciência do meu conselho é curta.';
-  }
-  if (relacao >= 45) return 'Entre. Nesta casa a sua palavra tem peso.';
-  if (relacao >= 15) return 'Sente-se. Temos mais a ganhar juntos do que separados.';
-  return 'Diga o que quer. Não prometo nada antes de ouvir.';
-}

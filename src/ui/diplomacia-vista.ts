@@ -105,12 +105,8 @@ export interface VizinhoNaMesa {
    * sossego num e véspera de invasão no outro.
    */
   linhaDeAtaque: number;
-  /** A frase com que ele abre a conversa, antes de qualquer botão. */
-  abertura: string;
   /** O nome da faixa: Fiel, Amistoso, Cordial, Frio, Hostil, Inimigo. */
   postura: string;
-  /** O que a faixa significa na prática, em uma frase. */
-  leitura: string;
   tomDaPostura: string;
   /** A conta da opinião, parcela por parcela. */
   parcelas: readonly { rotulo: string; pontos: number }[];
@@ -127,6 +123,19 @@ export interface VizinhoNaMesa {
   tributo: { euPago: boolean; ouro: number; turnos: number } | null;
   /** Turnos de pacto que ainda faltam, ou 0. */
   pacto: number;
+  /** Turnos de aliança que ainda faltam, ou 0. */
+  alianca: number;
+  /** O lugar dele na sua liga: você manda nele, ele manda em você, ou nada. */
+  liga: 'membro' | 'chefe' | null;
+  /**
+   * O vínculo mais forte entre vocês, em uma palavra, e o prazo quando há.
+   *
+   * ⚠️ **Existe para a LISTA, e é o campo que a fazia inútil por ausência.** Ela mostrava a
+   * postura — que dizia "cordial" em 11 de 12 linhas — e o exército, que já aparece duas vezes
+   * no dossiê. A pergunta que o jogador faz ao correr a lista é *"eu já assinei alguma coisa
+   * com esse aí?"*, e ela custava dezessete cliques para responder.
+   */
+  vinculo: string;
   temAcordo: boolean;
   /** Ganho marginal do acordo para o jogador, já com a carteira e a rota atuais. */
   rendaDoAcordo: number;
@@ -152,6 +161,4 @@ export interface VistaDaDiplomacia {
   /** O seu cartão: o lado esquerdo da mesa, igual para todos os interlocutores. */
   eu: CartaoDoPoder;
   vizinhos: readonly VizinhoNaMesa[];
-  /** Quantas guerras você tem em curso, contando as de quem não é vizinho. */
-  guerras: number;
 }

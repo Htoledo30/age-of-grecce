@@ -1120,6 +1120,91 @@ o maior e o menor é a menor já medida neste projeto.
 O preço são as propostas ao jogador caindo de 59 para 37 — a mesa ficou mais desconfiada com
 todo mundo, inclusive contigo. Continua sendo dez vezes o que era antes da semana começar (zero).
 
+## A aba de diplomacia redesenhada: leitura e ação em eixos diferentes
+
+Henrique, depois da liga entrar: *"tá tudo muito confuso, muita informação, precisamos criar uma
+janela de diplomacia melhor, organizada, simples, minimalista, e que dê para entender sem
+precisar de um milhão de textos"*.
+
+⚠️ **"Confuso" não se mede olhando, e "melhor" não se prova por opinião.** A primeira coisa foi
+uma ferramenta — `npm run medir-diplomacia` — que abre a aba, escolhe um vizinho e conta o que
+o jogador atravessa:
+
+| | antes | depois |
+|---|---|---|
+| ações na tela | 19 | 19 |
+| frases de prosa | 14 | **4** |
+| **palavras de prosa** | **196** | **28** |
+| conteúdo escondido abaixo do corte | **975 px** | 234 px (só a lista) |
+| grupos de ação visíveis ao abrir | **2 de 8** | **8 de 8** |
+
+**196 palavras para tomar uma decisão** era o "milhão de textos", em número.
+
+### O diagnóstico, e ele não era "muito texto"
+
+A tela empilhava **leitura e ação no mesmo eixo vertical** — dois cartões, a barra de força, a
+opinião, a intenção, os laços, e só então os oito grupos de proposta. Nesse arranjo a leitura
+ganha sempre: numa janela de 651 px havia 975 px de conteúdo, e **ao abrir a aba nenhum botão
+de ação estava visível**.
+
+Foram pesquisadas as telas de diplomacia de **EU4, Civ VI, Total War: Warhammer 3, Crusader
+Kings 3, Age of History 2/3 e Stellaris**, mais princípios de UI para telas densas.
+
+### O que mudou
+
+**Três colunas, e a ordem é a sequência da decisão** — *com quem* (248px) · *o que somos um do
+outro* (340px) · *o que eu faço com ele* (o resto). ⚠️ **A regra que impede a tela de voltar a
+ser o que era: nenhum botão na coluna do meio, nenhuma prosa narrativa na da direita.** E a
+janela foi de 960 para 1180: era a LARGURA que estava sobrando, não a altura.
+
+**A lista virou tabela.** Ela mostrava a postura — que dizia *"cordial"* em 11 de 12 linhas — e
+o exército, que já aparecia duas vezes no dossiê. Agora mostra o **vínculo formal** (`guerra`,
+`aliado 12t`, `pacto 8t`, `paga 20t`, `comércio`) e a **opinião com sinal e seta** (`−44 ↓`,
+`+10 =`), agrupada por estado com cabeçalhos: *em guerra · pedem resposta · ameaçam · ligados a
+você · sem vínculo*. ⚠️ **Agrupada e alfabética dentro, não ordenada por opinião**: ordenada, as
+dezoito linhas dançariam a cada virada e a memória de posição — que é o que faz um clique custar
+meio segundo — desapareceria.
+
+**Os oito grupos viraram fichas numa grade de duas colunas.** Guerra e Ouro atravessam as duas,
+porque são os únicos que não são acordo com prazo. ⚠️ **A ficha nunca muda de posição, só de
+cara**: empilhados, um pacto assinado colapsava o grupo de três botões para um e tudo abaixo
+subia.
+
+**Os dois cartões espelhados viraram uma tira de confronto com os rótulos no eixo central.**
+"províncias", "em armas" e "palavra" apareciam duas vezes cada; agora uma. A capital só aparece
+quando diz alguma coisa, e a palavra virou selo — `palavra limpa` × `palavra limpa` era a mesma
+frase escrita duas vezes em quase todo par.
+
+**O selo subiu do botão para o cabeçalho da ficha.** A tela repetia o mesmo veredito de 19 a 25
+vezes, porque `aceita` é calculado uma vez por grupo e copiado em cada botão. Onde ele varia de
+fato — tributo, que tem dois verbos — o selo continua por botão, e aí significa alguma coisa.
+
+### A prosa que morreu, e por quê
+
+| morreu | por quê |
+|---|---|
+| a fala de abertura (7 variantes) | não carregava dado nenhum: repetia em prosa a faixa que a régua desenha |
+| a leitura da postura (6 variantes) | descrevia em palavras quais tratados estão abertos — que é o que os selos mostram |
+| a frase da barra de força (4 variantes) | a razão `2.0×` diz o mesmo em dois caracteres |
+| a fala de sete dos oito grupos | virou linha de estado factual de ≤5 palavras, ou o próprio número do botão |
+| a linha de resumo do topo | os cabeçalhos de grupo da lista dizem o mesmo com mais precisão |
+| *"sem guerra declarada, sua hoste não marcha"* | tautologia: dizia o nome do botão de novo |
+
+⚠️ **E a frase da régua virou CONDICIONAL — prosa acionada por informação.** Ela existia sempre,
+inclusive para dizer que estava tudo bem. Agora só fala quando há o que dizer: *abaixo da linha
+de Argos*, ou *caminha para a linha de Argos*. Quando não há perigo, não há frase.
+
+⚠️ **A ÚNICA voz que sobrou na tela inteira é a da paz**, e ela mora lá de propósito: a fala dele
+só aparece onde a decisão é a guerra.
+
+### Um defeito achado no caminho
+
+`prazosDeTributo` chamava `podeFirmarTributo(...).pode` e **jogava o `.motivo` fora**. Os seis
+botões do tributo diziam *"as regras não deixam agora"* enquanto a regra sabia dizer *"há pacto
+em pé: você já tem esse sossego de graça"*. Cinco motivos morriam numa linha.
+
+Comparativo lado a lado em `capturas/diplo-comparativo.png`.
+
 ## A LIGA: mandar num reino sem tomá-lo
 
 Até aqui um vizinho tinha dois estados possíveis — independente ou conquistado — e um caminho

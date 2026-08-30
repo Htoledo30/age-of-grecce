@@ -28,7 +28,6 @@ import type {
   VizinhoNaMesa,
 } from '@/ui/diplomacia-vista';
 import {
-  aberturaDe,
   intencaoDe,
   linhaDeAtaqueDe,
   ouroQueCobre,
@@ -62,7 +61,7 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
     palavra: '',
     reputacao: 0,
   };
-  if (!jogador) return { eu: vazio, vizinhos: [], guerras: 0 };
+  if (!jogador) return { eu: vazio, vizinhos: [] };
 
   const minhas = new Set(campanha.provinciasDe(jogador.id));
   const fronteiras = new Map<string, string[]>();
@@ -105,7 +104,6 @@ export function vistaDaDiplomacia(jogo: Jogo): VistaDaDiplomacia {
   return {
     eu: cartaoDe(jogo, jogador.id, 'você'),
     vizinhos,
-    guerras: campanha.guerrasDe(jogador.id).length,
   };
 }
 
@@ -159,9 +157,7 @@ function naMesa(jogo: Jogo, eu: string, id: string, fronteira: readonly string[]
     relacao,
     alvo,
     linhaDeAtaque: linhaDeAtaqueDe(jogo, id),
-    abertura: aberturaDe(jogo, id, eu),
     postura: postura.rotulo,
-    leitura: postura.leitura,
     tomDaPostura: postura.tom,
     parcelas,
     intencao: intencao.frase,
@@ -178,13 +174,42 @@ function naMesa(jogo: Jogo, eu: string, id: string, fronteira: readonly string[]
             turnos: Math.max(0, emCurso.ate - campanha.turno),
           },
     pacto: Math.max(0, (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno),
+    alianca: Math.max(0, (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno),
+    liga: campanha.chefeDe(id) === eu ? 'membro' : campanha.chefeDe(eu) === id ? 'chefe' : null,
     temAcordo: campanha.acordosDe(eu).includes(id),
     rendaDoAcordo: campanha.rendaDeUmAcordoCom(id),
     pedido: pedidoDe(jogo, id),
     passagemConcedida: Math.max(0, (campanha.acessoAte(eu, id) ?? campanha.turno) - campanha.turno),
     passagemRecebida: Math.max(0, (campanha.acessoAte(id, eu) ?? campanha.turno) - campanha.turno),
+    vinculo: vinculoCom(jogo, eu, id),
     grupos: gruposDe(jogo, eu, id),
   };
+}
+
+/**
+ * O vínculo mais forte entre os dois, em uma palavra — e só um, o mais forte.
+ *
+ * ⚠️ **A ordem de precedência é a da consequência, não a do alfabeto:** guerra manda em tudo,
+ * depois quem manda em quem, depois quem luta com quem, depois o papel que impede a marcha, e
+ * por último o dinheiro. Mostrar dois vínculos numa linha de 248px seria mostrar nenhum.
+ */
+function vinculoCom(jogo: Jogo, eu: string, id: string): string {
+  const { campanha } = jogo;
+  if (campanha.emGuerra(eu, id)) return 'guerra';
+  if (campanha.chefeDe(id) === eu) return 'membro da sua liga';
+  if (campanha.chefeDe(eu) === id) return 'seu chefe';
+  const alianca = (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno;
+  if (alianca > 0) return `aliado ${alianca}t`;
+  const pacto = (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno;
+  if (pacto > 0) return `pacto ${pacto}t`;
+  const tributo = campanha.tributoEntre(eu, id);
+  if (tributo !== undefined) {
+    return `${tributo.pagador === eu ? 'paga' : 'recebe'} ${Math.max(0, tributo.ate - campanha.turno)}t`;
+  }
+  if (campanha.acordosDe(eu).includes(id)) return 'comércio';
+  const tregoa = (campanha.tregoaAte(eu, id) ?? campanha.turno) - campanha.turno;
+  if (tregoa > 0) return `trégua ${tregoa}t`;
+  return '';
 }
 
 /**
@@ -250,7 +275,8 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const { campanha, ajustes } = jogo;
   const dada = Math.max(0, (campanha.acessoAte(eu, id) ?? campanha.turno) - campanha.turno);
   const recebida = Math.max(0, (campanha.acessoAte(id, eu) ?? campanha.turno) - campanha.turno);
-  const nota = recebida > 0 ? ` Ele te deixa passar por ${recebida} turnos.` : '';
+  // Dois campos, não duas frases: `dada 12t · ele te dá 9t`.
+  const nota = recebida > 0 ? ` · ele te dá ${recebida}t` : '';
   if (dada > 0) {
     return {
       titulo: 'Passagem',
@@ -264,7 +290,7 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: `O exército dele atravessa a sua terra sem guerra.${nota} Fechar antes do prazo custa a opinião dele.`,
+      fala: `dada ${dada}t${nota}`,
       tom: 'bom',
     };
   }
@@ -284,13 +310,11 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   // cinza por regra — guerra em curso, passagem já aberta —, e nunca porque ele não gosta de
   // você. Quem precisa de confiança é o contrário: ele abrir a dele.
   const travado = propostas.every((p) => !p.pode);
-  const porque = propostas.find((p) => p.bloqueio !== '')?.bloqueio ?? '';
   return {
     titulo: 'Passagem',
     propostas,
-    fala: travado
-      ? `${porque}. Passagem é decisão sua — mas não se abre estrada para quem está em armas contra você.`
-      : `Deixa o exército dele atravessar a sua terra sem guerra — e não deixa conquistar nada.${nota}`,
+    // Travado, o motivo já está no `bloqueio` de cada prazo — repeti-lo aqui era dizer duas vezes.
+    fala: travado ? '' : `ele atravessa sem guerra${nota}`,
     tom: travado ? 'ruim' : 'neutro',
   };
 }
@@ -313,10 +337,10 @@ function grupoDaGuerra(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
         bloqueio: permissao.pode ? '' : permissao.motivo,
       },
     ],
-    fala:
-      tregoa > 0
-        ? `A trégua ainda segura por ${tregoa} ${tregoa === 1 ? 'turno' : 'turnos'}.`
-        : 'Sem guerra declarada, sua hoste não marcha sobre a terra dele.',
+    // ⚠️ **A trégua é dita UMA vez, e antes eram três** — aqui, na leitura da postura e no
+    // bloqueio do botão. E a frase que sobrava sem trégua ("sem guerra declarada, sua hoste não
+    // marcha") era tautologia: dizia o nome do botão de novo.
+    fala: tregoa > 0 ? `trégua ${tregoa}t` : '',
     tom: 'ruim',
   };
 }
@@ -335,7 +359,7 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     },
     ...prazos.map((p) => ({
       acao: 'paz-com-tributo',
-      rotulo: `Comprar · ${p.ouro}/turno por ${p.turnos}`,
+      rotulo: `Comprar ${p.ouro} · ${p.turnos}t`,
       valor: p.turnos,
       pode: p.pode,
       aceita: p.resposta.aceita,
@@ -348,11 +372,13 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   return {
     titulo: 'Paz',
     propostas,
+    // ⚠️ **A ÚNICA voz que sobrou na tela inteira, e ela mora aqui de propósito**: a fala dele
+    // só aparece onde a decisão é a guerra. Em todo o resto da mesa, o estado é factual.
     fala: resposta.aceita
       ? resposta.fala
       : comprada
-        ? `«${resposta.fala}» Mas ${comprada.ouro} por turno o demoveria.`
-        : `«${resposta.fala}» E nem o ouro que você tem o demove.`,
+        ? `«${resposta.fala}» ${comprada.ouro}/turno o demoveria.`
+        : `«${resposta.fala}»`,
     tom: resposta.aceita || comprada ? 'bom' : 'ruim',
   };
 }
@@ -389,7 +415,8 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
             bloqueio: permissao.pode ? '' : permissao.motivo,
           },
     ],
-    fala: tem ? `Em curso: ${valores}. A guerra desfaz na hora.` : resposta.fala,
+    // O número já está no rótulo do botão; a linha de estado diz só o que ele NÃO diz.
+    fala: tem ? 'em curso · a guerra desfaz' : '',
     tom: tem || resposta.aceita ? 'bom' : 'ruim',
   };
 }
@@ -435,9 +462,9 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
         },
         { acao: 'soltar-membro', rotulo: 'Soltar', valor: 0, pode: true, aceita: true, bloqueio: '' },
       ],
-      fala:
-        `Ele te paga ${paga} por turno e entra nas suas guerras. Vontade de sair: ${desejo}/100 — ` +
-        'apertar rende mais agora e o empurra para a revolta.',
+      // Os NÚMEROS sobrevivem, a explicação vai para o tooltip do título. A regra da liga se
+      // aprende uma vez; o tributo e a vontade de sair mudam todo turno.
+      fala: `paga ${paga}/turno · sair ${desejo}/100`,
       tom: desejo >= 40 ? 'ruim' : 'bom',
     };
   }
@@ -451,8 +478,8 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
         { acao: 'sair-da-liga', rotulo: 'Sair da liga', valor: 0, pode: true, aceita: true, bloqueio: '' },
       ],
       fala:
-        `Você paga ${campanha.tributoDaLigaDe(eu)} por turno e entra nas guerras dele. Sua vontade ` +
-        `de sair: ${Math.round(vinculo?.desejoDeSair ?? 0)}/100. Fugir custa a sua palavra com o mapa inteiro.`,
+        `você paga ${campanha.tributoDaLigaDe(eu)}/turno · sair ` +
+        `${Math.round(vinculo?.desejoDeSair ?? 0)}/100`,
       tom: 'ruim',
     };
   }
@@ -477,9 +504,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
             : permissao.motivo,
       },
     ],
-    fala:
-      'Ele continua sendo ele: governo, terra e exército. O que passa a ser seu é o tributo e ' +
-      'as guerras dele. É o acordo que pede mais confiança da mesa inteira.',
+    fala: 'tributo e as guerras dele',
     tom: permissao.pode ? 'bom' : 'ruim',
   };
 }
@@ -509,10 +534,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala:
-        guerras > 0
-          ? `Ele tem ${guerras} ${guerras === 1 ? 'guerra' : 'guerras'} em curso, e elas são suas. Romper custa mais que romper um pacto.`
-          : 'As guerras dele são suas, e as suas dele. Romper custa mais que romper um pacto.',
+      fala: guerras > 0 ? `em pé · ${guerras} guerra${guerras === 1 ? '' : 's'} dele` : 'em pé',
       tom: 'bom',
     };
   }
@@ -528,9 +550,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       aceita: resposta.aceita,
       bloqueio: p.pode ? '' : precoDaConfianca(jogo, id, p.opiniaoMinima - relacao),
     })),
-    fala: resposta.aceita
-      ? 'As guerras dele passam a ser suas, no mesmo turno e sem perguntar. Pede muito mais confiança que um pacto.'
-      : `«${resposta.fala}» Nenhum presente resolve: ele não empresta o exército dele a você.`,
+    fala: 'as guerras dele viram suas',
     tom: resposta.aceita ? 'bom' : 'ruim',
   };
 }
@@ -551,7 +571,7 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: 'Nenhum dos dois marcha enquanto durar. Romper custa a opinião dele e a sua palavra.',
+      fala: 'em pé · nenhum dos dois marcha',
       tom: 'bom',
     };
   }
@@ -571,12 +591,11 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       // entre fechar uma porta e mostrar a chave.
       bloqueio: p.pode ? '' : precoDaConfianca(jogo, id, p.opiniaoMinima - relacao),
     })),
-    // ⚠️ Confiança e vontade são duas travas diferentes, e a fala diz QUAL fechou a porta.
-    // Sem isso o jogador com opinião de sobra fica dando presente para destravar um botão que
-    // não é a opinião que trava — foi a reclamação mais citada nos fóruns de Total War.
-    fala: resposta.aceita
-      ? `«${resposta.fala}» O prazo é o quanto ele confia; os trancados dizem o que falta.`
-      : `«${resposta.fala}» Aqui nenhum presente resolve: ele pretende te atacar.`,
+    // ⚠️ **Confiança e vontade são duas travas diferentes, e o SELO do grupo diz qual fechou
+    // a porta.** Sem essa distinção o jogador com opinião de sobra fica dando presente para
+    // destravar um botão que não é a opinião que trava. O que era uma frase virou o selo: com
+    // `aceita` falso, nenhum prazo abre e nenhum presente resolve.
+    fala: 'nenhum dos dois marcha',
     tom: resposta.aceita ? 'bom' : 'ruim',
   };
 }
@@ -599,9 +618,7 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: euPago
-        ? `Você paga ${emCurso.ouro} por turno e ele não marcha. Romper custa a sua palavra.`
-        : `Ele paga ${emCurso.ouro} por turno e você abriu mão de marchar sobre ele.`,
+      fala: euPago ? `você paga ${emCurso.ouro}/turno` : `ele paga ${emCurso.ouro}/turno`,
       tom: euPago ? 'ruim' : 'bom',
     };
   }
@@ -611,19 +628,25 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const propostas: Proposta[] = [
     ...pago.map((p) => ({
       acao: 'pagar-tributo',
-      rotulo: `Pagar ${p.ouro}/turno por ${p.turnos}`,
+      // ⚠️ **Rótulo curto porque são SEIS.** "Pagar 155/turno por 10" ocupava a largura da ficha
+      // inteira e empilhava seis linhas; `Pagar 155 · 10t` cabe dois por linha. O "/turno" é
+      // constante nos seis e por isso não distingue nada — sai.
+      rotulo: `Pagar ${p.ouro} · ${p.turnos}t`,
       valor: p.turnos,
       pode: p.pode,
       aceita: p.resposta.aceita,
-      bloqueio: p.pode ? '' : 'as regras não deixam agora',
+      // ⚠️ O motivo VERDADEIRO, que `prazosDeTributo` agora devolve. Antes eram seis botões
+      // dizendo "as regras não deixam agora" enquanto a regra sabia dizer *"há pacto em pé:
+      // você já tem esse sossego de graça"*.
+      bloqueio: p.motivo,
     })),
     ...paga.map((p) => ({
       acao: 'exigir-tributo',
-      rotulo: `Exigir ${p.ouro}/turno por ${p.turnos}`,
+      rotulo: `Exigir ${p.ouro} · ${p.turnos}t`,
       valor: p.turnos,
       pode: p.pode,
       aceita: p.resposta.aceita,
-      bloqueio: p.pode ? '' : 'as regras não deixam agora',
+      bloqueio: p.motivo,
     })),
   ];
   const querPagar = paga[0]?.resposta;
@@ -631,7 +654,9 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   return {
     titulo: 'Tributo',
     propostas,
-    fala: `«${querReceber?.fala ?? ''}» · «${querPagar?.fala ?? ''}»`,
+    // ⚠️ Eram DUAS falas entre aspas, e uma delas podia vir vazia — `«» · «Aceito.»`. Os dois
+    // selos das duas linhas de verbo dizem a mesma coisa sem uma palavra.
+    fala: '',
     tom: querReceber?.aceita === true || querPagar?.aceita === true ? 'bom' : 'ruim',
   };
 }
@@ -673,7 +698,8 @@ function grupoDoPresente(jogo: Jogo, id: string): GrupoDaMesa {
   return {
     titulo: 'Ouro',
     propostas,
-    fala: 'Presente compra TEMPO, não amizade: a opinião volta a cair para o que os fatos dizem.',
+    // "Presente compra tempo, não amizade" é regra que se aprende uma vez: vai para o tooltip.
+    fala: '',
     tom: 'morno',
   };
 }

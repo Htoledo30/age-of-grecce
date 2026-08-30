@@ -428,7 +428,7 @@ export abstract class ConsultasDoReino {
   prazosDeTributo(
     pagador: string,
     recebedor: string,
-  ): readonly { turnos: number; ouro: number; pode: boolean }[] {
+  ): readonly { turnos: number; ouro: number; pode: boolean; motivo: string }[] {
     return prazosDeTributo(this.nucleo, pagador, recebedor);
   }
 
@@ -440,7 +440,7 @@ export abstract class ConsultasDoReino {
   prazosDePazComTributo(
     com: string,
     porPoder: string = this.nucleo.estado.jogador ?? '',
-  ): readonly { turnos: number; ouro: number; pode: boolean }[] {
+  ): readonly { turnos: number; ouro: number; pode: boolean; motivo: string }[] {
     return prazosDePazComTributo(this.nucleo, porPoder, com);
   }
 

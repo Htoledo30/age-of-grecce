@@ -25,7 +25,8 @@
     "sitios": "tsx ferramentas/sitios.ts",
     "gerar-provincias": "tsx --max-old-space-size=8192 gerador/gerar-provincias.ts",
     "ver-provincias": "python ferramentas/ver-provincias.py",
-    "calibrar-fronteira": "node ferramentas/calibrar-fronteira.mjs"
+    "calibrar-fronteira": "node ferramentas/calibrar-fronteira.mjs",
+    "medir-diplomacia": "tsx ferramentas/medir-diplomacia.ts"
   },
   "type": "module",
   "dependencies": {

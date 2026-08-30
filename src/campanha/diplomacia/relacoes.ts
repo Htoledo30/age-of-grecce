@@ -962,14 +962,22 @@ export function prazosDeTributo(
   nucleo: NucleoDaCampanha,
   pagador: string,
   recebedor: string,
-): readonly { turnos: number; ouro: number; pode: boolean }[] {
+): readonly { turnos: number; ouro: number; pode: boolean; motivo: string }[] {
   return [...nucleo.ajustes.diplomacia.tributo.prazos]
     .sort((x, y) => x.turnos - y.turnos)
-    .map((prazo) => ({
-      turnos: prazo.turnos,
-      ouro: valorDoTributo(rendaBaseDe(nucleo, pagador), prazo.fracaoDaRenda),
-      pode: podeFirmarTributo(nucleo, pagador, recebedor, prazo.turnos).pode,
-    }));
+    .map((prazo) => {
+      // ⚠️ **O MOTIVO vem junto, e antes ele era jogado fora aqui.** A permissão sabe dizer
+      // *"há pacto em pé: você já tem esse sossego de graça"* e *"você já paga tributo a
+      // alguém"*, e a tela mostrava, nos seis botões, a mesma frase genérica — "as regras não
+      // deixam agora". Cinco motivos que a regra já tinha morriam nesta linha.
+      const permissao = podeFirmarTributo(nucleo, pagador, recebedor, prazo.turnos);
+      return {
+        turnos: prazo.turnos,
+        ouro: valorDoTributo(rendaBaseDe(nucleo, pagador), prazo.fracaoDaRenda),
+        pode: permissao.pode,
+        motivo: permissao.pode ? '' : permissao.motivo,
+      };
+    });
 }
 
 /**
@@ -1127,14 +1135,19 @@ export function prazosDePazComTributo(
   nucleo: NucleoDaCampanha,
   quemPaga: string,
   com: string,
-): readonly { turnos: number; ouro: number; pode: boolean }[] {
+): readonly { turnos: number; ouro: number; pode: boolean; motivo: string }[] {
   return [...nucleo.ajustes.diplomacia.tributo.prazos]
     .sort((x, y) => x.turnos - y.turnos)
-    .map((prazo) => ({
-      turnos: prazo.turnos,
-      ouro: valorDoTributo(rendaBaseDe(nucleo, quemPaga), prazo.fracaoDaRenda),
-      pode: podeFazerPazComTributo(nucleo, quemPaga, com, prazo.turnos).pode,
-    }));
+    .map((prazo) => {
+      // O motivo vem junto, pela mesma razão de `prazosDeTributo`: a regra sabe dizer por quê.
+      const permissao = podeFazerPazComTributo(nucleo, quemPaga, com, prazo.turnos);
+      return {
+        turnos: prazo.turnos,
+        ouro: valorDoTributo(rendaBaseDe(nucleo, quemPaga), prazo.fracaoDaRenda),
+        pode: permissao.pode,
+        motivo: permissao.pode ? '' : permissao.motivo,
+      };
+    });
 }
 
 /** Assina a paz e o tributo no mesmo ato. Devolve `false` quando o par não podia. */

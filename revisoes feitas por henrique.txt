@@ -417,3 +417,50 @@ Novas Observacoes Por Henrique
      Na aba de Diplomacia ha um grupo "Liga" com TRES caras: liderar (os niveis de tributo,
      Anexar e Soltar), servir (Sair da liga) e nenhum dos dois (Por na minha liga).
 
+"tira print da aba diplomacia, ta tudo muito confuso, muita informacao (...) organizada,
+simples, minimalista, e que de para entender sem precisar de um milhao de textos"
+   -> REDESENHADA. Mas antes eu MEDI, porque "confuso" nao se mede olhando:
+       ANTES                          DEPOIS
+       19 acoes                       19 acoes
+       14 frases de prosa             4
+       196 PALAVRAS DE PROSA          28
+       975px escondidos abaixo        234px (so a lista, que rola de proposito)
+       2 dos 8 grupos visiveis        8 de 8
+     Ferramenta nova: npm run medir-diplomacia. Ela abre a aba, escolhe um vizinho e conta.
+     Fica no repositorio para a proxima tela nao virar discussao de gosto.
+
+   -> O DIAGNOSTICO NAO ERA "MUITO TEXTO". A tela empilhava LEITURA e ACAO no mesmo eixo
+     vertical, e nesse arranjo a leitura ganha sempre: numa janela de 651px havia 975px de
+     conteudo, e ao ABRIR a aba nenhum botao de acao estava visivel.
+     Pesquisei as telas de EU4, Civ VI, Total War Warhammer 3, Crusader Kings 3, Age of
+     History 2/3 e Stellaris, mais principios de UI para telas densas.
+
+   -> O QUE MUDOU:
+     TRES COLUNAS, na sequencia da decisao: com quem | o que somos | o que eu faco. A janela
+     foi de 960 para 1180 -- era a LARGURA que sobrava, nao a altura.
+     A LISTA VIROU TABELA: mostrava "cordial" (igual em 11 de 12 linhas) e o exercito. Agora
+     mostra o VINCULO (guerra, aliado 12t, pacto 8t, comercio) e a OPINIAO com sinal e seta
+     (-44 v, +10 =), agrupada por estado com cabecalhos.
+     OS 8 GRUPOS VIRARAM FICHAS numa grade de duas colunas. A ficha nunca muda de posicao, so
+     de cara -- antes, assinar um pacto fazia tudo abaixo subir.
+     OS DOIS CARTOES viraram uma tira de confronto com os rotulos no MEIO: "provincias" e
+     "em armas" apareciam duas vezes cada, uma de cada lado.
+     O SELO subiu do botao para o cabecalho da ficha: a tela repetia o mesmo veredito 19 a 25
+     vezes.
+
+   -> A PROSA QUE MORREU: a fala de abertura (7 variantes, zero dados), a leitura da postura
+     (6 variantes descrevendo o que os selos mostram), a frase da barra de forca (a razao 2.0x
+     diz o mesmo), a fala de sete dos oito grupos, o resumo do topo, e a tautologia "sem guerra
+     declarada, sua hoste nao marcha".
+     A frase da regua virou CONDICIONAL: so fala quando ha perigo. Sem perigo, sem frase.
+     E a UNICA voz que sobrou na tela e a da paz -- a fala dele so aparece onde a decisao e a
+     guerra.
+
+   -> UM DEFEITO ACHADO NO CAMINHO: prazosDeTributo jogava fora o MOTIVO da recusa. Os seis
+     botoes do tributo diziam "as regras nao deixam agora" enquanto a regra sabia dizer "ha
+     pacto em pe: voce ja tem esse sossego de graca".
+
+   -> Prints: capturas/diplo-comparativo.png (lado a lado), diplo-v3.png (paz) e
+     diplo-t20-corte.png (guerra, com a lista agrupada mostrando EM GUERRA / AMEACAM / SEM
+     VINCULO). O teste de tela da diplomacia passou.
+
