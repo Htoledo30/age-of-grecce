@@ -138,6 +138,12 @@ const cenarios: readonly Cenario[] = [
       campanha.darOuro(100_000);
       campanha.plantarHoste('eleusis', 'atenas', 800);
       campanha.trocarDono('eleusis', 'atenas');
+      // ⚠️ **A guerra vem ANTES da marcha, e não é firula de roteiro.** Em 28/08/2026 o
+      // encontro na estrada passou a exigir guerra declarada — o cabeçalho da marcha sempre
+      // disse isso e o código não cumpria. `ordenarMarcha` LANÇA quando a regra barra, e como
+      // os cinco cenários são calculados antes de a tabela ser impressa, este sozinho apagava
+      // o relatório inteiro: quem rodasse `npm run simular` não via nem os quatro que passavam.
+      campanha.declararGuerra('megara', 'atenas');
       const hoste = campanha.hostesEm('eleusis').find((h) => h.poder === 'atenas');
       if (hoste) campanha.ordenarMarcha(hoste.id, 'megara', 800, 'atenas', 'sitiar');
     },
