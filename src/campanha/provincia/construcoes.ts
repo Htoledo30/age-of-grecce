@@ -12,6 +12,7 @@ import type { Obra } from '../estado-campanha';
 import type { CatalogoDeConstrucoes, NucleoDaCampanha, Recusa } from '../nucleo';
 import { gastar, tesouroDe } from '../governo/tesouro';
 import { construcoesEm, donoDe, fichaDe, nivelDaConstrucaoEm } from './consultas';
+import { cercoEm } from '../guerra/cercos';
 import { podeAgirEm } from './permissoes';
 import { baseDe, escalaDeObraEm } from './renda';
 import { custoDaObra } from '../custo-de-obra';
@@ -181,6 +182,62 @@ export function construir(
     nivelAlvo,
     turnosRestantes: turnos,
   };
+}
+
+/**
+ * Esta construção pode ser derrubada?
+ *
+ * ⚠️ **A demolição existe porque os quatro slots viraram um beco sem saída.** A IA — e o
+ * jogador — enchem os quatro cedo com o que RENDE OURO, que é a decisão certa no começo; e
+ * quando finalmente há caixa para uma Armaria, não há mais onde pôr. Medido no turno 60: em 23
+ * das 25 províncias que ofertavam a Armaria os quatro slots já estavam cheios, e o preço nem
+ * chegava a ser perguntado. Sem poder derrubar, metade do catálogo era enfeite.
+ *
+ * ⚠️ **Cidade SITIADA não derruba nada.** Obra sob cerco já é impossível pelo resto do jogo, e
+ * derrubar a própria Muralha com o inimigo na porta seria um botão de perder de propósito.
+ */
+export function podeDemolir(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  idConstrucao: string,
+  porPoder: string | null = nucleo.estado.jogador,
+): Recusa {
+  const naProvincia = podeAgirEm(nucleo, idProvincia, porPoder);
+  if (!naProvincia.pode) return naProvincia;
+  if (nivelDaConstrucaoEm(nucleo, idProvincia, idConstrucao) === 0) {
+    return { pode: false, motivo: 'não há o que derrubar aqui' };
+  }
+  if (cercoEm(nucleo, idProvincia)) {
+    return { pode: false, motivo: 'a cidade está sitiada' };
+  }
+  return { pode: true, bonus: 0 };
+}
+
+/**
+ * Derruba a construção. Some com TODOS os níveis dela e libera o slot na hora.
+ *
+ * ⚠️ **Não devolve moeda nenhuma, e é isso que a mantém honesta.** Com reembolso, erguer e
+ * derrubar viraria uma torneira: o jogador ergueria a obra do turno, colheria o efeito e
+ * desfaria a compra. O que se perde ao derrubar é tudo o que se pagou — e é justamente esse
+ * peso que faz "qual dos quatro?" continuar sendo uma decisão de verdade.
+ *
+ * ⚠️ **É imediata.** Cobrar turnos de obra para derrubar só adicionaria espera sem decisão
+ * nenhuma dentro dela: quem decidiu derrubar já decidiu.
+ */
+export function demolir(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  idConstrucao: string,
+  porPoder: string | null = nucleo.estado.jogador,
+): void {
+  const r = podeDemolir(nucleo, idProvincia, idConstrucao, porPoder);
+  if (!r.pode) throw new Error(r.motivo);
+  const erguidas = nucleo.estado.construcoes[idProvincia];
+  if (erguidas) delete erguidas[idConstrucao];
+  // A obra em andamento DESTA construção cai junto: subir o nível de um prédio que não existe
+  // mais entregaria um andar sem casa embaixo.
+  const obra = nucleo.estado.obras[idProvincia];
+  if (obra?.construcao === idConstrucao) delete nucleo.estado.obras[idProvincia];
 }
 
 /** A corrupção desta terra se a obra estivesse de pé — só muda para Ágora e Estrada. */

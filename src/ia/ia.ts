@@ -157,7 +157,13 @@ export function jogarIA(
     }
 
     const obra = obraEscolhida(campanha, idPoder, estilo, ajustes);
-    if (obra) campanha.construir(obra.provincia, obra.construcao, idPoder);
+    if (obra) {
+      // ⚠️ Derruba e ergue na MESMA virada. Separado em dois turnos, a IA passaria uma rodada
+      // com um slot vazio e nenhuma garantia de que o cofre continuaria dando para a obra —
+      // e um reino que demole sem construir é um reino que só perdeu um prédio.
+      if (obra.derrubar) campanha.demolir(obra.provincia, obra.derrubar, idPoder);
+      campanha.construir(obra.provincia, obra.construcao, idPoder);
+    }
 
     // A leva depois da obra: o cofre já está do tamanho que ficou, e recrutar em cima de um
     // dinheiro que ela acabou de gastar seria a IA contando a mesma moeda duas vezes.

@@ -64,9 +64,9 @@
       "nivelMaximo": 1,
       "escalaPorProvincia": false,
       "custos": [
-        8000,
-        8000,
-        8000
+        4000,
+        4000,
+        4000
       ],
       "turnos": [
         2,
@@ -90,9 +90,9 @@
       "nivelMaximo": 1,
       "escalaPorProvincia": false,
       "custos": [
-        8000,
-        8000,
-        8000
+        4000,
+        4000,
+        4000
       ],
       "turnos": [
         2,
@@ -121,9 +121,9 @@
       "nivelMaximo": 1,
       "escalaPorProvincia": false,
       "custos": [
-        8000,
-        8000,
-        8000
+        4000,
+        4000,
+        4000
       ],
       "turnos": [
         3,
@@ -234,12 +234,12 @@
           22
         ]
       },
+      "promessa": "Eleva a felicidade em +9/+15/+22 e acelera em +1/+2/+3 pontos por turno a recuperação da ordem — especialmente após uma conquista.",
       "recuperacaoDaOrdem": [
         1,
         2,
         3
       ],
-      "promessa": "Eleva a felicidade em +9/+15/+22 e acelera em +1/+2/+3 pontos por turno a recuperação da ordem — especialmente após uma conquista.",
       "motivo": "Centro religioso e cívico: onde o deus mora, o povo aguenta mais."
     },
     "porto": {
@@ -301,12 +301,12 @@
           0.15
         ]
       },
+      "promessa": "Corta a corrupção da DISTÂNCIA até a capital e reduz em 3%/5%/7% a folha da tropa parada nesta província. Na capital, só o desconto militar tem efeito.",
       "descontoDaFolhaEmCasa": [
         0.03,
         0.05,
         0.07
       ],
-      "promessa": "Corta a corrupção da DISTÂNCIA até a capital e reduz em 3%/5%/7% a folha da tropa parada nesta província. Na capital, só o desconto militar tem efeito.",
       "motivo": "Liga o interior: encurta a terra distante para quem governa. Prédio de imperio, nao de cidade-estado — na capital ela nao tem o que encurtar."
     },
     "fazenda": {

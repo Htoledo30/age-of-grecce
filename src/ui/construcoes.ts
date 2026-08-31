@@ -1,22 +1,28 @@
 /**
- * A JANELA DE CONSTRUÇÕES: o catálogo desta província, com espaço para comparar.
+ * A mesa de obras da província.
  *
- * Saiu da coluna da esquerda porque lá não cabia. Oito construções numa grade de 380 px
- * viravam oito botões de uma linha, e uma linha só comporta nome e preço — o que a obra FAZ,
- * quanto rende e em quantos turnos se paga ficavam todos escondidos em tooltip. O jogador
- * escolhia por preço porque era a única coisa escrita.
- *
- * ⚠️ **Comparar é a decisão inteira.** Erguer a Ágora ou o Mercado não é escolher entre 3.065
- * e 3.065 moedas: é escolher entre multiplicar imposto e multiplicar produção, numa terra
- * que tem muito de um e pouco do outro. Numa janela larga cabem os dois lados da conta em
- * cada cartão, e a escolha passa a ser uma escolha. É o navegador de construções do Total
- * War e a gaveta de construções do EU4 — os dois tiram o catálogo do painel e o abrem em
- * superfície própria, pela mesma razão.
+ * O catálogo é uma lista para varrer, não uma grade de pequenas planilhas. Cada linha
+ * responde só três perguntas — o que é, o que muda e quanto custa — e a obra selecionada
+ * ganha o espaço de decisão à direita. Assim a comparação continua rápida sem encolher
+ * texto nem repetir a mesma ação dez vezes.
  */
 
 import { Janela } from './janela';
-import { definirTooltip, removerTooltip } from './tooltip';
 import { iconeDaConstrucao, iconeGrego } from './icones-gregos';
+import { definirTooltip } from './tooltip';
+
+type CategoriaDaConstrucao = 'cidade' | 'guerra' | 'rotas' | 'terra';
+
+export interface ApresentacaoDaConstrucao {
+  categoria: CategoriaDaConstrucao;
+  categoriaNome: string;
+  /** O número ou capacidade que deve ser reconhecido antes de qualquer explicação. */
+  destaque: string;
+  destaqueRotulo: string;
+  destaqueTom: 'categoria' | 'ganho' | 'perda' | 'neutro';
+  /** Uma segunda consequência curta, quando a obra tem duas pernas importantes. */
+  apoio: string;
+}
 
 /** Uma construção oferecida nesta província, já avaliada. */
 export interface OpcaoDeConstrucao {
@@ -30,22 +36,13 @@ export interface OpcaoDeConstrucao {
   nivelMaximo: number;
   /** Turnos que ainda faltam, quando esta é a obra em andamento. */
   emObra: number | null;
-  /** `null` quando dá pra construir; senão, o texto do impedimento. */
+  /** `null` quando dá para construir; senão, o texto do impedimento. */
   recusa: string | null;
-  /** Pra que ela serve, em uma frase. */
-  motivo: string;
   ganhoPorTurno: number;
   turnosParaPagar: number;
   /** Ouro por turno para manter o nível alvo de pé, para sempre. */
   manutencao: number;
-  /** O efeito desta construção é renda em moeda? Decide como falar de ganho negativo. */
-  rendeMoeda: boolean;
-  /**
-   * O benefício, escrito, quando não paga em ouro.
-   *
-   * Vazio nas que rendem moeda. Capacidade e população não têm "paga-se em N turnos".
-   */
-  promessa: string;
+  apresentacao: ApresentacaoDaConstrucao;
 }
 
 /** O que a janela precisa saber para desenhar o catálogo desta província. */
@@ -54,26 +51,45 @@ export interface VistaDeConstrucoes {
   /** A região a que ela pertence — a âncora da janela. O poder é sempre o jogador aqui. */
   regiao: string;
   slots: { usados: number; total: number };
-  nivelMaximo: number;
   construcoes: readonly OpcaoDeConstrucao[];
   /** O ouro do reino agora: o que separa "cara" de "impossível". */
   tesouro: number;
 }
 
+type EstadoDaOpcao = 'livre' | 'sem-ouro' | 'bloqueada' | 'obra' | 'maximo';
+
+const ORDEM_DAS_CATEGORIAS: Record<CategoriaDaConstrucao, number> = {
+  cidade: 0,
+  guerra: 1,
+  rotas: 2,
+  terra: 3,
+};
+
 export class JanelaDeConstrucoes {
   private readonly janela: Janela;
-  private readonly resumo = document.createElement('div');
-  private readonly grade = document.createElement('div');
+  private readonly resumo = document.createElement('section');
+  private readonly catalogo = document.createElement('div');
+  private readonly detalhe = document.createElement('article');
   private vista: VistaDeConstrucoes | null = null;
+  private selecionada: string | null = null;
 
   /** Chamado quando o jogador ergue uma construção. */
   aoConstruir: (idProvincia: string, idConstrucao: string) => void = () => {};
+  /** Chamado quando o jogador derruba a obra aberta no detalhe. */
+  aoDemolir: (idProvincia: string, idConstrucao: string) => void = () => {};
 
   constructor(pai: HTMLElement) {
-    this.janela = new Janela(pai, 'Construções', 'martelo', '980px');
+    this.janela = new Janela(pai, 'Construções', 'martelo', '1200px');
+    this.janela.corpo.classList.add('construcoes');
     this.resumo.className = 'construcoes__resumo';
-    this.grade.className = 'construcoes__grade';
-    this.janela.corpo.append(this.resumo, this.grade);
+    this.catalogo.className = 'construcoes__catalogo';
+    this.detalhe.className = 'construcoes__detalhe';
+    this.detalhe.setAttribute('aria-live', 'polite');
+
+    const mesa = document.createElement('div');
+    mesa.className = 'construcoes__mesa';
+    mesa.append(this.catalogo, this.detalhe);
+    this.janela.corpo.append(this.resumo, mesa);
   }
 
   get visivel(): boolean {
@@ -100,124 +116,303 @@ export class JanelaDeConstrucoes {
       this.fechar();
       return;
     }
+
     this.vista = vista;
     this.janela.dizer(`${vista.provincia.nome} · ${vista.regiao}`);
+    const opcoes = ordenar(vista.construcoes);
+    if (!opcoes.some((opcao) => opcao.id === this.selecionada)) {
+      this.selecionada =
+        opcoes.find((opcao) => estadoDe(opcao, vista.tesouro) === 'livre')?.id ??
+        opcoes[0]?.id ??
+        null;
+    }
 
-    const livres = vista.slots.total - vista.slots.usados;
-    this.resumo.replaceChildren(
-      dado('slots', `${vista.slots.usados} de ${vista.slots.total}`, livres === 0 ? 'cheio' : ''),
-      dado('livres', livres === 0 ? 'nenhum' : String(livres), livres === 0 ? 'cheio' : ''),
-      dado('tesouro', `${vista.tesouro.toLocaleString('pt-BR')} moedas`, ''),
-      dado('níveis', `I a ${['I', 'II', 'III'][vista.nivelMaximo - 1] ?? vista.nivelMaximo}`, ''),
-    );
-
-    this.grade.replaceChildren(...vista.construcoes.map((o) => this.cartao(o)));
+    this.desenharResumo(opcoes);
+    this.desenharCatalogo(opcoes);
+    this.desenharDetalhe(opcoes.find((opcao) => opcao.id === this.selecionada) ?? null);
   }
 
   /**
-   * Um cartão por construção: o que ela é, o que custa, e o que devolve.
-   *
-   * As três informações ficam em ALTURAS diferentes e sempre nas mesmas — é isso que deixa
-   * varrer a grade comparando preço com preço e retorno com retorno, sem reler cada cartão
-   * inteiro.
+   * Os quatro slots são patrimônio, não estatística: mostram o que ocupa cada lugar.
+   * Uma obra nova em andamento aparece tracejada no próximo espaço, antes de ficar pronta.
    */
-  private cartao(opcao: OpcaoDeConstrucao): HTMLElement {
-    const cartao = document.createElement('article');
-    cartao.className = 'construcoes__cartao';
-    const noMaximo = opcao.nivelAtual >= opcao.nivelMaximo;
-    const estado = noMaximo
-      ? 'maximo'
-      : opcao.emObra !== null
-        ? 'obra'
-        : opcao.recusa
-          ? 'bloqueada'
-          : 'livre';
-    cartao.dataset['estado'] = estado;
+  private desenharResumo(opcoes: readonly OpcaoDeConstrucao[]): void {
+    const vista = this.vista;
+    if (!vista) return;
 
-    const topo = document.createElement('header');
-    topo.className = 'construcoes__topo';
-    const nome = document.createElement('h3');
+    const titulo = document.createElement('div');
+    titulo.className = 'construcoes__patrimonio';
+    const rotulo = document.createElement('span');
+    rotulo.textContent = 'Patrimônio';
+    const ocupacao = document.createElement('strong');
+    ocupacao.textContent = `${vista.slots.usados}/${vista.slots.total}`;
+    titulo.append(rotulo, ocupacao);
+
+    const trilha = document.createElement('div');
+    trilha.className = 'construcoes__slots';
+    trilha.setAttribute(
+      'aria-label',
+      `${vista.slots.usados} de ${vista.slots.total} espaços ocupados`,
+    );
+    const erguidas = opcoes.filter((opcao) => opcao.nivelAtual > 0);
+    const novaEmObra = opcoes.find((opcao) => opcao.nivelAtual === 0 && opcao.emObra !== null);
+
+    for (let indice = 0; indice < vista.slots.total; indice++) {
+      const opcao = erguidas[indice] ?? (indice === erguidas.length ? novaEmObra : undefined);
+      trilha.append(this.slot(opcao));
+    }
+
+    const tesouro = document.createElement('div');
+    tesouro.className = 'construcoes__tesouro';
+    const nome = document.createElement('span');
+    nome.textContent = 'Tesouro';
+    const valor = document.createElement('strong');
+    valor.append(iconeGrego('moeda'), document.createTextNode(moeda(vista.tesouro)));
+    tesouro.append(nome, valor);
+
+    this.resumo.replaceChildren(titulo, trilha, tesouro);
+  }
+
+  private slot(opcao: OpcaoDeConstrucao | undefined): HTMLElement {
+    const slot = document.createElement('div');
+    slot.className = 'construcoes__slot';
+    if (!opcao) {
+      slot.dataset['estado'] = 'livre';
+      slot.textContent = 'livre';
+      return slot;
+    }
+
+    slot.dataset['estado'] = opcao.emObra === null ? 'erguida' : 'obra';
+    slot.dataset['categoria'] = opcao.apresentacao.categoria;
+    const textos = document.createElement('span');
+    const nome = document.createElement('strong');
+    nome.textContent = opcao.nome;
+    const nivel = document.createElement('small');
+    const destino = opcao.emObra === null ? '' : ` → ${romano(opcao.nivelAlvo)}`;
+    const espera = opcao.emObra === null ? '' : ` · ${opcao.emObra}t`;
+    nivel.textContent = `${opcao.nivelAtual > 0 ? romano(opcao.nivelAtual) : 'nova'}${destino}${espera}`;
+    textos.append(nome, nivel);
+    slot.append(iconeGrego(iconeDaConstrucao(opcao.id)), textos);
+    return slot;
+  }
+
+  /** A lista alinha efeito, custo e prazo; clicar escolhe, mas ainda não compra. */
+  private desenharCatalogo(opcoes: readonly OpcaoDeConstrucao[]): void {
+    const vista = this.vista;
+    if (!vista) return;
+
+    const cabecalho = document.createElement('header');
+    cabecalho.className = 'construcoes__catalogo-cabecalho';
+    const titulo = document.createElement('h3');
+    titulo.textContent = 'Catálogo';
+    const colunas = document.createElement('span');
+    colunas.textContent = 'efeito · custo';
+    cabecalho.append(titulo, colunas);
+
+    const lista = document.createElement('div');
+    lista.className = 'construcoes__lista';
+    for (const opcao of opcoes) lista.append(this.cartao(opcao));
+    this.catalogo.replaceChildren(cabecalho, lista);
+  }
+
+  private cartao(opcao: OpcaoDeConstrucao): HTMLElement {
+    const vista = this.vista;
+    const estado = estadoDe(opcao, vista?.tesouro ?? 0);
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'construcoes__cartao';
+    botao.dataset['construcao'] = opcao.id;
+    botao.dataset['estado'] = estado;
+    botao.dataset['categoria'] = opcao.apresentacao.categoria;
+    botao.setAttribute('aria-pressed', String(opcao.id === this.selecionada));
+    botao.setAttribute('aria-label', `Ver ${opcao.nome}`);
+
+    const marca = document.createElement('span');
+    marca.className = 'construcoes__marca';
+    marca.append(iconeGrego(iconeDaConstrucao(opcao.id), 'construcoes__icone'));
+
+    const identidade = document.createElement('span');
+    identidade.className = 'construcoes__identidade';
+    const nome = document.createElement('strong');
     nome.className = 'construcoes__nome';
     nome.textContent = opcao.nome;
-    const identidade = document.createElement('div');
-    identidade.className = 'construcoes__identidade';
-    identidade.append(iconeGrego(iconeDaConstrucao(opcao.id), 'construcoes__icone'), nome);
-    topo.append(identidade, degraus(opcao));
+    const nivel = document.createElement('small');
+    nivel.textContent = `${opcao.apresentacao.categoriaNome} · ${nivelNaLista(opcao, estado)}`;
+    identidade.append(nome, nivel);
 
-    // A promessa é cortada em duas linhas no cartão; o texto inteiro fica no tooltip, para
-    // quem quiser o resto da frase. Cortar sem ter onde ler o fim seria esconder, não enxugar.
-    const promessa = document.createElement('p');
-    promessa.className = 'construcoes__promessa';
-    promessa.textContent = opcao.promessa || opcao.motivo;
-    definirTooltip(promessa, { titulo: opcao.nome, corpo: opcao.promessa || opcao.motivo });
+    const efeito = document.createElement('span');
+    efeito.className = 'construcoes__efeito-lista';
+    efeito.dataset['tom'] = opcao.apresentacao.destaqueTom;
+    const efeitoValor = document.createElement('strong');
+    efeitoValor.textContent = opcao.apresentacao.destaque;
+    const efeitoRotulo = document.createElement('small');
+    efeitoRotulo.textContent = opcao.apresentacao.destaqueRotulo;
+    efeito.append(efeitoValor, efeitoRotulo);
 
-    cartao.append(topo, promessa, this.conta(opcao, estado), this.acao(opcao, estado));
-    return cartao;
+    const preco = document.createElement('span');
+    preco.className = 'construcoes__preco-lista';
+    if (estado === 'maximo') {
+      preco.textContent = 'pronta';
+    } else if (estado === 'obra') {
+      preco.textContent = `${opcao.emObra ?? 0}t`;
+    } else {
+      const ouro = document.createElement('strong');
+      ouro.textContent = moeda(opcao.custo);
+      const prazo = document.createElement('small');
+      prazo.textContent = `${opcao.turnos}t`;
+      preco.append(ouro, prazo);
+    }
+
+    botao.append(marca, identidade, efeito, preco);
+    botao.addEventListener('click', () => {
+      this.selecionada = opcao.id;
+      for (const item of this.catalogo.querySelectorAll<HTMLButtonElement>(
+        '.construcoes__cartao',
+      )) {
+        item.setAttribute('aria-pressed', String(item.dataset['construcao'] === opcao.id));
+      }
+      this.desenharDetalhe(opcao);
+    });
+    return botao;
   }
 
-  /** A conta da obra: o que sai agora, o que sai todo turno, e o que volta. */
-  private conta(opcao: OpcaoDeConstrucao, estado: string): HTMLElement {
+  /** A segunda batida: agora há contexto suficiente para comprar com intenção. */
+  private desenharDetalhe(opcao: OpcaoDeConstrucao | null): void {
+    const vista = this.vista;
+    if (!vista || !opcao) {
+      this.detalhe.replaceChildren();
+      return;
+    }
+
+    const estado = estadoDe(opcao, vista.tesouro);
+    this.detalhe.dataset['estado'] = estado;
+    this.detalhe.dataset['categoria'] = opcao.apresentacao.categoria;
+
+    const cabecalho = document.createElement('header');
+    cabecalho.className = 'construcoes__detalhe-cabecalho';
+    const emblema = document.createElement('span');
+    emblema.className = 'construcoes__emblema';
+    emblema.append(iconeGrego(iconeDaConstrucao(opcao.id)));
+    const identidade = document.createElement('div');
+    const supra = document.createElement('p');
+    supra.className = 'construcoes__detalhe-supra';
+    supra.textContent = `${opcao.apresentacao.categoriaNome} · ${destinoDaObra(opcao, estado)}`;
+    const nome = document.createElement('h3');
+    nome.textContent = opcao.nome;
+    identidade.append(supra, nome, degraus(opcao));
+    cabecalho.append(emblema, identidade);
+
+    const impacto = document.createElement('section');
+    impacto.className = 'construcoes__impacto';
+    impacto.dataset['tom'] = opcao.apresentacao.destaqueTom;
+    const rotulo = document.createElement('span');
+    rotulo.textContent = 'Efeito';
+    const numero = document.createElement('strong');
+    numero.textContent = opcao.apresentacao.destaque;
+    const unidade = document.createElement('p');
+    unidade.textContent = opcao.apresentacao.destaqueRotulo;
+    impacto.append(rotulo, numero, unidade);
+    if (opcao.apresentacao.apoio) {
+      const apoio = document.createElement('small');
+      apoio.textContent = opcao.apresentacao.apoio;
+      impacto.append(apoio);
+    }
+
     const conta = document.createElement('dl');
     conta.className = 'construcoes__conta';
-    if (estado === 'maximo') {
-      conta.append(par('nível', 'máximo alcançado'));
-      if (opcao.manutencao > 0) {
-        conta.append(par('manutenção', `−${moeda(opcao.manutencao)} por turno`));
-      }
-      return conta;
+    if (estado !== 'maximo') {
+      conta.append(dado('Custo', moeda(opcao.custo), estado === 'sem-ouro' ? 'perda' : ''));
+      conta.append(
+        dado(
+          'Obra',
+          estado === 'obra'
+            ? `${opcao.emObra ?? 0} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`
+            : `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`,
+        ),
+      );
     }
-    if (estado === 'obra') {
-      const t = opcao.emObra ?? 0;
-      conta.append(par('em obra', `${t} ${t === 1 ? 'turno' : 'turnos'} restantes`));
-      return conta;
+    conta.append(
+      dado('Folha', opcao.manutencao > 0 ? `−${moeda(opcao.manutencao)} / turno` : 'sem custo'),
+    );
+    if (opcao.ganhoPorTurno > 0 && Number.isFinite(opcao.turnosParaPagar)) {
+      conta.append(dado('Retorno', `${Math.ceil(opcao.turnosParaPagar)} turnos`, 'ganho'));
     }
-    conta.append(par('custo', `${moeda(opcao.custo)} moedas`));
-    conta.append(par('obra', `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`));
-    if (opcao.manutencao > 0) conta.append(par('manutenção', `−${moeda(opcao.manutencao)}/turno`));
-    if (opcao.ganhoPorTurno > 0) {
-      conta.append(par('rende', `+${moeda(opcao.ganhoPorTurno)}/turno`, 'ganho'));
-      if (Number.isFinite(opcao.turnosParaPagar)) {
-        conta.append(par('paga-se em', `${Math.ceil(opcao.turnosParaPagar)} turnos`, 'ganho'));
-      }
-    } else if (opcao.rendeMoeda && opcao.ganhoPorTurno < 0) {
-      conta.append(par('saldo local', `−${moeda(-opcao.ganhoPorTurno)}/turno`, 'perda'));
-    }
-    return conta;
+
+    this.detalhe.replaceChildren(cabecalho, impacto, conta, this.acoes(opcao, estado));
   }
 
-  /** O botão, ou a frase do impedimento no lugar dele. */
-  private acao(opcao: OpcaoDeConstrucao, estado: string): HTMLElement {
-    if (estado === 'maximo' || estado === 'obra') {
-      const marca = document.createElement('p');
-      marca.className = 'construcoes__estado';
-      marca.textContent = estado === 'maximo' ? 'Nível máximo' : 'Obra em andamento';
-      return marca;
-    }
+  /**
+   * A linha de decisão do detalhe: erguer, e — quando já existe — derrubar.
+   *
+   * ⚠️ **O botão de derrubar existe porque os quatro slots eram um beco sem saída.** Cheios os
+   * quatro, o resto do catálogo virava enfeite: sem demolição, quem erguesse Ágora, Mercado,
+   * Templo e Muralha cedo nunca mais poria uma Armaria naquela terra. Ele fica pequeno e ao
+   * lado, e não compete com o de erguer: derrubar é a saída rara, não a ação do dia.
+   */
+  private acoes(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): HTMLElement {
+    const linha = document.createElement('div');
+    linha.className = 'construcoes__decisao';
+    linha.append(this.acao(opcao, estado));
+    if (opcao.nivelAtual > 0) linha.append(this.derrubar(opcao));
+    return linha;
+  }
+
+  /** O botão de derrubar. Só aparece onde há o que derrubar. */
+  private derrubar(opcao: OpcaoDeConstrucao): HTMLElement {
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'construcoes__derrubar';
+    botao.textContent = 'Derrubar';
+    definirTooltip(botao, {
+      titulo: `Derrubar ${opcao.nome}`,
+      // ⚠️ O aviso é a informação, não um pedido de confirmação: o jogo não pergunta "tem
+      // certeza?" em lugar nenhum, e não vai começar aqui.
+      corpo: 'Libera o espaço na hora. Não devolve moeda nenhuma, e some com todos os níveis.',
+      tom: 'perigo',
+    });
+    botao.addEventListener('click', () => {
+      const vista = this.vista;
+      if (!vista) return;
+      this.aoDemolir(vista.provincia.id, opcao.id);
+      botao.blur();
+    });
+    return botao;
+  }
+
+  private acao(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): HTMLElement {
     const botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'construcoes__erguer';
-    const alvo = ['I', 'II', 'III'][opcao.nivelAlvo - 1] ?? String(opcao.nivelAlvo);
-    botao.textContent =
-      opcao.nivelAtual > 0 ? `Subir para ${alvo} · ${moeda(opcao.custo)}` : `Erguer · ${moeda(opcao.custo)}`;
-    // ⚠️ **Sem ouro NÃO vira frase.** O botão dizia "faltam 2.065 moedas", e escrever a
-    // subtração que o jogador consegue fazer sozinho — o custo está no cartão, o tesouro
-    // está no alto da janela — é o jogo se explicando demais. O botão só apaga.
-    const semOuro = this.vista !== null && opcao.custo > this.vista.tesouro;
-    if (semOuro) {
+
+    if (estado === 'maximo') {
+      botao.disabled = true;
+      botao.textContent = 'Nível máximo';
+      return botao;
+    }
+    if (estado === 'obra') {
+      botao.disabled = true;
+      botao.textContent = `Em obra · ${opcao.emObra ?? 0} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`;
+      return botao;
+    }
+
+    const verbo = opcao.nivelAtual > 0 ? 'Ampliar para' : 'Erguer nível';
+    const texto = `${verbo} ${romano(opcao.nivelAlvo)}`;
+    if (estado === 'sem-ouro') {
+      // O custo está logo acima e o tesouro no topo. O botão apaga sem fazer a subtração
+      // pelo jogador nem transformar uma falta de ouro numa frase repetida.
       botao.disabled = true;
       botao.dataset['motivo'] = 'ouro';
-      removerTooltip(botao);
+      botao.textContent = texto;
       return botao;
     }
-    if (opcao.recusa) {
-      // As outras recusas o jogador NÃO consegue deduzir olhando: slot cheio, obra em
-      // andamento, construção que exige outra. Estas ficam escritas, e curtas.
+    if (estado === 'bloqueada') {
       botao.disabled = true;
       botao.dataset['motivo'] = 'regra';
-      botao.textContent = opcao.recusa;
-      removerTooltip(botao);
+      botao.textContent = recusaCurta(opcao.recusa);
       return botao;
     }
+
+    botao.append(iconeGrego('martelo'), document.createTextNode(texto));
     botao.addEventListener('click', () => {
       const vista = this.vista;
       if (!vista || botao.disabled) return;
@@ -228,43 +423,77 @@ export class JanelaDeConstrucoes {
   }
 }
 
-/** Os degraus de nível: três pontos, acesos até onde a obra chegou. */
+function ordenar(opcoes: readonly OpcaoDeConstrucao[]): readonly OpcaoDeConstrucao[] {
+  return [...opcoes].sort(
+    (a, b) =>
+      ORDEM_DAS_CATEGORIAS[a.apresentacao.categoria] -
+      ORDEM_DAS_CATEGORIAS[b.apresentacao.categoria],
+  );
+}
+
+function estadoDe(opcao: OpcaoDeConstrucao, tesouro: number): EstadoDaOpcao {
+  if (opcao.nivelAtual >= opcao.nivelMaximo) return 'maximo';
+  if (opcao.emObra !== null) return 'obra';
+  if (opcao.recusa && !/^faltam [\d.]+ moedas$/.test(opcao.recusa)) return 'bloqueada';
+  if (opcao.custo > tesouro) return 'sem-ouro';
+  return 'livre';
+}
+
+function nivelNaLista(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): string {
+  if (estado === 'maximo') return `nível ${romano(opcao.nivelAtual)}`;
+  if (estado === 'obra') {
+    return opcao.nivelAtual > 0
+      ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}`
+      : `nível ${romano(opcao.nivelAlvo)} em obra`;
+  }
+  return opcao.nivelAtual > 0 ? `${romano(opcao.nivelAtual)} → ${romano(opcao.nivelAlvo)}` : 'nova';
+}
+
+function destinoDaObra(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): string {
+  if (estado === 'maximo') return `nível ${romano(opcao.nivelAtual)}`;
+  if (estado === 'obra') return `nível ${romano(opcao.nivelAlvo)} em obra`;
+  return opcao.nivelAtual > 0
+    ? `ampliar para ${romano(opcao.nivelAlvo)}`
+    : `novo · nível ${romano(opcao.nivelAlvo)}`;
+}
+
+/** A progressão fica no detalhe, onde os romanos dizem claramente o nível atual e o alvo. */
 function degraus(opcao: OpcaoDeConstrucao): HTMLElement {
   const trilha = document.createElement('div');
   trilha.className = 'construcoes__degraus';
   trilha.setAttribute('aria-label', `nível ${opcao.nivelAtual} de ${opcao.nivelMaximo}`);
-  for (let i = 1; i <= opcao.nivelMaximo; i++) {
-    const ponto = document.createElement('span');
-    ponto.className = 'construcoes__degrau';
-    ponto.dataset['aceso'] = i <= opcao.nivelAtual ? 'sim' : 'nao';
-    ponto.dataset['alvo'] = i === opcao.nivelAlvo && opcao.nivelAtual < opcao.nivelMaximo ? 'sim' : 'nao';
-    trilha.appendChild(ponto);
+  for (let nivel = 1; nivel <= opcao.nivelMaximo; nivel++) {
+    const degrau = document.createElement('span');
+    degrau.textContent = romano(nivel);
+    degrau.dataset['estado'] =
+      nivel <= opcao.nivelAtual ? 'erguido' : nivel === opcao.nivelAlvo ? 'alvo' : 'futuro';
+    if (opcao.emObra !== null && nivel === opcao.nivelAlvo) degrau.dataset['estado'] = 'obra';
+    trilha.append(degrau);
   }
   return trilha;
 }
 
-function par(rotulo: string, valor: string, tom = ''): DocumentFragment {
-  const fragmento = document.createDocumentFragment();
+function dado(rotulo: string, valor: string, tom = ''): HTMLElement {
+  const grupo = document.createElement('div');
+  if (tom) grupo.dataset['tom'] = tom;
   const dt = document.createElement('dt');
   dt.textContent = rotulo;
   const dd = document.createElement('dd');
   dd.textContent = valor;
-  if (tom) dd.dataset['tom'] = tom;
-  fragmento.append(dt, dd);
-  return fragmento;
+  grupo.append(dt, dd);
+  return grupo;
 }
 
-function dado(rotulo: string, valor: string, tom: string): HTMLElement {
-  const caixa = document.createElement('div');
-  caixa.className = 'construcoes__dado';
-  if (tom) caixa.dataset['tom'] = tom;
-  const nome = document.createElement('span');
-  nome.className = 'construcoes__dado-rotulo';
-  nome.textContent = rotulo;
-  const numero = document.createElement('strong');
-  numero.textContent = valor;
-  caixa.append(nome, numero);
-  return caixa;
+function recusaCurta(recusa: string | null): string {
+  if (!recusa) return 'Indisponível';
+  if (recusa.includes('slots estão ocupados')) return 'Sem espaço livre';
+  if (recusa.includes('em obra aqui')) return 'Outra obra em andamento';
+  if (recusa === 'nível máximo') return 'Nível máximo';
+  return `${recusa.charAt(0).toUpperCase()}${recusa.slice(1)}`;
+}
+
+function romano(nivel: number): string {
+  return ['I', 'II', 'III', 'IV', 'V'][nivel - 1] ?? String(nivel);
 }
 
 function moeda(valor: number): string {

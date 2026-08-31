@@ -72,6 +72,16 @@ export interface ObraCotada {
    * novo torrar o caixa na obra mais cara da lista.
    */
   porMoeda: number;
+  /**
+   * A obra que precisa CAIR antes, quando os quatro slots estão cheios.
+   *
+   * ⚠️ **Sem isto, metade do catálogo era enfeite.** Medido no turno 60: em 23 das 25
+   * províncias que ofertavam a Armaria os quatro slots já estavam ocupados — a IA os enche
+   * cedo com o que rende ouro, que é a decisão certa no começo, e depois não tem mais onde pôr
+   * nada. Nenhum reino do mapa erguia uma obra de arma em 150 turnos, e o exército de toda a
+   * Grécia era lança leve para sempre.
+   */
+  derrubar?: string;
 }
 
 /**
@@ -102,7 +112,21 @@ export function obraEscolhida(
   // ganha a primeira por id, e a mesma partida decide igual em qualquer máquina.
   for (const provincia of [...campanha.provinciasDe(idPoder)].sort()) {
     for (const construcao of Object.keys(campanha.construcoesDisponiveisEm(provincia)).sort()) {
-      if (!campanha.podeConstruir(provincia, construcao, idPoder).pode) continue;
+      const permissao = campanha.podeConstruir(provincia, construcao, idPoder);
+      // Barrada SÓ pelo espaço? Então talvez valha derrubar o que menos serve a este estilo.
+      // ⚠️ Só a falta de ESPAÇO se cura derrubando. Se a recusa for outra — obra em andamento,
+      // requisito da terra, nível máximo —, demolir não resolve e ainda destrói um prédio à toa.
+      // ⚠️ Só a falta de ESPAÇO se cura derrubando, e só para obra NOVA. Se a recusa for
+      // outra — obra em andamento, nível máximo, requisito da terra —, demolir não resolve e
+      // ainda destrói um prédio à toa. O slot só é cobrado de quem ainda não está lá.
+      const derrubar =
+        permissao.pode ||
+        campanha.nivelDaConstrucaoEm(provincia, construcao) > 0 ||
+        !campanha.semSlotLivreEm(provincia) ||
+        campanha.obraEm(provincia) !== undefined
+          ? undefined
+          : trocaPossivel(campanha, provincia, construcao, estilo, idPoder);
+      if (!permissao.pode && derrubar === undefined) continue;
       const retorno = campanha.retornoDaConstrucaoEm(provincia, construcao);
       if (!retorno || retorno.custo > disponivel) continue;
 
@@ -117,11 +141,56 @@ export function obraEscolhida(
       if (valor <= 0) continue;
       const porMoeda = retorno.custo > 0 ? valor / retorno.custo : valor;
       if (melhor === null || porMoeda > melhor.porMoeda) {
-        melhor = { provincia, construcao, valor, custo: retorno.custo, porMoeda };
+        melhor = { provincia, construcao, valor, custo: retorno.custo, porMoeda, ...(derrubar ? { derrubar } : {}) };
       }
     }
   }
   return melhor;
+}
+
+/**
+ * O que derrubar para abrir espaço, ou `undefined` se nada valer a pena derrubar.
+ *
+ * ⚠️ **A IA NUNCA vende a própria economia.** Obra que rende ouro — renda, troca, corrupção —
+ * está fora de cogitação: derrubar uma Ágora para erguer uma Armaria seria trocar o motor do
+ * reino por uma arma, e é exatamente o tipo de decisão que faz uma IA parecer burra. O que ela
+ * troca é o que vale por GOSTO: um Templo num reino que não liga para felicidade, uma Muralha
+ * num que não teme ninguém.
+ *
+ * ⚠️ E só troca por algo **claramente melhor**: o dobro do que perde. Sem essa folga a IA
+ * ficaria derrubando e erguendo em ciclo, gastando o cofre inteiro para ganhar um ponto.
+ */
+function trocaPossivel(
+  campanha: Campanha,
+  provincia: string,
+  desejada: string,
+  estilo: EstiloDeIa,
+  idPoder: string,
+): string | undefined {
+  const valorDesejado = valorPorGosto(campanha, desejada, estilo);
+  if (valorDesejado <= 0) return undefined;
+  let pior: { id: string; valor: number } | undefined;
+  for (const erguida of campanha.construcoesEm(provincia)) {
+    if (rendeOuro(campanha, erguida)) continue;
+    if (!campanha.podeDemolir(provincia, erguida, idPoder).pode) continue;
+    const valor = valorPorGosto(campanha, erguida, estilo);
+    if (!pior || valor < pior.valor) pior = { id: erguida, valor };
+  }
+  if (!pior || valorDesejado < pior.valor * 2) return undefined;
+  return pior.id;
+}
+
+/** Esta obra é motor de economia? Então ela não se derruba, e ponto. */
+function rendeOuro(campanha: Campanha, construcao: string): boolean {
+  const tipo = campanha.efeitoDaObra(construcao);
+  return tipo === 'renda' || tipo === 'troca' || tipo === 'corrupcao';
+}
+
+/** O que a obra vale para este estilo, fora o ouro. Sem os degraus de emergência. */
+function valorPorGosto(campanha: Campanha, construcao: string, estilo: EstiloDeIa): number {
+  const tipo = campanha.efeitoDaObra(construcao);
+  if (tipo === null || tipo === 'futuro') return 0;
+  return estilo.valorDaObra[tipo];
 }
 
 /**

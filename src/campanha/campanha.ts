@@ -32,7 +32,7 @@ import { mudarPostura } from './guerra/cercos';
 import { recrutar } from './guerra/levas';
 import { cancelarOrdem, ordenarMarcha } from './guerra/marchas';
 import { surtir } from './guerra/surtidas';
-import { construir } from './provincia/construcoes';
+import { construir, demolir } from './provincia/construcoes';
 import { trocarDono } from './provincia/posse';
 import { passarTurno } from './turno/passar-turno';
 
@@ -85,6 +85,12 @@ export class Campanha extends ComandosDaDiplomacia {
   }
 
   /** Ergue uma construção. Paga à vista e entrega depois; não existe cancelar. */
+  /** Derruba uma construção e libera o slot. Não devolve moeda — ver `demolir`. */
+  demolir(idProvincia: string, idConstrucao: string, porPoder?: string): void {
+    demolir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador);
+    this.aoMudar();
+  }
+
   construir(idProvincia: string, idConstrucao: string, porPoder?: string): void {
     construir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador);
     this.aoMudar();

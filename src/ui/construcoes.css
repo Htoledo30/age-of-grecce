@@ -1,203 +1,735 @@
-/* A janela de construções. A moldura vem de `janela.css`; aqui está só o catálogo. */
-.construcoes__resumo {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
+/*
+ * A mesa de obras.
+ *
+ * Quatro cores formam um vocabulário curto: ouro para a cidade, terracota para a guerra,
+ * azul-egeu para as rotas e oliva para a terra. A cor é sempre acompanhada por nome,
+ * ícone e posição; nunca carrega um estado sozinha.
+ */
+.janela[data-janela='construções'] .janela__caixa {
+  background:
+    radial-gradient(circle at 72% 8%, rgb(189 143 66 / 7%), transparent 34%),
+    linear-gradient(145deg, #1a2325, var(--ui-fundo-elevado) 54%, #151c1e);
 }
-.construcoes__dado {
+
+.janela[data-janela='construções'] .janela__corpo.construcoes {
+  padding: 14px 20px 18px;
+  overflow: hidden;
+}
+
+.construcoes [data-categoria='cidade'] {
+  --obra-cor: #d9b66e;
+  --obra-cor-fundo: rgb(217 182 110 / 12%);
+  --obra-cor-forte: #e5c887;
+}
+
+.construcoes [data-categoria='guerra'] {
+  --obra-cor: #d27a68;
+  --obra-cor-fundo: rgb(210 122 104 / 12%);
+  --obra-cor-forte: #e39482;
+}
+
+.construcoes [data-categoria='rotas'] {
+  --obra-cor: #78abb2;
+  --obra-cor-fundo: rgb(120 171 178 / 12%);
+  --obra-cor-forte: #97c4c9;
+}
+
+.construcoes [data-categoria='terra'] {
+  --obra-cor: #8daa72;
+  --obra-cor-fundo: rgb(141 170 114 / 12%);
+  --obra-cor-forte: #adc493;
+}
+
+/* O topo mostra o que ocupa os quatro lugares, não quatro estatísticas redundantes. */
+.construcoes__resumo {
   display: grid;
-  padding: 0 16px;
+  grid-template-columns: 88px minmax(0, 1fr) 126px;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  margin-bottom: 12px;
+}
+
+.construcoes__patrimonio,
+.construcoes__tesouro {
+  display: grid;
+  align-content: center;
+}
+
+.construcoes__patrimonio span,
+.construcoes__tesouro > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+
+.construcoes__patrimonio strong {
+  margin-top: 1px;
+  font-family: var(--fonte-numero);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto);
+}
+
+.construcoes__slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-width: 0;
+  border-block: 1px solid var(--ui-borda-fraca);
+  background: rgb(8 12 13 / 26%);
+}
+
+.construcoes__slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 48px;
+  padding: 5px 10px;
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__slot + .construcoes__slot::before {
+  content: '';
+  position: absolute;
+  inset-block: 9px;
+  left: 0;
   border-left: 1px solid var(--ui-borda-fraca);
 }
-.construcoes__dado:first-child {
-  padding-left: 0;
-  border-left: 0;
+
+.construcoes__slot[data-estado='livre'] {
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+  background: repeating-linear-gradient(135deg, transparent 0 8px, rgb(255 255 255 / 1.5%) 8px 9px);
 }
-.construcoes__dado-rotulo {
+
+.construcoes__slot > .icone-grego {
+  width: 19px;
+  height: 19px;
+  color: var(--obra-cor);
+}
+
+.construcoes__slot > span {
+  display: grid;
+  min-width: 0;
+}
+
+.construcoes__slot strong,
+.construcoes__slot small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.construcoes__slot strong {
+  font-family: var(--fonte-nome);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--ui-texto);
+}
+
+.construcoes__slot small {
+  margin-top: 2px;
+  font-family: var(--fonte-numero);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--obra-cor);
+}
+
+.construcoes__slot[data-estado='obra'] {
+  background: var(--obra-cor-fundo);
+  box-shadow: inset 0 -2px var(--obra-cor);
+}
+
+.construcoes__tesouro {
+  justify-items: end;
+  padding-left: 12px;
+  border-left: 1px solid var(--ui-borda-fraca);
+}
+
+.construcoes__tesouro strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-family: var(--fonte-numero);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-bronze-claro);
+}
+
+.construcoes__tesouro .icone-grego {
+  width: 16px;
+  height: 16px;
+}
+
+/* Lista à esquerda, estela da escolha à direita. Nenhuma das duas rola. */
+.construcoes__mesa {
+  display: grid;
+  grid-template-columns: minmax(510px, 1.03fr) minmax(0, 0.97fr);
+  gap: 18px;
+  min-width: 0;
+}
+
+.construcoes__catalogo,
+.construcoes__detalhe {
+  min-width: 0;
+}
+
+.construcoes__catalogo-cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  min-height: 25px;
+  padding: 0 9px 6px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+
+.construcoes__catalogo-cabecalho h3 {
+  font-family: var(--fonte-titulo);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__catalogo-cabecalho span {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+
+.construcoes__lista {
+  display: grid;
+}
+
+/* Cada opção é uma linha aberta: desaparece o mosaico de caixinhas que parecia calendário. */
+.construcoes__cartao {
+  --obra-cor: var(--ui-bronze);
+  --obra-cor-fundo: var(--ui-pressionado);
+  display: grid;
+  grid-template-columns: 31px minmax(150px, 1fr) 112px 64px;
+  align-items: center;
+  gap: 8px;
+  min-height: 39px;
+  padding: 3px 8px 3px 6px;
+  border: 0;
+  border-bottom: 1px solid rgb(61 71 70 / 72%);
+  background: transparent;
+  color: var(--ui-texto);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 100ms ease,
+    box-shadow 100ms ease;
+}
+
+.construcoes__cartao:hover {
+  background: var(--ui-hover);
+}
+
+.construcoes__cartao[aria-pressed='true'] {
+  background: linear-gradient(90deg, var(--obra-cor-fundo), rgb(255 255 255 / 2%));
+  box-shadow: inset 3px 0 var(--obra-cor);
+}
+
+.construcoes__cartao:focus-visible {
+  outline: 1px solid var(--obra-cor);
+  outline-offset: -2px;
+}
+
+.construcoes__marca {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid color-mix(in srgb, var(--obra-cor) 62%, transparent);
+  border-radius: 50%;
+  background: var(--obra-cor-fundo);
+  color: var(--obra-cor);
+}
+
+.construcoes__icone {
+  width: 16px;
+  height: 16px;
+}
+
+.construcoes__identidade,
+.construcoes__efeito-lista,
+.construcoes__preco-lista {
+  display: grid;
+  min-width: 0;
+}
+
+.construcoes__nome {
+  overflow: hidden;
+  font-family: var(--fonte-nome);
+  font-size: 15.5px;
+  font-weight: 650;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-texto);
+}
+
+.construcoes__identidade small {
+  margin-top: 2px;
+  overflow: hidden;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--obra-cor);
+}
+
+.construcoes__efeito-lista {
+  justify-items: end;
+}
+
+.construcoes__efeito-lista strong,
+.construcoes__preco-lista strong {
+  overflow: hidden;
+  font-family: var(--fonte-numero);
+  font-size: 12.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.construcoes__efeito-lista strong {
+  max-width: 100%;
+  color: var(--obra-cor-forte);
+}
+
+.construcoes__efeito-lista[data-tom='perda'] strong {
+  color: var(--ui-sangue-claro);
+}
+
+.construcoes__efeito-lista[data-tom='neutro'] strong {
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__efeito-lista small,
+.construcoes__preco-lista small {
+  margin-top: 3px;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ui-texto-tenue);
+}
+
+.construcoes__preco-lista {
+  justify-items: end;
+  font-family: var(--fonte-numero);
+  font-size: 10px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__cartao[data-estado='sem-ouro'] .construcoes__preco-lista,
+.construcoes__cartao[data-estado='sem-ouro'] .construcoes__preco-lista strong {
+  color: var(--ui-sangue-claro);
+}
+
+.construcoes__cartao[data-estado='bloqueada'] .construcoes__marca,
+.construcoes__cartao[data-estado='sem-ouro'] .construcoes__marca {
+  filter: saturate(0.45);
+  opacity: 0.68;
+}
+
+.construcoes__cartao[data-estado='maximo'] .construcoes__preco-lista {
+  color: var(--ui-verde-claro);
+}
+
+.construcoes__cartao[data-estado='obra'] .construcoes__preco-lista {
+  color: var(--obra-cor-forte);
+}
+
+/* O detalhe é a peça com personalidade: uma estela escura marcada pela função da obra. */
+.construcoes__detalhe {
+  --obra-cor: var(--ui-bronze);
+  --obra-cor-fundo: var(--ui-pressionado);
+  --obra-cor-forte: var(--ui-bronze-claro);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 13px;
+  min-height: 415px;
+  padding: 19px 22px 17px;
+  overflow: hidden;
+  border: 1px solid var(--ui-borda-fraca);
+  background:
+    radial-gradient(circle at 84% 16%, var(--obra-cor-fundo), transparent 43%),
+    linear-gradient(160deg, rgb(255 255 255 / 2.5%), transparent 48%), rgb(10 15 16 / 34%);
+  box-shadow: inset 3px 0 var(--obra-cor);
+}
+
+.construcoes__detalhe::after {
+  content: '';
+  position: absolute;
+  top: -64px;
+  right: -56px;
+  width: 190px;
+  height: 190px;
+  border: 1px solid color-mix(in srgb, var(--obra-cor) 22%, transparent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 14px rgb(255 255 255 / 1.5%),
+    0 0 0 15px color-mix(in srgb, var(--obra-cor) 12%, transparent);
+  pointer-events: none;
+}
+
+.construcoes__detalhe-cabecalho {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+
+.construcoes__emblema {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 1px solid var(--obra-cor);
+  border-radius: 50%;
+  background: var(--obra-cor-fundo);
+  color: var(--obra-cor-forte);
+  box-shadow:
+    inset 0 0 0 4px rgb(10 15 16 / 52%),
+    inset 0 0 0 5px color-mix(in srgb, var(--obra-cor) 36%, transparent);
+}
+
+.construcoes__emblema .icone-grego {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.4;
+}
+
+.construcoes__detalhe-cabecalho > div {
+  min-width: 0;
+}
+
+.construcoes__detalhe-supra {
+  overflow: hidden;
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--obra-cor-forte);
+}
+
+.construcoes__detalhe-cabecalho h3 {
+  overflow: hidden;
+  margin-top: 1px;
+  font-family: var(--fonte-nome);
+  font-size: 29px;
+  font-weight: 650;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-texto);
+}
+
+.construcoes__degraus {
+  display: flex;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.construcoes__degraus span {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 17px;
+  padding-inline: 5px;
+  border: 1px solid var(--ui-borda-fraca);
+  font-family: var(--fonte-numero);
+  font-size: 9px;
+  color: var(--ui-texto-tenue);
+}
+
+.construcoes__degraus span[data-estado='erguido'] {
+  border-color: color-mix(in srgb, var(--obra-cor) 65%, var(--ui-borda-fraca));
+  background: var(--obra-cor-fundo);
+  color: var(--obra-cor-forte);
+}
+
+.construcoes__degraus span[data-estado='alvo'] {
+  border-color: var(--obra-cor);
+  color: var(--obra-cor-forte);
+  box-shadow: inset 0 -2px var(--obra-cor);
+}
+
+.construcoes__degraus span[data-estado='obra'] {
+  border-color: var(--obra-cor);
+  border-style: dashed;
+  background: var(--obra-cor-fundo);
+  color: var(--obra-cor-forte);
+}
+
+.construcoes__impacto {
+  align-self: center;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: 14px;
+  padding: 8px 2px 5px;
+}
+
+.construcoes__impacto > span {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+
+.construcoes__impacto > strong {
+  grid-row: 2 / 4;
+  align-self: center;
+  font-family: var(--fonte-numero);
+  font-size: 39px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--obra-cor-forte);
+}
+
+.construcoes__impacto[data-tom='perda'] > strong {
+  color: var(--ui-sangue-claro);
+}
+
+.construcoes__impacto[data-tom='neutro'] > strong {
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__impacto p {
+  align-self: end;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-texto);
+}
+
+.construcoes__impacto small {
+  align-self: start;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-texto-fraco);
+}
+
+.construcoes__conta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  border-block: 1px solid var(--ui-borda-fraca);
+}
+
+.construcoes__conta > div {
+  display: grid;
+  align-content: center;
+  min-height: 54px;
+  padding: 8px 12px;
+}
+
+.construcoes__conta > div:first-child {
+  padding-left: 2px;
+}
+
+.construcoes__conta > div + div {
+  border-left: 1px solid var(--ui-borda-fraca);
+}
+
+.construcoes__conta dt {
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
-.construcoes__dado strong {
-  margin-top: 2px;
-  font-family: var(--fonte-numero);
-  font-size: 15px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  color: var(--ui-texto);
-}
-.construcoes__dado[data-tom='cheio'] strong {
-  color: var(--ui-sangue-claro);
-}
 
-/* Quatro colunas e cartões baixos: as dez construções cabem em três fileiras, e a janela
-   fica larga e RASA em vez de alta — era a altura que a fazia parecer tela cheia. */
-.construcoes__grade {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 7px;
-}
-.construcoes__cartao {
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  gap: 6px;
-  padding: 10px 11px 10px;
-  border: 1px solid var(--ui-borda-fraca);
-  border-radius: var(--raio-1);
-  background: var(--ui-fundo-suave);
-}
-.construcoes__cartao[data-estado='maximo'] {
-  border-color: var(--ui-verde);
-  background: var(--ui-sucesso-fundo);
-}
-.construcoes__cartao[data-estado='obra'] {
-  border-color: var(--ui-bronze);
-  border-style: dashed;
-  background: var(--ui-pressionado);
-}
-.construcoes__cartao[data-estado='bloqueada'] {
-  opacity: 0.62;
-}
-.construcoes__topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-.construcoes__identidade {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.construcoes__icone {
-  flex: none;
-  width: 19px;
-  height: 19px;
-  color: var(--ui-bronze);
-}
-.construcoes__nome {
-  font-family: var(--fonte-nome);
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 1.05;
-  color: var(--ui-texto);
-}
-
-/* Os degraus: três pontos, acesos até onde a obra chegou, e o próximo em contorno.
-   Um algarismo romano diria a mesma coisa em menos espaço, mas não diria QUANTO FALTA. */
-.construcoes__degraus {
-  display: flex;
-  flex: none;
-  gap: 3px;
-  padding-top: 5px;
-}
-.construcoes__degrau {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--ui-borda);
-  border-radius: 50%;
-}
-.construcoes__degrau[data-aceso='sim'] {
-  border-color: var(--ui-bronze);
-  background: var(--ui-bronze);
-}
-.construcoes__degrau[data-alvo='sim'] {
-  border-color: var(--ui-bronze-claro);
-  box-shadow: 0 0 0 2px var(--ui-pressionado);
-}
-/* A promessa em duas linhas no máximo: o que ela faz cabe numa frase, e o resto do cartão
-   é número. Passar disso é o cartão virando manual. */
-.construcoes__promessa {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--ui-texto-tenue);
-  cursor: help;
-}
-
-/* A conta: rótulo à esquerda, número à direita, sempre nas mesmas alturas — é o que deixa
-   varrer a grade comparando preço com preço e retorno com retorno. */
-.construcoes__conta {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-content: start;
-  gap: 1px 10px;
-  font-size: 12px;
-}
-.construcoes__conta dt {
-  color: var(--ui-texto-tenue);
-}
 .construcoes__conta dd {
+  margin-top: 3px;
   font-family: var(--fonte-numero);
+  font-size: 14px;
+  font-weight: 620;
   font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--ui-texto-fraco);
+  white-space: nowrap;
+  color: var(--ui-texto);
 }
-.construcoes__conta dd[data-tom='ganho'] {
-  color: var(--ui-bronze-claro);
+
+.construcoes__conta [data-tom='ganho'] dd {
+  color: var(--obra-cor-forte);
 }
-.construcoes__conta dd[data-tom='perda'] {
+
+.construcoes__conta [data-tom='perda'] dd {
   color: var(--ui-sangue-claro);
 }
 
 .construcoes__erguer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  min-height: 30px;
-  padding: 6px 8px;
-  border: 1px solid var(--ui-bronze-escuro);
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--obra-cor);
   border-radius: var(--raio-1);
-  background: var(--ui-pressionado);
-  color: var(--ui-bronze-claro);
+  background: var(--obra-cor);
+  color: #111719;
   font-family: var(--fonte-corpo);
-  font-size: 12.5px;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
   cursor: pointer;
   transition:
-    border-color 110ms ease,
-    background 110ms ease;
-}
-.construcoes__erguer:hover:not(:disabled) {
-  border-color: var(--ui-bronze-claro);
-  background: var(--ui-fundo-claro);
-  color: var(--ui-texto);
-}
-.construcoes__erguer:disabled {
-  border-color: var(--ui-borda-fraca);
-  background: transparent;
-  color: var(--ui-texto-tenue);
-  font-weight: 400;
-  cursor: not-allowed;
-}
-/* Sem ouro o botão guarda o preço e só apaga: a subtração é do jogador, não do jogo. */
-.construcoes__erguer[data-motivo='ouro'] {
-  opacity: 0.45;
-}
-.construcoes__estado {
-  padding: 6px 0 1px;
-  font-size: 12px;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ui-texto-tenue);
-}
-.construcoes__cartao[data-estado='maximo'] .construcoes__estado {
-  color: var(--ui-verde-claro);
-}
-.construcoes__cartao[data-estado='obra'] .construcoes__estado {
-  color: var(--ui-bronze-claro);
+    filter 100ms ease,
+    box-shadow 100ms ease;
 }
 
-@container palco (max-width: 1200px) {
-  .construcoes__grade {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+.construcoes__erguer .icone-grego {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
+}
+
+.construcoes__erguer:hover:not(:disabled) {
+  filter: brightness(1.12);
+  box-shadow: 0 5px 18px rgb(0 0 0 / 28%);
+}
+
+.construcoes__erguer:focus-visible {
+  outline: 2px solid var(--ui-texto);
+  outline-offset: 2px;
+}
+
+.construcoes__erguer:disabled {
+  border-color: var(--ui-borda-fraca);
+  background: rgb(255 255 255 / 2.5%);
+  color: var(--ui-texto-tenue);
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+.construcoes__erguer[data-motivo='ouro'] {
+  opacity: 0.68;
+}
+
+.construcoes__detalhe[data-estado='maximo'] .construcoes__erguer {
+  border-color: var(--ui-verde);
+  color: var(--ui-verde-claro);
+  background: var(--ui-sucesso-fundo);
+}
+
+.construcoes__detalhe[data-estado='obra'] .construcoes__erguer {
+  border-color: var(--obra-cor);
+  border-style: dashed;
+  color: var(--obra-cor-forte);
+  background: var(--obra-cor-fundo);
+}
+
+/* Na escala de 130%, a altura lógica cai para 831 px. A decisão continua inteira. */
+@container palco (max-height: 900px) {
+  .janela[data-janela='construções'] .janela__barra {
+    padding-block: 13px 10px;
   }
+
+  .janela[data-janela='construções'] .janela__corpo.construcoes {
+    padding-block: 11px 14px;
+  }
+
+  .construcoes__resumo {
+    min-height: 46px;
+    margin-bottom: 9px;
+  }
+
+  .construcoes__slot {
+    height: 44px;
+  }
+
+  .construcoes__cartao {
+    min-height: 37px;
+  }
+
+  .construcoes__detalhe {
+    min-height: 395px;
+    padding-block: 16px 14px;
+  }
+}
+
+/* ── A linha de decisão: erguer, e — quando já existe — derrubar ──────────────────────────
+   Derrubar é a saída rara, não a ação do dia: fica pequeno, ao lado, e em tom de aviso.
+   Existe porque os quatro slots eram um beco sem saída — cheios os quatro, o resto do
+   catálogo virava enfeite naquela terra, e não havia como desfazer. */
+.construcoes__decisao {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.construcoes__decisao .construcoes__erguer {
+  flex: 1;
+  min-width: 0;
+}
+
+.construcoes__derrubar {
+  flex: none;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--ui-perigo) 45%, transparent);
+  border-radius: 3px;
+  background: transparent;
+  color: color-mix(in srgb, var(--ui-perigo) 85%, var(--ui-texto));
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.construcoes__derrubar:hover {
+  border-color: var(--ui-perigo);
+  background: color-mix(in srgb, var(--ui-perigo) 16%, transparent);
+  color: var(--ui-perigo);
 }

@@ -35,7 +35,7 @@ import {
   perfilDe,
   populacaoDe,
 } from '../provincia/consultas';
-import {
+import { podeDemolir,
   construcoesDisponiveisEm,
   obraEm,
   podeConstruir,
@@ -180,6 +180,30 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
    * precisaria de um caminho próprio — e um caminho próprio é como a IA acaba jogando um jogo
    * parecido com este em vez deste.
    */
+  /**
+   * Os quatro slots desta província estão cheios?
+   *
+   * ⚠️ **É a única recusa que uma demolição cura**, e por isso ela é uma pergunta própria em
+   * vez de um texto para comparar. A IA usa isto para saber quando vale trocar de obra; ler o
+   * motivo escrito faria a decisão dela depender da redação de uma mensagem.
+   */
+  semSlotLivreEm(idProvincia: string): boolean {
+    return (
+      construcoesEm(this.nucleo, idProvincia).length >=
+      this.nucleo.ajustes.construcoes.slotsPorProvincia
+    );
+  }
+
+  /** Esta obra pode ser derrubada aqui, e se não, por quê? */
+  podeDemolir(idProvincia: string, idConstrucao: string, porPoder?: string): Recusa {
+    return podeDemolir(
+      this.nucleo,
+      idProvincia,
+      idConstrucao,
+      porPoder ?? this.nucleo.estado.jogador,
+    );
+  }
+
   podeConstruir(idProvincia: string, idConstrucao: string, porPoder?: string): Recusa {
     return podeConstruir(
       this.nucleo,

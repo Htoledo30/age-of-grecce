@@ -113,6 +113,7 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.recrutamento.abrir();
   };
   tela.construcoes.aoConstruir = (id, construcao) => campanha.construir(id, construcao);
+  tela.construcoes.aoDemolir = (id, construcao) => campanha.demolir(id, construcao);
   tela.recrutamento.aoRecrutar = (id, homens, arma) => campanha.recrutar(id, homens, arma);
 
   // ── A ficha do exército ─────────────────────────────────────────────────────────────
@@ -545,7 +546,11 @@ export function ligarAcoes(jogo: Jogo): void {
     // legais estão desenhados, e reclamar de cada clique errado seria ruído.
     selecao.marchando = null;
     selecao.alvoHostil = null;
-    selecao.provincia = provincia?.id ?? null;
+    // ⚠️ **Água não se seleciona, e a fase de escolha já sabia disso — a campanha, não.**
+    // Clicar no mar punha a zona marítima em `selecao.provincia` e o painel abria com moldura,
+    // friso e NADA dentro: é exatamente o que `desenharProvincia` diz que o jogo não pode ter.
+    // Achado pelo teste de tela do mapa, que clica no Golfo Sarônico e esperava o painel fechar.
+    selecao.provincia = provincia && !atlas.ehMar(provincia.id) ? provincia.id : null;
     // No modo de relações, clicar numa terra é perguntar "e este aqui, o que os outros acham
     // dele?" — o mapa inteiro se reescreve do ponto de vista do dono dela.
     if (selecao.relacoesDe !== null && provincia) {
