@@ -713,10 +713,10 @@
 .construcoes__derrubar {
   flex: none;
   padding: 0 14px;
-  border: 1px solid color-mix(in srgb, var(--ui-perigo) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-sangue-claro) 45%, transparent);
   border-radius: 3px;
   background: transparent;
-  color: color-mix(in srgb, var(--ui-perigo) 85%, var(--ui-texto));
+  color: color-mix(in srgb, var(--ui-sangue-claro) 85%, var(--ui-texto));
   font: inherit;
   font-size: 12px;
   letter-spacing: 0.04em;
@@ -729,7 +729,7 @@
 }
 
 .construcoes__derrubar:hover {
-  border-color: var(--ui-perigo);
-  background: color-mix(in srgb, var(--ui-perigo) 16%, transparent);
-  color: var(--ui-perigo);
+  border-color: var(--ui-sangue-claro);
+  background: color-mix(in srgb, var(--ui-sangue-claro) 16%, transparent);
+  color: var(--ui-sangue-claro);
 }
