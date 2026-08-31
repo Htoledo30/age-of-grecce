@@ -10,8 +10,13 @@ import type { Exercito } from '@/combate/exercito';
 import { NOME_DA_ARMA } from '@/ui/armas';
 import type { VistaDoExercito } from '@/ui/exercito-ficha/exercito-ficha';
 import type { Jogo } from '../contexto';
+import type { RotasEmFoco } from './mapa';
 
-export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
+export function vistaDoExercito(
+  jogo: Jogo,
+  /** As rotas já calculadas neste desenho. Ver `rotasEmFoco` — é o conserto do lag do Porto. */
+  foco: RotasEmFoco = { idHoste: null, rotas: new Map() },
+): VistaDoExercito | null {
   const { campanha, atlas, selecao } = jogo;
   if (selecao.fase !== 'campanha' || selecao.hoste === null) return null;
   const exercito = campanha.hoste(selecao.hoste);
@@ -34,7 +39,10 @@ export function vistaDoExercito(jogo: Jogo): VistaDoExercito | null {
     manutencao: campanha.manutencaoDaHoste(exercito.id),
     emTerraAlheia,
     minha: campanha.jogador?.id === exercito.poder,
-    destinos: campanha.rotasLongasDaHoste(exercito.id).size,
+    destinos:
+      foco.idHoste === exercito.id
+        ? foco.rotas.size
+        : campanha.rotasLongasDaHoste(exercito.id).size,
     marchando: selecao.marchando === exercito.id,
     // ⚠️ Perguntada com o MESMO poder e os MESMOS homens que o botão vai usar: uma recusa
     // calculada com outros números seria uma tela que promete o que a regra nega.

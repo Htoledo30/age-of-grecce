@@ -59,6 +59,8 @@ export class MarchasMapa {
    * quantidade (um `text` sem `x`/`y`) são pintadas uma vez em (0,0), o canto superior
    * esquerdo do palco.
    */
+  /** A última câmera já projetada, como texto. Vazia força a próxima passada. */
+  private assinaturaDaCamera = '';
   private ultimaCamera: Camera | null = null;
 
   constructor(pai: HTMLElement) {
@@ -120,6 +122,8 @@ export class MarchasMapa {
 
     // Nada de traço sem coordenada chegar à tela: ou já sai posicionado, ou fica invisível
     // até o primeiro `posicionar`.
+    // O conteúdo mudou: a assinatura da câmera não vale mais como "nada a fazer".
+    this.assinaturaDaCamera = '';
     if (this.ultimaCamera) this.posicionar(this.ultimaCamera);
     else this.camada.dataset['posicionada'] = 'nao';
   }
@@ -133,6 +137,15 @@ export class MarchasMapa {
 
   /** Reprojeta linhas, origem e rótulos quando a câmera anda ou dá zoom. */
   posicionar(camera: Camera): void {
+    // ⚠️ **Câmera parada não se reprojeta, e é o conserto do travamento do Porto.**
+    // `posicionar` roda a CADA QUADRO, sessenta vezes por segundo. Sem Porto uma hoste alcança
+    // quatro destinos e ninguém sente; com Porto o mar abre e ela alcança 199 — e este laço
+    // passava a reescrever centenas de atributos de SVG por quadro, com a câmera parada, sem
+    // nada mudar na tela. Henrique, jogando: *"quando eu faço o porto, e movo uma unidade, laga
+    // todo o jogo"*. Quem muda o conteúdo zera a assinatura e força a próxima passada.
+    const assinatura = `${camera.x},${camera.y},${camera.zoom}`;
+    if (assinatura === this.assinaturaDaCamera) return;
+    this.assinaturaDaCamera = assinatura;
     this.ultimaCamera = camera;
     this.camada.dataset['posicionada'] = 'sim';
     if (this.pontoDaOrigem) {

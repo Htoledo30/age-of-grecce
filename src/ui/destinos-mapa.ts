@@ -35,6 +35,8 @@ export class DestinosMapa {
   private readonly marcas = new Map<string, HTMLButtonElement>();
   private atuais: readonly Destino[] = [];
   /** Ver `HostesMapa.ultimaCamera`: alvo novo tem que nascer já no lugar. */
+  /** A última câmera já projetada, como texto. Vazia força a próxima passada. */
+  private assinaturaDaCamera = '';
   private ultimaCamera: Camera | null = null;
 
   aoEscolher: (idProvincia: string) => void = () => {};
@@ -47,6 +49,8 @@ export class DestinosMapa {
 
   /** Lista vazia apaga a camada — é o estado normal, fora de uma ordem de marcha. */
   mostrar(destinos: readonly Destino[]): void {
+    // O conteúdo mudou: a assinatura da câmera não vale mais como "nada a fazer".
+    this.assinaturaDaCamera = '';
     this.atuais = destinos;
     const vivos = new Set(destinos.map((d) => d.provincia));
 
@@ -103,6 +107,15 @@ export class DestinosMapa {
 
   /** Põe cada destino sobre a província dele. Chamado uma vez por quadro. */
   posicionar(camera: Camera): void {
+    // ⚠️ **Câmera parada não se reprojeta, e é o conserto do travamento do Porto.**
+    // `posicionar` roda a CADA QUADRO, sessenta vezes por segundo. Sem Porto uma hoste alcança
+    // quatro destinos e ninguém sente; com Porto o mar abre e ela alcança 199 — e este laço
+    // passava a reescrever centenas de atributos de SVG por quadro, com a câmera parada, sem
+    // nada mudar na tela. Henrique, jogando: *"quando eu faço o porto, e movo uma unidade, laga
+    // todo o jogo"*. Quem muda o conteúdo zera a assinatura e força a próxima passada.
+    const assinatura = `${camera.x},${camera.y},${camera.zoom}`;
+    if (assinatura === this.assinaturaDaCamera) return;
+    this.assinaturaDaCamera = assinatura;
     this.ultimaCamera = camera;
     for (const destino of this.atuais) {
       const elemento = this.marcas.get(destino.provincia);

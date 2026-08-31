@@ -15,6 +15,7 @@ import {
   marcasDeCerco,
   ordensNoMapa,
   previsaoDaMarcha,
+  rotasEmFoco,
 } from './vistas/mapa';
 import {
   vistaDaProvincia,
@@ -71,10 +72,13 @@ export function atualizarInterface(jogo: Jogo): void {
   tela.cercosMapa.mostrar(naCampanha ? marcasDeCerco(jogo) : []);
   tela.hostesMapa.mostrar(naCampanha ? marcadoresDasHostes(jogo) : []);
   tela.hostesMapa.selecionar(selecao.hoste);
-  const previsao = previsaoDaMarcha(jogo);
+  // ⚠️ **A busca de rotas roda UMA vez por desenho.** Ver `rotasEmFoco`: rodava três, e com um
+  // Porto erguido cada uma varria o mapa inteiro — foi o que fez o jogo travar ao mover tropa.
+  const foco = rotasEmFoco(jogo);
+  const previsao = previsaoDaMarcha(jogo, foco);
   tela.marchasMapa.mostrar(previsao.origem, previsao.rotas, ordensNoMapa(jogo));
-  tela.destinosMapa.mostrar(destinosDaMarcha(jogo));
-  tela.exercitoFicha.mostrar(vistaDoExercito(jogo));
+  tela.destinosMapa.mostrar(destinosDaMarcha(jogo, foco));
+  tela.exercitoFicha.mostrar(vistaDoExercito(jogo, foco));
 
   // A janela de governo se redesenha junto com o resto, mas só quando está aberta: fechada,
   // montar as tabelas seria trabalho jogado fora a cada turno.

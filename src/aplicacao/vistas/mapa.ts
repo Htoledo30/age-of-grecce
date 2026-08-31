@@ -154,7 +154,38 @@ export function trechosDaRodada(jogo: Jogo): TrechoDeMarcha[] {
 }
 
 /** Rotas ainda possíveis enquanto o jogador aponta um destino. */
-export function previsaoDaMarcha(jogo: Jogo): {
+/**
+ * As rotas de uma hoste, calculadas UMA VEZ e emprestadas a quem precisar no mesmo desenho.
+ *
+ * ⚠️ **Existe porque o Porto fazia o jogo travar, e a causa era esta.** Henrique, jogando:
+ * *"quando eu faço o porto, e movo uma unidade, laga todo o jogo"*. A busca de rotas roda uma
+ * varredura do mapa inteiro; sem Porto ela morre em meia dúzia de províncias vizinhas, mas
+ * **com Porto o mar abre e ela passa a percorrer as 244 províncias e as 48 zonas de água**,
+ * guardando um caminho para cada uma. E ela rodava TRÊS VEZES por redesenho: a previsão da
+ * marcha, os destinos no mapa, e a ficha do exército — esta última só para dizer quantos
+ * destinos existem. Três varreduras do mundo a cada quadro, com o mouse andando.
+ */
+export interface RotasEmFoco {
+  /** De quem são estas rotas. `null` quando não há hoste escolhida. */
+  idHoste: string | null;
+  rotas: ReadonlyMap<string, readonly string[]>;
+}
+
+const SEM_ROTAS: RotasEmFoco = { idHoste: null, rotas: new Map() };
+
+/** As rotas da hoste que a interface está desenhando agora. Uma busca, e só. */
+export function rotasEmFoco(jogo: Jogo): RotasEmFoco {
+  const { selecao, campanha } = jogo;
+  if (selecao.fase !== 'campanha' || selecao.hoste === null) return SEM_ROTAS;
+  return { idHoste: selecao.hoste, rotas: campanha.rotasLongasDaHoste(selecao.hoste) };
+}
+
+/** As rotas emprestadas quando servem a esta hoste; senão, a busca de verdade. */
+function rotasDe(jogo: Jogo, idHoste: string, foco: RotasEmFoco): ReadonlyMap<string, readonly string[]> {
+  return foco.idHoste === idHoste ? foco.rotas : jogo.campanha.rotasLongasDaHoste(idHoste);
+}
+
+export function previsaoDaMarcha(jogo: Jogo, foco: RotasEmFoco = SEM_ROTAS): {
   origem: PontoDeMarcha | null;
   rotas: PrevisaoDeMarcha[];
 } {
@@ -166,7 +197,7 @@ export function previsaoDaMarcha(jogo: Jogo): {
   if (!hoste) return { origem: null, rotas: [] };
   const origem = pontoDe(jogo, hoste.posicao);
   const poder = hoste.poder;
-  const rotas = [...campanha.rotasLongasDaHoste(selecao.marchando)].map(([destino, rota]) => ({
+  const rotas = [...rotasDe(jogo, selecao.marchando, foco)].map(([destino, rota]) => ({
     destino,
     pontos: [origem, ...rota.map((id) => pontoDe(jogo, id))],
     hostil:
@@ -199,11 +230,11 @@ export function ordensNoMapa(jogo: Jogo): OrdemNoMapa[] {
 }
 
 /** Para onde a marcha em composição pode ir. Vazio fora do modo de marcha. */
-export function destinosDaMarcha(jogo: Jogo): Destino[] {
+export function destinosDaMarcha(jogo: Jogo, foco: RotasEmFoco = SEM_ROTAS): Destino[] {
   const { campanha, atlas, ajustes, selecao } = jogo;
   if (selecao.marchando === null) return [];
   const poder = campanha.hoste(selecao.marchando)?.poder;
-  return [...campanha.rotasLongasDaHoste(selecao.marchando)].map(([id, rota]) => {
+  return [...rotasDe(jogo, selecao.marchando, foco)].map(([id, rota]) => {
     const p = atlas.provincia(id);
     return {
       provincia: id,
