@@ -11,7 +11,7 @@
         "alimento": 4,
         "milicia": 6,
         "felicidade": 3,
-        "arma": 4,
+        "arma": 28,
         "qualidade": 3
       },
       "alimentoApertado": 40,
@@ -29,7 +29,7 @@
       "sobraMinima": 0.5,
       "fracaoQueMarcha": 0.7,
       "vantagemParaDeclarar": 1.3,
-      "relacaoParaDeclarar": 0,
+      "relacaoParaDeclarar": 6,
       "guerraLonga": 20
     },
     "guerreiro": {
@@ -40,7 +40,7 @@
         "alimento": 5,
         "milicia": 14,
         "felicidade": 1,
-        "arma": 12,
+        "arma": 34,
         "qualidade": 9
       },
       "alimentoApertado": 45,
@@ -58,7 +58,7 @@
       "sobraMinima": 0.3,
       "fracaoQueMarcha": 0.9,
       "vantagemParaDeclarar": 1.0,
-      "relacaoParaDeclarar": 20,
+      "relacaoParaDeclarar": 16,
       "guerraLonga": 30
     },
     "mercador": {
@@ -69,7 +69,7 @@
         "alimento": 4,
         "milicia": 3,
         "felicidade": 5,
-        "arma": 1,
+        "arma": 20,
         "qualidade": 1
       },
       "alimentoApertado": 40,
@@ -87,7 +87,7 @@
       "sobraMinima": 0.65,
       "fracaoQueMarcha": 0.55,
       "vantagemParaDeclarar": 1.8,
-      "relacaoParaDeclarar": -40,
+      "relacaoParaDeclarar": 2,
       "guerraLonga": 12
     },
     "cauteloso": {
@@ -98,7 +98,7 @@
         "alimento": 6,
         "milicia": 12,
         "felicidade": 4,
-        "arma": 3,
+        "arma": 26,
         "qualidade": 2
       },
       "alimentoApertado": 50,
@@ -116,7 +116,7 @@
       "sobraMinima": 0.7,
       "fracaoQueMarcha": 0.5,
       "vantagemParaDeclarar": 2.0,
-      "relacaoParaDeclarar": -20,
+      "relacaoParaDeclarar": -2,
       "guerraLonga": 15
     }
   },
