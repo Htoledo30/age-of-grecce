@@ -18,6 +18,7 @@ import { motivoDaArmaTrancada } from '@/combate/recrutamento';
 import { nomeDaRegiao } from '@/mundo/regioes';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
 import type { Jogo } from '../contexto';
+import { apresentacaoDaConstrucao } from './apresentacao-de-construcoes';
 
 /**
  * Junta as duas verdades: o atlas diz o que a província É, a campanha diz de quem ela É
@@ -170,6 +171,8 @@ export function vistaDeAcoes(jogo: Jogo): VistaDeAcoes | null {
   if (!portao.pode) return { pode: false, motivo: `${nomeDoAlvo}: ${portao.motivo}.` };
 
   const erguidas = campanha.construcoesEm(alvo);
+  const obra = campanha.obraEm(alvo);
+  const slotsUsados = erguidas.length + (obra && !erguidas.includes(obra.construcao) ? 1 : 0);
   const disponiveis = Object.keys(campanha.construcoesDisponiveisEm(alvo)).filter(
     (id) => campanha.podeConstruir(alvo, id).pode,
   ).length;
@@ -177,7 +180,7 @@ export function vistaDeAcoes(jogo: Jogo): VistaDeAcoes | null {
   return {
     pode: true,
     provincia: { id: alvo, nome: nomeDoAlvo },
-    slots: { usados: erguidas.length, total: ajustes.jogo.construcoes.slotsPorProvincia },
+    slots: { usados: slotsUsados, total: ajustes.jogo.construcoes.slotsPorProvincia },
     disponiveis,
     recrutamentoBloqueado,
     capital: {
@@ -221,11 +224,11 @@ export function vistaDeConstrucoes(jogo: Jogo): VistaDeConstrucoes | null {
   if (!alvo || !campanha.podeAgirEm(alvo).pode) return null;
   const obra = campanha.obraEm(alvo);
   const erguidas = campanha.construcoesEm(alvo);
+  const slotsUsados = erguidas.length + (obra && !erguidas.includes(obra.construcao) ? 1 : 0);
   return {
     provincia: { id: alvo, nome: atlas.nomeDe(alvo) },
     regiao: nomeDaRegiao(atlas.provincia(alvo).regiao),
-    slots: { usados: erguidas.length, total: ajustes.jogo.construcoes.slotsPorProvincia },
-    nivelMaximo: ajustes.jogo.construcoes.nivelMaximo,
+    slots: { usados: slotsUsados, total: ajustes.jogo.construcoes.slotsPorProvincia },
     tesouro: campanha.tesouro,
     construcoes: Object.entries(campanha.construcoesDisponiveisEm(alvo)).map(([id, c]) => {
       const conta = campanha.retornoDaConstrucaoEm(alvo, id);
@@ -243,13 +246,10 @@ export function vistaDeConstrucoes(jogo: Jogo): VistaDeConstrucoes | null {
         nivelMaximo,
         emObra: obra?.construcao === id ? obra.turnosRestantes : null,
         recusa: r.pode ? null : r.motivo,
-        motivo: c.motivo,
         ganhoPorTurno: conta?.ganhoPorTurno ?? 0,
         turnosParaPagar: conta?.turnosParaPagar ?? Number.POSITIVE_INFINITY,
         manutencao: campanha.manutencaoDaObraEm(alvo, id, nivelAlvo),
-        rendeMoeda:
-          c.efeito.tipo === 'renda' || c.efeito.tipo === 'corrupcao' || c.efeito.tipo === 'troca',
-        promessa: c.promessa,
+        apresentacao: apresentacaoDaConstrucao(c, nivelAlvo, conta?.ganhoPorTurno ?? 0),
       };
     }),
   };

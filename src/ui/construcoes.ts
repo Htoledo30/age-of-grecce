@@ -9,6 +9,7 @@
 
 import { Janela } from './janela';
 import { iconeDaConstrucao, iconeGrego } from './icones-gregos';
+import { imagemDaConstrucao } from './imagens-de-construcoes';
 import { definirTooltip } from './tooltip';
 
 type CategoriaDaConstrucao = 'cidade' | 'guerra' | 'rotas' | 'terra';
@@ -184,6 +185,10 @@ export class JanelaDeConstrucoes {
 
     slot.dataset['estado'] = opcao.emObra === null ? 'erguida' : 'obra';
     slot.dataset['categoria'] = opcao.apresentacao.categoria;
+    slot.dataset['construcao'] = opcao.id;
+    slot.dataset['fase'] =
+      opcao.emObra === null ? 'concluida' : opcao.nivelAtual > 0 ? 'ampliacao' : 'nova';
+    const imagem = arteDaConstrucao(opcao.id, 'construcoes__slot-imagem');
     const textos = document.createElement('span');
     const nome = document.createElement('strong');
     nome.textContent = opcao.nome;
@@ -192,7 +197,7 @@ export class JanelaDeConstrucoes {
     const espera = opcao.emObra === null ? '' : ` · ${opcao.emObra}t`;
     nivel.textContent = `${opcao.nivelAtual > 0 ? romano(opcao.nivelAtual) : 'nova'}${destino}${espera}`;
     textos.append(nome, nivel);
-    slot.append(iconeGrego(iconeDaConstrucao(opcao.id)), textos);
+    slot.append(...(imagem ? [imagem] : [iconeGrego(iconeDaConstrucao(opcao.id))]), textos);
     return slot;
   }
 
@@ -287,12 +292,12 @@ export class JanelaDeConstrucoes {
     const estado = estadoDe(opcao, vista.tesouro);
     this.detalhe.dataset['estado'] = estado;
     this.detalhe.dataset['categoria'] = opcao.apresentacao.categoria;
+    this.detalhe.dataset['construcao'] = opcao.id;
 
     const cabecalho = document.createElement('header');
     cabecalho.className = 'construcoes__detalhe-cabecalho';
-    const emblema = document.createElement('span');
-    emblema.className = 'construcoes__emblema';
-    emblema.append(iconeGrego(iconeDaConstrucao(opcao.id)));
+    const imagem = arteDaConstrucao(opcao.id, 'construcoes__arte');
+    if (imagem) cabecalho.append(imagem);
     const identidade = document.createElement('div');
     const supra = document.createElement('p');
     supra.className = 'construcoes__detalhe-supra';
@@ -300,7 +305,7 @@ export class JanelaDeConstrucoes {
     const nome = document.createElement('h3');
     nome.textContent = opcao.nome;
     identidade.append(supra, nome, degraus(opcao));
-    cabecalho.append(emblema, identidade);
+    cabecalho.append(identidade);
 
     const impacto = document.createElement('section');
     impacto.className = 'construcoes__impacto';
@@ -423,6 +428,19 @@ export class JanelaDeConstrucoes {
   }
 }
 
+/** A mesma arte serve ao detalhe e ao patrimônio; texto adjacente já dá o nome acessível. */
+function arteDaConstrucao(id: string, classe: string): HTMLImageElement | null {
+  const origem = imagemDaConstrucao(id);
+  if (!origem) return null;
+  const imagem = document.createElement('img');
+  imagem.className = classe;
+  imagem.src = origem;
+  imagem.alt = '';
+  imagem.draggable = false;
+  imagem.decoding = 'async';
+  return imagem;
+}
+
 function ordenar(opcoes: readonly OpcaoDeConstrucao[]): readonly OpcaoDeConstrucao[] {
   return [...opcoes].sort(
     (a, b) =>
@@ -451,7 +469,8 @@ function nivelNaLista(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): string {
 
 function destinoDaObra(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): string {
   if (estado === 'maximo') return `nível ${romano(opcao.nivelAtual)}`;
-  if (estado === 'obra') return `nível ${romano(opcao.nivelAlvo)} em obra`;
+  // O botão e o patrimônio já dizem "em obra" e o prazo; aqui basta situar o nível.
+  if (estado === 'obra') return `nível ${romano(opcao.nivelAlvo)}`;
   return opcao.nivelAtual > 0
     ? `ampliar para ${romano(opcao.nivelAlvo)}`
     : `novo · nível ${romano(opcao.nivelAlvo)}`;

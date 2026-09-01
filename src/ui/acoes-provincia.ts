@@ -44,7 +44,7 @@ export type VistaDeAcoes =
   | {
       pode: true;
       provincia: { id: string; nome: string };
-      /** Slots de construção usados e totais. Vai no contador do botão. */
+      /** Slots erguidos ou já comprometidos por obra, e o total. Vai no contador do botão. */
       slots: { usados: number; total: number };
       /** Quantas construções dá pra pagar e erguer AGORA. Zero apaga o chamado à ação. */
       disponiveis: number;

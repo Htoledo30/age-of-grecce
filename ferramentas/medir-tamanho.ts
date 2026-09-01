@@ -169,6 +169,31 @@ async function main(): Promise<void> {
     });
     if (!palco) throw new Error('sem palco');
 
+    // Construções e Recrutamento pertencem à província selecionada. Antes esta ferramenta
+    // clicava programaticamente nos botões ocultos, abria uma moldura sem conteúdo e declarava
+    // que ela cabia. Selecionar Atenas faz a medição enxergar a decisão real.
+    await pagina.evaluate(() => {
+      const insp = (
+        window as never as {
+          inspecao: {
+            centroDe: (p: string) => { x: number; y: number };
+            posicionar: (x: number, y: number, z: number) => void;
+          };
+        }
+      ).inspecao;
+      const centro = insp.centroDe('atenas');
+      insp.posicionar(centro.x, centro.y, 1);
+    });
+    await pagina.waitForTimeout(400);
+    const centroDoPalco = await pagina.evaluate(() => {
+      const caixa = document.querySelector('#palco')?.getBoundingClientRect();
+      return caixa ? { x: caixa.left + caixa.width / 2, y: caixa.top + caixa.height / 2 } : null;
+    });
+    if (centroDoPalco) {
+      await pagina.mouse.click(centroDoPalco.x, centroDoPalco.y);
+      await pagina.waitForTimeout(400);
+    }
+
     for (const painel of PAINEIS) {
       if (!(await abrir(pagina, painel.botao))) {
         transbordos.push(`${painel.nome}: botão não encontrado`);

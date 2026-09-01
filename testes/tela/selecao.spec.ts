@@ -91,17 +91,54 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   // Pergunta às regras em vez de cravar: tesouro inicial é balanço e já mudou uma vez.
   await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
   await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
-  // ⚠️ As construções moram numa JANELA desde a reforma do painel. O detalhe deixou de ser
-  // tooltip e voltou a ser texto no cartão: com espaço de verdade, a conta que decide entre
-  // duas obras cabe na tela em vez de ficar escondida atrás do cursor.
-  const agora = page.locator('.construcoes__cartao', { hasText: 'Ágora' });
+  // O catálogo é uma lista de leitura rápida; a primeira batida escolhe e a segunda, no
+  // detalhe, compra. Efeito, custo e prazo continuam visíveis antes do gasto.
+  const agora = page.locator('.construcoes__cartao', {
+    has: page.locator('.construcoes__nome', { hasText: /^Ágora$/ }),
+  });
+  const fazenda = page.locator('.construcoes__cartao', {
+    has: page.locator('.construcoes__nome', { hasText: /^Fazenda$/ }),
+  });
+  const armaria = page.locator('.construcoes__cartao', {
+    has: page.locator('.construcoes__nome', { hasText: /^Armaria$/ }),
+  });
+  const detalhe = page.locator('.construcoes__detalhe');
+  const arte = detalhe.locator('.construcoes__arte');
   await page.getByRole('button', { name: /^Construções/ }).click();
-  await expect(agora).toContainText(/paga-se em\s*\d+ turnos/);
-  await expect(page.locator('.construcoes__cartao', { hasText: 'Fazenda' })).toContainText(
-    '+1/+2/+3 ao saldo alimentar',
-  );
+  await expect(agora).toHaveAttribute('aria-pressed', 'true');
+  await expect(agora).toHaveAttribute('data-categoria', 'cidade');
+  await expect(arte).toHaveAttribute('src', /agora-v1\.webp$/);
+  await expect
+    .poll(() =>
+      arte.evaluate((imagem: HTMLImageElement) => [imagem.naturalWidth, imagem.naturalHeight]),
+    )
+    .toEqual([1200, 900]);
+  await expect(detalhe).toContainText(/Retorno\s*\d+ turnos/);
+  await expect(detalhe).toContainText('−40% corrupção por tamanho');
+  await expect(armaria).toHaveAttribute('data-estado', 'sem-ouro');
+  await armaria.click();
+  await expect(detalhe.getByRole('button', { name: 'Erguer nível I' })).toBeDisabled();
+  await expect(detalhe).not.toContainText('faltam');
+  await expect(fazenda).toContainText(/\+1\s*alimento do reino/);
+  await expect(fazenda).toHaveAttribute('data-categoria', 'terra');
 
-  await agora.getByRole('button', { name: /^Erguer/ }).click();
+  await fazenda.click();
+  await expect(detalhe.getByRole('heading', { name: 'Fazenda' })).toBeVisible();
+  await expect(arte).toHaveAttribute('src', /fazenda-v1\.webp$/);
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
+  await agora.click();
+  await expect(arte).toHaveAttribute('src', /agora-v1\.webp$/);
+
+  await detalhe.getByRole('button', { name: /^Erguer nível I$/ }).click();
+  await expect(page.locator('.construcoes__patrimonio')).toContainText('1/4');
+  await expect(page.locator('.acoes__portao-contador').first()).toHaveText('1/4');
+  const faixaDaAgora = page.locator('.construcoes__slot[data-construcao="agora"]');
+  await expect(faixaDaAgora).toHaveAttribute('data-estado', 'obra');
+  await expect(faixaDaAgora).toHaveAttribute('data-fase', 'nova');
+  await expect(faixaDaAgora.locator('.construcoes__slot-imagem')).toHaveAttribute(
+    'src',
+    /agora-v1\.webp$/,
+  );
   await page.keyboard.press('Escape');
 
   // paga à vista e ENTREGA DEPOIS: sobram 1.000 moedas, mas a renda ainda não subiu
@@ -117,11 +154,17 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
     'Ágora I em obra · 2 turnos',
   );
   await page.getByRole('button', { name: /^Construções/ }).click();
-  await expect(agora).toContainText('Obra em andamento');
+  await expect(agora).toHaveAttribute('data-estado', 'obra');
+  await expect(detalhe.getByRole('button')).toContainText('Em obra · 2 turnos');
   // as outras continuam visíveis, dizendo por que não dá
-  await expect(page.locator('.construcoes__cartao', { hasText: 'Mercado' })).toContainText(
-    'em obra aqui',
-  );
+  //
+  // ⚠️ Pelo NOME do cartão, e não pelo texto dele: a descrição do Porto passou a dizer que ele
+  // "leva mercadoria", e um filtro por "Mercado" casava com os dois cartões.
+  await expect(
+    page
+      .locator('.construcoes__cartao')
+      .filter({ has: page.locator('.construcoes__nome', { hasText: /^Mercado$/ }) }),
+  ).toHaveAttribute('data-estado', 'bloqueada');
   await page.keyboard.press('Escape');
 
   // dois turnos depois a obra está de pé e a renda subiu
@@ -137,7 +180,10 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   // janela diz quais. Duas listas de pastilha empilhadas confundiam produto com construção.
   await expect(page.locator('.acoes__portao-contador').first()).toHaveText('1/4');
   await page.getByRole('button', { name: /^Construções/ }).click();
-  await expect(agora.getByRole('button')).toContainText('Subir para II');
+  await expect(agora).toContainText('I → II');
+  await expect(detalhe.getByRole('button', { name: 'Ampliar para II' })).toBeVisible();
+  await expect(faixaDaAgora).toHaveAttribute('data-estado', 'erguida');
+  await expect(faixaDaAgora).toHaveAttribute('data-fase', 'concluida');
   await page.keyboard.press('Escape');
   // O painel mostra o saldo COMPLETO da terra; o tooltip guarda a conta curta.
   const saldoProvincial = page.locator('.ficha__medida[data-medida="saldo"]');

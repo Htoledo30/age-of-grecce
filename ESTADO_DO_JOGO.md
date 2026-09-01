@@ -282,8 +282,13 @@ exigirão memória salva no estado.
 ## Interface, áudio e acessibilidade
 
 O mapa é o protagonista. A ficha da província mostra identidade, alertas, saldo, humor,
-população e milícia; Construções e Recrutamento usam janelas próprias. Governo, Diplomacia,
-crônica, ficha de hoste e janela de batalha apresentam os mesmos números usados pelas regras.
+população e milícia; Construções e Recrutamento usam janelas próprias. A mesa de Construções
+mostra os quatro espaços da terra, organiza o catálogo em Cidade, Guerra, Rotas e Terra e
+separa a escolha da compra: a obra selecionada revela efeito, custo, prazo, folha e retorno
+antes do comando. Cada tipo possui uma vinheta arquitetônica própria; ela identifica a escolha
+no detalhe e reaparece como faixa no patrimônio assim que a obra ocupa um slot. Governo,
+Diplomacia, crônica, ficha de hoste e janela de batalha apresentam os mesmos números usados
+pelas regras.
 
 O modo político mostra posse; o modo de relações repinta o mapa segundo a opinião sobre o poder
 selecionado. Nomes de província vivem no mapa, encolhem para caber e podem ser ocultados nas

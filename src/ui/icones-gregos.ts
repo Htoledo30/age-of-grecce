@@ -170,8 +170,11 @@ export function rotularComIcone(alvo: HTMLElement, nome: NomeDoIconeGrego, texto
 /** Ícones das construções autorais sem deixar essa decisão visual vazar para a campanha. */
 export function iconeDaConstrucao(id: string): NomeDoIconeGrego {
   const conhecidos: Record<string, NomeDoIconeGrego> = {
-    agora: 'templo',
+    agora: 'balanca',
     mercado: 'mercado',
+    armaria: 'escudo',
+    'acampamento-de-arqueiro': 'lanca',
+    'treinamento-de-cavaleiros': 'capacete',
     quartel: 'quartel',
     muralha: 'muralha',
     templo: 'templo',
