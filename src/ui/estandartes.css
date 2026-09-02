@@ -1,0 +1,124 @@
+/**
+ * A geometria é a mesma em todas as superfícies: só o tamanho muda.
+ *
+ * O pano fica colorido; haste, travessa, cauda bifurcada e facetas fazem a peça ler como
+ * estandarte de facção. O emblema usa uma única tinta de alto contraste e continua limpo no
+ * marcador do mapa.
+ */
+
+.estandarte {
+  display: block;
+  flex: none;
+  width: 32px;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 2px rgb(8 6 5 / 42%));
+}
+
+.estandarte--hoste {
+  width: 28px;
+}
+
+.estandarte--provincia {
+  width: 36px;
+}
+
+.estandarte--reino {
+  width: 46px;
+}
+
+.estandarte__haste-sombra,
+.estandarte__travessa-sombra {
+  fill: none;
+  stroke: rgb(7 5 4 / 48%);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.estandarte__haste,
+.estandarte__travessa {
+  fill: none;
+  stroke: var(--estandarte-haste);
+  stroke-width: 2.7;
+  stroke-linecap: round;
+}
+
+.estandarte__sombra {
+  fill: rgb(8 5 4 / 35%);
+}
+
+.estandarte__pano {
+  fill: var(--estandarte-cor);
+  stroke: var(--estandarte-borda);
+  stroke-width: 2.3;
+  stroke-linejoin: round;
+}
+
+.estandarte__faceta--clara {
+  fill: white;
+  opacity: 0.13;
+}
+
+.estandarte__faceta--escura {
+  fill: #0b0c0c;
+  opacity: 0.15;
+}
+
+.estandarte__moldura {
+  fill: none;
+  stroke: var(--estandarte-tinta);
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+  opacity: 0.24;
+}
+
+.estandarte__emblema {
+  overflow: visible;
+}
+
+.estandarte__forma--cheia {
+  fill: var(--estandarte-tinta);
+  stroke: none;
+}
+
+.estandarte__forma--catalogo {
+  stroke: var(--estandarte-borda);
+  stroke-width: 8;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+.estandarte__forma--linha {
+  fill: none;
+  stroke: var(--estandarte-tinta);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.estandarte__forma--recorte {
+  fill: var(--estandarte-recorte);
+  stroke: none;
+}
+
+.estandarte__remate {
+  fill: var(--estandarte-haste);
+  stroke: rgb(7 5 4 / 65%);
+  stroke-width: 1.4;
+}
+
+@container palco ((max-width: 1550px) or (max-height: 860px)) {
+  .estandarte--hoste {
+    width: 26px;
+  }
+
+  .estandarte--provincia {
+    width: 33px;
+  }
+
+  .estandarte--reino {
+    width: 42px;
+  }
+}

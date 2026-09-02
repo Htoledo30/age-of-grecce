@@ -14,10 +14,11 @@ import type { CategoriaAlimentar } from '@/producao/alimentacao';
 import type { NomeDoIconeGrego } from './icones-gregos';
 import { iconeGrego, rotularComIcone } from './icones-gregos';
 import { nomeDaCategoria } from './balanco-alimentar';
+import { criarEstandarte } from './estandartes';
 import { definirTooltip, removerTooltip } from './tooltip';
 
 export interface VistaDoTurno {
-  poder: { nome: string; cor: string };
+  poder: { id: string; nome: string; cor: string };
   ano: number;
   turno: number;
   tesouro: number;
@@ -51,7 +52,7 @@ export class BarraTurno {
   private readonly tesouro = document.createElement('p');
   private readonly controleTurno = document.createElement('section');
   private readonly cronologia = document.createElement('p');
-  private readonly tinta = document.createElement('span');
+  private readonly estandarte = document.createElement('span');
   private readonly botao = document.createElement('button');
   private readonly botaoGoverno = document.createElement('button');
   private readonly botaoDiplomacia = document.createElement('button');
@@ -77,7 +78,7 @@ export class BarraTurno {
     this.tesouro.className = 'barra-turno__tesouro';
     this.controleTurno.className = 'barra-turno__controle';
     this.cronologia.className = 'barra-turno__cronologia';
-    this.tinta.className = 'barra-turno__tinta';
+    this.estandarte.className = 'barra-turno__estandarte';
 
     this.botao.className = 'botao botao--principal';
     this.botao.type = 'button';
@@ -118,7 +119,7 @@ export class BarraTurno {
       this.botaoDiplomacia.blur();
     });
 
-    this.cabecalhoNacao.append(this.tinta, this.botaoGoverno, this.botaoDiplomacia);
+    this.cabecalhoNacao.append(this.estandarte, this.botaoGoverno, this.botaoDiplomacia);
     this.nacao.append(this.cabecalhoNacao, this.tesouro);
     this.controleTurno.append(this.cronologia, this.botao);
     this.raiz.append(this.nacao, this.controleTurno);
@@ -131,7 +132,7 @@ export class BarraTurno {
       this.raiz.hidden = true;
       return;
     }
-    this.tinta.style.background = vista.poder.cor;
+    this.estandarte.replaceChildren(criarEstandarte(vista.poder, 'reino'));
     const identidade = document.createElement('span');
     identidade.className = 'barra-turno__identidade-poder';
     identidade.append(
@@ -148,7 +149,7 @@ export class BarraTurno {
       vista.pedidos > 0 ? `Diplomacia · ${vista.pedidos}` : 'Diplomacia',
     );
     this.cabecalhoNacao.replaceChildren(
-      this.tinta,
+      this.estandarte,
       identidade,
       this.botaoGoverno,
       this.botaoDiplomacia,

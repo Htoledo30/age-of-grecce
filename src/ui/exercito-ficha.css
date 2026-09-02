@@ -34,12 +34,12 @@
   letter-spacing: 0.06em;
   color: var(--ui-texto-fraco);
 }
-.exercito__tinta {
-  width: 16px;
-  height: 20px;
-  border: 1px solid var(--ui-texto-fraco);
-  border-radius: 6px 6px 8px 8px;
-  clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
+.exercito__estandarte {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 43px;
 }
 .exercito__forca {
   margin-top: 10px;

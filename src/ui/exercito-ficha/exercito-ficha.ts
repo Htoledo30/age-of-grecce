@@ -11,6 +11,7 @@
  */
 
 import { rotularComIcone } from '../icones-gregos';
+import { criarEstandarte } from '../estandartes';
 import { definirTooltip } from '../tooltip';
 import { ComandoDeCerco } from './comando-de-cerco';
 import { ComandoDeMarcha } from './comando-de-marcha';
@@ -24,7 +25,7 @@ export type { VistaDoExercito } from './vista';
 export class ExercitoFicha {
   private readonly raiz = document.createElement('div');
   private readonly titulo = document.createElement('h2');
-  private readonly tinta = document.createElement('span');
+  private readonly estandarte = document.createElement('span');
   private readonly dono = document.createElement('span');
   private readonly forca = document.createElement('p');
   private readonly custo = document.createElement('p');
@@ -66,9 +67,9 @@ export class ExercitoFicha {
 
     const linhaDono = document.createElement('p');
     linhaDono.className = 'exercito__poder';
-    this.tinta.className = 'exercito__tinta';
+    this.estandarte.className = 'exercito__estandarte';
     this.dono.className = 'exercito__nome-do-poder';
-    linhaDono.append(this.tinta, this.dono);
+    linhaDono.append(this.estandarte, this.dono);
 
     this.forca.className = 'exercito__forca';
     this.custo.className = 'exercito__custo';
@@ -135,7 +136,7 @@ export class ExercitoFicha {
     if (!vista) return;
 
     rotularComIcone(this.titulo, 'escudo', `Exército em ${vista.provincia.nome}`);
-    this.tinta.style.background = vista.poder.cor;
+    this.estandarte.replaceChildren(criarEstandarte(vista.poder, 'provincia'));
     this.dono.textContent = vista.poder.nome;
     this.forca.textContent = `${numero(vista.forca)} homens`;
     this.custo.textContent = `custa ${numero(vista.manutencao)} por turno`;

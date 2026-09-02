@@ -18,6 +18,7 @@
 
 import type { Camera } from '@/nucleo/camera';
 import type { Ponto } from '@/ui/animacao-de-marcha';
+import { criarEstandarte } from './estandartes';
 import { definirTooltip } from './tooltip';
 
 /** Uma hoste como o mapa precisa vê-la. */
@@ -49,6 +50,7 @@ export interface MarcadorDeHoste {
   emFormacao: number;
   /** Cor do poder dono da hoste — não a do dono do chão. */
   cor: string;
+  idDoPoder: string;
   nomeDoPoder: string;
   minha: boolean;
   /** Está recebendo uma ordem agora. */
@@ -138,7 +140,16 @@ export class HostesMapa {
       if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
       const pronta = hoste.forca.toLocaleString('pt-BR');
       const formando = hoste.emFormacao.toLocaleString('pt-BR');
-      elemento.textContent = hoste.forca > 0 ? pronta : formando;
+      const numero = document.createElement('span');
+      numero.className = 'hostes__forca';
+      numero.textContent = hoste.forca > 0 ? pronta : formando;
+      elemento.replaceChildren(
+        criarEstandarte(
+          { id: hoste.idDoPoder, nome: hoste.nomeDoPoder, cor: hoste.cor },
+          'hoste',
+        ),
+        numero,
+      );
       definirTooltip(elemento, {
         titulo: hoste.forca > 0 ? `Hoste de ${hoste.nomeDoPoder}` : `Leva de ${hoste.nomeDoPoder}`,
         corpo:
@@ -149,11 +160,17 @@ export class HostesMapa {
               : `${pronta} homens prontos. ${formando} recrutas ficarão prontos no próximo turno.`,
         tom: hoste.minha ? 'informacao' : 'perigo',
       });
+      elemento.setAttribute(
+        'aria-label',
+        `${hoste.forca > 0 ? 'Hoste' : 'Leva'} de ${hoste.nomeDoPoder}, ` +
+          `${hoste.forca > 0 ? pronta : formando} homens`,
+      );
       elemento.style.setProperty('--cor-da-hoste', hoste.cor);
       // ⚠️ **A província é escrita na ATUALIZAÇÃO, não no nascimento.** O mesmo elemento
       // agora sobrevive a uma marcha — a chave é a hoste, e ela muda de lugar. Escrever
       // isto uma vez só deixaria o `data-provincia` mentindo depois do primeiro turno.
       elemento.dataset['provincia'] = hoste.provincia;
+      elemento.dataset['poder'] = hoste.idDoPoder;
       elemento.dataset['sitiando'] = hoste.sitiando ? 'sim' : 'nao';
       elemento.dataset['minha'] = hoste.minha ? 'sim' : 'nao';
       elemento.dataset['selecionada'] = this.selecionada === hoste.id ? 'sim' : 'nao';

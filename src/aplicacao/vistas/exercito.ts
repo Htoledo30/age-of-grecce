@@ -32,7 +32,7 @@ export function vistaDoExercito(
   return {
     hoste: { id: exercito.id },
     provincia: { id: onde, nome: atlas.nomeDe(onde) },
-    poder: { nome: poder.nome, cor: poder.cor },
+    poder: { id: poder.id, nome: poder.nome, cor: poder.cor },
     forca,
     // A folha desta hoste pela taxa do chão em que ela pisa: o número na ficha SOBE no
     // turno em que ela cruza a fronteira, e é assim que o jogador aprende a regra.

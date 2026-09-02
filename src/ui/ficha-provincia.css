@@ -75,15 +75,13 @@
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
 }
-/* O escudo com a cor do reino, CHEIO. Ele era 14×18 com um anel escuro por dentro e lia-se
-   como um contorno vazio; agora a tinta é o que se vê. */
-.ficha__tinta {
+/* A mesma insígnia da hoste e do alto da tela: forma + emblema, não só uma amostra de cor. */
+.ficha__estandarte {
+  display: grid;
+  place-items: center;
   flex: none;
-  width: 15px;
-  height: 19px;
-  border: 1px solid rgb(0 0 0 / 55%);
-  border-radius: 5px 5px 8px 8px;
-  clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
+  width: 36px;
+  height: 43px;
 }
 /* O que a terra dá, na terceira linha da identidade — texto, e não pastilha.
    ⚠️ Eram duas fileiras de caixinhas iguais, produtos em cima e construções embaixo, e o

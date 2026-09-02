@@ -65,7 +65,7 @@ export interface VistaDaProvincia {
    * onde se luta e que não se conquista.
    */
   mar: boolean;
-  poder: { nome: string; povo: string; cor: string };
+  poder: { id: string; nome: string; povo: string; cor: string };
   /** É terra do jogador? Decide se o painel oferece comando ou só leitura. */
   minha: boolean;
   /** É a sede do reino a que pertence — do jogador ou de quem for. */

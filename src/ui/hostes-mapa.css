@@ -8,9 +8,12 @@
   position: absolute;
   top: 0;
   left: 0;
-  min-width: 42px;
-  min-height: 27px;
-  padding: 6px 8px 4px;
+  display: flex;
+  align-items: center;
+  min-width: 47px;
+  min-height: 29px;
+  gap: 4px;
+  padding: 3px 8px 3px 3px;
   pointer-events: auto;
   border: 1px solid var(--cor-da-hoste, var(--ui-borda));
   border-radius: 8px 8px 12px 12px;
@@ -30,6 +33,10 @@
     border-color 110ms ease,
     filter 110ms ease,
     scale 110ms ease;
+}
+.hostes__forca {
+  min-width: 24px;
+  padding-top: 1px;
 }
 .hostes__marca:hover {
   border-color: var(--ui-texto);

@@ -48,10 +48,15 @@
   min-height: 56px;
 }
 
-.barra-turno__tinta {
+.barra-turno__estandarte {
+  display: grid;
+  place-items: center;
   flex: none;
-  width: 9px;
-  box-shadow: inset -1px 0 rgb(255 255 255 / 16%);
+  width: 54px;
+  padding-left: 4px;
+  border-right: 1px solid var(--ui-borda-fraca);
+  background: rgb(8 13 14 / 32%);
+  box-shadow: inset 0 1px var(--ui-luz);
 }
 
 .barra-turno__identidade-poder {
@@ -238,6 +243,11 @@
   .barra-turno__identidade-poder {
     min-width: 0;
     padding-inline: 12px;
+  }
+
+  .barra-turno__estandarte {
+    width: 48px;
+    padding-left: 3px;
   }
 
   .barra-turno__poder {

@@ -25,6 +25,7 @@
  */
 
 import { definirTooltip } from '../tooltip';
+import { criarEstandarte } from '../estandartes';
 import { medidasDa } from './medidas';
 import { faseDoCerco, romano, tooltipDoCerco } from './textos';
 import type { VistaDaProvincia } from './vista';
@@ -36,7 +37,7 @@ export class FichaProvincia {
   private readonly topo = document.createElement('header');
   private readonly nome = document.createElement('h2');
   private readonly bandeira = document.createElement('p');
-  private readonly tinta = document.createElement('span');
+  private readonly estandarte = document.createElement('span');
   private readonly reino = document.createElement('span');
   private readonly regiao = document.createElement('span');
   private readonly producao = document.createElement('p');
@@ -49,7 +50,7 @@ export class FichaProvincia {
     this.raiz.hidden = true;
 
     this.nome.className = 'ficha__nome';
-    this.tinta.className = 'ficha__tinta';
+    this.estandarte.className = 'ficha__estandarte';
     this.reino.className = 'ficha__reino';
     this.regiao.className = 'ficha__regiao';
     // ⚠️ **A BANDEIRA vem ACIMA do nome, e é a primeira coisa da ficha.** Henrique clicando:
@@ -62,7 +63,7 @@ export class FichaProvincia {
     // dele cheia, a região na outra ponta da MESMA faixa e em tom apagado, e o nome da
     // província grande embaixo. Ninguém precisa de rótulo dizendo qual é qual.
     this.bandeira.className = 'ficha__bandeira';
-    this.bandeira.append(this.tinta, this.reino, this.regiao);
+    this.bandeira.append(this.estandarte, this.reino, this.regiao);
     this.producao.className = 'ficha__producao';
     this.selos.className = 'ficha__selos';
 
@@ -92,8 +93,10 @@ export class FichaProvincia {
     // ⚠️ **A zona marítima é nome e natureza, e nada mais.** Sem dono não há tinta de reino;
     // sem povo, sem renda e sem obra não há medida nenhuma a mostrar. O painel encolhe até o
     // que existe em vez de exibir quatro zeros — quatro zeros não são informação, são ruído.
-    this.tinta.hidden = vista.mar;
-    this.tinta.style.background = vista.poder.cor;
+    this.estandarte.hidden = vista.mar;
+    this.estandarte.replaceChildren(
+      ...(vista.mar ? [] : [criarEstandarte(vista.poder, 'provincia')]),
+    );
     this.reino.textContent = vista.mar ? 'Zona marítima' : vista.poder.nome;
     this.regiao.textContent = vista.mar ? '' : vista.regiao;
     this.desenharProducao(vista);

@@ -686,6 +686,11 @@ seu valor dentro de uma partida real, especialmente nas três fases: início at�
 - **Painel de decisão não rola.** Rolagem só onde há texto corrido ou lista longa de
   consulta; o que se lê a cada clique cabe inteiro na tela.
 - Interface usa texto curto, números verificáveis, ícones consistentes e tooltips próprios.
+- **A identidade política combina cor e insígnia cívica.** Barra do reino, ficha da província,
+  ficha da hoste e peça no mapa repetem o mesmo estandarte até ele ser reconhecido sem leitura.
+  Os emblemas se inspiram em moedas e cultos locais — coruja ateniense, Pégaso coríntio,
+  esfinge tebana — e não fingem reconstruir bandeiras nacionais que não existiam em 700 a.C.
+  Poder novo recebe uma marca determinística, nunca um espaço vazio.
 - Batalhas e acontecimentos importantes precisam ser legíveis mesmo sem grande quantidade
   de assets.
 

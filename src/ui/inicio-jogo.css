@@ -133,13 +133,12 @@
   align-items: center;
   gap: 10px;
 }
-.inicio-jogo__cor {
+.inicio-jogo__estandarte {
+  display: grid;
+  place-items: center;
   flex: none;
-  width: 22px;
-  height: 32px;
-  border: 1px solid var(--ui-texto-fraco);
-  border-radius: 8px 8px 11px 11px;
-  clip-path: polygon(50% 0, 100% 12%, 92% 72%, 50% 100%, 8% 72%, 0 12%);
+  width: 46px;
+  height: 55px;
 }
 .inicio-jogo__nome-poder {
   font-family: var(--fonte-nome);

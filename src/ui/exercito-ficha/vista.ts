@@ -38,7 +38,7 @@ export interface VistaDoExercito {
   hoste: { id: string };
   /** Onde ela esta. Titulo da ficha e texto do cerco — nunca endereco. */
   provincia: { id: string; nome: string };
-  poder: { nome: string; cor: string };
+  poder: { id: string; nome: string; cor: string };
   forca: number;
   manutencao: number;
   /** A hoste está parada em terra que não é do dono dela. */

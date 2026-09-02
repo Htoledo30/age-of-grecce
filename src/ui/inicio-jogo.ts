@@ -7,6 +7,7 @@
  */
 
 import { iconeGrego, rotularComIcone } from './icones-gregos';
+import { criarEstandarte } from './estandartes';
 
 /**
  * O poder sob o cursor, como a tela de escolha precisa vê-lo.
@@ -26,7 +27,7 @@ export class InicioJogo {
   private readonly nomeEscolhido = document.createElement('h3');
   private readonly detalhesEscolhidos = document.createElement('p');
   private readonly disponibilidade = document.createElement('p');
-  private readonly amostraCor = document.createElement('span');
+  private readonly estandarteEscolhido = document.createElement('span');
   private readonly botaoComecar = document.createElement('button');
   private readonly botaoIniciar = document.createElement('button');
   private readonly botaoContinuar = document.createElement('button');
@@ -83,7 +84,7 @@ export class InicioJogo {
     const disponivel = this.podeJogar(poder.id);
 
     this.nomeEscolhido.textContent = poder.nome;
-    this.amostraCor.style.background = poder.cor;
+    this.estandarteEscolhido.replaceChildren(criarEstandarte(poder, 'reino'));
     this.detalhesEscolhidos.textContent = `${poder.povo} · ${quantidade} ${quantidade === 1 ? 'província' : 'províncias'}`;
     this.disponibilidade.textContent = disponivel
       ? 'Disponível para esta campanha.'
@@ -183,9 +184,9 @@ export class InicioJogo {
     escolhido.className = 'inicio-jogo__poder';
     const cabecalho = document.createElement('div');
     cabecalho.className = 'inicio-jogo__cabecalho-poder';
-    this.amostraCor.className = 'inicio-jogo__cor';
+    this.estandarteEscolhido.className = 'inicio-jogo__estandarte';
     this.nomeEscolhido.className = 'inicio-jogo__nome-poder';
-    cabecalho.append(this.amostraCor, this.nomeEscolhido);
+    cabecalho.append(this.estandarteEscolhido, this.nomeEscolhido);
     this.detalhesEscolhidos.className = 'inicio-jogo__detalhes';
     this.disponibilidade.className = 'inicio-jogo__disponibilidade';
     escolhido.append(cabecalho, this.detalhesEscolhidos, this.disponibilidade);
@@ -212,7 +213,7 @@ export class InicioJogo {
   private limparEscolha(): void {
     this.poderEscolhido = null;
     this.nomeEscolhido.textContent = 'Nenhum poder selecionado';
-    this.amostraCor.style.background = 'transparent';
+    this.estandarteEscolhido.replaceChildren();
     this.detalhesEscolhidos.textContent = 'Selecione uma província no mapa.';
     this.disponibilidade.textContent = '';
     delete this.disponibilidade.dataset['disponivel'];

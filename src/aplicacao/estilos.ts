@@ -27,6 +27,7 @@ import '@/ui/recrutamento.css';
 import '@/ui/exercito-ficha.css';
 import '@/ui/marchas-mapa.css';
 import '@/ui/hostes-mapa.css';
+import '@/ui/estandartes.css';
 import '@/ui/destinos-mapa.css';
 import '@/ui/cercos-mapa.css';
 import '@/ui/batalha.css';

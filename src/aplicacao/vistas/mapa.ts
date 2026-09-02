@@ -84,6 +84,7 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
       // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra alheia as
       // duas deixam de coincidir, e é aí que a cor passa a informar.
       cor: poder.cor,
+      idDoPoder: poder.id,
       nomeDoPoder: poder.nome,
       minha: exercito.poder === meu,
       escolhendoDestino: selecao.marchando === exercito.id,
@@ -111,6 +112,7 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
         forca: 0,
         emFormacao: homensEmFormacao(formacao),
         cor: poder.cor,
+        idDoPoder: poder.id,
         nomeDoPoder: poder.nome,
         minha: formacao.poder === meu,
         escolhendoDestino: false,

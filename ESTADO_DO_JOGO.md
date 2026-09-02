@@ -290,6 +290,13 @@ no detalhe e reaparece como faixa no patrimônio assim que a obra ocupa um slot.
 Diplomacia, crônica, ficha de hoste e janela de batalha apresentam os mesmos números usados
 pelas regras.
 
+Os 18 poderes com economia completa possuem estandartes vetoriais próprios inspirados em tipos
+monetários, cultos locais e mitos reconhecíveis. A mesma cor e insígnia aparece na escolha de
+poder, barra principal, ficha da província, ficha da hoste e marcador no mapa. Os demais
+poderes do Atlas e reinos nascidos por independência recebem uma marca determinística. Os
+vetores são empacotados no jogo, portanto nenhuma identidade depende da rede em execução nem
+fica sem representação.
+
 O modo político mostra posse; o modo de relações repinta o mapa segundo a opinião sobre o poder
 selecionado. Nomes de província vivem no mapa, encolhem para caber e podem ser ocultados nas
 opções. Dois reinos visíveis próximos não recebem cores indistinguíveis.
