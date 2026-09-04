@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hoplita vetorial — estudo de animação</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Georgia, "Times New Roman", serif;
+        background: #17110f;
+        color: #f4dfb8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at 50% 15%, #473026 0, transparent 42%),
+          linear-gradient(145deg, #0e0b0a, #241814);
+      }
+
+      main {
+        width: min(980px, 100%);
+      }
+
+      .moldura {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #b47749;
+        border-radius: 4px;
+        background: #bc7043;
+        box-shadow: 0 26px 70px #0009, inset 0 0 80px #4d231b66;
+      }
+
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .cabecalho {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 14px;
+      }
+
+      h1,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        color: #f5d7a1;
+        font-size: clamp(1.35rem, 3vw, 2.2rem);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .cabecalho p {
+        max-width: 470px;
+        color: #c8aa88;
+        font-size: 0.92rem;
+        line-height: 1.45;
+        text-align: right;
+      }
+
+      .controles {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding-top: 14px;
+      }
+
+      button {
+        min-width: 112px;
+        border: 1px solid #9a673f;
+        border-radius: 2px;
+        padding: 10px 17px;
+        background: #241713;
+        color: #d9bd91;
+        font: inherit;
+        font-size: 0.82rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 160ms ease;
+      }
+
+      button:hover {
+        border-color: #e09a5e;
+        background: #35211a;
+        color: #ffe2af;
+      }
+
+      button[aria-pressed="true"] {
+        border-color: #e8b16d;
+        background: #633326;
+        color: #fff0cd;
+        box-shadow: inset 0 -2px #d68c52;
+      }
+
+      .credito {
+        margin-top: 10px;
+        color: #886e5d;
+        font: 0.72rem/1.4 system-ui, sans-serif;
+        text-align: center;
+      }
+
+      /* Cada grupo gira em torno de sua própria articulação (0,0). */
+      #soldado,
+      #ombro-lanca,
+      #antebraco-lanca,
+      #ombro-escudo,
+      #antebraco-escudo,
+      #coxa-frente,
+      #canela-frente,
+      #coxa-tras,
+      #canela-tras,
+      #capa,
+      #pluma,
+      #lanca,
+      #escudo {
+        transform-box: fill-box;
+      }
+
+      #soldado {
+        transform-origin: center bottom;
+      }
+
+      #ombro-lanca,
+      #antebraco-lanca,
+      #ombro-escudo,
+      #antebraco-escudo,
+      #coxa-frente,
+      #canela-frente,
+      #coxa-tras,
+      #canela-tras,
+      #lanca,
+      #escudo,
+      #capa,
+      #pluma {
+        transform-origin: 0 0;
+      }
+
+      .estado-repouso #soldado {
+        animation: respirar 2.8s ease-in-out infinite;
+      }
+
+      .estado-repouso #pluma,
+      .estado-repouso #capa {
+        animation: brisa 2.8s ease-in-out infinite;
+      }
+
+      .estado-marcha #soldado {
+        animation: passo-corpo 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #coxa-frente {
+        animation: passo-frente 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #canela-frente {
+        animation: joelho-frente 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #coxa-tras {
+        animation: passo-tras 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #canela-tras {
+        animation: joelho-tras 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #ombro-lanca {
+        animation: braco-marcha 0.74s ease-in-out infinite;
+      }
+
+      .estado-marcha #capa,
+      .estado-marcha #pluma {
+        animation: vento-marcha 0.74s ease-in-out infinite;
+      }
+
+      .estado-ataque #soldado {
+        animation: corpo-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      }
+
+      .estado-ataque #ombro-lanca {
+        animation: braco-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      }
+
+      .estado-ataque #antebraco-lanca {
+        animation: cotovelo-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      }
+
+      .estado-ataque #lanca {
+        animation: lanca-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      }
+
+      .estado-ataque #escudo {
+        animation: escudo-ataque 1.25s ease-in-out infinite;
+      }
+
+      .estado-defesa #soldado {
+        animation: corpo-defesa 1.9s ease-in-out infinite;
+      }
+
+      .estado-defesa #ombro-escudo {
+        animation: braco-defesa 1.9s ease-in-out infinite;
+      }
+
+      .estado-defesa #antebraco-escudo {
+        animation: cotovelo-defesa 1.9s ease-in-out infinite;
+      }
+
+      .estado-defesa #escudo {
+        animation: escudo-defesa 1.9s ease-in-out infinite;
+      }
+
+      @keyframes respirar {
+        0%, 100% { transform: translate(0, 0) rotate(-0.5deg); }
+        50% { transform: translate(0, -3px) rotate(0.5deg); }
+      }
+
+      @keyframes brisa {
+        0%, 100% { transform: rotate(-1deg) skewX(0deg); }
+        50% { transform: rotate(2deg) skewX(-2deg); }
+      }
+
+      @keyframes passo-corpo {
+        0%, 100% { transform: translate(0, 0) rotate(-1deg); }
+        50% { transform: translate(0, -7px) rotate(1deg); }
+      }
+
+      @keyframes passo-frente {
+        0%, 100% { transform: rotate(-20deg); }
+        50% { transform: rotate(24deg); }
+      }
+
+      @keyframes passo-tras {
+        0%, 100% { transform: rotate(22deg); }
+        50% { transform: rotate(-18deg); }
+      }
+
+      @keyframes joelho-frente {
+        0%, 100% { transform: rotate(25deg); }
+        50% { transform: rotate(-18deg); }
+      }
+
+      @keyframes joelho-tras {
+        0%, 100% { transform: rotate(-16deg); }
+        50% { transform: rotate(27deg); }
+      }
+
+      @keyframes braco-marcha {
+        0%, 100% { transform: rotate(4deg); }
+        50% { transform: rotate(-7deg); }
+      }
+
+      @keyframes vento-marcha {
+        0%, 100% { transform: rotate(-4deg) skewX(-3deg); }
+        50% { transform: rotate(5deg) skewX(4deg); }
+      }
+
+      @keyframes corpo-ataque {
+        0%, 18%, 100% { transform: translate(0, 0) rotate(0); }
+        42% { transform: translate(-12px, 1px) rotate(-4deg); }
+        58%, 72% { transform: translate(22px, 3px) rotate(8deg); }
+      }
+
+      @keyframes braco-ataque {
+        0%, 18%, 100% { transform: rotate(-12deg); }
+        42% { transform: rotate(-72deg); }
+        58%, 72% { transform: rotate(48deg); }
+      }
+
+      @keyframes cotovelo-ataque {
+        0%, 18%, 100% { transform: rotate(5deg); }
+        42% { transform: rotate(-24deg); }
+        58%, 72% { transform: rotate(-38deg); }
+      }
+
+      @keyframes lanca-ataque {
+        0%, 18%, 100% { transform: rotate(-4deg); }
+        42% { transform: rotate(-17deg); }
+        58%, 72% { transform: rotate(7deg); }
+      }
+
+      @keyframes escudo-ataque {
+        0%, 35%, 100% { transform: translate(0, 0) rotate(0); }
+        58%, 72% { transform: translate(8px, -2px) rotate(5deg); }
+      }
+
+      @keyframes corpo-defesa {
+        0%, 100% { transform: translate(0, 2px) rotate(0); }
+        45%, 70% { transform: translate(-8px, 12px) rotate(-5deg); }
+      }
+
+      @keyframes braco-defesa {
+        0%, 100% { transform: rotate(0); }
+        45%, 70% { transform: rotate(-18deg); }
+      }
+
+      @keyframes cotovelo-defesa {
+        0%, 100% { transform: rotate(0); }
+        45%, 70% { transform: rotate(-24deg); }
+      }
+
+      @keyframes escudo-defesa {
+        0%, 100% { transform: translate(0, 0) rotate(0); }
+        45%, 70% { transform: translate(18px, -20px) rotate(-7deg); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="cabecalho">
+        <h1>Hoplita de Atenas</h1>
+        <p>Estudo vetorial articulado: um único desenho, quatro movimentos, nenhuma imagem externa.</p>
+      </header>
+
+      <section class="moldura" aria-label="Demonstração animada de um hoplita">
+        <svg id="cena" class="estado-repouso" viewBox="0 0 900 560" role="img" aria-labelledby="titulo descricao">
+          <title id="titulo">Hoplita grego em estilo de cerâmica animada</title>
+          <desc id="descricao">Soldado com elmo, lança, escudo redondo e capa, formado por peças vetoriais articuladas.</desc>
+
+          <defs>
+            <filter id="grao" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="8" result="ruido" />
+              <feColorMatrix in="ruido" type="saturate" values="0" result="cinza" />
+              <feBlend in="SourceGraphic" in2="cinza" mode="soft-light" />
+            </filter>
+            <radialGradient id="barro" cx="48%" cy="38%" r="70%">
+              <stop offset="0" stop-color="#d68a54" />
+              <stop offset="0.7" stop-color="#b9673f" />
+              <stop offset="1" stop-color="#8d472f" />
+            </radialGradient>
+            <radialGradient id="bronze" cx="32%" cy="28%" r="75%">
+              <stop offset="0" stop-color="#f0c173" />
+              <stop offset="0.45" stop-color="#b86f32" />
+              <stop offset="1" stop-color="#5b2d1e" />
+            </radialGradient>
+            <pattern id="meandro" width="52" height="24" patternUnits="userSpaceOnUse">
+              <path d="M0 4h40v12H12V9h20" fill="none" stroke="#1b1210" stroke-width="5" />
+            </pattern>
+          </defs>
+
+          <rect width="900" height="560" fill="url(#barro)" />
+          <rect width="900" height="560" fill="#a75b3b" opacity="0.2" filter="url(#grao)" />
+          <rect y="24" width="900" height="28" fill="#1b1210" />
+          <rect y="26" width="900" height="24" fill="url(#meandro)" />
+          <rect y="508" width="900" height="28" fill="#1b1210" />
+          <rect y="510" width="900" height="24" fill="url(#meandro)" />
+
+          <g opacity="0.18" fill="#371e18">
+            <path d="M70 450c58-42 106-43 151 0s98 45 156 0v58H70z" />
+            <path d="M533 450c58-42 106-43 151 0s98 45 156 0v58H533z" />
+          </g>
+          <path d="M95 451c101 8 207 11 310 4s251-8 397 2" fill="none" stroke="#1b1210" stroke-width="8" stroke-linecap="round" />
+
+          <g transform="translate(438 444)">
+            <ellipse cx="0" cy="7" rx="150" ry="18" fill="#241512" opacity="0.35" />
+
+            <g id="soldado">
+              <g id="capa">
+                <path d="M-21-193c-45 31-57 97-45 166 30-9 56-26 75-51l-1-105z" fill="#6f2925" stroke="#1b1210" stroke-width="8" stroke-linejoin="round" />
+                <path d="M-48-153c11 10 28 15 51 13M-58-117c17 10 37 14 62 11M-62-79c19 10 39 12 62 8" fill="none" stroke="#b35b3b" stroke-width="4" opacity="0.65" />
+              </g>
+
+              <g transform="translate(-14 -91)">
+                <g id="coxa-tras">
+                  <path d="M0 0c-8 28-6 56 7 82" fill="none" stroke="#211512" stroke-width="28" stroke-linecap="round" />
+                  <path d="M-16 43c11 4 24 3 36-2" fill="none" stroke="#d08349" stroke-width="5" />
+                  <circle cx="7" cy="82" r="14" fill="#211512" />
+                  <g transform="translate(7 82)">
+                    <g id="canela-tras">
+                      <path d="M0 0c7 31 4 59-13 104" fill="none" stroke="#211512" stroke-width="25" stroke-linecap="round" />
+                      <path d="M-15 104l-22 11c-8 4-5 13 5 13H3l4-24z" fill="#1b1210" />
+                    </g>
+                  </g>
+                </g>
+              </g>
+
+              <g transform="translate(7 -205)">
+                <g id="ombro-lanca">
+                  <path d="M0 0c15 8 25 21 29 38" fill="none" stroke="#1b1210" stroke-width="25" stroke-linecap="round" />
+                  <path d="M5 4c10 6 17 16 21 29" fill="none" stroke="#c47545" stroke-width="13" stroke-linecap="round" />
+                  <circle cx="29" cy="38" r="13" fill="#1b1210" />
+                  <g transform="translate(29 38)">
+                    <g id="antebraco-lanca">
+                      <path d="M0 0c10 12 16 24 20 39" fill="none" stroke="#1b1210" stroke-width="22" stroke-linecap="round" />
+                      <path d="M3 3c7 10 12 20 15 32" fill="none" stroke="#c47545" stroke-width="11" stroke-linecap="round" />
+                      <circle cx="20" cy="39" r="11" fill="#1b1210" />
+                      <g transform="translate(20 39)">
+                        <g id="lanca">
+                          <path d="M-16 0H241" stroke="#1b1210" stroke-width="9" stroke-linecap="round" />
+                          <path d="M-16 0H241" stroke="#d59c5e" stroke-width="4" stroke-linecap="round" />
+                          <path d="M240 0l-34-15 9 15-9 15z" fill="#e4b567" stroke="#1b1210" stroke-width="5" stroke-linejoin="round" />
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+
+              <path d="M-35-213c19-15 50-13 66 4 15 29 18 78 4 118-23 15-58 12-76-6-10-43-7-84 6-116z" fill="#1b1210" stroke="#1b1210" stroke-width="10" stroke-linejoin="round" />
+              <path d="M-24-200c12-8 31-7 41 5 10 25 11 59 2 86-15 9-33 8-45-4-7-29-6-62 2-87z" fill="#9d4b31" />
+              <path d="M-37-174h70M-38-141h73" stroke="#dfa15c" stroke-width="6" />
+              <path d="M-31-205l-8 78M25-202l11 75" stroke="#d18a4e" stroke-width="4" />
+
+              <path d="M-34-103c15 12 47 13 67 0l-4 24c-17 12-43 11-59 0z" fill="url(#bronze)" stroke="#1b1210" stroke-width="7" />
+              <g transform="translate(17 -91)">
+                <g id="coxa-frente">
+                  <path d="M0 0c10 29 12 56 3 82" fill="none" stroke="#211512" stroke-width="28" stroke-linecap="round" />
+                  <path d="M-15 43c11 4 24 3 36-2" fill="none" stroke="#d08349" stroke-width="5" />
+                  <circle cx="3" cy="82" r="14" fill="#211512" />
+                  <g transform="translate(3 82)">
+                    <g id="canela-frente">
+                      <path d="M0 0c-3 31 2 63 14 104" fill="none" stroke="#211512" stroke-width="25" stroke-linecap="round" />
+                      <path d="M7 104l-2 24h43c10 0 12-9 3-13l-25-11z" fill="#1b1210" />
+                    </g>
+                  </g>
+                </g>
+              </g>
+
+              <path d="M-19-247c-20-23-6-58 21-58 28 0 42 37 20 59l-2 34h-38z" fill="#a85b38" stroke="#1b1210" stroke-width="8" />
+              <path d="M13-275c17 7 22 20 11 33-5-12-12-18-23-20z" fill="#1b1210" />
+              <path d="M-5-240c10 6 20 6 30 0" fill="none" stroke="#1b1210" stroke-width="4" stroke-linecap="round" />
+
+              <path d="M-27-298c5-37 52-43 64-4l10 21H-43z" fill="url(#bronze)" stroke="#1b1210" stroke-width="8" stroke-linejoin="round" />
+              <path d="M-44-281h92" stroke="#1b1210" stroke-width="12" stroke-linecap="round" />
+              <path d="M-24-295v54l18 10v-56" fill="#c97b40" stroke="#1b1210" stroke-width="6" stroke-linejoin="round" />
+              <g transform="translate(2 -317)">
+                <g id="pluma">
+                  <path d="M0 0c-33-36-59-18-71 5 28-8 49 8 71 24C21 6 45-3 72 7 59-22 29-33 0 0z" fill="#401d1c" stroke="#1b1210" stroke-width="7" stroke-linejoin="round" />
+                  <path d="M-51 1C-27-3-7 8 0 19 15 5 32-1 53 3" fill="none" stroke="#b84d35" stroke-width="6" stroke-linecap="round" />
+                </g>
+              </g>
+
+              <g transform="translate(-22 -203)">
+                <g id="ombro-escudo">
+                  <path d="M0 0c-15 11-24 25-27 42" fill="none" stroke="#1b1210" stroke-width="26" stroke-linecap="round" />
+                  <path d="M-3 6c-9 8-15 20-18 31" fill="none" stroke="#c47545" stroke-width="13" stroke-linecap="round" />
+                  <circle cx="-27" cy="42" r="13" fill="#1b1210" />
+                  <g transform="translate(-27 42)">
+                    <g id="antebraco-escudo">
+                      <path d="M0 0c-6 13-7 27-3 42" fill="none" stroke="#1b1210" stroke-width="23" stroke-linecap="round" />
+                      <path d="M-1 4c-3 10-3 21 0 31" fill="none" stroke="#c47545" stroke-width="11" stroke-linecap="round" />
+                      <g transform="translate(-3 42)">
+                        <g id="escudo">
+                          <circle cx="0" cy="0" r="79" fill="#1b1210" />
+                          <circle cx="0" cy="0" r="69" fill="url(#bronze)" stroke="#e2aa61" stroke-width="4" />
+                          <circle cx="0" cy="0" r="52" fill="none" stroke="#5e2c21" stroke-width="4" />
+                          <path d="M-10-43c-21 10-25 32-9 47 6 6 10 17 10 31h18c-1-15 4-25 10-32 13-17 7-38-13-46l7 18-13 11-14-11z" fill="#281714" />
+                          <path d="M-19 37h39M-10 49h20" stroke="#281714" stroke-width="7" stroke-linecap="round" />
+                          <path d="M-49-46A66 66 0 0 1 47-48" fill="none" stroke="#ffd188" stroke-width="5" opacity="0.55" />
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <text x="65" y="105" fill="#3a2019" font-family="Georgia, serif" font-size="18" letter-spacing="5">ΑΘΗΝΑΙ</text>
+          <text x="835" y="105" fill="#3a2019" font-family="Georgia, serif" font-size="18" text-anchor="end" letter-spacing="5">ΟΠΛΙΤΗΣ</text>
+        </svg>
+      </section>
+
+      <nav class="controles" aria-label="Escolha da animação">
+        <button type="button" data-estado="repouso" aria-pressed="true">Repouso</button>
+        <button type="button" data-estado="marcha" aria-pressed="false">Marcha</button>
+        <button type="button" data-estado="ataque" aria-pressed="false">Ataque</button>
+        <button type="button" data-estado="defesa" aria-pressed="false">Defesa</button>
+      </nav>
+      <p class="credito">SVG + CSS · cabeça, capa, braços, pernas, lança e escudo são peças independentes</p>
+    </main>
+
+    <script>
+      const cena = document.querySelector("#cena");
+      const botoes = document.querySelectorAll("[data-estado]");
+
+      function escolherEstado(estado) {
+        cena.setAttribute("class", `estado-${estado}`);
+        for (const botao of botoes) {
+          botao.setAttribute("aria-pressed", String(botao.dataset.estado === estado));
+        }
+      }
+
+      for (const botao of botoes) {
+        botao.addEventListener("click", () => escolherEstado(botao.dataset.estado));
+      }
+
+      const estadoInicial = new URLSearchParams(location.search).get("estado");
+      if (["repouso", "marcha", "ataque", "defesa"].includes(estadoInicial)) escolherEstado(estadoInicial);
+    </script>
+  </body>
+</html>
