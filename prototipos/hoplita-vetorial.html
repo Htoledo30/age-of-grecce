@@ -3,13 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hoplita vetorial — estudo de animação</title>
+    <title>Hoplita de espada — estudo vetorial articulado</title>
     <style>
       :root {
         color-scheme: dark;
-        font-family: Georgia, "Times New Roman", serif;
-        background: #17110f;
-        color: #f4dfb8;
+        --papel: #d8c9a5;
+        --papel-claro: #f0e5c9;
+        --papel-escuro: #a9956d;
+        --tinta: #171b1c;
+        --sangue: #a8493d;
+        --ouro: #c69a4a;
+        --verdete: #4f7768;
+        --fundo: #111719;
+        --elevado: #192124;
+        --suave: #232d30;
+        --borda: #756a52;
+        --borda-fraca: #3d4746;
+        --texto: #f1e8d3;
+        --texto-fraco: #cac5b4;
+        --texto-tenue: #9ba39a;
+        --bronze: #bd8f42;
+        --bronze-claro: #d9b66e;
+        --bronze-escuro: #6f5128;
+        --sangue-claro: #d27a68;
+        --osso: #0a0d0e;
+        font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+        background: var(--fundo);
+        color: var(--texto);
       }
 
       * {
@@ -17,461 +37,717 @@
       }
 
       body {
+        min-width: 320px;
         min-height: 100vh;
         margin: 0;
-        display: grid;
-        place-items: center;
-        padding: 24px;
         background:
-          radial-gradient(circle at 50% 15%, #473026 0, transparent 42%),
-          linear-gradient(145deg, #0e0b0a, #241814);
+          radial-gradient(circle at 42% -18%, rgb(198 154 74 / 9%), transparent 42%),
+          linear-gradient(145deg, #0d1214, var(--fundo) 55%, #0d1314);
       }
 
-      main {
-        width: min(980px, 100%);
+      body::before {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        content: "";
+        opacity: 0.17;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+        mix-blend-mode: soft-light;
       }
 
-      .moldura {
-        position: relative;
-        overflow: hidden;
-        border: 1px solid #b47749;
-        border-radius: 4px;
-        background: #bc7043;
-        box-shadow: 0 26px 70px #0009, inset 0 0 80px #4d231b66;
+      .pagina {
+        width: min(1320px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 34px 0 42px;
       }
 
-      svg {
-        display: block;
-        width: 100%;
-        height: auto;
-      }
-
-      .cabecalho {
-        display: flex;
+      .topo {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: end;
-        justify-content: space-between;
-        gap: 24px;
-        margin-bottom: 14px;
+        gap: 34px;
+        margin-bottom: 20px;
       }
 
-      h1,
-      p {
-        margin: 0;
+      .sobretitulo,
+      .rotulo,
+      .painel h2,
+      .prova h2,
+      .estado-atual {
+        font-family: Bahnschrift, "Arial Narrow", sans-serif;
+        font-stretch: condensed;
+        font-weight: 600;
+        letter-spacing: 0.19em;
+        text-transform: uppercase;
+      }
+
+      .sobretitulo {
+        margin: 0 0 7px;
+        color: var(--bronze-claro);
+        font-size: 11px;
       }
 
       h1 {
-        color: #f5d7a1;
-        font-size: clamp(1.35rem, 3vw, 2.2rem);
-        font-weight: 500;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(34px, 4.2vw, 58px);
+        font-weight: 400;
+        line-height: 0.95;
+        letter-spacing: -0.025em;
+      }
+
+      h1 em {
+        color: var(--bronze-claro);
+        font-style: normal;
+      }
+
+      .introducao {
+        max-width: 530px;
+        margin: 0;
+        padding-bottom: 3px;
+        color: var(--texto-fraco);
+        font: italic 17px/1.55 Georgia, serif;
+      }
+
+      .mesa {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .palco {
+        position: relative;
+        overflow: hidden;
+        min-height: 640px;
+        border: 1px solid var(--borda-fraca);
+        border-radius: 3px;
+        background:
+          linear-gradient(rgb(117 106 82 / 7%) 1px, transparent 1px),
+          linear-gradient(90deg, rgb(117 106 82 / 7%) 1px, transparent 1px),
+          radial-gradient(circle at 50% 42%, #1c2628, #101719 72%);
+        background-size: 64px 64px, 64px 64px, auto;
+        box-shadow: inset 0 0 80px rgb(0 0 0 / 26%);
+      }
+
+      .palco::after {
+        position: absolute;
+        inset: 12px;
+        border: 1px solid rgb(198 154 74 / 10%);
+        pointer-events: none;
+        content: "";
+      }
+
+      .estado-atual {
+        position: absolute;
+        z-index: 2;
+        top: 23px;
+        left: 26px;
+        max-width: calc(100% - 52px);
+        color: var(--bronze-claro);
+        font-size: 10px;
+      }
+
+      .estado-atual span {
+        color: var(--texto-tenue);
         letter-spacing: 0.08em;
-        text-transform: uppercase;
       }
 
-      .cabecalho p {
-        max-width: 470px;
-        color: #c8aa88;
-        font-size: 0.92rem;
-        line-height: 1.45;
-        text-align: right;
+      #cena {
+        display: block;
+        width: 100%;
+        height: 638px;
       }
 
-      .controles {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-        padding-top: 14px;
+      .peca {
+        transition: translate 100ms linear;
+      }
+
+      .contorno {
+        stroke: var(--osso);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .linha-interna {
+        fill: none;
+        stroke: var(--osso);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .brilho {
+        fill: none;
+        stroke: var(--bronze-claro);
+        stroke-width: 3;
+        stroke-linecap: round;
+        opacity: 0.7;
+      }
+
+      .marcador-junta {
+        visibility: hidden;
+      }
+
+      #esqueleto {
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 180ms ease;
+      }
+
+      #esqueleto.visivel {
+        opacity: 1;
+      }
+
+      #esqueleto line {
+        stroke: #83c9b0;
+        stroke-width: 4;
+        stroke-linecap: round;
+        filter: drop-shadow(0 1px 2px #07100d);
+      }
+
+      #esqueleto circle {
+        fill: #d9f2e8;
+        stroke: #315d4f;
+        stroke-width: 3;
+        filter: drop-shadow(0 1px 2px #07100d);
+      }
+
+      .painel-lateral {
+        display: grid;
+        gap: 0;
+        overflow: hidden;
+        border: 1px solid var(--borda-fraca);
+        border-radius: 3px;
+        background: rgb(25 33 36 / 92%);
+        box-shadow: 0 12px 30px rgb(0 0 0 / 20%);
+      }
+
+      .painel {
+        border: 0;
+        border-bottom: 1px solid var(--borda-fraca);
+        border-radius: 0;
+        padding: 15px;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .painel:last-child {
+        border-bottom: 0;
+      }
+
+      .painel h2,
+      .prova h2 {
+        margin: 0 0 12px;
+        color: var(--bronze-claro);
+        font-size: 11px;
+      }
+
+      .poses {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 7px;
       }
 
       button {
-        min-width: 112px;
-        border: 1px solid #9a673f;
+        min-height: 38px;
+        border: 1px solid var(--borda-fraca);
         border-radius: 2px;
-        padding: 10px 17px;
-        background: #241713;
-        color: #d9bd91;
-        font: inherit;
-        font-size: 0.82rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        background: var(--suave);
+        color: var(--texto-fraco);
+        font: 600 12px/1 Bahnschrift, "Arial Narrow", sans-serif;
+        letter-spacing: 0.035em;
         cursor: pointer;
-        transition: 160ms ease;
+        transition: 150ms ease;
       }
 
       button:hover {
-        border-color: #e09a5e;
-        background: #35211a;
-        color: #ffe2af;
+        border-color: var(--borda);
+        color: var(--texto);
       }
 
       button[aria-pressed="true"] {
-        border-color: #e8b16d;
-        background: #633326;
-        color: #fff0cd;
-        box-shadow: inset 0 -2px #d68c52;
+        border-color: var(--bronze);
+        background: rgb(198 154 74 / 17%);
+        color: #f3c86f;
+        box-shadow: inset 0 -2px var(--bronze);
       }
 
-      .credito {
-        margin-top: 10px;
-        color: #886e5d;
-        font: 0.72rem/1.4 system-ui, sans-serif;
-        text-align: center;
+      .controle {
+        display: grid;
+        gap: 9px;
       }
 
-      /* Cada grupo gira em torno de sua própria articulação (0,0). */
-      #soldado,
-      #ombro-lanca,
-      #antebraco-lanca,
-      #ombro-escudo,
-      #antebraco-escudo,
-      #coxa-frente,
-      #canela-frente,
-      #coxa-tras,
-      #canela-tras,
-      #capa,
-      #pluma,
-      #lanca,
-      #escudo {
-        transform-box: fill-box;
+      .controle + .controle {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid rgb(117 106 82 / 25%);
       }
 
-      #soldado {
-        transform-origin: center bottom;
+      .linha-controle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--texto-fraco);
+        font-size: 12px;
       }
 
-      #ombro-lanca,
-      #antebraco-lanca,
-      #ombro-escudo,
-      #antebraco-escudo,
-      #coxa-frente,
-      #canela-frente,
-      #coxa-tras,
-      #canela-tras,
-      #lanca,
-      #escudo,
-      #capa,
-      #pluma {
-        transform-origin: 0 0;
+      output {
+        color: #f1c46a;
+        font: 600 12px Bahnschrift, sans-serif;
       }
 
-      .estado-repouso #soldado {
-        animation: respirar 2.8s ease-in-out infinite;
+      input[type="range"] {
+        width: 100%;
+        height: 4px;
+        accent-color: var(--bronze);
+        cursor: pointer;
       }
 
-      .estado-repouso #pluma,
-      .estado-repouso #capa {
-        animation: brisa 2.8s ease-in-out infinite;
+      .alternador {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--texto-fraco);
+        font-size: 12px;
+        cursor: pointer;
       }
 
-      .estado-marcha #soldado {
-        animation: passo-corpo 0.74s ease-in-out infinite;
+      .alternador input {
+        position: absolute;
+        opacity: 0;
       }
 
-      .estado-marcha #coxa-frente {
-        animation: passo-frente 0.74s ease-in-out infinite;
+      .trilho {
+        position: relative;
+        width: 34px;
+        height: 18px;
+        border: 1px solid var(--borda);
+        border-radius: 12px;
+        background: #101617;
+        transition: 160ms ease;
       }
 
-      .estado-marcha #canela-frente {
-        animation: joelho-frente 0.74s ease-in-out infinite;
+      .trilho::after {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--texto-tenue);
+        content: "";
+        transition: 160ms ease;
       }
 
-      .estado-marcha #coxa-tras {
-        animation: passo-tras 0.74s ease-in-out infinite;
+      .alternador input:checked + .trilho {
+        border-color: var(--verdete);
+        background: rgb(79 119 104 / 35%);
       }
 
-      .estado-marcha #canela-tras {
-        animation: joelho-tras 0.74s ease-in-out infinite;
+      .alternador input:checked + .trilho::after {
+        left: 19px;
+        background: #9ed7c2;
       }
 
-      .estado-marcha #ombro-lanca {
-        animation: braco-marcha 0.74s ease-in-out infinite;
+      .angulos {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 7px 12px;
+        margin: 0;
+        font: 11px/1.25 Consolas, monospace;
       }
 
-      .estado-marcha #capa,
-      .estado-marcha #pluma {
-        animation: vento-marcha 0.74s ease-in-out infinite;
+      .angulos dt {
+        color: var(--texto-tenue);
       }
 
-      .estado-ataque #soldado {
-        animation: corpo-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      .angulos dd {
+        min-width: 48px;
+        margin: 0;
+        color: var(--bronze-claro);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
       }
 
-      .estado-ataque #ombro-lanca {
-        animation: braco-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      .nota-tecnica {
+        margin: 10px 0 0;
+        padding-top: 10px;
+        border-top: 1px solid rgb(117 106 82 / 22%);
+        color: var(--texto-tenue);
+        font: 11px/1.45 Georgia, serif;
       }
 
-      .estado-ataque #antebraco-lanca {
-        animation: cotovelo-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      .prova {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        gap: 24px;
+        align-items: center;
+        min-height: 170px;
+        border: 1px solid var(--borda-fraca);
+        border-radius: 3px;
+        padding: 16px 20px;
+        background: rgb(18 25 27 / 88%);
       }
 
-      .estado-ataque #lanca {
-        animation: lanca-ataque 1.25s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+      .prova h2 {
+        margin-bottom: 7px;
       }
 
-      .estado-ataque #escudo {
-        animation: escudo-ataque 1.25s ease-in-out infinite;
+      .prova p {
+        margin: 0;
+        color: var(--texto-tenue);
+        font: italic 13px/1.45 Georgia, serif;
       }
 
-      .estado-defesa #soldado {
-        animation: corpo-defesa 1.9s ease-in-out infinite;
+      .miniaturas {
+        display: flex;
+        align-items: end;
+        justify-content: space-around;
+        gap: 22px;
+        min-width: 0;
       }
 
-      .estado-defesa #ombro-escudo {
-        animation: braco-defesa 1.9s ease-in-out infinite;
+      .miniatura {
+        display: grid;
+        justify-items: center;
+        gap: 5px;
+        min-width: 50px;
       }
 
-      .estado-defesa #antebraco-escudo {
-        animation: cotovelo-defesa 1.9s ease-in-out infinite;
+      .miniatura svg {
+        display: block;
+        overflow: visible;
+        filter: drop-shadow(0 5px 4px rgb(0 0 0 / 35%));
       }
 
-      .estado-defesa #escudo {
-        animation: escudo-defesa 1.9s ease-in-out infinite;
+      .miniatura span {
+        color: var(--texto-tenue);
+        font: 10px Bahnschrift, sans-serif;
+        letter-spacing: 0.1em;
       }
 
-      @keyframes respirar {
-        0%, 100% { transform: translate(0, 0) rotate(-0.5deg); }
-        50% { transform: translate(0, -3px) rotate(0.5deg); }
+      @media (max-width: 980px) {
+        .topo {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .mesa {
+          grid-template-columns: 1fr;
+        }
+
+        .painel-lateral {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .painel,
+        .painel:last-child {
+          border-right: 1px solid var(--borda-fraca);
+          border-bottom: 0;
+        }
+
+        .painel:last-child {
+          border-right: 0;
+        }
+
+        .prova {
+          grid-column: auto;
+        }
       }
 
-      @keyframes brisa {
-        0%, 100% { transform: rotate(-1deg) skewX(0deg); }
-        50% { transform: rotate(2deg) skewX(-2deg); }
-      }
+      @media (max-width: 720px) {
+        .pagina {
+          width: min(100% - 20px, 1320px);
+          padding-top: 22px;
+        }
 
-      @keyframes passo-corpo {
-        0%, 100% { transform: translate(0, 0) rotate(-1deg); }
-        50% { transform: translate(0, -7px) rotate(1deg); }
-      }
+        .painel-lateral {
+          grid-template-columns: 1fr;
+        }
 
-      @keyframes passo-frente {
-        0%, 100% { transform: rotate(-20deg); }
-        50% { transform: rotate(24deg); }
-      }
+        .painel,
+        .painel:last-child {
+          border-right: 0;
+          border-bottom: 1px solid var(--borda-fraca);
+        }
 
-      @keyframes passo-tras {
-        0%, 100% { transform: rotate(22deg); }
-        50% { transform: rotate(-18deg); }
-      }
+        .painel:last-child {
+          border-bottom: 0;
+        }
 
-      @keyframes joelho-frente {
-        0%, 100% { transform: rotate(25deg); }
-        50% { transform: rotate(-18deg); }
-      }
+        .palco {
+          min-height: 510px;
+        }
 
-      @keyframes joelho-tras {
-        0%, 100% { transform: rotate(-16deg); }
-        50% { transform: rotate(27deg); }
-      }
+        #cena {
+          height: 508px;
+        }
 
-      @keyframes braco-marcha {
-        0%, 100% { transform: rotate(4deg); }
-        50% { transform: rotate(-7deg); }
-      }
+        .prova {
+          grid-template-columns: 1fr;
+        }
 
-      @keyframes vento-marcha {
-        0%, 100% { transform: rotate(-4deg) skewX(-3deg); }
-        50% { transform: rotate(5deg) skewX(4deg); }
-      }
-
-      @keyframes corpo-ataque {
-        0%, 18%, 100% { transform: translate(0, 0) rotate(0); }
-        42% { transform: translate(-12px, 1px) rotate(-4deg); }
-        58%, 72% { transform: translate(22px, 3px) rotate(8deg); }
-      }
-
-      @keyframes braco-ataque {
-        0%, 18%, 100% { transform: rotate(-12deg); }
-        42% { transform: rotate(-72deg); }
-        58%, 72% { transform: rotate(48deg); }
-      }
-
-      @keyframes cotovelo-ataque {
-        0%, 18%, 100% { transform: rotate(5deg); }
-        42% { transform: rotate(-24deg); }
-        58%, 72% { transform: rotate(-38deg); }
-      }
-
-      @keyframes lanca-ataque {
-        0%, 18%, 100% { transform: rotate(-4deg); }
-        42% { transform: rotate(-17deg); }
-        58%, 72% { transform: rotate(7deg); }
-      }
-
-      @keyframes escudo-ataque {
-        0%, 35%, 100% { transform: translate(0, 0) rotate(0); }
-        58%, 72% { transform: translate(8px, -2px) rotate(5deg); }
-      }
-
-      @keyframes corpo-defesa {
-        0%, 100% { transform: translate(0, 2px) rotate(0); }
-        45%, 70% { transform: translate(-8px, 12px) rotate(-5deg); }
-      }
-
-      @keyframes braco-defesa {
-        0%, 100% { transform: rotate(0); }
-        45%, 70% { transform: rotate(-18deg); }
-      }
-
-      @keyframes cotovelo-defesa {
-        0%, 100% { transform: rotate(0); }
-        45%, 70% { transform: rotate(-24deg); }
-      }
-
-      @keyframes escudo-defesa {
-        0%, 100% { transform: translate(0, 0) rotate(0); }
-        45%, 70% { transform: translate(18px, -20px) rotate(-7deg); }
+        .miniaturas {
+          justify-content: flex-start;
+          overflow-x: auto;
+          padding: 8px 0;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        * {
-          animation-duration: 0.001ms !important;
-          animation-iteration-count: 1 !important;
+        .peca,
+        #esqueleto {
+          transition: none;
         }
       }
     </style>
   </head>
   <body>
-    <main>
-      <header class="cabecalho">
-        <h1>Hoplita de Atenas</h1>
-        <p>Estudo vetorial articulado: um único desenho, quatro movimentos, nenhuma imagem externa.</p>
+    <main class="pagina">
+      <header class="topo">
+        <div>
+          <p class="sobretitulo">Age of Grecce · peça de animação 02</p>
+          <h1>Hoplita de <em>espada</em></h1>
+        </div>
+        <p class="introducao">Vinte peças, um esqueleto e nenhuma pose desenhada à mão. A espada nasce no pulso; o peso nasce do corpo inteiro.</p>
       </header>
 
-      <section class="moldura" aria-label="Demonstração animada de um hoplita">
-        <svg id="cena" class="estado-repouso" viewBox="0 0 900 560" role="img" aria-labelledby="titulo descricao">
-          <title id="titulo">Hoplita grego em estilo de cerâmica animada</title>
-          <desc id="descricao">Soldado com elmo, lança, escudo redondo e capa, formado por peças vetoriais articuladas.</desc>
+      <section class="mesa">
+        <div class="palco">
+          <p class="estado-atual"><strong id="nome-pose">Guarda</strong> <span id="descricao-pose">— respiração baixa, escudo cobrindo o centro e lâmina pronta.</span></p>
 
-          <defs>
-            <filter id="grao" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="8" result="ruido" />
-              <feColorMatrix in="ruido" type="saturate" values="0" result="cinza" />
-              <feBlend in="SourceGraphic" in2="cinza" mode="soft-light" />
-            </filter>
-            <radialGradient id="barro" cx="48%" cy="38%" r="70%">
-              <stop offset="0" stop-color="#d68a54" />
-              <stop offset="0.7" stop-color="#b9673f" />
-              <stop offset="1" stop-color="#8d472f" />
-            </radialGradient>
-            <radialGradient id="bronze" cx="32%" cy="28%" r="75%">
-              <stop offset="0" stop-color="#f0c173" />
-              <stop offset="0.45" stop-color="#b86f32" />
-              <stop offset="1" stop-color="#5b2d1e" />
-            </radialGradient>
-            <pattern id="meandro" width="52" height="24" patternUnits="userSpaceOnUse">
-              <path d="M0 4h40v12H12V9h20" fill="none" stroke="#1b1210" stroke-width="5" />
-            </pattern>
-          </defs>
+          <svg id="cena" viewBox="0 0 820 640" role="img" aria-labelledby="titulo-svg descricao-svg">
+            <title id="titulo-svg">Hoplita grego vetorial articulado com espada e escudo</title>
+            <desc id="descricao-svg">Personagem composto por vinte peças vetoriais ligadas por quadril, joelhos, tornozelos, tronco, pescoço, ombros, cotovelos e mãos.</desc>
 
-          <rect width="900" height="560" fill="url(#barro)" />
-          <rect width="900" height="560" fill="#a75b3b" opacity="0.2" filter="url(#grao)" />
-          <rect y="24" width="900" height="28" fill="#1b1210" />
-          <rect y="26" width="900" height="24" fill="url(#meandro)" />
-          <rect y="508" width="900" height="28" fill="#1b1210" />
-          <rect y="510" width="900" height="24" fill="url(#meandro)" />
+            <defs>
+              <pattern id="meandro" width="44" height="16" patternUnits="userSpaceOnUse">
+                <path d="M1 3h32v10H12V7h13" fill="none" stroke="#756a52" stroke-width="3" opacity=".35" />
+              </pattern>
+              <filter id="sombra-suave" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <clipPath id="corte-escudo">
+                <ellipse cx="-12" cy="13" rx="86" ry="98" />
+              </clipPath>
+            </defs>
 
-          <g opacity="0.18" fill="#371e18">
-            <path d="M70 450c58-42 106-43 151 0s98 45 156 0v58H70z" />
-            <path d="M533 450c58-42 106-43 151 0s98 45 156 0v58H533z" />
-          </g>
-          <path d="M95 451c101 8 207 11 310 4s251-8 397 2" fill="none" stroke="#1b1210" stroke-width="8" stroke-linecap="round" />
+            <path d="M46 582H774" stroke="#3d4746" stroke-width="2" />
+            <path d="M46 600H774" stroke="url(#meandro)" stroke-width="16" />
+            <ellipse id="sombra-chao" cx="410" cy="574" rx="142" ry="18" fill="#050708" opacity=".65" filter="url(#sombra-suave)" />
 
-          <g transform="translate(438 444)">
-            <ellipse cx="0" cy="7" rx="150" ry="18" fill="#241512" opacity="0.35" />
+            <g id="characterRoot">
+              <g id="raiz" transform="translate(410 350)">
+                <circle id="j-pelvis" class="marcador-junta" cx="0" cy="0" r="1" />
 
-            <g id="soldado">
-              <g id="capa">
-                <path d="M-21-193c-45 31-57 97-45 166 30-9 56-26 75-51l-1-105z" fill="#6f2925" stroke="#1b1210" stroke-width="8" stroke-linejoin="round" />
-                <path d="M-48-153c11 10 28 15 51 13M-58-117c17 10 37 14 62 11M-62-79c19 10 39 12 62 8" fill="none" stroke="#b35b3b" stroke-width="4" opacity="0.65" />
-              </g>
-
-              <g transform="translate(-14 -91)">
-                <g id="coxa-tras">
-                  <path d="M0 0c-8 28-6 56 7 82" fill="none" stroke="#211512" stroke-width="28" stroke-linecap="round" />
-                  <path d="M-16 43c11 4 24 3 36-2" fill="none" stroke="#d08349" stroke-width="5" />
-                  <circle cx="7" cy="82" r="14" fill="#211512" />
-                  <g transform="translate(7 82)">
-                    <g id="canela-tras">
-                      <path d="M0 0c7 31 4 59-13 104" fill="none" stroke="#211512" stroke-width="25" stroke-linecap="round" />
-                      <path d="M-15 104l-22 11c-8 4-5 13 5 13H3l4-24z" fill="#1b1210" />
-                    </g>
+                <!-- 01 · capa -->
+                <g id="capa-osso">
+                  <g class="peca" data-sx="-1.3" data-sy="-0.25">
+                    <path d="M-24-127C-72-101-91-35-79 45c20-16 41-27 65-35L17-104z" fill="#702f2a" class="contorno" />
+                    <path d="M-56-83c18 11 37 15 58 12M-68-45c22 11 42 14 63 10M-72-7c21 8 40 10 57 7" class="linha-interna" stroke="#a8493d" />
+                    <path d="M-24-122c-16 40-19 83-10 130" class="brilho" stroke="#d27a68" />
                   </g>
                 </g>
-              </g>
 
-              <g transform="translate(7 -205)">
-                <g id="ombro-lanca">
-                  <path d="M0 0c15 8 25 21 29 38" fill="none" stroke="#1b1210" stroke-width="25" stroke-linecap="round" />
-                  <path d="M5 4c10 6 17 16 21 29" fill="none" stroke="#c47545" stroke-width="13" stroke-linecap="round" />
-                  <circle cx="29" cy="38" r="13" fill="#1b1210" />
-                  <g transform="translate(29 38)">
-                    <g id="antebraco-lanca">
-                      <path d="M0 0c10 12 16 24 20 39" fill="none" stroke="#1b1210" stroke-width="22" stroke-linecap="round" />
-                      <path d="M3 3c7 10 12 20 15 32" fill="none" stroke="#c47545" stroke-width="11" stroke-linecap="round" />
-                      <circle cx="20" cy="39" r="11" fill="#1b1210" />
-                      <g transform="translate(20 39)">
-                        <g id="lanca">
-                          <path d="M-16 0H241" stroke="#1b1210" stroke-width="9" stroke-linecap="round" />
-                          <path d="M-16 0H241" stroke="#d59c5e" stroke-width="4" stroke-linecap="round" />
-                          <path d="M240 0l-34-15 9 15-9 15z" fill="#e4b567" stroke="#1b1210" stroke-width="5" stroke-linejoin="round" />
+                <!-- perna de trás: 02, 03, 04 -->
+                <g transform="translate(-18 4)">
+                  <g id="coxa-tras-osso">
+                    <circle id="j-quadril-tras" class="marcador-junta" cx="0" cy="0" r="1" />
+                    <g class="peca" data-sx="-0.75" data-sy="0.45">
+                      <path d="M-22-7c-8 26-6 59 5 94l17 8c14-34 17-69 10-99z" fill="#895137" class="contorno" />
+                      <path d="M-15 8c9 5 17 6 25 4" class="brilho" stroke="#a9956d" />
+                    </g>
+                    <circle id="j-joelho-tras" class="marcador-junta" cx="-5" cy="88" r="1" />
+                    <g transform="translate(-5 88)">
+                      <g id="canela-tras-osso">
+                        <g class="peca" data-sx="-0.85" data-sy="0.75">
+                          <path d="M-16-7c-7 28-3 66 4 96l24 1c8-34 7-70-1-96z" fill="#8d6335" class="contorno" />
+                          <path d="M-12 4C-3-1 5-1 12 4L8 68c-7 7-13 8-20 1z" fill="#6f5128" />
+                          <path d="M-7 8c8-4 13-4 18 0M-6 65c5 4 9 4 14 0" class="brilho" />
+                        </g>
+                        <circle id="j-tornozelo-tras" class="marcador-junta" cx="0" cy="87" r="1" />
+                        <g transform="translate(0 87)">
+                          <g id="pe-tras-osso">
+                            <g class="peca" data-sx="-1" data-sy="1">
+                              <path d="M-15-4l-5 19c12 8 33 9 53 4 8-2 7-12-2-15L10-5z" fill="#665039" class="contorno" />
+                              <path d="M-10 4c11 4 24 5 37 2M-4-3l-2 12M6-4 5 10M16-1l2 9" class="linha-interna" stroke="#a9956d" />
+                            </g>
+                          </g>
                         </g>
                       </g>
                     </g>
                   </g>
                 </g>
-              </g>
 
-              <path d="M-35-213c19-15 50-13 66 4 15 29 18 78 4 118-23 15-58 12-76-6-10-43-7-84 6-116z" fill="#1b1210" stroke="#1b1210" stroke-width="10" stroke-linejoin="round" />
-              <path d="M-24-200c12-8 31-7 41 5 10 25 11 59 2 86-15 9-33 8-45-4-7-29-6-62 2-87z" fill="#9d4b31" />
-              <path d="M-37-174h70M-38-141h73" stroke="#dfa15c" stroke-width="6" />
-              <path d="M-31-205l-8 78M25-202l11 75" stroke="#d18a4e" stroke-width="4" />
+                <!-- 05 · saia/pelve -->
+                <g class="peca" data-sx="0" data-sy="0.15">
+                  <path d="M-39-14h77l13 66c-17 10-33 15-51 15s-35-5-52-15z" fill="#d8c9a5" class="contorno" />
+                  <path d="M-35 2h70M-28 5l-8 43M-10 5l-3 52M9 5l4 52M27 5l9 43" class="linha-interna" stroke="#6f5128" />
+                  <path d="M-38 33c24 9 51 9 77 0l5 18c-29 11-58 11-88 0z" fill="#a8493d" stroke="#0a0d0e" stroke-width="3" />
+                  <path d="M-32 39h64" stroke="#171b1c" stroke-width="4" stroke-dasharray="8 5" />
+                </g>
 
-              <path d="M-34-103c15 12 47 13 67 0l-4 24c-17 12-43 11-59 0z" fill="url(#bronze)" stroke="#1b1210" stroke-width="7" />
-              <g transform="translate(17 -91)">
-                <g id="coxa-frente">
-                  <path d="M0 0c10 29 12 56 3 82" fill="none" stroke="#211512" stroke-width="28" stroke-linecap="round" />
-                  <path d="M-15 43c11 4 24 3 36-2" fill="none" stroke="#d08349" stroke-width="5" />
-                  <circle cx="3" cy="82" r="14" fill="#211512" />
-                  <g transform="translate(3 82)">
-                    <g id="canela-frente">
-                      <path d="M0 0c-3 31 2 63 14 104" fill="none" stroke="#211512" stroke-width="25" stroke-linecap="round" />
-                      <path d="M7 104l-2 24h43c10 0 12-9 3-13l-25-11z" fill="#1b1210" />
+                <!-- tronco e tudo que sobe dele -->
+                <g id="tronco-osso">
+                  <circle id="j-peito" class="marcador-junta" cx="0" cy="-91" r="1" />
+
+                  <!-- braço da espada atrás da cabeça para a lâmina nunca cortar o rosto: 14–17 -->
+                  <g transform="translate(25 -113)">
+                    <g id="braco-espada-osso">
+                      <circle id="j-ombro-espada" class="marcador-junta" cx="0" cy="0" r="1" />
+                      <g class="peca" data-sx="1.05" data-sy="-0.35">
+                        <path d="M-13-8c20-5 34 2 39 20l11 43-25 12C-2 43-10 19-13-8z" fill="#a86443" class="contorno" />
+                        <path d="M-4 2c11 1 19 5 24 13" class="brilho" stroke="#d8c9a5" />
+                      </g>
+                      <circle id="j-cotovelo-espada" class="marcador-junta" cx="23" cy="58" r="1" />
+                      <g transform="translate(23 58)">
+                        <g id="antebraco-espada-osso">
+                          <g class="peca" data-sx="1.35" data-sy="0">
+                            <path d="M-12-7c17-3 27 1 31 13l11 46-23 8C-1 39-8 16-12-7z" fill="#a86443" class="contorno" />
+                            <path d="M2 24l24-7 7 30-24 9z" fill="#702f2a" stroke="#0a0d0e" stroke-width="4" />
+                            <path d="M7 29l18-5M9 39l19-6" class="brilho" stroke="#d27a68" />
+                          </g>
+                          <circle id="j-pulso-espada" class="marcador-junta" cx="19" cy="55" r="1" />
+                          <g transform="translate(19 55)">
+                            <g id="mao-espada-osso">
+                              <g class="peca" data-sx="1.55" data-sy="0.18">
+                                <path d="M-13-8c10-7 23-3 27 6 4 10-3 21-14 22-11 0-19-7-18-16z" fill="#a86443" class="contorno" />
+                                <path d="M-10 1c8 4 14 8 19 14" class="linha-interna" stroke="#6f3c2d" />
+                              </g>
+
+                              <!-- 17 · espada: filha direta do pulso -->
+                              <g class="peca" data-sx="1.95" data-sy="-0.8">
+                                <path d="M-4 6h12l4-30-7-12-7 12z" fill="#6f5128" class="contorno" />
+                                <path d="M-26-25H29" stroke="#0a0d0e" stroke-width="11" stroke-linecap="round" />
+                                <path d="M-24-25H27" stroke="#bd8f42" stroke-width="5" stroke-linecap="round" />
+                                <path d="M-10-29L-2-154 8-177l12 22 5 126z" fill="#cac5b4" class="contorno" />
+                                <path d="M8-165L9-40" stroke="#f0e5c9" stroke-width="5" stroke-linecap="round" opacity=".75" />
+                                <path d="M8-165l-5 14 6 111" fill="none" stroke="#756a52" stroke-width="3" />
+                              </g>
+                              <circle id="j-ponta-espada" class="marcador-junta" cx="8" cy="-174" r="1" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+
+                  <!-- 06 · couraça -->
+                  <g class="peca" data-sx="0.05" data-sy="-0.35">
+                    <path d="M-32-137c-15 27-19 71-12 125 28 17 60 17 88 0 7-50 2-94-13-125z" fill="#bd8f42" class="contorno" />
+                    <path d="M-24-127c13 9 36 9 49 0 9 28 11 62 7 100-20 11-42 11-63 0-4-37-2-71 7-100z" fill="#a87635" />
+                    <path d="M0-121v83M-20-96C-8-87 9-87 22-96M-23-65C-9-56 10-56 25-65" class="linha-interna" stroke="#6f5128" />
+                    <path d="M-32-137l-15 19 22 15 14-28M31-137l17 20-19 17-15-30" fill="#d8c9a5" class="contorno" />
+                    <path d="M-34-132l15 17M32-131l-14 17" stroke="#a8493d" stroke-width="7" />
+                    <path d="M-34-15c22 9 47 9 69 0l3 17c-25 10-51 10-76 0z" fill="#171b1c" stroke="#0a0d0e" stroke-width="4" />
+                    <path d="M-29-7h58" stroke="#d8c9a5" stroke-width="5" stroke-dasharray="9 5" />
+                  </g>
+
+                  <!-- 07, 08, 09 · cabeça, elmo, penacho -->
+                  <g transform="translate(0 -138)">
+                    <g id="pescoco-osso">
+                      <circle id="j-pescoco" class="marcador-junta" cx="0" cy="0" r="1" />
+                      <g transform="translate(0 -6)">
+                        <g id="cabeca-osso">
+                          <circle id="j-cabeca" class="marcador-junta" cx="8" cy="-48" r="1" />
+                          <g class="peca" data-sx="0.25" data-sy="-0.9">
+                            <path d="M-17 5l-1-32c-6-20 5-42 28-44 24-1 38 19 30 40l14 10-15 8c-2 15-13 28-30 28z" fill="#a86443" class="contorno" />
+                            <path d="M35-31l17 10-17 4M19-18c7 5 14 5 20 0M26-9c5 4 10 4 15 0" class="linha-interna" />
+                            <path d="M27-32c5-4 10-4 15 0" stroke="#0a0d0e" stroke-width="5" stroke-linecap="round" />
+                            <path d="M-17-12c8 3 15 2 21-4L7 3H-8z" fill="#171b1c" />
+                          </g>
+
+                          <g class="peca" data-sx="0.05" data-sy="-1.35">
+                            <path d="M-28-39c0-39 19-61 49-58 26 3 39 26 34 57L39-31c0-24-11-39-28-39-16 0-26 12-26 32z" fill="#bd8f42" class="contorno" />
+                            <path d="M-25-39h68l-4 14-31 8-20-10z" fill="#d9b66e" class="contorno" />
+                            <path d="M23-70c16 12 20 31 16 53L26 3 9-9l8-27z" fill="#8c652d" class="contorno" />
+                            <path d="M-16-47c5-24 18-37 37-38" class="brilho" />
+                          </g>
+
+                          <g transform="translate(6 -97)">
+                            <g id="penacho-osso">
+                              <g class="peca" data-sx="-0.25" data-sy="-1.9">
+                                <path d="M0 5C-5-28-24-54-58-68c-16-7-31-8-45-3 23-32 67-47 110-35 47 13 79 52 91 94C64-31 29-25 0 5z" fill="#171b1c" class="contorno" />
+                                <path d="M-82-71c26-20 59-25 91-16 31 9 57 31 71 57-20-7-39-5-57 5C4-49-30-69-82-71z" fill="#a8493d" />
+                                <path d="M-71-75c12-7 25-11 38-13l13 25c-10-3-22-5-34-5zM17-84c13 6 24 14 34 24L35-39c-8-8-17-14-27-19z" fill="#171b1c" />
+                                <path d="M-76-73c31-17 61-17 88-7 25 9 45 26 60 45" fill="none" stroke="#d27a68" stroke-width="6" stroke-linecap="round" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+
+                  <!-- braço e escudo à frente: 10–13 -->
+                  <g transform="translate(-25 -112)">
+                    <g id="braco-escudo-osso">
+                      <circle id="j-ombro-escudo" class="marcador-junta" cx="0" cy="0" r="1" />
+                      <g class="peca" data-sx="-1.05" data-sy="-0.35">
+                        <path d="M-18-8C2-12 15-3 18 14l3 43-25 7c-10-26-15-50-14-72z" fill="#985c3e" class="contorno" />
+                        <path d="M-10 1C0 1 8 5 13 13" class="brilho" stroke="#d8c9a5" />
+                      </g>
+                      <circle id="j-cotovelo-escudo" class="marcador-junta" cx="8" cy="58" r="1" />
+                      <g transform="translate(8 58)">
+                        <g id="antebraco-escudo-osso">
+                          <g class="peca" data-sx="-1.35" data-sy="0.05">
+                            <path d="M-13-6c15-4 26 2 29 15l4 45-24 4C-10 36-14 14-13-6z" fill="#985c3e" class="contorno" />
+                            <path d="M-9 22l25-4 3 31-24 4z" fill="#702f2a" stroke="#0a0d0e" stroke-width="4" />
+                            <path d="M-3 28l18-3M-2 38l18-3" class="brilho" stroke="#d27a68" />
+                          </g>
+                          <circle id="j-pulso-escudo" class="marcador-junta" cx="7" cy="55" r="1" />
+                          <g transform="translate(7 55)">
+                            <g id="mao-escudo-osso">
+                              <g class="peca" data-sx="-1.55" data-sy="0.18">
+                                <path d="M-13-8c11-6 23-2 26 8 3 10-4 19-15 19-11-1-18-8-16-17z" fill="#985c3e" class="contorno" />
+                              </g>
+
+                              <g class="peca" data-sx="-2.05" data-sy="-0.1">
+                                <ellipse cx="-14" cy="1" rx="82" ry="94" fill="#0a0d0e" />
+                                <ellipse cx="-14" cy="1" rx="74" ry="85" fill="#bd8f42" stroke="#d9b66e" stroke-width="4" />
+                                <ellipse cx="-14" cy="1" rx="59" ry="70" fill="#171b1c" stroke="#6f5128" stroke-width="5" />
+                                <path d="M-51-53c22-14 51-16 74-4" fill="none" stroke="#d9b66e" stroke-width="5" opacity=".75" />
+                                <path d="M-48 56c20 11 43 12 64 3" fill="none" stroke="#6f5128" stroke-width="5" />
+                                <path d="M-50 48h14l23-67 29 67h14L-13-51z" fill="#a8493d" stroke="#d9b66e" stroke-width="4" stroke-linejoin="round" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
                     </g>
                   </g>
                 </g>
-              </g>
 
-              <path d="M-19-247c-20-23-6-58 21-58 28 0 42 37 20 59l-2 34h-38z" fill="#a85b38" stroke="#1b1210" stroke-width="8" />
-              <path d="M13-275c17 7 22 20 11 33-5-12-12-18-23-20z" fill="#1b1210" />
-              <path d="M-5-240c10 6 20 6 30 0" fill="none" stroke="#1b1210" stroke-width="4" stroke-linecap="round" />
-
-              <path d="M-27-298c5-37 52-43 64-4l10 21H-43z" fill="url(#bronze)" stroke="#1b1210" stroke-width="8" stroke-linejoin="round" />
-              <path d="M-44-281h92" stroke="#1b1210" stroke-width="12" stroke-linecap="round" />
-              <path d="M-24-295v54l18 10v-56" fill="#c97b40" stroke="#1b1210" stroke-width="6" stroke-linejoin="round" />
-              <g transform="translate(2 -317)">
-                <g id="pluma">
-                  <path d="M0 0c-33-36-59-18-71 5 28-8 49 8 71 24C21 6 45-3 72 7 59-22 29-33 0 0z" fill="#401d1c" stroke="#1b1210" stroke-width="7" stroke-linejoin="round" />
-                  <path d="M-51 1C-27-3-7 8 0 19 15 5 32-1 53 3" fill="none" stroke="#b84d35" stroke-width="6" stroke-linecap="round" />
-                </g>
-              </g>
-
-              <g transform="translate(-22 -203)">
-                <g id="ombro-escudo">
-                  <path d="M0 0c-15 11-24 25-27 42" fill="none" stroke="#1b1210" stroke-width="26" stroke-linecap="round" />
-                  <path d="M-3 6c-9 8-15 20-18 31" fill="none" stroke="#c47545" stroke-width="13" stroke-linecap="round" />
-                  <circle cx="-27" cy="42" r="13" fill="#1b1210" />
-                  <g transform="translate(-27 42)">
-                    <g id="antebraco-escudo">
-                      <path d="M0 0c-6 13-7 27-3 42" fill="none" stroke="#1b1210" stroke-width="23" stroke-linecap="round" />
-                      <path d="M-1 4c-3 10-3 21 0 31" fill="none" stroke="#c47545" stroke-width="11" stroke-linecap="round" />
-                      <g transform="translate(-3 42)">
-                        <g id="escudo">
-                          <circle cx="0" cy="0" r="79" fill="#1b1210" />
-                          <circle cx="0" cy="0" r="69" fill="url(#bronze)" stroke="#e2aa61" stroke-width="4" />
-                          <circle cx="0" cy="0" r="52" fill="none" stroke="#5e2c21" stroke-width="4" />
-                          <path d="M-10-43c-21 10-25 32-9 47 6 6 10 17 10 31h18c-1-15 4-25 10-32 13-17 7-38-13-46l7 18-13 11-14-11z" fill="#281714" />
-                          <path d="M-19 37h39M-10 49h20" stroke="#281714" stroke-width="7" stroke-linecap="round" />
-                          <path d="M-49-46A66 66 0 0 1 47-48" fill="none" stroke="#ffd188" stroke-width="5" opacity="0.55" />
+                <!-- perna da frente: 18, 19, 20 -->
+                <g transform="translate(21 5)">
+                  <g id="coxa-frente-osso">
+                    <circle id="j-quadril-frente" class="marcador-junta" cx="0" cy="0" r="1" />
+                    <g class="peca" data-sx="0.75" data-sy="0.45">
+                      <path d="M-12-8c-8 31-4 66 10 101l22-1c11-34 12-67 2-98z" fill="#a86443" class="contorno" />
+                      <path d="M-5 6c9 4 17 4 25 0" class="brilho" stroke="#d8c9a5" />
+                    </g>
+                    <circle id="j-joelho-frente" class="marcador-junta" cx="7" cy="90" r="1" />
+                    <g transform="translate(7 90)">
+                      <g id="canela-frente-osso">
+                        <g class="peca" data-sx="0.9" data-sy="0.75">
+                          <path d="M-14-7c-7 29-3 67 5 97l27-1c7-35 5-70-4-96z" fill="#bd8f42" class="contorno" />
+                          <path d="M-9 3C0-2 9-2 16 3l-2 66C5 77-2 77-10 70z" fill="#8c652d" />
+                          <path d="M-7 8c8-4 15-4 22 0M-4 67c6 4 11 4 17-1" class="brilho" />
+                          <path d="M0 18c10 7 10 20 0 28-10-8-10-21 0-28z" fill="#6f5128" />
+                        </g>
+                        <circle id="j-tornozelo-frente" class="marcador-junta" cx="3" cy="87" r="1" />
+                        <g transform="translate(3 87)">
+                          <g id="pe-frente-osso">
+                            <g class="peca" data-sx="1.1" data-sy="1">
+                              <path d="M-14-5l-3 20c13 8 37 8 58 2 8-3 6-13-3-15L12-7z" fill="#76573a" class="contorno" />
+                              <path d="M-8 4c12 4 27 4 42 0M-1-4l-1 12M10-5l2 12M21-2l3 9" class="linha-interna" stroke="#a9956d" />
+                            </g>
+                          </g>
                         </g>
                       </g>
                     </g>
@@ -479,39 +755,384 @@
                 </g>
               </g>
             </g>
-          </g>
 
-          <text x="65" y="105" fill="#3a2019" font-family="Georgia, serif" font-size="18" letter-spacing="5">ΑΘΗΝΑΙ</text>
-          <text x="835" y="105" fill="#3a2019" font-family="Georgia, serif" font-size="18" text-anchor="end" letter-spacing="5">ΟΠΛΙΤΗΣ</text>
-        </svg>
+            <g id="esqueleto" aria-hidden="true"></g>
+          </svg>
+        </div>
+
+        <aside class="painel-lateral">
+          <section class="painel">
+            <h2>Movimento</h2>
+            <div class="poses">
+              <button type="button" data-pose="guarda" aria-pressed="true">Guarda</button>
+              <button type="button" data-pose="marchar" aria-pressed="false">Marchar</button>
+              <button type="button" data-pose="investir" aria-pressed="false">Investir</button>
+              <button type="button" data-pose="recuar" aria-pressed="false">Recuar</button>
+              <button type="button" data-pose="cair" aria-pressed="false">Cair</button>
+            </div>
+          </section>
+
+          <section class="painel">
+            <h2>Ver por baixo</h2>
+            <div class="controle">
+              <label class="alternador">
+                <input id="mostrar-esqueleto" type="checkbox" />
+                <span class="trilho" aria-hidden="true"></span>
+                Esqueleto e juntas
+              </label>
+            </div>
+            <div class="controle">
+              <div class="linha-controle"><label for="separar">Separar 20 peças</label><output id="valor-separar">0%</output></div>
+              <input id="separar" type="range" min="0" max="100" value="0" />
+            </div>
+            <div class="controle">
+              <div class="linha-controle"><label for="ritmo">Ritmo</label><output id="valor-ritmo">1,0×</output></div>
+              <input id="ritmo" type="range" min="40" max="160" value="100" />
+            </div>
+          </section>
+
+          <section class="painel">
+            <h2>Juntas, agora</h2>
+            <dl class="angulos">
+              <dt>tronco</dt><dd data-angulo="tronco">0°</dd>
+              <dt>ombro · espada</dt><dd data-angulo="bracoEspada">0°</dd>
+              <dt>cotovelo · espada</dt><dd data-angulo="antebracoEspada">0°</dd>
+              <dt>pulso · espada</dt><dd data-angulo="maoEspada">0°</dd>
+              <dt>ombro · escudo</dt><dd data-angulo="bracoEscudo">0°</dd>
+              <dt>quadril · frente</dt><dd data-angulo="coxaFrente">0°</dd>
+              <dt>joelho · frente</dt><dd data-angulo="canelaFrente">0°</dd>
+              <dt>inclinação</dt><dd data-angulo="raizR">0°</dd>
+            </dl>
+            <p class="nota-tecnica">A espada não possui animação própria: ela herda ombro, cotovelo e pulso.</p>
+          </section>
+        </aside>
+
+        <section class="prova">
+          <div>
+            <h2>Prova de leitura</h2>
+            <p>O mesmo vetor, no mesmo instante. Penacho, escudo e lâmina sustentam a silhueta quando o detalhe desaparece.</p>
+          </div>
+          <div class="miniaturas" aria-label="Personagem reproduzido em quatro tamanhos">
+            <figure class="miniatura"><svg width="132" height="132" viewBox="235 72 350 510"><use href="#characterRoot" /></svg><span>132 PX</span></figure>
+            <figure class="miniatura"><svg width="76" height="76" viewBox="235 72 350 510"><use href="#characterRoot" /></svg><span>76 PX</span></figure>
+            <figure class="miniatura"><svg width="46" height="46" viewBox="235 72 350 510"><use href="#characterRoot" /></svg><span>46 PX</span></figure>
+            <figure class="miniatura"><svg width="28" height="28" viewBox="235 72 350 510"><use href="#characterRoot" /></svg><span>28 PX</span></figure>
+          </div>
+        </section>
       </section>
-
-      <nav class="controles" aria-label="Escolha da animação">
-        <button type="button" data-estado="repouso" aria-pressed="true">Repouso</button>
-        <button type="button" data-estado="marcha" aria-pressed="false">Marcha</button>
-        <button type="button" data-estado="ataque" aria-pressed="false">Ataque</button>
-        <button type="button" data-estado="defesa" aria-pressed="false">Defesa</button>
-      </nav>
-      <p class="credito">SVG + CSS · cabeça, capa, braços, pernas, lança e escudo são peças independentes</p>
     </main>
 
     <script>
-      const cena = document.querySelector("#cena");
-      const botoes = document.querySelectorAll("[data-estado]");
+      const svg = document.querySelector("#cena");
+      const raiz = document.querySelector("#raiz");
+      const esqueleto = document.querySelector("#esqueleto");
+      const botoesPose = [...document.querySelectorAll("[data-pose]")];
+      const separar = document.querySelector("#separar");
+      const ritmo = document.querySelector("#ritmo");
+      const mostrarEsqueleto = document.querySelector("#mostrar-esqueleto");
+      const nomePose = document.querySelector("#nome-pose");
+      const descricaoPose = document.querySelector("#descricao-pose");
 
-      function escolherEstado(estado) {
-        cena.setAttribute("class", `estado-${estado}`);
-        for (const botao of botoes) {
-          botao.setAttribute("aria-pressed", String(botao.dataset.estado === estado));
+      const ossos = {
+        tronco: document.querySelector("#tronco-osso"),
+        pescoco: document.querySelector("#pescoco-osso"),
+        cabeca: document.querySelector("#cabeca-osso"),
+        penacho: document.querySelector("#penacho-osso"),
+        capa: document.querySelector("#capa-osso"),
+        bracoEspada: document.querySelector("#braco-espada-osso"),
+        antebracoEspada: document.querySelector("#antebraco-espada-osso"),
+        maoEspada: document.querySelector("#mao-espada-osso"),
+        bracoEscudo: document.querySelector("#braco-escudo-osso"),
+        antebracoEscudo: document.querySelector("#antebraco-escudo-osso"),
+        maoEscudo: document.querySelector("#mao-escudo-osso"),
+        coxaFrente: document.querySelector("#coxa-frente-osso"),
+        canelaFrente: document.querySelector("#canela-frente-osso"),
+        peFrente: document.querySelector("#pe-frente-osso"),
+        coxaTras: document.querySelector("#coxa-tras-osso"),
+        canelaTras: document.querySelector("#canela-tras-osso"),
+        peTras: document.querySelector("#pe-tras-osso"),
+      };
+
+      const base = {
+        raizX: 0, raizY: 0, raizR: 0,
+        tronco: -2, pescoco: 2, cabeca: 1, penacho: 0, capa: 0,
+        bracoEspada: -38, antebracoEspada: 58, maoEspada: 23,
+        bracoEscudo: 18, antebracoEscudo: -21, maoEscudo: 2,
+        coxaFrente: -8, canelaFrente: 5, peFrente: 3,
+        coxaTras: 11, canelaTras: -7, peTras: -4,
+      };
+
+      const informacoes = {
+        guarda: ["Guarda", "— respiração baixa, escudo cobrindo o centro e lâmina pronta."],
+        marchar: ["Marchar", "— passada assimétrica; quadril sobe antes de o pé deixar o chão."],
+        investir: ["Investir", "— antecipação, avanço do quadril, corte e recuperação."],
+        recuar: ["Recuar", "— o escudo chega primeiro; a espada protege a abertura."],
+        cair: ["Cair", "— joelhos cedem, espada solta o alto e o peso leva o tronco."],
+      };
+
+      const misturar = (a, b, t) => a + (b - a) * t;
+      const suave = (t) => t * t * (3 - 2 * t);
+      const saida = (t) => 1 - Math.pow(1 - t, 3);
+      const combinar = (original, mudancas) => ({ ...original, ...mudancas });
+
+      function entreQuadros(quadros, progresso) {
+        const ultimo = quadros[quadros.length - 1];
+        if (progresso >= ultimo[0]) return combinar(base, ultimo[1]);
+        for (let i = 0; i < quadros.length - 1; i += 1) {
+          const [inicio, poseA] = quadros[i];
+          const [fim, poseB] = quadros[i + 1];
+          if (progresso < inicio || progresso > fim) continue;
+          const trecho = suave((progresso - inicio) / (fim - inicio));
+          const resultado = { ...base };
+          for (const chave of Object.keys(base)) {
+            const a = poseA[chave] ?? base[chave];
+            const b = poseB[chave] ?? base[chave];
+            resultado[chave] = misturar(a, b, trecho);
+          }
+          return resultado;
+        }
+        return { ...base };
+      }
+
+      const poses = {
+        guarda(tempo) {
+          const folego = Math.sin(tempo * Math.PI * 2 * 0.42);
+          const pulso = Math.sin(tempo * Math.PI * 2 * 0.21 + 0.7);
+          return combinar(base, {
+            raizY: -1.8 * folego,
+            tronco: base.tronco + 1.2 * folego,
+            pescoco: 2 - 0.7 * folego,
+            cabeca: 1 - 0.5 * folego,
+            penacho: 1.8 * pulso,
+            capa: -1.4 * pulso,
+            bracoEspada: -38 - 1.4 * folego,
+            maoEspada: 23 + 1.5 * pulso,
+          });
+        },
+
+        marchar(tempo) {
+          const ciclo = tempo * Math.PI * 2 * 0.82;
+          const passo = Math.sin(ciclo);
+          const subida = Math.abs(Math.cos(ciclo));
+          return combinar(base, {
+            raizY: -7 * subida,
+            raizR: -1.5 * passo,
+            tronco: -4 + 2 * passo,
+            pescoco: 4 - 1.5 * passo,
+            cabeca: -2 - 1.3 * passo,
+            penacho: -4 * passo,
+            capa: 6 - 5 * passo,
+            coxaFrente: -27 * passo - 4,
+            canelaFrente: 9 + Math.max(0, passo) * 37,
+            peFrente: -7 - Math.max(0, passo) * 18,
+            coxaTras: 27 * passo + 5,
+            canelaTras: 5 + Math.max(0, -passo) * 38,
+            peTras: -4 - Math.max(0, -passo) * 18,
+            bracoEspada: -39 + 5 * passo,
+            antebracoEspada: 58 - 3 * passo,
+            bracoEscudo: 18 - 4 * passo,
+          });
+        },
+
+        investir(tempo) {
+          const p = (tempo % 2.25) / 2.25;
+          return entreQuadros([
+            [0, {}],
+            [0.18, { raizX: -10, raizY: 3, raizR: -4, tronco: -12, coxaFrente: 10, coxaTras: -12, bracoEspada: -72, antebracoEspada: 30, maoEspada: -10, bracoEscudo: 8 }],
+            [0.34, { raizX: -14, raizY: 5, raizR: -6, tronco: -15, cabeca: 5, coxaFrente: 14, coxaTras: -17, bracoEspada: -82, antebracoEspada: 25, maoEspada: -15, penacho: -8, capa: 8 }],
+            [0.48, { raizX: 30, raizY: 1, raizR: 8, tronco: 12, pescoco: -7, cabeca: -8, coxaFrente: -22, canelaFrente: 18, coxaTras: 28, bracoEspada: -76, antebracoEspada: 83, maoEspada: 108, bracoEscudo: 28, antebracoEscudo: -38, penacho: 11, capa: -12 }],
+            [0.66, { raizX: 24, raizY: 2, raizR: 5, tronco: 8, pescoco: -4, cabeca: -5, coxaFrente: -20, coxaTras: 24, bracoEspada: -70, antebracoEspada: 75, maoEspada: 95, penacho: 7, capa: -8 }],
+            [1, {}],
+          ], p);
+        },
+
+        recuar(tempo) {
+          const ciclo = tempo * Math.PI * 2 * 0.68;
+          const passo = Math.sin(ciclo);
+          const subida = Math.abs(Math.cos(ciclo));
+          return combinar(base, {
+            raizX: -8,
+            raizY: -4 * subida,
+            raizR: -5 + 1.2 * passo,
+            tronco: -10,
+            pescoco: 8,
+            cabeca: 4,
+            penacho: 4 * passo,
+            capa: 10 + 4 * passo,
+            coxaFrente: 18 * passo + 4,
+            canelaFrente: 12 + Math.max(0, -passo) * 27,
+            peFrente: -6,
+            coxaTras: -18 * passo - 4,
+            canelaTras: 10 + Math.max(0, passo) * 28,
+            peTras: -5,
+            bracoEscudo: -7,
+            antebracoEscudo: -35,
+            maoEscudo: -6,
+            bracoEspada: -61,
+            antebracoEspada: 43,
+            maoEspada: 50,
+          });
+        },
+
+        cair(tempo) {
+          const p = (tempo % 3.3) / 3.3;
+          const queda = Math.min(1, Math.max(0, (p - 0.12) / 0.48));
+          const q = saida(queda);
+          const levanta = p > 0.82 ? suave((p - 0.82) / 0.18) : 0;
+          const efeito = q * (1 - levanta);
+          return combinar(base, {
+            raizX: 68 * efeito,
+            raizY: 110 * efeito,
+            raizR: 76 * efeito,
+            tronco: -2 + 18 * efeito,
+            pescoco: 2 - 22 * efeito,
+            cabeca: 1 - 12 * efeito,
+            penacho: 25 * efeito,
+            capa: -20 * efeito,
+            coxaFrente: -8 - 48 * efeito,
+            canelaFrente: 5 + 77 * efeito,
+            peFrente: 3 - 28 * efeito,
+            coxaTras: 11 + 35 * efeito,
+            canelaTras: -7 + 65 * efeito,
+            peTras: -4 - 18 * efeito,
+            bracoEspada: -38 + 71 * efeito,
+            antebracoEspada: 58 - 42 * efeito,
+            maoEspada: 23 + 28 * efeito,
+            bracoEscudo: 18 - 37 * efeito,
+            antebracoEscudo: -21 + 38 * efeito,
+          });
+        },
+      };
+
+      const ligacoes = [
+        ["j-pelvis", "j-pescoco"],
+        ["j-pescoco", "j-cabeca"],
+        ["j-pescoco", "j-ombro-espada"],
+        ["j-ombro-espada", "j-cotovelo-espada"],
+        ["j-cotovelo-espada", "j-pulso-espada"],
+        ["j-pulso-espada", "j-ponta-espada"],
+        ["j-pescoco", "j-ombro-escudo"],
+        ["j-ombro-escudo", "j-cotovelo-escudo"],
+        ["j-cotovelo-escudo", "j-pulso-escudo"],
+        ["j-pelvis", "j-quadril-frente"],
+        ["j-quadril-frente", "j-joelho-frente"],
+        ["j-joelho-frente", "j-tornozelo-frente"],
+        ["j-pelvis", "j-quadril-tras"],
+        ["j-quadril-tras", "j-joelho-tras"],
+        ["j-joelho-tras", "j-tornozelo-tras"],
+      ];
+
+      const ns = "http://www.w3.org/2000/svg";
+      const linhasEsqueleto = ligacoes.map(([a, b]) => {
+        const linha = document.createElementNS(ns, "line");
+        linha.dataset.a = a;
+        linha.dataset.b = b;
+        esqueleto.append(linha);
+        return linha;
+      });
+
+      const idsJuntas = [...new Set(ligacoes.flat())];
+      const pinosEsqueleto = idsJuntas.map((id) => {
+        const pino = document.createElementNS(ns, "circle");
+        pino.setAttribute("r", id === "j-pelvis" ? "7" : "5");
+        pino.dataset.junta = id;
+        esqueleto.append(pino);
+        return pino;
+      });
+
+      function pontoDaJunta(id) {
+        const marcador = document.querySelector(`#${id}`);
+        const matriz = marcador.getCTM();
+        const ponto = new DOMPoint(Number(marcador.getAttribute("cx")), Number(marcador.getAttribute("cy")));
+        return ponto.matrixTransform(matriz);
+      }
+
+      function atualizarEsqueleto() {
+        if (!mostrarEsqueleto.checked) return;
+        const pontos = Object.fromEntries(idsJuntas.map((id) => [id, pontoDaJunta(id)]));
+        for (const linha of linhasEsqueleto) {
+          const a = pontos[linha.dataset.a];
+          const b = pontos[linha.dataset.b];
+          linha.setAttribute("x1", a.x);
+          linha.setAttribute("y1", a.y);
+          linha.setAttribute("x2", b.x);
+          linha.setAttribute("y2", b.y);
+        }
+        for (const pino of pinosEsqueleto) {
+          const ponto = pontos[pino.dataset.junta];
+          pino.setAttribute("cx", ponto.x);
+          pino.setAttribute("cy", ponto.y);
         }
       }
 
-      for (const botao of botoes) {
-        botao.addEventListener("click", () => escolherEstado(botao.dataset.estado));
+      function aplicarPose(pose) {
+        raiz.setAttribute("transform", `translate(${410 + pose.raizX} ${350 + pose.raizY}) rotate(${pose.raizR})`);
+        for (const [nome, elemento] of Object.entries(ossos)) {
+          elemento.setAttribute("transform", `rotate(${pose[nome] ?? 0})`);
+        }
+        for (const leitura of document.querySelectorAll("[data-angulo]")) {
+          const valor = pose[leitura.dataset.angulo] ?? 0;
+          leitura.textContent = `${valor >= 0 ? "+" : ""}${Math.round(valor)}°`;
+        }
       }
 
-      const estadoInicial = new URLSearchParams(location.search).get("estado");
-      if (["repouso", "marcha", "ataque", "defesa"].includes(estadoInicial)) escolherEstado(estadoInicial);
+      function aplicarSeparacao() {
+        const valor = Number(separar.value) / 100;
+        for (const peca of document.querySelectorAll(".peca")) {
+          const x = Number(peca.dataset.sx ?? 0) * 38 * valor;
+          const y = Number(peca.dataset.sy ?? 0) * 38 * valor;
+          peca.style.translate = `${x}px ${y}px`;
+        }
+        document.querySelector("#valor-separar").textContent = `${separar.value}%`;
+      }
+
+      let poseAtual = "guarda";
+      let inicioPose = performance.now();
+
+      for (const botao of botoesPose) {
+        botao.addEventListener("click", () => {
+          poseAtual = botao.dataset.pose;
+          inicioPose = performance.now();
+          for (const outro of botoesPose) outro.setAttribute("aria-pressed", String(outro === botao));
+          const [nome, descricao] = informacoes[poseAtual];
+          nomePose.textContent = nome;
+          descricaoPose.textContent = descricao;
+        });
+      }
+
+      separar.addEventListener("input", aplicarSeparacao);
+      ritmo.addEventListener("input", () => {
+        document.querySelector("#valor-ritmo").textContent = `${(Number(ritmo.value) / 100).toFixed(1).replace(".", ",")}×`;
+      });
+      mostrarEsqueleto.addEventListener("change", () => {
+        esqueleto.classList.toggle("visivel", mostrarEsqueleto.checked);
+        atualizarEsqueleto();
+      });
+
+      const parametros = new URLSearchParams(location.search);
+      const poseInicial = parametros.get("pose");
+      const botaoInicial = botoesPose.find((botao) => botao.dataset.pose === poseInicial);
+      if (botaoInicial) botaoInicial.click();
+      if (parametros.has("separar")) {
+        separar.value = String(Math.min(100, Math.max(0, Number(parametros.get("separar")))));
+        aplicarSeparacao();
+      }
+      if (parametros.get("esqueleto") === "1") {
+        mostrarEsqueleto.checked = true;
+        esqueleto.classList.add("visivel");
+      }
+
+      function animar(agora) {
+        const velocidade = Number(ritmo.value) / 100;
+        const tempo = ((agora - inicioPose) / 1000) * velocidade;
+        const pose = poses[poseAtual](tempo);
+        aplicarPose(pose);
+        atualizarEsqueleto();
+        requestAnimationFrame(animar);
+      }
+
+      aplicarSeparacao();
+      requestAnimationFrame(animar);
     </script>
   </body>
 </html>
