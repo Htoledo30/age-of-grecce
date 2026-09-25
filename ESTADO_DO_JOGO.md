@@ -115,7 +115,7 @@ mostram renda líquida, manutenção e causas de corte da rota.
 Comida é um saldo anual sem estoque:
 
 ```text
-saldo civil = subsistência + produção de alimentos − consumo da população
+saldo civil = subsistência + produção de alimentos + grão comprado − consumo da população
 saldo final = saldo civil − consumo do exército
 ```
 
@@ -123,6 +123,14 @@ O povo come primeiro. Cada província cai numa faixa absoluta de população, e 
 seu consumo. Produtos alimentares e Fazenda, Pastagem ou Porto pesqueiro sustentam o reino.
 Cada ponto de comida sustenta a quantidade de soldados definida em `dados/ajustes.json`; armas
 podem consumir quantidades diferentes, e a cavalaria pesa mais na mesa.
+
+O reino pode COMPRAR grão de fora na aba Alimentação do Governo. Porto e Mercado abrem a porta:
+cada nível deixa entrar alguns pontos (`importaGrao` no catálogo). O ponto `n` custa
+`n × alimento.importacao.precoPorPonto` por turno, sai da renda como despesa e entra na conta
+civil como a colheita. Cidade sitiada não conta, e cais bloqueado não recebe; a encomenda fica
+de pé e volta a valer quando a porta reabre. Quem não consegue pagar tem a encomenda cortada
+antes da arrecadação. A IA compra contra fome e quando a despensa trava o exército que a folha
+de guerra dela bancaria, pagando pela fatia `fatiaParaGrao` da renda ou pelo cofre.
 
 Saldo civil negativo causa fome local nas províncias dependentes e perdas no exército. Saldo
 civil fechado com saldo final negativo pune somente as tropas. Crescimento só acontece quando
@@ -182,12 +190,14 @@ hoplita, arqueiro e cavalaria naquela terra; arqueiro exige madeira e cavalaria 
 Papéis atuais:
 
 - **Ágora:** reduz corrupção por tamanho e recupera a renda que seria perdida;
-- **Mercado:** melhora o trânsito local e a rede nacional de bens distintos;
+- **Mercado:** melhora o trânsito local e a rede nacional de bens distintos, e deixa entrar
+  grão comprado;
 - **Quartel:** carimba treino melhor nas tropas recrutadas naquela província;
 - **Muralha:** aumenta a milícia e exige 2/3/4 rodadas completas de cerco;
 - **Templo:** aumenta o alvo de felicidade em 9/15/22 e acelera a recuperação da ordem em
   1/2/3 pontos por turno, sem amortecer quedas causadas por fome, cerco ou imposto;
-- **Porto:** liga terras por mar, dá alcance ao comércio, permite embarque e aumenta trânsito;
+- **Porto:** liga terras por mar, dá alcance ao comércio, permite embarque, aumenta trânsito e
+  deixa entrar grão comprado enquanto o cais não estiver bloqueado;
 - **Estrada:** reduz corrupção por distância e corta 3%/5%/7% da folha das hostes paradas
   naquela província própria; a taxa de campanha em terra alheia continua integral;
 - **Explorações:** Fazenda, Pastagem, Porto pesqueiro, Lagar, Vinhedo, Serraria, Mina e Pedreira

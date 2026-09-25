@@ -22,6 +22,8 @@ import { avancarAno } from '../estado-campanha';
 import type { NucleoDaCampanha } from '../nucleo';
 import type { EfemerosDaCampanha } from '../estado/efemeros';
 import { alimentar } from '../alimentacao/aplicar-fome';
+import { acertarImportacoes } from '../alimentacao/importacao';
+import { rendaDe } from '../provincia/renda';
 import { crescerPopulacao } from '../alimentacao/crescimento';
 import { assentarCapitais, capitalPerdida } from '../governo/capital';
 import { atualizarFelicidade } from '../sociedade/atualizar-felicidade';
@@ -57,6 +59,9 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   // dois sentidos, então o que precisa acontecer primeiro é decidir quais tributos ainda existem
   // neste turno. Quem perdeu a terra que sustentava a promessa quebra aqui, e não paga mais.
   acertarTributos(nucleo);
+  // Pela mesma razão, e depois dos tributos porque eles mudam a renda: o grão que o tesouro não
+  // consegue pagar deixa de ser encomendado antes de a conta fechar.
+  acertarImportacoes(nucleo, (id) => rendaDe(nucleo, id));
   arrecadar(nucleo);
   pagarTropa(nucleo);
   const fome = alimentar(nucleo);

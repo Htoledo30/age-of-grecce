@@ -18,6 +18,7 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { simuladasDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 import { contribuicaoAlimentarLivreEm, nivelPopulacionalEm } from './contribuicao';
+import { importacaoDe } from './importacao';
 
 /** Conta única que alimenta regra, barra e Governo. */
 export function balancoAlimentarDe(
@@ -33,7 +34,7 @@ export function balancoAlimentarDe(
   // que a cavalaria cobra o preço dela: sobre a terra, não sobre o tesouro. Exército só de
   // leves dá exatamente o mesmo número de antes, porque o leve é a régua.
   const bocas = nucleo.mobilizacao.bocasEmArmasDe(idPoder) - presosEmCercoDe(nucleo, idPoder).bocas;
-  return balancoAlimentar(provincias, bocas, nucleo.ajustes.alimento);
+  return balancoAlimentar(provincias, bocas, nucleo.ajustes.alimento, importacaoDe(nucleo, idPoder));
 }
 
 /**

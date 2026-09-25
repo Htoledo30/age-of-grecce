@@ -66,6 +66,11 @@
         0.001,
         0.0015
       ],
+      "importaGrao": [
+        1,
+        2,
+        3
+      ],
       "promessa": "Multiplica a rede de trocas do REINO inteiro e o trânsito desta praça.",
       "motivo": "A praça tem dois lados: cobra de quem passa aqui e distribui o que o reino alcança. Por isso ela vale na encruzilhada rica E no império largo."
     },
@@ -290,6 +295,11 @@
         0.0005,
         0.001,
         0.0015
+      ],
+      "importaGrao": [
+        2,
+        3,
+        4
       ],
       "promessa": "Abre o mar: daqui o exército embarca, e a mercadoria chega a quem não faz fronteira. Aumenta o trânsito local.",
       "ligaPorMar": true,

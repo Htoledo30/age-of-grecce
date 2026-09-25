@@ -176,6 +176,13 @@ export interface EstadoCampanha {
    */
   nivelDeImposto: Record<string, NivelDeImposto>;
   /**
+   * Quantos pontos de comida cada poder ENCOMENDOU de fora, por turno. Ausente = nenhum.
+   *
+   * É a ordem, e não o que chega: com o cais bloqueado entra menos, e a encomenda volta a
+   * valer inteira quando a frota sai. Ver `alimentacao/importacao.ts`.
+   */
+  importacao: Record<string, number>;
+  /**
    * Construções erguidas, por id de província.
    *
    * Ao contrário do incentivo, isto **nunca sai** daqui: construção é permanente, e é

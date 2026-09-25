@@ -14,6 +14,7 @@ import type { NucleoDaCampanha } from '../nucleo';
 import { ligadaACapital } from '../comercio/circulacao';
 import { rendaDeAcordos, rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { saldoDaLigaDe } from '../diplomacia/liga';
+import { custoDaImportacaoDe } from '../alimentacao/importacao';
 import { saldoDeTributosDe } from '../diplomacia/relacoes';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDeImpostoEm } from '../governo/nivel-de-imposto';
@@ -72,7 +73,10 @@ export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
     rendaDeAcordos(nucleo, idPoder) +
     saldoDeTributosDe(nucleo, idPoder) +
     // A liga é a quarta parcela: o membro paga a fatia, o chefe recebe a dos membros dele.
-    saldoDaLigaDe(nucleo, idPoder, (id) => rendaBaseDe(nucleo, id))
+    saldoDaLigaDe(nucleo, idPoder, (id) => rendaBaseDe(nucleo, id)) -
+    // O grão comprado é despesa do turno, como a folha: sai da renda para que a barra, o
+    // orçamento da IA e o tesouro vejam o mesmo número.
+    custoDaImportacaoDe(nucleo, idPoder)
   );
 }
 

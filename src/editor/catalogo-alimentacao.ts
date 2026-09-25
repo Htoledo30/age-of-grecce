@@ -42,6 +42,23 @@ export function camposDaAlimentacao(ajustes: AjustesDoJogo): readonly CampoNumer
       },
     },
     {
+      id: 'alimento.importacao.precoPorPonto',
+      aba: 'alimentacao',
+      grupo: 'Balanço do reino',
+      nome: 'Preço do grão comprado',
+      descricao: 'Ouro por turno do primeiro ponto comprado; o ponto n custa n vezes isto.',
+      unidade: 'moedas',
+      minimo: 1,
+      maximo: 1000,
+      passo: 5,
+      casas: 0,
+      aplica: 'Próximo turno',
+      ler: () => alimento.importacao.precoPorPonto,
+      escrever: (valor) => {
+        alimento.importacao.precoPorPonto = Math.round(valor);
+      },
+    },
+    {
       id: 'alimento.mortePorFome',
       aba: 'alimentacao',
       grupo: 'Consequências da fome',

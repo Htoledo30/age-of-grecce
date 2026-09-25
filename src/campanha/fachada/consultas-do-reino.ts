@@ -39,6 +39,13 @@ import { Territorios } from '../territorios';
 import type { RelatorioDaFome } from '../alimentacao/aplicar-fome';
 import { balancoAlimentarDe } from '../alimentacao/balanco';
 import {
+  capacidadeDeImportacaoDe,
+  custoDaImportacao,
+  encomendaDe,
+  importacaoDe,
+  podeDefinirImportacao,
+} from '../alimentacao/importacao';
+import {
   acordosDe,
   bensAusentes,
   bensEmCirculacao,
@@ -581,6 +588,31 @@ export abstract class ConsultasDoReino {
 
   balancoAlimentarDe(idPoder: string): BalancoAlimentarDoPoder {
     return balancoAlimentarDe(this.nucleo, idPoder);
+  }
+
+  // ── Grão comprado ───────────────────────────────────────────────────────────────────
+  /** Os pontos que este poder encomendou, cheguem ou não. */
+  encomendaDeGraoDe(idPoder: string): number {
+    return encomendaDe(this.nucleo, idPoder);
+  }
+
+  /** Os pontos que chegam neste turno: a encomenda, limitada pelas portas abertas. */
+  importacaoDe(idPoder: string): number {
+    return importacaoDe(this.nucleo, idPoder);
+  }
+
+  /** Quantos pontos Porto e Mercado deixam entrar agora. */
+  capacidadeDeImportacaoDe(idPoder: string): number {
+    return capacidadeDeImportacaoDe(this.nucleo, idPoder);
+  }
+
+  /** O que `pontos` pontos custam por turno. */
+  custoDaImportacao(pontos: number): number {
+    return custoDaImportacao(pontos, this.nucleo.ajustes.alimento.importacao);
+  }
+
+  podeDefinirImportacao(pontos: number, porPoder?: string): Permissao {
+    return podeDefinirImportacao(this.nucleo, porPoder ?? this.nucleo.estado.jogador, pontos);
   }
 
   /** Quem passou fome na última virada. Vazio quando ninguém passou. */

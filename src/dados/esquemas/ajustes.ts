@@ -675,6 +675,16 @@ export const Ajustes = z.object({
       cerco: z.object({
         mantimentos: z.number().int().nonnegative(),
       }),
+      /**
+       * Grão comprado de fora: ouro por turno virando ponto de comida.
+       *
+       * O ponto `n` custa `n × precoPorPonto` por turno, então o terceiro ponto custa o triplo
+       * do primeiro: comprar resolve o aperto, mas nunca sai mais barato que plantar. Quanto
+       * cabe vem das obras (`importaGrao` no catálogo), não daqui.
+       */
+      importacao: z.object({
+        precoPorPonto: z.number().int().positive(),
+      }),
     }),
     /**
      * Como o número de felicidade vira palavra na tela.

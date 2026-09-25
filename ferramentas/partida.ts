@@ -120,6 +120,9 @@ let desembarquesEmCasa = 0;
 const ondeEstavaNoMar = new Map<string, string>();
 const desdeQuandoNoMar = new Map<string, number>();
 let marchas = 0;
+/** Poder-turnos comprando grão, e o maior pedido visto. Zero é o ouro parado de novo. */
+let graoTurnos = 0;
+let graoPico = 0;
 let travessias = 0;
 let acessos = 0;
 let propostasAoJogador = 0;
@@ -206,6 +209,8 @@ for (let turno = 0; turno < TURNOS; turno++) {
     bloqueiosPostos += lance.bloqueios.filter((b) => !b.manter).length;
     bloqueioTurnos += lance.bloqueios.length;
     marchas += lance.ataques.length;
+    if (lance.grao > 0) graoTurnos += 1;
+    graoPico = Math.max(graoPico, lance.grao);
     for (const d of lance.decretos) {
       decretosPorNivel.set(d.nivel, (decretosPorNivel.get(d.nivel) ?? 0) + 1);
     }
@@ -378,6 +383,7 @@ console.log(
   `  poder-turnos em guerra: ${emGuerraTurnos} de ${TURNOS * 17} (${((100 * emGuerraTurnos) / (TURNOS * 17)).toFixed(0)}%)`,
 );
 console.log(`  marchas que a IA ordenou sobre terra alheia: ${marchas}`);
+console.log(`  grão comprado: ${graoTurnos} poder-turnos · maior encomenda ${graoPico} pontos`);
 console.log(`  trechos de travessia pelo mar: ${travessias}`);
 console.log(
   `  passagens militares concedidas: ${acessos}` +

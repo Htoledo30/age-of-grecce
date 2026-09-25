@@ -100,6 +100,7 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.mercado.desenhar(vistaDoMercado(jogo));
     tela.governo.alternar();
   };
+  tela.balancoAlimentar.aoDefinirImportacao = (pontos) => campanha.definirImportacao(pontos);
   tela.barraTurno.aoAbrirDiplomacia = () => {
     tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
     tela.diplomacia.alternar();

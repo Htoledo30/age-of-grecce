@@ -258,6 +258,9 @@
       "mortePorFomeNaTropa": 0.05,
       "cerco": {
         "mantimentos": 2
+      },
+      "importacao": {
+        "precoPorPonto": 50
       }
     },
     "felicidade": {

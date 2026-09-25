@@ -17,9 +17,25 @@ export interface LinhaDoAlimento {
   sitiada: boolean;
 }
 
+/** O grão comprado de fora: a encomenda, o que chega e o que custa. */
+export interface VistaDaImportacao {
+  /** Pontos encomendados. */
+  encomenda: number;
+  /** Pontos que chegam hoje: a encomenda limitada pelas portas abertas. */
+  chegam: number;
+  /** Quanto Porto e Mercado deixam entrar agora. */
+  capacidade: number;
+  /** Ouro por turno do que chega. */
+  custo: number;
+  /** Quanto o turno passa a custar com um ponto a mais. */
+  custoComMaisUm: number;
+}
+
 export interface VistaDoAlimento {
   linhas: readonly LinhaDoAlimento[];
   subsistencia: number;
+  /** `null` quando não há reino do jogador. */
+  importacao: VistaDaImportacao | null;
   exercito: number;
   /** O que sobra pro povo antes do exército. É a conta que decide quem morre. */
   saldoCivil: number;
@@ -40,14 +56,48 @@ export class BalancoAlimentar implements AbaDoGoverno {
   readonly rotulo = 'Alimentação';
   readonly elemento = document.createElement('div');
 
+  /** Chamado quando o jogador muda a encomenda de grão. */
+  aoDefinirImportacao: (pontos: number) => void = () => {};
+
   private readonly resumo = document.createElement('p');
+  private readonly grao = document.createElement('div');
+  private readonly graoMenos = document.createElement('button');
+  private readonly graoMais = document.createElement('button');
+  private readonly graoQuantos = document.createElement('span');
+  private readonly graoCusto = document.createElement('span');
   private readonly corpo = document.createElement('div');
+  private importacao: VistaDaImportacao | null = null;
 
   constructor() {
     this.elemento.className = 'balanco';
     this.resumo.className = 'balanco__resumo';
     this.corpo.className = 'balanco__corpo';
-    this.elemento.append(this.resumo, this.corpo);
+
+    this.grao.className = 'balanco__grao';
+    const rotulo = document.createElement('span');
+    rotulo.className = 'balanco__grao-rotulo';
+    rotulo.textContent = 'Grão comprado';
+    for (const [botao, texto, passo] of [
+      [this.graoMenos, '−', -1],
+      [this.graoMais, '+', 1],
+    ] as const) {
+      botao.type = 'button';
+      botao.className = 'balanco__grao-botao';
+      botao.textContent = texto;
+      botao.addEventListener('click', () => {
+        const vista = this.importacao;
+        if (vista === null) return;
+        this.aoDefinirImportacao(Math.max(0, vista.encomenda + passo));
+        botao.blur();
+      });
+    }
+    this.graoMenos.setAttribute('aria-label', 'Comprar menos grão');
+    this.graoMais.setAttribute('aria-label', 'Comprar mais grão');
+    this.graoQuantos.className = 'balanco__grao-quantos';
+    this.graoCusto.className = 'balanco__grao-custo';
+    this.grao.append(rotulo, this.graoMenos, this.graoQuantos, this.graoMais, this.graoCusto);
+
+    this.elemento.append(this.resumo, this.grao, this.corpo);
   }
 
   desenhar(vista: VistaDoAlimento): void {
@@ -55,9 +105,11 @@ export class BalancoAlimentar implements AbaDoGoverno {
     const livres = vista.linhas.filter((linha) => !linha.sitiada);
     const producao = livres.reduce((total, linha) => total + linha.producao, 0);
     const populacao = livres.reduce((total, linha) => total + linha.populacao, 0);
+    const comprado = vista.importacao?.chegam ?? 0;
     this.resumo.replaceChildren(
       trecho('balanco__dado', `subsistência +${vista.subsistencia}`),
       trecho('balanco__dado', `alimentos +${producao}`),
+      ...(comprado > 0 ? [trecho('balanco__dado', `grão comprado +${comprado}`)] : []),
       trecho('balanco__dado', `população −${populacao}`),
       trecho(
         vista.saldoCivil < 0 ? 'balanco__aviso' : 'balanco__dado',
@@ -69,6 +121,7 @@ export class BalancoAlimentar implements AbaDoGoverno {
         `${comSinal(vista.saldo)} · ${nomeDaCategoria(vista.categoria)}`,
       ),
     );
+    this.desenharGrao(vista.importacao);
 
     const tabela = document.createElement('table');
     tabela.className = 'balanco__tabela';
@@ -86,6 +139,36 @@ export class BalancoAlimentar implements AbaDoGoverno {
     for (const linha of vista.linhas) corpo.appendChild(this.linha(linha));
     tabela.append(cabeca, corpo);
     this.corpo.replaceChildren(tabela);
+  }
+
+  private desenharGrao(vista: VistaDaImportacao | null): void {
+    this.importacao = vista;
+    this.grao.hidden = vista === null;
+    if (vista === null) return;
+    const semPorta = vista.capacidade === 0 && vista.encomenda === 0;
+    this.graoQuantos.textContent = `${vista.chegam} / ${vista.capacidade}`;
+    this.graoCusto.textContent = semPorta
+      ? 'Sem Porto ou Mercado'
+      : vista.custo > 0
+        ? `−${moeda(vista.custo)} / turno`
+        : '';
+    this.graoCusto.dataset['tom'] = semPorta ? 'bloqueio' : 'custo';
+    this.graoMenos.disabled = vista.encomenda <= 0;
+    this.graoMais.disabled = vista.encomenda >= vista.capacidade;
+    definirTooltip(this.graoMais, {
+      titulo: 'Mais um ponto',
+      corpo: this.graoMais.disabled
+        ? 'Sem Porto ou Mercado para receber mais.'
+        : `−${moeda(vista.custoComMaisUm)} / turno`,
+    });
+    // Encomenda maior que a porta: cais bloqueado ou praça sitiada cortaram o que chega.
+    const cortado = vista.chegam < vista.encomenda;
+    this.graoQuantos.dataset['tom'] = cortado ? 'cortado' : '';
+    definirTooltip(this.graoQuantos, {
+      titulo: cortado ? 'Entrega cortada' : 'Grão comprado',
+      corpo: `${vista.encomenda} encomendados, ${vista.chegam} chegam.`,
+      tom: cortado ? 'perigo' : 'informacao',
+    });
   }
 
   private linha(linha: LinhaDoAlimento): HTMLTableRowElement {
@@ -128,6 +211,10 @@ export function nomeDaCategoria(categoria: CategoriaAlimentar): string {
     case 'abastecido':
       return 'Abastecido';
   }
+}
+
+function moeda(valor: number): string {
+  return Math.round(valor).toLocaleString('pt-BR');
 }
 
 function comSinal(valor: number): string {

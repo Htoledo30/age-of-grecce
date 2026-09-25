@@ -3,7 +3,7 @@
  *
  * Duas contas curtas que o jogador confere de cabeça, nesta ordem:
  *
- *     saldo civil = subsistência + alimentos − população
+ *     saldo civil = subsistência + alimentos + grão comprado − população
  *     saldo final = saldo civil − exército
  *
  * **O povo come primeiro.** Se o saldo civil fecha e o final não, quem passa aperto é o
@@ -50,10 +50,12 @@ export interface ProvinciaNoBalanco {
 export interface BalancoAlimentarDoPoder {
   subsistencia: number;
   producao: number;
+  /** Grão comprado de fora, já limitado pelo que as obras deixam entrar. */
+  importacao: number;
   /** Custos são positivos aqui; os saldos é que os subtraem. */
   populacao: number;
   exercito: number;
-  /** O que sobra pro povo antes de alimentar soldado: subsistência + produção − população. */
+  /** O que sobra pro povo antes de alimentar soldado: subsistência + produção + importação − população. */
   saldoCivil: number;
   /** O saldo civil menos o exército. É o número da barra. */
   saldo: number;
@@ -102,17 +104,21 @@ export function balancoAlimentar(
   provincias: readonly ProvinciaNoBalanco[],
   totalDeSoldados: number,
   ajustes: AjustesAlimento,
+  /** Grão comprado que chega neste turno. Só entra se o reino tem terra livre. */
+  importacaoComprada = 0,
 ): BalancoAlimentarDoPoder {
   const livres = provincias.filter((p) => !p.sitiada);
   const subsistencia = livres.length > 0 ? ajustes.subsistenciaPorReino : 0;
   const producao = livres.reduce((soma, p) => soma + Math.max(0, p.producaoAlimentar), 0);
   const populacao = livres.reduce((soma, p) => soma + p.custoDaPopulacao, 0);
+  const importacao = livres.length > 0 ? Math.max(0, importacaoComprada) : 0;
   const exercito = custoMilitar(totalDeSoldados, ajustes.soldadosPorPonto);
-  const saldoCivil = subsistencia + producao - populacao;
+  const saldoCivil = subsistencia + producao + importacao - populacao;
   const saldo = saldoCivil - exercito;
   return {
     subsistencia,
     producao,
+    importacao,
     populacao,
     exercito,
     saldoCivil,

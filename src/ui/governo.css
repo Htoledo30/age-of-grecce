@@ -172,6 +172,63 @@
   color: var(--ui-bronze-claro);
 }
 
+/* O grão comprado: a única decisão da aba de comida, acima da tabela que ela altera. */
+.balanco__grao {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.balanco__grao[hidden] {
+  display: none;
+}
+.balanco__grao-rotulo {
+  font-size: var(--texto-nota);
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.balanco__grao-botao {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: transparent;
+  color: var(--ui-texto-fraco);
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-corpo);
+  cursor: pointer;
+}
+.balanco__grao-botao:hover:not(:disabled) {
+  border-color: var(--ui-bronze);
+  color: var(--ui-texto);
+}
+.balanco__grao-botao:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.balanco__grao-quantos {
+  min-width: 44px;
+  text-align: center;
+  font-family: var(--fonte-numero);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--texto-corpo);
+  color: var(--ui-texto);
+}
+.balanco__grao-quantos[data-tom='cortado'] {
+  color: var(--ui-sangue-claro);
+}
+.balanco__grao-custo {
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-corpo);
+  color: var(--ui-bronze-claro);
+}
+.balanco__grao-custo[data-tom='bloqueio'] {
+  color: var(--ui-texto-tenue);
+}
+
 /* A lista do que o reino NÃO alcança. Fica embaixo da tabela e em tom apagado de
    propósito: é possibilidade, não posse — o mapa do que ainda há para conquistar. */
 .mercado__ausentes {

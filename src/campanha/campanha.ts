@@ -27,6 +27,7 @@ import { restaurarEstado } from './estado/restaurar-estado';
 import { ComandosDaDiplomacia } from './fachada/comandos-da-diplomacia';
 import { mudarCapital } from './governo/capital';
 import { definirImposto } from './governo/decreto-de-imposto';
+import { definirImportacao } from './alimentacao/importacao';
 import { darOuro } from './governo/tesouro';
 import { mudarPostura } from './guerra/cercos';
 import { recrutar } from './guerra/levas';
@@ -75,6 +76,12 @@ export class Campanha extends ComandosDaDiplomacia {
   /** Decreta o nível de imposto: efeito imediato na renda, gradual no humor. */
   definirImposto(idProvincia: string, nivel: NivelDeImposto, porPoder?: string): void {
     definirImposto(this.nucleo, idProvincia, nivel, porPoder ?? this.nucleo.estado.jogador);
+    this.aoMudar();
+  }
+
+  /** Encomenda grão de fora: pontos de comida pagos em ouro todo turno. */
+  definirImportacao(pontos: number, porPoder?: string): void {
+    definirImportacao(this.nucleo, porPoder ?? this.nucleo.estado.jogador, pontos);
     this.aoMudar();
   }
 

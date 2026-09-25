@@ -71,6 +71,7 @@ export function vistaDoAlimento(jogo: Jogo): VistaDoAlimento {
     return {
       linhas: [],
       subsistencia: 0,
+      importacao: null,
       exercito: 0,
       saldoCivil: 0,
       saldo: 0,
@@ -98,9 +99,17 @@ export function vistaDoAlimento(jogo: Jogo): VistaDoAlimento {
           },
         ],
   );
+  const encomenda = campanha.encomendaDeGraoDe(jogador.id);
   return {
     linhas,
     subsistencia: balanco.subsistencia,
+    importacao: {
+      encomenda,
+      chegam: balanco.importacao,
+      capacidade: campanha.capacidadeDeImportacaoDe(jogador.id),
+      custo: campanha.custoDaImportacao(balanco.importacao),
+      custoComMaisUm: campanha.custoDaImportacao(encomenda + 1),
+    },
     exercito: balanco.exercito,
     saldoCivil: balanco.saldoCivil,
     saldo: balanco.saldo,

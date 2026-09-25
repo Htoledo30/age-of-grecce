@@ -74,7 +74,7 @@ export function folgaDaFolha(campanha: Campanha, idPoder: string, estilo: Estilo
  * `soldadosPorPonto` homens é o piso: cavalaria come quase o dobro. Se nem o mínimo cabe, a
  * comida é o gargalo sem discussão possível.
  */
-function comidaDoExercitoQueOReinoBanca(
+export function comidaDoExercitoQueOReinoBanca(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,

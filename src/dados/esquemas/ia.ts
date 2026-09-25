@@ -144,6 +144,15 @@ const Estilo = z.object({
    */
   folhaEmPaz: z.number().min(0),
   /**
+   * Quanto ela topa pagar por GRÃO COMPRADO, por turno, em fração da renda.
+   *
+   * ⚠️ **O cofre também paga, e é ele que dá sentido a isto.** Medido em 250 turnos, o reino
+   * que vencia a expansão guardava 120 mil moedas e três mil homens, porque a comida travava o
+   * exército e o ouro não comprava comida. Com esta fatia ela compra pela renda; com o cofre
+   * cheio, compra pelo cofre — ver `economia/importar.ts`.
+   */
+  fatiaParaGrao: z.number().min(0).max(1),
+  /**
    * Que soldado ela levanta quando a terra oferece mais de um.
    *
    * `melhor` pega quem mais vale em campo (`ataque × aguento`), custe o que custar — é o

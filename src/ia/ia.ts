@@ -36,7 +36,7 @@
  * 2 foi encontrado num tabuleiro parado — e nenhum deles teria sido legível com dezessete
  * poderes marchando ao mesmo tempo.
  *
- * A ordem das decisões dentro do turno também é escrita: **imposto, obra, leva, guerra, defesa,
+ * A ordem das decisões dentro do turno também é escrita: **imposto, obra, grão, leva, guerra, defesa,
  * ataque — e a paz por último, num passo à parte.** O imposto muda a renda de hoje e a obra precisa saber com quanto conta; a leva
  * precisa saber o que sobrou do cofre depois da obra; a defesa move o que já existe; e o ataque
  * vem por último porque **é uma ordem por hoste por rodada** — quem já foi socorrer não marcha
@@ -54,6 +54,7 @@ import { tributoEscolhido } from './diplomacia/tributos';
 import { querPaz, querPazComTributo } from './diplomacia/paz';
 import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
+import { importacaoEscolhida } from './economia/importar';
 import { estiloDe } from './estilo';
 import { defesasEscolhidas } from './guerra/defender';
 import {
@@ -72,6 +73,12 @@ export interface LanceDaIa {
   obra: { provincia: string; construcao: string } | null;
   decretos: readonly { provincia: string; nivel: string }[];
   leva: { provincia: string; arma: string; homens: number } | null;
+  /**
+   * Os pontos de grão que ela encomenda depois desta virada.
+   *
+   * ⚠️ Zero numa partida inteira quer dizer que o ouro voltou a ficar parado no cofre.
+   */
+  grao: number;
   /** Contra quem ela declarou guerra nesta virada, se declarou. */
   guerra: string | null;
   /** Com quem ela assinou pacto de não-agressão nesta virada, e por quantos turnos. */
@@ -168,6 +175,11 @@ export function jogarIA(
       if (obra.derrubar) campanha.demolir(obra.provincia, obra.derrubar, idPoder);
       campanha.construir(obra.provincia, obra.construcao, idPoder);
     }
+
+    // O grão depois da obra e antes da leva: a obra pode abrir a porta (Porto, Mercado), e a
+    // leva só enxerga a despensa que o grão comprado já encheu.
+    const grao = importacaoEscolhida(campanha, idPoder, estilo, ajustes);
+    if (grao !== null) campanha.definirImportacao(grao, idPoder);
 
     // A leva depois da obra: o cofre já está do tamanho que ficou, e recrutar em cima de um
     // dinheiro que ela acabou de gastar seria a IA contando a mesma moeda duas vezes.
@@ -373,6 +385,7 @@ export function jogarIA(
       obra: obra ? { provincia: obra.provincia, construcao: obra.construcao } : null,
       decretos,
       leva: leva ? { provincia: leva.provincia, arma: leva.arma, homens: leva.homens } : null,
+      grao: campanha.encomendaDeGraoDe(idPoder),
       guerra,
       pacto,
       alianca,

@@ -250,6 +250,20 @@ export const Construcoes = z.object({
         .tuple([z.number().nonnegative(), z.number().nonnegative(), z.number().nonnegative()])
         .optional(),
       /**
+       * Quantos pontos de comida o reino pode COMPRAR de fora por causa desta obra, por nível.
+       *
+       * É a porta por onde o grão entra: sem cais nem praça, não há de quem comprar. Obra em
+       * cidade sitiada não conta, e obra que liga por mar não conta com o cais bloqueado —
+       * ver `alimentacao/importacao.ts`.
+       */
+      importaGrao: z
+        .tuple([
+          z.number().int().nonnegative(),
+          z.number().int().nonnegative(),
+          z.number().int().nonnegative(),
+        ])
+        .optional(),
+      /**
        * Esta obra liga a província ao resto do reino POR MAR.
        *
        * ⚠️ **Fora do `efeito`, pela mesma razão do `impedeAssaltoImediato`.** Multiplicar

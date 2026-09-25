@@ -147,10 +147,14 @@ a terra; um acordo compra renda e paz, não a capacidade estratégica da provín
 ### Alimentação
 
 - Comida é saldo anual em pontos, sem estoque nem deterioração, em DUAS contas que se
-  leem de cabeça: `saldo civil = subsistência + alimentos − população` e
+  leem de cabeça: `saldo civil = subsistência + alimentos + grão comprado − população` e
   `saldo final = saldo civil − exército`. **O povo come primeiro.**
 - Produtos alimentares somam seus níveis principal e secundário; construções alimentares
   somam por cima.
+- **O ouro compra comida**, por decisão de Henrique: grão de fora entra pelo Porto e pelo
+  Mercado, e cada ponto custa mais que o anterior, todo turno. É o elo entre o tesouro e o
+  exército — o reino rico sustenta mais gente, como Atenas com o trigo do Mar Negro — e ele
+  nunca sai mais barato que plantar. Bloquear o cais inimigo corta o grão dele.
 - **O tamanho da província pesa na mesa**: cada terra cai numa FAIXA de população absoluta
   (`dados/ajustes.json`) e come os pontos dela. Não é upgrade — não se compra faixa, não há prédio
   de governo que a suba e não existe punição por não construir; quem faz a província evoluir
