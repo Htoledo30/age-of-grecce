@@ -1,5 +1,13 @@
 /* O PAINEL DA PROVÍNCIA — uma moldura só, ancorada no canto de baixo à esquerda.
 
+   ⚠️ **E nenhum TAMANHO de texto entra aqui.** Esta folha tinha NOVE tamanhos em ONZE
+   declarações — 11, 11.5, 12, 12.5, 14, 15, 21, 27, 32 —, ou seja, quase nenhum texto do painel
+   compartilhava altura com outro. Henrique: *"hierarquia é o texto, você tenta utilizar todos
+   tamanhos de texto, precisamos de um padrão"*. Com nove degraus num painel de 416 px não há
+   hierarquia: há ruído com aparência de intenção. Agora saem dos CINCO degraus de `tokens.css`
+   que este painel usa, e a regra é escolher pela FUNÇÃO — etiqueta, nota, corpo, medida,
+   destaque, título —, nunca por um número. Ver `estilo/tokens.css`.
+
    ⚠️ **Sem `overflow`, e é a regra inteira desta reforma.** Eram três caixas empilhadas numa
    coluna com `overflow-y: auto`: ficha, ações e recrutamento somavam mais de 800 px e o
    jogador tinha que ROLAR para chegar no botão de levantar exército. O painel agora é curto
@@ -32,7 +40,12 @@
 }
 .ficha__nome {
   font-family: var(--fonte-nome);
-  font-size: 32px;
+  /* ⚠️ **26 e não 32, e o próprio token já dizia que era aqui.** `--texto-titulo` está escrito
+     em `tokens.css` como *"o nome de uma janela ou de uma província"* — o painel simplesmente
+     nunca migrou. E 32 competia com o que o painel existe para mostrar: o nome ficava maior que
+     qualquer número, quando o nome é a única coisa da ficha que o jogador JÁ SABE (ele acabou
+     de clicar naquela terra). A régua vertical passa a ser 26 no nome, 20 nos quatro valores. */
+  font-size: var(--texto-titulo);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -57,7 +70,7 @@
 .ficha__reino {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -69,7 +82,7 @@
 /* A região é qualificação, não identidade: mesma faixa, metade do peso. */
 .ficha__regiao {
   flex: none;
-  font-size: 11px;
+  font-size: var(--texto-nota);
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -90,7 +103,7 @@
 .ficha__producao {
   margin-top: 4px;
   font-family: var(--fonte-nome);
-  font-size: 15px;
+  font-size: var(--texto-medida);
   font-style: italic;
   line-height: 1.2;
   color: var(--ui-bronze-claro);
@@ -109,7 +122,9 @@
   padding: 3px 8px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: 2px;
-  font-size: 11px;
+  /* Etiqueta de estado — CAPITAL, CERCADA, REVOLTA. É o degrau da etiqueta, e não o da nota:
+     ela qualifica o nome ao lado, não se lê como frase. */
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -136,7 +151,7 @@
   padding: 6px 9px;
   border-left: 2px solid var(--ui-borda);
   background: var(--ui-fundo-suave);
-  font-size: 12.5px;
+  font-size: var(--texto-corpo);
   line-height: 1.35;
   color: var(--ui-texto-fraco);
 }
@@ -155,10 +170,21 @@
 }
 
 /* ── quanto vale: as quatro medidas ───────────────────────────────────────────────── */
+/* ⚠️ **As quatro medidas ganharam CHÃO, e é a correção de peso do painel.** Elas são a razão
+   de a ficha existir — saldo, humor, povo, milícia — e eram o único bloco sem moldura nenhuma,
+   espremido entre um aviso com fundo cheio e dois botões com borda. O que mais importa tinha a
+   menor presença, e um alarme de passagem tinha mais. Uma tábua sobre o vidro resolve sem
+   acrescentar uma palavra: os quatro números passam a ser um instrumento só. */
 .ficha__caixa-de-medidas {
-  margin-top: 13px;
-  padding-top: 12px;
-  border-top: 1px solid var(--ui-borda-fraca);
+  margin-top: 12px;
+  padding: 11px 12px 8px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  /* ⚠️ Ground MAIS FUNDO que o do aviso, e não igual. Com os dois em `--ui-fundo-suave` as
+     duas tábuas encostavam e o olho lia uma coisa só, com um filete no meio. O alarme é uma
+     folha POSTA sobre o painel; as medidas são um instrumento EMBUTIDO nele. Fundo escuro
+     sobre vidro é a diferença entre as duas leituras, e não custa uma linha nova de arte. */
+  background: rgb(13 18 20 / 55%);
 }
 /* Zona marítima não tem medida nenhuma, e um friso sozinho embaixo do nome parecia uma
    caixa que faltou carregar. Sem filho, sem moldura. */
@@ -179,7 +205,7 @@
   border-left: 0;
 }
 .ficha__medida dt {
-  font-size: 11px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -188,7 +214,9 @@
 .ficha__valor {
   margin-top: 3px;
   font-family: var(--fonte-numero);
-  font-size: 21px;
+  /* O NÚMERO QUE DECIDE. É a razão de o painel existir, e agora é o segundo maior texto da
+     moldura em vez do terceiro. */
+  font-size: var(--texto-destaque);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -198,7 +226,7 @@
 /* O passo do próximo turno, colado no número — o mesmo formato do tesouro na barra. */
 .ficha__delta {
   margin-left: 4px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-style: normal;
   font-weight: 500;
   color: var(--ui-texto-tenue);
@@ -213,7 +241,7 @@
   min-height: 2.5em;
   white-space: pre-line;
   margin-top: 2px;
-  font-size: 11.5px;
+  font-size: var(--texto-nota);
   line-height: 1.25;
   color: var(--ui-texto-tenue);
 }
@@ -234,12 +262,12 @@
     width: 392px;
     padding: 15px 16px 14px;
   }
-  .ficha__nome {
-    font-size: 27px;
-  }
+  /* ⚠️ O nome NÃO encolhe mais aqui. Ele encolhia de 32 para 27 em tela baixa, e os dois
+     valores caíam no mesmo degrau: a regra existia para desfazer um exagero que deixou de
+     existir. Uma exceção a menos para lembrar. */
   .ficha__caixa-de-medidas {
     margin-top: 10px;
-    padding-top: 9px;
+    padding: 9px 10px 6px;
   }
 }
 @container palco (max-width: 1100px) {

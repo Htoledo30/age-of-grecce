@@ -70,4 +70,9 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   estado.acordos = { ...salvo.acordos };
   estado.tributos = { ...salvo.tributos };
   estado.reputacao = { ...salvo.reputacao };
+  // ⚠️ Passagem e mesa também são estado, e nenhuma das duas voltava do disco: carregar a
+  // partida apagava toda estrada aberta (desde que a passagem existe) e o pedido em cima da
+  // mesa — que, desde que sobrevive à virada, é o que o jogador ia responder.
+  estado.acessos = { ...salvo.acessos };
+  estado.propostas = salvo.propostas.map((p) => ({ ...p }));
 }

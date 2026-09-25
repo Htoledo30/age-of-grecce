@@ -129,9 +129,12 @@ export interface EstadoCampanha {
   /**
    * Ordens de marcha ativas, pelo id da hoste que as recebeu.
    *
-   * Uma por hoste. Mover não muda o mapa no clique: a ordem fica aqui, revisável e
-   * cancelável, e só avança quando o turno vira — junto com as de todo mundo. Uma viagem
-   * distante do jogador conserva os trechos restantes; ordens comuns acabam na resolução.
+   * Uma por hoste — e é por isso que mandar PARTE da tropa cria a hoste que a leva: sem um id
+   * novo, a segunda ordem sobrescreveria a primeira. Ver `guerra/marchas.ts`.
+   *
+   * Mover não move ninguém no clique: a ordem fica aqui, revisável e cancelável, e só avança
+   * quando o turno vira — junto com as de todo mundo. Uma viagem distante do jogador conserva
+   * os trechos restantes; ordens comuns acabam na resolução.
    */
   ordens: Record<string, OrdemDeMarcha>;
   /**
@@ -296,11 +299,30 @@ export interface EstadoCampanha {
   tributos: Record<string, Tributo>;
 }
 
+/**
+ * Os tipos de pedido que cabem na mesa — a lista é UMA, e o salvamento lê daqui.
+ *
+ * ⚠️ **Eram duas listas, e a do salvamento tinha metade.** O esquema de leitura conhecia só
+ * `pacto`, `comercio` e `acesso`; a IA já punha `alianca`, `liga` e `anexacao` na mesa. Como o
+ * autosave grava sem validar e a leitura valida, uma aliança pedida na hora do salvamento
+ * fazia o boot seguinte recusar o arquivo inteiro — e a campanha sumia. Ficou invisível
+ * enquanto a mesa era apagada na mesma virada em que nascia; no dia em que o pedido passou a
+ * sobreviver até o turno do jogador, virou perda de partida.
+ */
+export const TIPOS_DE_PROPOSTA = [
+  'pacto',
+  'alianca',
+  'liga',
+  'anexacao',
+  'comercio',
+  'acesso',
+] as const;
+
 /** O que um reino está pedindo ao jogador nesta virada. */
 export interface Proposta {
   /** Quem pede. */
   de: string;
-  tipo: 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso';
+  tipo: (typeof TIPOS_DE_PROPOSTA)[number];
   /** O prazo pedido, quando o acordo tem prazo. */
   turnos?: number | undefined;
 }

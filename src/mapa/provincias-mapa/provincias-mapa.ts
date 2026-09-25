@@ -241,6 +241,49 @@ export class ProvinciasMapa {
    * classe montava a ficha, ela a montava com o dono ASSADO, e a primeira conquista fazia a
    * interface mentir para sempre.
    */
+  /**
+   * Um ponto do mundo que cai DENTRO desta província de verdade.
+   *
+   * ⚠️ **Existe porque o "centro" guardado nos dados não é garantia de nada.** O centro do
+   * Golfo Sarônico está a 151 unidades do centro de Atenas: o centroide de uma água côncava cai
+   * dentro da península ática. Quem mira a câmera nesse ponto e clica no meio da tela seleciona
+   * TERRA — e foi assim que um teste de tela ficou vermelho afirmando que o painel da província
+   * não fechava ao clicar no mar.
+   *
+   * A resposta certa é perguntar à própria textura de índices, que é o que o clique consulta:
+   * varre a partir do centro em quadrados concêntricos e devolve o primeiro texel que pertence
+   * mesmo a esta província. Só a captura e os testes de tela chamam.
+   */
+  pontoDentroDe(indice: number, xCentro: number, yCentro: number): { x: number; y: number } | null {
+    const cx = Math.floor(xCentro * this.texelsPorUnidade);
+    const cy = Math.floor(yCentro * this.texelsPorUnidade);
+    const cabe = (x: number, y: number): boolean =>
+      x >= 0 &&
+      y >= 0 &&
+      x < this.larguraEmTexels &&
+      y < this.alturaEmTexels &&
+      this.indices[y * this.larguraEmTexels + x] === indice;
+    if (cabe(cx, cy)) return { x: xCentro, y: yCentro };
+    const teto = Math.max(this.larguraEmTexels, this.alturaEmTexels);
+    for (let raio = 1; raio < teto; raio += 1) {
+      for (let d = -raio; d <= raio; d += 1) {
+        // As quatro bordas do quadrado de lado 2·raio, na mesma ordem sempre: o ponto
+        // devolvido tem de ser o mesmo em toda execução, ou o teste deixa de ser repetível.
+        const candidatos: readonly [number, number][] = [
+          [cx + d, cy - raio],
+          [cx + d, cy + raio],
+          [cx - raio, cy + d],
+          [cx + raio, cy + d],
+        ];
+        for (const [x, y] of candidatos) {
+          if (!cabe(x, y)) continue;
+          return { x: (x + 0.5) / this.texelsPorUnidade, y: (y + 0.5) / this.texelsPorUnidade };
+        }
+      }
+    }
+    return null;
+  }
+
   provinciaEm(xMundo: number, yMundo: number): number | null {
     const x = Math.floor(xMundo * this.texelsPorUnidade);
     const y = Math.floor(yMundo * this.texelsPorUnidade);

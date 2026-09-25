@@ -31,7 +31,7 @@
 .cronica__titulo {
   margin: 0 0 10px;
   font-family: var(--fonte-titulo);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -48,7 +48,7 @@
   border: 0;
   background: none;
   color: var(--ui-texto-fraco);
-  font-size: 16px;
+  font-size: var(--texto-medida);
   line-height: 1;
   cursor: pointer;
 }
@@ -72,9 +72,36 @@
   padding: 7px 9px;
   border-left: 2px solid var(--ui-borda);
   background: rgb(0 0 0 / 16%);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   line-height: 1.45;
   color: var(--ui-texto);
+}
+
+/* ── OS DOIS BLOCOS ──
+   ⚠️ O que aconteceu COMIGO em cima, no tamanho de leitura; o resto do mundo embaixo, um
+   degrau abaixo na escala e sem fundo. Henrique: *"a crônica mistura muita coisa pouco
+   relevante com o que é importante… não quero menos informação, quero hierarquia"*.
+
+   Um degrau só de diferença (corpo → nota) e o fundo apagado bastam: dois degraus fariam o
+   segundo bloco virar letra miúda de contrato, e ele continua sendo notícia que se lê. */
+.cronica__linha[data-peso='normal'] {
+  padding: 4px 9px;
+  background: none;
+  font-size: var(--texto-nota);
+  line-height: 1.4;
+  color: var(--ui-texto-fraco);
+}
+.cronica__linha[data-peso='normal'] .cronica__icone {
+  width: 12px;
+  height: 12px;
+}
+
+.cronica__divisor {
+  margin: 4px 0 1px;
+  font-size: var(--texto-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
 }
 .cronica__linha[data-tom='ganho'] {
   border-left-color: var(--ui-bronze);

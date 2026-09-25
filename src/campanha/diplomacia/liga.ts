@@ -201,8 +201,9 @@ export function saldoDaLigaDe(
 /**
  * Este poder pode ser convidado para a liga daquele?
  *
- * ⚠️ **A opinião É a aceitação, como no pacto e na aliança** — mas aqui ela pede muito mais,
- * porque o que se assina é obediência. E há uma trava a mais que os outros acordos não têm:
+ * ⚠️ **Aqui a opinião mínima ainda é REGRA**, ao contrário do pacto e da aliança, cuja vontade
+ * mora na balança. Servir pede confiança alta porque o que se assina é obediência; se ele aceita
+ * é a pergunta de `ia/diplomacia/ligas.ts › aceitaServir`. Há uma trava a mais que os outros acordos:
  * **um membro não pode ter dois chefes, e um chefe não pode ser membro de ninguém.** Sem ela a
  * liga viraria uma corrente de suseranias, e a convocação de guerra andaria por ela.
  */

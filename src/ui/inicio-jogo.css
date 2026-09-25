@@ -38,9 +38,13 @@
   margin: 26px auto 0;
   color: var(--ui-borda);
   font-family: var(--fonte-titulo);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   letter-spacing: 0.7em;
 }
+/* ⚠️ **A ÚNICA MEDIDA DE TEXTO DO JOGO QUE NÃO SAI DA RÉGUA, e é de propósito.** O nome do
+   jogo numa tela cheia sobre a arte não é texto de painel: é cartaz, e cartaz não se dimensiona
+   pela escala da interface — `--texto-heroi` (40px) o deixaria pequeno no meio de uma moldura
+   de 600 px. A régua governa PAINEL; esta tela é capa. Ver `estilo/tokens.css`. */
 .inicio-jogo__titulo {
   font-family: var(--fonte-titulo);
   font-size: 66px;
@@ -52,7 +56,7 @@
 }
 .inicio-jogo__subtitulo {
   margin: 18px 0 38px;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -65,7 +69,7 @@
   padding: 12px 18px;
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-1);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -112,14 +116,14 @@
   padding-bottom: 13px;
   border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
-  font-size: 28px;
+  font-size: var(--texto-titulo);
   font-weight: 500;
   color: var(--ui-texto);
 }
 .inicio-jogo__instrucao {
   margin: 14px 0 18px;
   color: var(--ui-texto-fraco);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   line-height: 1.5;
 }
 .inicio-jogo__poder {
@@ -142,14 +146,14 @@
 }
 .inicio-jogo__nome-poder {
   font-family: var(--fonte-nome);
-  font-size: 24px;
+  font-size: var(--texto-destaque);
   font-weight: 500;
 }
 .inicio-jogo__detalhes,
 .inicio-jogo__disponibilidade {
   margin-top: 8px;
   color: var(--ui-texto-fraco);
-  font-size: 12px;
+  font-size: var(--texto-nota);
 }
 .inicio-jogo__disponibilidade[data-disponivel='sim'] {
   color: var(--ui-verde-claro);
@@ -191,7 +195,7 @@ body[data-fase-jogo='escolha'] .ficha {
    que recomeçar apaga a partida salva. */
 .inicio-jogo__continuacao {
   margin: 10px 0 22px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -199,7 +203,7 @@ body[data-fase-jogo='escolha'] .ficha {
 }
 .inicio-jogo__nota {
   margin-top: 12px;
-  font-size: 11px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.08em;
   color: var(--ui-texto-suave, var(--ui-texto));
   opacity: 0.75;

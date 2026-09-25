@@ -14,7 +14,7 @@
 
 import { z } from 'zod';
 
-import type { EstadoCampanha } from './estado-campanha';
+import { TIPOS_DE_PROPOSTA, type EstadoCampanha } from './estado-campanha';
 
 const Postura = z.enum(['assaltar', 'sitiar']);
 
@@ -187,7 +187,9 @@ const SalvamentoCampanha = z.object({
       .array(
         z.object({
           de: z.string().min(1),
-          tipo: z.enum(['pacto', 'comercio', 'acesso']),
+          // ⚠️ A lista é a do estado, e não uma cópia: a cópia tinha metade dos tipos e
+          // recusava o salvamento inteiro quando uma aliança estava na mesa.
+          tipo: z.enum(TIPOS_DE_PROPOSTA),
           turnos: z.number().int().positive().optional(),
         }),
       )

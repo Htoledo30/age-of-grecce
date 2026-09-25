@@ -512,78 +512,36 @@ export function reputacaoDe(nucleo: NucleoDaCampanha, idPoder: string): number {
   return nucleo.estado.reputacao[idPoder] ?? 0;
 }
 
-/** Os prazos de pacto que ESTE par consegue assinar hoje, do mais longo ao mais curto. */
 /**
- * O INTERESSE basta para o pacto mais curto, mesmo sem simpatia nenhuma.
+ * Os prazos de pacto da escada, do mais longo ao mais curto, com o que a REGRA diz de cada um.
  *
- * ⚠️ **Henrique, e ele tem razão:** *"pacto de não agressão ter que precisar ter relacionamento
- * não faz o menor sentido, olha na vida real quantos países se odeiam e fazem pactos de não
- * agressão"*. Não-agressão nunca foi confiança — é **medo e conveniência**. Molotov-Ribbentrop
- * foi assinado entre dois que se odiavam, e justamente por isso.
- *
- * São duas razões, e basta UMA:
- *
- * - **medo**: um dos dois é claramente menor no mapa. Quem é menor assina para não ser o
- *   próximo; quem é maior assina porque não custa nada prometer não invadir agora;
- * - **mãos ocupadas**: um dos dois já tem guerra em outro lugar. Ninguém quer duas.
- *
- * ⚠️ **Só o prazo mais CURTO entra por aqui.** Quarenta ou oitenta turnos são confiança, e
- * confiança continua se comprando com opinião — senão o medo de um momento amarraria meia
- * campanha, e o pacto longo deixaria de ser a coisa cara que ele é.
+ * ⚠️ **Só regra: guerra, pacto em pé, prazo que existe.** Se ELE assina é outra pergunta, e
+ * ela mora na balança (`ia/diplomacia/pactos.ts › balancaDoPacto`). Antes a opinião mínima
+ * morava aqui, e a mesma confiança era cobrada duas vezes — pela regra e pela vontade —, com
+ * as duas discordando: a regra dizia sim por medo e a vontade dizia não pela opinião.
  */
-function interesseBastaParaOPacto(nucleo: NucleoDaCampanha, a: string, b: string): boolean {
-  const limiar = nucleo.ajustes.diplomacia.pacto.vantagemQueAssusta;
-  const daqui = nucleo.territorios.provinciasDe(a).length;
-  const dele = nucleo.territorios.provinciasDe(b).length;
-  if (Math.abs(daqui - dele) >= limiar) return true;
-  return (
-    guerrasDe(nucleo, a).some((id) => id !== b) || guerrasDe(nucleo, b).some((id) => id !== a)
-  );
-}
-
-/** O prazo mais curto da escada — é por ele que o interesse entra. */
-function menorPrazoDePacto(nucleo: NucleoDaCampanha): number {
-  return Math.min(...nucleo.ajustes.diplomacia.pacto.prazos.map((p) => p.turnos));
-}
-
-/** Ele assina ESTE prazo? Confiança, ou interesse quando o prazo é o curto. */
-function aceitaOPacto(
-  nucleo: NucleoDaCampanha,
-  a: string,
-  b: string,
-  prazo: { turnos: number; opiniaoMinima: number },
-): boolean {
-  if (relacaoEntre(nucleo, a, b) >= prazo.opiniaoMinima) return true;
-  return prazo.turnos === menorPrazoDePacto(nucleo) && interesseBastaParaOPacto(nucleo, a, b);
-}
-
 export function prazosDePacto(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
-): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
-  const livre = podeFirmarPacto(nucleo, a, b, 0).pode || pactoAte(nucleo, a, b) === undefined;
+): readonly { turnos: number; pode: boolean; motivo: string }[] {
   return [...nucleo.ajustes.diplomacia.pacto.prazos]
     .sort((x, y) => y.turnos - x.turnos)
-    .map((prazo) => ({
-      ...prazo,
-      pode: livre && !emGuerra(nucleo, a, b) && aceitaOPacto(nucleo, a, b, prazo),
-    }));
+    .map((prazo) => {
+      const r = podeFirmarPacto(nucleo, a, b, prazo.turnos);
+      return { turnos: prazo.turnos, pode: r.pode, motivo: r.pode ? '' : r.motivo };
+    });
 }
 
 /**
- * Este pacto pode ser firmado?
- *
- * ⚠️ **A opinião É a aceitação, e não há uma segunda pergunta.** Perguntar depois "e você
- * aceita?" contaria a mesma confiança duas vezes: o número já diz o quanto ele confia em você.
- * Quanto mais longo o prazo, mais opinião ele pede — e é por isso que o presente vira a entrada
- * do pacto: o ouro compra o momento, e o momento compra o prazo.
+ * Este pacto pode ser firmado? **Regra, e só regra.** A vontade dele é a balança.
  */
 export function podeFirmarPacto(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
   turnos: number,
+  ouro = 0,
 ): Permissao {
   if (a === b) return { pode: false, motivo: 'não se firma pacto consigo mesmo' };
   if (!vivo(nucleo, a) || !vivo(nucleo, b)) {
@@ -595,13 +553,7 @@ export function podeFirmarPacto(
   }
   const prazo = nucleo.ajustes.diplomacia.pacto.prazos.find((p) => p.turnos === turnos);
   if (!prazo) return { pode: false, motivo: 'este prazo não existe' };
-  if (!aceitaOPacto(nucleo, a, b, prazo)) {
-    return {
-      pode: false,
-      motivo: `ele não confia tanto assim: ${prazo.turnos} turnos exigem opinião ${prazo.opiniaoMinima}`,
-    };
-  }
-  return { pode: true };
+  return podeOferecerOuro(nucleo, a, ouro);
 }
 
 /** Assina o pacto. Devolve `false` quando ele não podia ser assinado. */
@@ -610,8 +562,10 @@ export function firmarPacto(
   a: string,
   b: string,
   turnos: number,
+  ouro = 0,
 ): boolean {
-  if (!podeFirmarPacto(nucleo, a, b, turnos).pode) return false;
+  if (!podeFirmarPacto(nucleo, a, b, turnos, ouro).pode) return false;
+  transferirOferta(nucleo, a, b, ouro);
   nucleo.estado.pactos[parDe(a, b)] = nucleo.estado.turno + turnos;
   return true;
 }
@@ -636,38 +590,37 @@ export function romperPacto(nucleo: NucleoDaCampanha, quem: string, com: string)
   return true;
 }
 
-/** Os prazos de aliança que ESTE par consegue assinar hoje, do mais longo ao mais curto. */
+/** Os prazos de aliança da escada, do mais longo ao mais curto, com o que a REGRA diz. */
 export function prazosDeAlianca(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
-): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
-  const livre = aliancaAte(nucleo, a, b) === undefined && !emGuerra(nucleo, a, b);
+): readonly { turnos: number; pode: boolean; motivo: string }[] {
   return [...nucleo.ajustes.diplomacia.alianca.prazos]
     .sort((x, y) => y.turnos - x.turnos)
-    .map((prazo) => ({
-      ...prazo,
-      pode: livre && podeFirmarAlianca(nucleo, a, b, prazo.turnos).pode,
-    }));
+    .map((prazo) => {
+      const r = podeFirmarAlianca(nucleo, a, b, prazo.turnos);
+      return { turnos: prazo.turnos, pode: r.pode, motivo: r.pode ? '' : r.motivo };
+    });
 }
 
-/** Esta aliança pode ser assinada? Ver `alianca.ts` — a regra mora lá. */
+/** Esta aliança pode ser assinada? Regra, e só regra — ver `alianca.ts`. */
 export function podeFirmarAlianca(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
   turnos: number,
+  ouro = 0,
 ): Permissao {
-  return podeAliar(
+  const regra = podeAliar(
     nucleo,
     a,
     b,
     turnos,
     (x, y) => emGuerra(nucleo, x, y),
     (id) => vivo(nucleo, id),
-    relacaoEntre(nucleo, a, b),
-    inimigosComuns(nucleo, a, b),
   );
+  return regra.pode ? podeOferecerOuro(nucleo, a, ouro) : regra;
 }
 
 /** Assina a aliança. Devolve `false` quando ela não podia ser assinada. */
@@ -676,10 +629,36 @@ export function firmarAlianca(
   a: string,
   b: string,
   turnos: number,
+  ouro = 0,
 ): boolean {
-  if (!podeFirmarAlianca(nucleo, a, b, turnos).pode) return false;
+  if (!podeFirmarAlianca(nucleo, a, b, turnos, ouro).pode) return false;
+  transferirOferta(nucleo, a, b, ouro);
   assinarAlianca(nucleo, a, b, turnos);
   return true;
+}
+
+/** Ouro que acompanha uma assinatura: precisa existir e troca de cofre sem comprar opinião. */
+function podeOferecerOuro(
+  nucleo: NucleoDaCampanha,
+  de: string,
+  ouro: number,
+): Permissao {
+  if (!Number.isInteger(ouro) || ouro < 0) {
+    return { pode: false, motivo: 'a oferta precisa ser um número inteiro de moedas' };
+  }
+  if (tesouroDe(nucleo, de) < ouro) return { pode: false, motivo: 'seu tesouro não tem isso' };
+  return { pode: true };
+}
+
+function transferirOferta(
+  nucleo: NucleoDaCampanha,
+  de: string,
+  para: string,
+  ouro: number,
+): void {
+  if (ouro === 0) return;
+  gastar(nucleo, de, ouro);
+  darOuro(nucleo, para, ouro);
 }
 
 /**

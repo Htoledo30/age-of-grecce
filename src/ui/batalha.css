@@ -12,7 +12,12 @@
    ⚠️ COR É CATEGORIA, TAMANHO É GRAVIDADE. Cada canal semântico tem uma classe — choque,
    perseguicao, recuo, fim, baixas — e a cor mora só aqui. Nenhuma cor escrita por evento no
    TypeScript: o léxico inteiro se muda neste arquivo. E cor nunca anda sozinha: todo canal tem
-   também uma palavra, porque monitor ruim e daltonismo não podem custar a leitura da tela. */
+   também uma palavra, porque monitor ruim e daltonismo não podem custar a leitura da tela.
+
+   ⚠️ **E nenhum TAMANHO de texto entra aqui.** Eram DEZ — 12, 13, 14, 15, 16, 18, 20, 21, 24,
+   25 — em dezessete declarações, o pior arquivo do projeto depois de Construções. Com dez
+   degraus não há hierarquia: há ruído com aparência de intenção. Os dez saem agora dos seis de
+   `tokens.css`, escolhidos pela FUNÇÃO do texto. Ver `estilo/tokens.css`. */
 #ui > .batalha {
   position: absolute;
   inset: 0;
@@ -43,7 +48,7 @@
   padding: 22px 30px 16px;
   border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-titulo);
-  font-size: 25px;
+  font-size: var(--texto-titulo);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -52,7 +57,7 @@
 /* ── O CAMPO: os dois exércitos frente a frente ── */
 .batalha__campo {
   display: grid;
-  grid-template-columns: 1fr 64px 1fr;
+  grid-template-columns: 1fr 84px 1fr;
   align-items: start;
   gap: 0;
   padding: 18px 30px 6px;
@@ -62,6 +67,67 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  transition: opacity 320ms ease;
+}
+
+/* ── A CABEÇA DO LADO: o estandarte fincado e o nome ──
+   ⚠️ **É o que faltava para isto ser um confronto e não uma tabela.** Duas colunas espelhadas
+   resolvem a COMPARAÇÃO; não resolvem a IDENTIDADE. Os dois lados eram dois nomes na mesma
+   fonte, e a única tela do jogo em que dois povos se enfrentam era a única sem uma insígnia —
+   enquanto a lista de diplomacia, o mapa, a barra e a ficha da província já tinham todas.
+
+   Os panos pendem para FORA, um para cada lado: são duas hastes plantadas no campo, e não dois
+   ícones alinhados numa barra de ferramentas. */
+.batalha__cabeca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.batalha__lado[data-lado='b'] .batalha__cabeca {
+  justify-content: flex-end;
+}
+.batalha__cabeca .estandarte {
+  --inclinacao: -5deg;
+  transform: rotate(var(--inclinacao));
+  transform-origin: 50% 100%;
+  transition:
+    transform 420ms cubic-bezier(0.3, 1.4, 0.5, 1),
+    filter 420ms ease;
+}
+.batalha__lado[data-lado='b'] .batalha__cabeca .estandarte {
+  --inclinacao: 5deg;
+}
+
+/* ⚠️ **O DESFECHO TEM IMAGEM, e é o pagamento de assistir.** A batalha terminava com os dois
+   lados desenhados exatamente iguais e a resposta escrita numa linha de texto lá embaixo: três
+   rounds de tensão e um fim sem figura. Agora o vencedor acende e o perdedor perde a cor — e o
+   pano dele TOMBA. Uma rotação e um cinza contam quem ganhou antes de qualquer palavra.
+
+   ⚠️ **E a derrota apaga o NOME e o número, nunca a linha de estado.** A primeira tentativa
+   baixava a opacidade da coluna inteira, e o efeito foi o contrário do pretendido: a palavra
+   `CEDEU` — a única que explica o que aconteceu com aquele exército — virou o texto mais fraco
+   da tela, apagado justamente no lado em que ela importa. */
+.batalha__lado[data-fim='perdeu'] .batalha__nome,
+.batalha__lado[data-fim='perdeu'] .batalha__vivos,
+.batalha__lado[data-fim='perdeu'] .batalha__armas {
+  color: var(--ui-texto-tenue);
+}
+.batalha__lado[data-fim='perdeu'] .batalha__trilho {
+  opacity: 0.55;
+}
+.batalha__lado[data-fim='perdeu'] .estandarte {
+  --inclinacao: -26deg;
+  filter: grayscale(0.8);
+}
+.batalha__lado[data-lado='b'][data-fim='perdeu'] .estandarte {
+  --inclinacao: 26deg;
+}
+.batalha__lado[data-fim='venceu'] .batalha__nome {
+  color: var(--ui-bronze-claro);
+}
+.batalha__lado[data-fim='venceu'] .estandarte {
+  filter: drop-shadow(0 0 14px rgb(198 154 74 / 60%));
 }
 /* O lado direito é o espelho do esquerdo: mesma ordem de campos, alinhamento invertido. */
 .batalha__lado[data-lado='b'] {
@@ -70,9 +136,10 @@
 .batalha__nome {
   margin: 0;
   font-family: var(--fonte-nome);
-  font-size: 21px;
+  font-size: var(--texto-destaque);
   font-weight: 600;
   letter-spacing: 0.02em;
+  transition: color 320ms ease;
   color: var(--ui-texto);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -89,14 +156,41 @@
 .batalha__lado[data-lado='b'] .batalha__estado {
   justify-content: flex-end;
 }
+/* ⚠️ O maior texto da janela, e ele MERECE ser: o título diz onde foi a batalha, e isto diz
+   como ela está indo. Antes o nome do lado tinha 21 e o número 24 — quase o mesmo peso para uma
+   coisa que não muda e outra que muda a cada round. */
 .batalha__vivos {
   font-family: var(--fonte-numero);
-  font-size: 24px;
+  font-size: var(--texto-titulo);
   font-variant-numeric: tabular-nums;
+  line-height: 1.05;
   color: var(--ui-texto);
 }
+/* ⚠️ **O GOLPE: um lampejo de 380 ms no lado que apanhou neste round.** A barra já encolhia e o
+   fantasma já mostrava a fatia perdida — mas nada acontecia com o NÚMERO, que é onde o olho
+   está parado enquanto os rounds correm. Sem isto, um round é uma atualização; com isto, é um
+   acontecimento. Some sozinho, e não deixa cor para trás. */
+@keyframes batalha-golpe {
+  0% {
+    color: var(--ui-sangue-claro);
+    transform: translateX(var(--recuo, -4px));
+  }
+  60% {
+    color: var(--ui-sangue-claro);
+  }
+  100% {
+    color: var(--ui-texto);
+    transform: none;
+  }
+}
+.batalha__lado[data-golpe='sim'] .batalha__vivos {
+  animation: batalha-golpe 380ms ease-out;
+}
+.batalha__lado[data-lado='b'] .batalha__vivos {
+  --recuo: 4px;
+}
 .batalha__total {
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-tenue);
   font-variant-numeric: tabular-nums;
 }
@@ -167,33 +261,65 @@
     animation: none;
     opacity: 0.55;
   }
+  /* O lampejo do golpe e o tombo do estandarte são ênfase, não informação: quem pediu menos
+     movimento continua tendo a barra, o número, a palavra e o cinza do perdedor. */
+  .batalha__lado[data-golpe='sim'] .batalha__vivos {
+    animation: none;
+  }
+  .batalha__cabeca .estandarte,
+  .batalha__lado,
+  .batalha__nome,
+  .batalha__cruzada {
+    transition: none;
+  }
 }
 /* A muralha é modificador VISÍVEL: aparece ao lado de quem a tem, em vez de sumir dentro do
    número da defesa como um multiplicador escondido. */
 /* A firmeza em PALAVRA, e não em porcentagem: "45% de baixas" obriga a decorar a régua;
    "vergando" responde a pergunta que o jogador está fazendo. Cor é categoria, e vem sempre
    acompanhada da palavra — monitor ruim e daltonismo não podem custar a leitura. */
+/* ⚠️ **A palavra em versalete, a CONTA em caixa normal — e antes era tudo maiúscula.**
+   `FIRME · FALTAM 209 PARA QUEBRAR` é uma frase inteira gritada em corpo 12. Caixa alta serve a
+   UMA palavra; da segunda em diante ela custa exatamente a legibilidade de que a frase precisa
+   para ser lida de relance — é a mesma lição que a mesa de diplomacia já tinha aprendido.
+
+   A conta é o suspense inteiro desta tela: a batalha não se decide no zero, se decide quando
+   faltarem zero homens para a linha ceder. */
 .batalha__firmeza {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   margin: 0;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
-.batalha__firmeza[data-estado='rangendo'] {
+.batalha__lado[data-lado='b'] .batalha__firmeza {
+  flex-direction: row-reverse;
+}
+.batalha__firmeza-palavra {
+  flex: none;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ui-texto-fraco);
+}
+.batalha__firmeza-conta {
+  font-variant-numeric: tabular-nums;
+}
+.batalha__firmeza[data-estado='rangendo'] .batalha__firmeza-palavra {
   color: var(--ui-fogo-claro);
 }
-.batalha__firmeza[data-estado='vergando'] {
+.batalha__firmeza[data-estado='vergando'] .batalha__firmeza-palavra {
   color: var(--ui-fogo);
 }
-.batalha__firmeza[data-estado='cedeu'],
-.batalha__firmeza[data-estado='sem ninguém'] {
+.batalha__firmeza[data-estado='cedeu'] .batalha__firmeza-palavra,
+.batalha__firmeza[data-estado='sem ninguém'] .batalha__firmeza-palavra {
   color: var(--ui-sangue-claro);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
 }
 .batalha__muro {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-bronze-claro);
@@ -203,7 +329,7 @@
   margin: 2px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
 .batalha__armas li {
@@ -232,22 +358,71 @@
   margin-right: auto;
 }
 
+/* As duas lanças cruzam no meio do campo; no fim, o escudo de quem ficou com ele. */
+.batalha__cruzada .icone-grego {
+  width: 25px;
+  height: 25px;
+  stroke-width: 1.45;
+}
+/* A sobreposição faz o X: menos que isto e são duas lanças lado a lado, mais e some a haste. */
+.batalha__cruzada .icone-grego:first-child {
+  transform: scaleX(-1);
+  margin-right: -8px;
+}
+
+/* ── O MEIO DO CAMPO: o relógio da batalha ──
+   ⚠️ **Era o lugar mais vazio da tela, e devia ser o mais cheio.** Um glifo de espadas em corpo
+   20 e um `0/3` em corpo 12, numa coluna de 64 px entre os dois exércitos: o centro de uma
+   janela de batalha ocupado por duas marcas que ninguém olha. Agora ele carrega o round como
+   NÚMERO grande e as espadas mudam de cor com a fase — bronze no choque, sangue na perseguição,
+   fogo na retirada, e uma folha de louro no fim. É o único ponto da tela que se move em toda
+   rodada, e é para ele que o olho volta entre um lado e o outro. */
 .batalha__meio {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding-top: 26px;
+  gap: 3px;
+  padding-top: 30px;
   color: var(--ui-texto-tenue);
 }
 .batalha__cruzada {
-  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
   color: var(--ui-borda);
+  transition: color 260ms ease;
+}
+.batalha__meio[data-fase='choque'] .batalha__cruzada {
+  color: var(--ui-bronze);
+}
+.batalha__meio[data-fase='perseguicao'] .batalha__cruzada {
+  color: var(--ui-sangue);
+}
+.batalha__meio[data-fase='recuo'] .batalha__cruzada {
+  color: var(--ui-fogo);
+}
+.batalha__meio[data-fase='fim'] .batalha__cruzada {
+  color: var(--ui-bronze-claro);
 }
 .batalha__round {
   font-family: var(--fonte-numero);
-  font-size: 12px;
+  font-size: var(--texto-destaque);
   font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  color: var(--ui-texto-fraco);
+}
+/* No fim ele deixa de ser número e vira palavra: nada mais está contando. */
+.batalha__meio[data-fase='fim'] .batalha__round {
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-nota);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ui-bronze-claro);
+}
+.batalha__round-total {
+  font-size: var(--texto-micro);
+  letter-spacing: 0.05em;
 }
 
 /* ── A FAIXA DA FASE: um canal por vez, com palavra e cor ── */
@@ -256,7 +431,7 @@
   padding: 7px 12px;
   border-left: 3px solid var(--ui-borda);
   background: var(--ui-fundo-suave);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ui-texto-fraco);
@@ -298,17 +473,17 @@
 }
 .batalha__frase {
   display: block;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   line-height: 1.45;
   color: var(--ui-texto-fraco);
 }
 .batalha__linha[data-grave='sim'] .batalha__frase {
-  font-size: 16px;
+  font-size: var(--texto-medida);
   color: var(--ui-texto);
 }
 .batalha__linha[data-canal='inicio'] .batalha__frase {
   font-family: var(--fonte-nome);
-  font-size: 15px;
+  font-size: var(--texto-medida);
   font-style: italic;
   color: var(--ui-texto-tenue);
 }
@@ -320,11 +495,11 @@
 }
 .batalha__linha[data-canal='fim'] .batalha__frase {
   font-family: var(--fonte-nome);
-  font-size: 18px;
+  font-size: var(--texto-destaque);
   color: var(--ui-bronze-claro);
 }
 .batalha__linha[data-canal='baixas'] .batalha__frase {
-  font-size: 13px;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
 /* ⚠️ `1.762 → 1.640`, e nunca `−122` sozinho: um delta solto não diz se foi arranhão ou
@@ -335,7 +510,7 @@
   gap: 18px;
   margin-top: 3px;
   font-family: var(--fonte-numero);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto-tenue);
 }
@@ -354,7 +529,7 @@
 }
 .batalha__botao {
   font: inherit;
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   padding: 9px 20px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);

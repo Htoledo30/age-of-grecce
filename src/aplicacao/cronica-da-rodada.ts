@@ -20,6 +20,19 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   const linhas: LinhaDaCronica[] = [];
   const relatorio = campanha.rodada;
 
+  /**
+   * Este acontecimento me envolve? Decide o TOM e o BLOCO da linha.
+   *
+   * ⚠️ **Existe porque a crônica estava pintando o mundo inteiro de vermelho.** O padrão antigo
+   * era `vencedor === eu ? 'ganho' : 'perda'` — e isso fazia uma batalha entre Corinto e Mégara,
+   * que não me custa um homem, sair com moldura de sangue e o mesmo peso da queda da minha
+   * capital. Era literalmente a queixa de Henrique: *"a crônica mistura muita coisa pouco
+   * relevante com o que é importante"*. Quem não é parte da briga é `neutro` e vai para baixo.
+   */
+  const envolveMim = (...envolvidos: readonly (string | null | undefined)[]): boolean =>
+    eu !== null && envolvidos.includes(eu);
+  const peso = (envolvido: boolean): 'grave' | 'normal' => (envolvido ? 'grave' : 'normal');
+
   // ⚠️ **A diplomacia vem ANTES das batalhas, e a ordem importa.** Declarar guerra e marchar
   // acontecem no mesmo turno: sem esta linha em cima, o jogador leria "Batalha em Elêusis" sem
   // nunca ter sabido que alguém tinha declarado guerra a ele. É por aqui que ele descobre.
@@ -29,6 +42,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     if (noticia.tipo === 'guerra') {
       linhas.push({
         tom: comigo && noticia.de !== eu ? 'perda' : 'neutro',
+        peso: peso(comigo),
         icone: 'lanca',
         texto: comigo
           ? noticia.de === eu
@@ -40,6 +54,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     }
     linhas.push({
       tom: comigo ? 'ganho' : 'neutro',
+      peso: peso(comigo),
       icone: 'templo',
       texto: comigo
         ? `Paz assinada com ${nomeDoPoder(outro)}.`
@@ -57,9 +72,12 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
         : batalha.tipo === 'assalto'
           ? `Assalto a ${atlas.nomeDe(batalha.provincia)}`
           : `Batalha em ${atlas.nomeDe(batalha.provincia)}`;
+    // Minha ou dos outros? A mesma pergunta serve para os dois casos abaixo.
+    const minhaBriga = envolveMim(batalha.vencedor, ...batalha.perdedores);
     if (batalha.vencedor === null) {
       linhas.push({
-        tom: 'perda',
+        tom: minhaBriga ? 'perda' : 'neutro',
+        peso: peso(minhaBriga),
         icone: 'lanca',
         // Forças iguais não deixam ninguém em pé: é o único resultado sem vencedor, e sem
         // esta linha o jogador veria as duas peças sumirem sem explicação.
@@ -69,7 +87,8 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     }
     const perdedores = batalha.perdedores.map(nomeDoPoder).join(', ');
     linhas.push({
-      tom: batalha.vencedor === eu ? 'ganho' : 'perda',
+      tom: batalha.vencedor === eu ? 'ganho' : minhaBriga ? 'perda' : 'neutro',
+      peso: peso(minhaBriga),
       icone: 'lanca',
       texto:
         `${onde} — ${nomeDoPoder(batalha.vencedor)} venceu ${perdedores}; ` +
@@ -86,14 +105,19 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     const deQuemEra = tomada ? tomada.de : campanha.donoDe(morte.provincia);
     linhas.push({
       tom: deQuemEra === eu ? 'perda' : 'neutro',
+      peso: peso(deQuemEra === eu),
       icone: 'capacete',
       texto: `A milícia de ${atlas.nomeDe(morte.provincia)} perdeu ${numero(morte.mortos)} defensores.`,
     });
   }
 
   for (const conquista of relatorio.conquistas) {
+    // ⚠️ **Terra que troca de mãos entre DOIS VIZINHOS não é perda minha.** Era pintada como
+    // se fosse — e numa guerra grande longe de mim isso enchia a crônica de vermelho.
+    const minha = envolveMim(conquista.de, conquista.para);
     linhas.push({
-      tom: conquista.para === eu ? 'ganho' : 'perda',
+      tom: conquista.para === eu ? 'ganho' : conquista.de === eu ? 'perda' : 'neutro',
+      peso: peso(minha),
       icone: 'territorio',
       texto: `${atlas.nomeDe(conquista.provincia)} passou de ${nomeDoPoder(conquista.de)} para ${nomeDoPoder(conquista.para)}.`,
     });
@@ -113,8 +137,13 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
       const nome = campanha.nomeDaObra(saque.obra);
       partes.push(saque.nivel === 0 ? `${nome} foi ao chão` : `${nome} caiu para o nível ${saque.nivel}`);
     }
+    // A cidade saqueada é minha agora, ou era minha até esta rodada? Nos dois casos o estrago
+    // é meu, e é o que separa a notícia do saque distante.
+    const tomada = relatorio.conquistas.find((c) => c.provincia === saque.provincia);
+    const meuEstrago = envolveMim(campanha.donoDe(saque.provincia), tomada?.de);
     linhas.push({
       tom: 'perda',
+      peso: peso(meuEstrago),
       icone: 'territorio',
       texto: `${atlas.nomeDe(saque.provincia)} foi tomada à força: ${partes.join(' e ')}.`,
     });
@@ -125,6 +154,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   for (const queda of campanha.quedasDeCapital) {
     linhas.push({
       tom: queda.poder === eu ? 'perda' : 'neutro',
+      peso: peso(queda.poder === eu),
       icone: 'templo',
       texto:
         queda.poder === eu
@@ -137,8 +167,10 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   // Só os cercos NOVOS: um cerco que dura oito rodadas não é oito notícias. Quem quer saber
   // que ele continua olha a bandeira no mapa ou a ficha da província.
   for (const cerco of relatorio.cercos.filter((c) => c.novo)) {
+    const sitiado = campanha.donoDe(cerco.provincia);
     linhas.push({
-      tom: cerco.sitiante === eu ? 'ganho' : 'perda',
+      tom: cerco.sitiante === eu ? 'ganho' : sitiado === eu ? 'perda' : 'neutro',
+      peso: peso(envolveMim(cerco.sitiante, sitiado)),
       icone: 'fogo',
       texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)} — sem produção nem trânsito lá dentro.`,
     });
@@ -150,6 +182,8 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   if (comida && comida.saldoCivil < 0) {
     linhas.push({
       tom: 'perda',
+      // O reino que passa fome é sempre o meu — a conta só é buscada quando `eu` existe.
+      peso: 'grave',
       icone: 'celeiro',
       texto: `Fome no reino: o saldo civil fechou em −${-comida.saldoCivil}.`,
     });
@@ -160,6 +194,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   for (const morte of campanha.fome.provincias) {
     linhas.push({
       tom: campanha.donoDe(morte.provincia) === eu ? 'perda' : 'neutro',
+      peso: peso(campanha.donoDe(morte.provincia) === eu),
       icone: 'celeiro',
       texto: `${atlas.nomeDe(morte.provincia)} passou fome: ${numero(morte.mortos)} morreram.`,
     });
@@ -167,6 +202,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   for (const perda of campanha.fome.tropas) {
     linhas.push({
       tom: perda.poder === eu ? 'perda' : 'neutro',
+      peso: peso(perda.poder === eu),
       icone: 'capacete',
       texto: `Sem mantimento, ${nomeDoPoder(perda.poder)} perdeu ${numero(perda.homens)} homens em armas.`,
     });
@@ -176,6 +212,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   for (const levante of campanha.revoltas) {
     linhas.push({
       tom: campanha.donoDe(levante.provincia) === eu ? 'perda' : 'neutro',
+      peso: peso(campanha.donoDe(levante.provincia) === eu),
       icone: 'fogo',
       texto:
         `${atlas.nomeDe(levante.provincia)} se levanta: ${numero(levante.homens)} ` +
@@ -184,8 +221,13 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   }
 
   for (const cerco of relatorio.cercosLevantados) {
+    // ⚠️ **`ganho` era o padrão para TODO cerco levantado que não fosse meu** — inclusive o de
+    // dois vizinhos do outro lado do mapa, que não me dá nada. Ganho é só quando a cidade
+    // livrada é minha.
+    const livrada = campanha.donoDe(cerco.provincia);
     linhas.push({
-      tom: cerco.sitiante === eu ? 'perda' : 'ganho',
+      tom: cerco.sitiante === eu ? 'perda' : livrada === eu ? 'ganho' : 'neutro',
+      peso: peso(envolveMim(cerco.sitiante, livrada)),
       icone: 'escudo',
       texto: `O cerco de ${atlas.nomeDe(cerco.provincia)} acabou: ${nomeDoPoder(cerco.sitiante)} não está mais na frente dela.`,
     });

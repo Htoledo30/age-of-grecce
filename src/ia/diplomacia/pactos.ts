@@ -1,55 +1,76 @@
 /**
- * QUANDO A IA ASSINA UM PACTO DE NÃO-AGRESSÃO.
+ * QUANDO A IA ASSINA UM PACTO DE NÃO-AGRESSÃO — **e o que ela pesa antes de assinar.**
  *
- * A pergunta é uma só, e ela é honesta: **"eu não vou atacar este aqui de qualquer jeito — e
- * ele pode me atacar. Não é melhor amarrar?"**
+ * Um pacto amarra as mãos dos dois. A pergunta de quem decide é honesta: *"o que eu ganho
+ * amarrando as minhas, e o que eu perco?"* — e a resposta é uma BALANÇA (ver `balanca.ts`):
  *
- * Três condições, e as três saem de números que já existem:
+ * - **a favor:** a confiança que ele tem em você; o medo, se você é maior em terra ou em
+ *   armas; as mãos ocupadas, se ele já tem guerra em outro lugar; e o ouro que vier junto;
+ * - **contra:** o temperamento dele (o guerreiro precisa de razão para não atacar); a COBIÇA,
+ *   se ele tem terra sua que vale a marcha; e o prazo, que cobra por turno acima do mais curto.
  *
- * 1. **Eu não o atacaria mesmo.** A opinião está acima de `relacaoParaDeclarar`, que é o mesmo
- *    limiar que já decide a guerra. Assinar com quem ela pretende atacar seria assinar para
- *    romper — e romper custa a reputação com o mapa inteiro.
- * 2. **Ele é mais forte do que eu.** Pacto é seguro, e seguro se faz contra o risco: um vizinho
- *    menor não me assusta, e amarrar minhas mãos contra ele só me tiraria opções.
- * 3. **⚠️ E ELE também não pretende me atacar.** Sem esta terceira, a assinatura era de um lado
- *    só: o fraco amarrava o forte, o forte ia comer quem não tinha amarrado, e a medição foi
- *    brutal — **46 províncias mudando de dono e 12 poderes eliminados**, contra 22 e 6 sem
- *    pacto nenhum. Um poder forte não ata as próprias mãos de graça, e fingir que ata só
- *    canalizava a violência para o vizinho mais indefeso.
+ * ⚠️ **Antes disto a pergunta era uma só — "a opinião passa da linha?" — dos dois lados, e ela
+ * mentia duas vezes.** A regra dizia SIM por medo (Henrique: *"quantos países se odeiam e fazem
+ * pactos"*) e a vontade dizia NÃO pela mesma opinião: Mégara com −50 recusava no clique um
+ * pacto que a mesa mostrava possível. E o forte com apetite assinava por amizade: o pacto
+ * assinado sem o forte querer foi medido em **46 províncias mudando de dono e 12 poderes
+ * eliminados**, contra 22 e 6. A cobiça na balança é o que impede o fraco de amarrar o forte.
  *
- * ⚠️ **E ela NUNCA rompe um pacto**, nesta primeira versão. Não é ingenuidade: é o que faz a
- * assinatura dela valer alguma coisa para o jogador. Uma IA que assina e trai é uma IA cuja
- * assinatura ninguém lê — e aí a mecânica inteira morre, junto com o presente que a comprou. No
- * dia em que ela romper, tem de ser raro, caro e por um motivo grande.
+ * ⚠️ **E ela NUNCA rompe um pacto**, nesta versão. Não é ingenuidade: é o que faz a assinatura
+ * dela valer alguma coisa para o jogador. Uma IA que assina e trai é uma IA cuja assinatura
+ * ninguém lê — e aí a mecânica inteira morre. No dia em que ela romper, tem de ser raro, caro e
+ * por um motivo grande.
  *
- * O prazo é **o mais longo que a confiança dele alcança**: o pacto é o prêmio de uma relação
- * boa, e quem chegou a +50 merece os 40 turnos. Quem só chegou a 0 leva 10 e recomeça a
- * conversa depois.
+ * O prazo é **o mais longo em que os dois saldos fecham**: quem chegou longe merece os oitenta
+ * turnos; quem mal fecha leva vinte e recomeça a conversa depois.
  */
 
 import type { Campanha } from '@/campanha/campanha';
-import type { EstiloDeIa, Ia } from '@/dados/esquema';
+import type { Ajustes, EstiloDeIa, Ia } from '@/dados/esquema';
 import { estiloDe } from '../estilo';
 import { forcaTotalDe } from '../percepcao/ameaca';
 import { oportunidadesDe } from '../percepcao/oportunidade';
+import {
+  type Balanca,
+  type ExtrasDaBalanca,
+  type Lados,
+  cobica,
+  cobicadasPor,
+  confianca,
+  maosOcupadas,
+  medo,
+  ouro,
+  pesar,
+  prazo,
+  prazoMaisCurto,
+  temperamento,
+} from './balanca';
+
+type AjustesDoJogo = Ajustes['jogo'];
 
 /**
- * Este poder ASSINARIA um pacto com aquele?
+ * A balança de `ele` diante de um pacto de `turnos` proposto por `voce`.
  *
- * Uma pergunta só, e é a mesma que decide a guerra pelo avesso: *eu pretendo atacá-lo?* Quem
- * pretende não assina — assinar para romper custaria a reputação com o mapa inteiro.
- *
- * ⚠️ É consultada dos DOIS lados, e é o que impede o fraco de amarrar o forte. Serve também à
- * proposta que vem do jogador: a aplicação pergunta aqui antes de registrar o acordo, do mesmo
- * jeito que já faz com a paz.
+ * É a MESMA função nas três bocas: a mesa pergunta antes do clique, a aplicação pergunta no
+ * clique, e a IA pergunta quando dois computadores negociam. Não há segunda pergunta.
  */
-export function aceitaPacto(
+export function balancaDoPacto(
   campanha: Campanha,
-  idPoder: string,
-  com: string,
+  lados: Lados,
+  turnos: number,
   estilo: EstiloDeIa,
-): boolean {
-  return campanha.relacaoEntre(idPoder, com) > estilo.relacaoParaDeclarar;
+  ajustes: AjustesDoJogo,
+  extras: ExtrasDaBalanca = {},
+): Balanca {
+  return pesar([
+    confianca(campanha, lados, estilo),
+    temperamento(estilo),
+    medo(campanha, lados, estilo, ajustes),
+    maosOcupadas(campanha, lados, estilo, ajustes),
+    cobica(campanha, lados, estilo, ajustes, extras.cobicadas),
+    prazo(turnos, prazoMaisCurto(ajustes.diplomacia.pacto.prazos), ajustes),
+    ouro(campanha, lados, extras.ouro ?? 0, estilo, ajustes),
+  ]);
 }
 
 /**
@@ -144,6 +165,7 @@ export function comercioEscolhido(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,
+  dados: Ia,
 ): string | null {
   let escolhido: string | null = null;
   let melhor = 0;
@@ -152,7 +174,10 @@ export function comercioEscolhido(
     if (outro === idPoder) continue;
     if (!campanha.podeAcordarComercio(outro, idPoder).pode) continue;
     // Abrir comércio com quem ela pretende atacar é montar renda para perdê-la amanhã.
-    if (campanha.relacaoEntre(idPoder, outro) <= estilo.relacaoParaDeclarar) continue;
+    if (!aceitaComercio(campanha, idPoder, outro, estilo)) continue;
+    // Comércio precisa do sim dos DOIS. Sem esta pergunta, a mesma IA que recusava o jogador
+    // assinava com outro computador na mesma opinião, porque só a vontade do proponente entrava.
+    if (!aceitaComercio(campanha, outro, idPoder, estiloDe(dados, outro))) continue;
     const renda = campanha.rendaDeUmAcordoCom(outro, idPoder);
     if (renda > melhor) {
       melhor = renda;
@@ -162,33 +187,62 @@ export function comercioEscolhido(
   return escolhido;
 }
 
-/** Com quem e por quanto tempo este poder assinaria um pacto agora. `null` se com ninguém. */
+/** Este poder abriria comércio com aquele? A mesma pergunta na mesa, no clique e entre IAs. */
+export function aceitaComercio(
+  campanha: Campanha,
+  idPoder: string,
+  com: string,
+  estilo: EstiloDeIa,
+): boolean {
+  return campanha.relacaoEntre(idPoder, com) > estilo.relacaoParaDeclarar;
+}
+
+/**
+ * Com quem e por quanto tempo este poder assinaria um pacto agora. `null` se com ninguém.
+ *
+ * ⚠️ **Quem propõe precisa de mais do que "não me importo".** A balança PRÓPRIA tem de passar
+ * de `iniciativa`: ninguém abre a boca por um acordo indiferente. E a do outro tem de fechar —
+ * pedir a quem diria não seria pedir para ouvir não. Entre dois candidatos, o de maior saldo
+ * próprio: a força do vizinho já está lá dentro, no medo.
+ *
+ * Com o jogador a assinatura vira PEDIDO na mesa, e a segunda balança é a que ele TERIA se
+ * jogasse como o estilo que `dados/ia.json` lhe dá: a IA não sabe o que ele quer, e é assim
+ * que ela evita encher a mesa com o que ele nunca aceitaria.
+ */
 export function pactoEscolhido(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,
   dados: Ia,
+  ajustes: AjustesDoJogo,
 ): { com: string; turnos: number } | null {
-  const meu = forcaTotalDe(campanha, idPoder);
+  const iniciativa = ajustes.diplomacia.balanca.iniciativa;
   // Os vizinhos, pela mesma percepção que a guerra usa: pacto só faz sentido com quem encosta.
   const vizinhos = [...new Set(oportunidadesDe(campanha, idPoder).map((o) => o.dono))].sort();
+  const prazos = [...ajustes.diplomacia.pacto.prazos].sort((x, y) => y.turnos - x.turnos);
 
-  let escolhido: { com: string; turnos: number } | null = null;
-  let maisForte = meu;
+  let escolhido: { com: string; turnos: number; saldo: number } | null = null;
   for (const vizinho of vizinhos) {
     if (campanha.pactoAte(idPoder, vizinho) !== undefined) continue;
     if (campanha.emGuerra(idPoder, vizinho)) continue;
-    // Assinar com quem ela pretende atacar seria assinar para romper.
-    if (!aceitaPacto(campanha, idPoder, vizinho, estilo)) continue;
-    // E ele também precisa querer: um poder forte não ata as próprias mãos de graça.
-    if (!aceitaPacto(campanha, vizinho, idPoder, estiloDe(dados, vizinho))) continue;
-    const dele = forcaTotalDe(campanha, vizinho);
-    if (dele <= maisForte) continue;
-    // O prazo mais longo que a confiança dele alcança: `prazosDePacto` já vem do maior ao menor.
-    const prazo = campanha.prazosDePacto(vizinho, idPoder).find((p) => p.pode);
-    if (!prazo) continue;
-    maisForte = dele;
-    escolhido = { com: vizinho, turnos: prazo.turnos };
+    const estiloDele = estiloDe(dados, vizinho);
+    const meusLados: Lados = { ele: idPoder, voce: vizinho };
+    const ladosDele: Lados = { ele: vizinho, voce: idPoder };
+    // A cobiça lê uma previsão de batalha por província: uma vez por par, não por prazo.
+    const minhas = { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
+    const delas = { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
+    // Do prazo mais longo ao mais curto: o primeiro em que os dois saldos fecham.
+    for (const p of prazos) {
+      if (!campanha.podeFirmarPacto(vizinho, p.turnos, idPoder).pode) continue;
+      const minha = balancaDoPacto(campanha, meusLados, p.turnos, estilo, ajustes, minhas);
+      if (minha.saldo < iniciativa) continue;
+      const dele = balancaDoPacto(campanha, ladosDele, p.turnos, estiloDele, ajustes, delas);
+      if (dele.saldo < 0) continue;
+      if (escolhido === null || minha.saldo > escolhido.saldo) {
+        escolhido = { com: vizinho, turnos: p.turnos, saldo: minha.saldo };
+      }
+      break;
+    }
   }
-  return escolhido;
+  return escolhido === null ? null : { com: escolhido.com, turnos: escolhido.turnos };
 }

@@ -31,7 +31,13 @@ interface EconomiaDaProvincia {
   /** Impostos + produção + trânsito − construções − tropas. É o número da medida. */
   saldo: number;
   impostos: number;
-  /** Fração do imposto que a corrupção comeu, de 0 a 1. */
+  /**
+   * Fração que a corrupção comeu das TRÊS parcelas, de 0 a 1.
+   *
+   * ⚠️ **Das três, e não só do imposto** — `economia.ts` a aplica a impostos, produção e
+   * trânsito antes de eles chegarem aqui, porque corrupção é o que se perde entre a província
+   * e o tesouro e não pergunta de onde veio a moeda. Os números acima já são o que sobrou.
+   */
   corrupcao: number;
   producao: number;
   transito: number;

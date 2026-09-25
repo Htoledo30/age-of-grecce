@@ -27,7 +27,7 @@
 import { definirTooltip } from '../tooltip';
 import { criarEstandarte } from '../estandartes';
 import { medidasDa } from './medidas';
-import { faseDoCerco, romano, tooltipDoCerco } from './textos';
+import { faseDoCerco, romano, tooltipDoCerco, tooltipDoHumor } from './textos';
 import type { VistaDaProvincia } from './vista';
 
 export type { VistaDaProvincia } from './vista';
@@ -176,6 +176,8 @@ export class FichaProvincia {
     if (vista.economia?.revoltosa) {
       linhas.push(alarme('perigo', 'Em revolta: nenhum imposto entra.'));
     }
+    const aviso = this.avisoDoHumor(vista);
+    if (aviso) linhas.push(aviso);
     if (vista.economia?.cortada) {
       linhas.push(alarme('atencao', 'Rota até a capital cortada.'));
     }
@@ -186,6 +188,46 @@ export class FichaProvincia {
       );
     }
     return linhas;
+  }
+
+  /**
+   * POR QUE este povo está assim — a frase que faltava, e o pedido literal de Henrique.
+   *
+   * ⚠️ **A conta já existia inteira e vivia escondida atrás do mouse parado.** O painel
+   * mostrava `12 ↓` e as parcelas só apareciam no tooltip da medida; ele resumiu o problema
+   * assim: *"quero olhar para uma província e entender 'esse povo está revoltado porque eu
+   * conquistei recentemente, aumentei impostos e existe uma guerra acontecendo' — e não apenas
+   * humor = 27"*. A informação estava pronta; faltava pô-la na tela.
+   *
+   * Mora nos AVISOS, e não na nota da medida, por uma razão de espaço: a coluna da medida tem
+   * 95 px, e "de outro povo (85%)" sozinho já quebra em três linhas ali, desalinhando as
+   * outras três medidas. O aviso ocupa a largura da ficha e é justamente a faixa do "o que
+   * está errado".
+   *
+   * Só as TRÊS maiores, e só as negativas: a lista inteira é o tooltip, que continua aqui.
+   * Quem lê um alarme quer a causa principal, não o balancete.
+   */
+  private avisoDoHumor(vista: VistaDaProvincia): HTMLElement | null {
+    const h = vista.humor;
+    if (!h) return null;
+    // Duas situações merecem alarme, e são diferentes: a terra que JÁ está no fundo, e a que
+    // ainda está bem mas está CAINDO. A segunda é a que dá tempo de reagir — e era invisível.
+    const caindo = h.alvo < h.valor;
+    const ruim = h.posicao <= 0.25;
+    if (!caindo && !ruim) return null;
+    const causas = h.parcelas
+      .filter((p) => p.pontos < 0)
+      .slice()
+      .sort((a, b) => a.pontos - b.pontos)
+      .slice(0, 3)
+      .map((p) => p.rotulo);
+    if (causas.length === 0) return null;
+    const aviso = alarme(
+      ruim ? 'perigo' : 'atencao',
+      `${caindo ? `Humor caindo para ${h.alvo}` : `Humor em ${h.valor}`}: ${causas.join(', ')}.`,
+    );
+    definirTooltip(aviso, tooltipDoHumor(h.valor, h));
+    return aviso;
   }
 }
 

@@ -10,7 +10,6 @@ import { forcaDe } from '@/combate/exercito';
 import type { Exercito } from '@/combate/exercito';
 import type { TrechoDeMarcha } from '@/ui/animacao-de-marcha';
 import type { MarcaDeCerco } from '@/ui/cercos-mapa';
-import type { Destino } from '@/ui/destinos-mapa';
 import type { MarcadorDeHoste } from '@/ui/hostes-mapa';
 import type { OrdemNoMapa, PontoDeMarcha, PrevisaoDeMarcha } from '@/ui/marchas-mapa';
 import type { Jogo } from '../contexto';
@@ -54,6 +53,47 @@ function pontoDe(jogo: Jogo, idProvincia: string): PontoDeMarcha {
 }
 
 /**
+ * Onde fica a peça de quem JÁ TEM ORDEM: **no meio da própria seta, na estrada.**
+ *
+ * ⚠️ **É o lugar que o destacamento pedia, e a primeira tentativa errou.** Quando mandar parte
+ * da tropa passou a partir a hoste na hora, as duas peças nasciam no mesmo centro de província e
+ * eu as afastei de lado, em pixel de tela. Henrique, olhando: *"a única coisa que precisa
+ * arrumar é onde ele fica quando se separam. gostaria que ele andasse em direção da seta, o mais
+ * perto do meio da seta possível, como se estivesse se deslocando mesmo"*.
+ *
+ * Ele está certo, e o afastamento lateral era arbitrário: dizia "há duas coisas aqui" e não
+ * dizia qual delas está de partida. Sobre a linha, a peça diz as duas de uma vez — quem fica
+ * está na cidade, quem vai já está na estrada, e a seta deixa de ser um enfeite ao lado do
+ * marcador para virar o caminho em que ele anda.
+ *
+ * ⚠️ **Meio do CAMINHO ANDADO, e não da linha reta.** Uma rota de três trechos dobra: o ponto
+ * médio entre as duas pontas cairia fora da estrada, às vezes no mar. Este anda a polilinha até
+ * gastar metade do comprimento dela, que é onde o olho vê o meio da seta.
+ */
+function meioDaMarcha(pontos: readonly PontoDeMarcha[]): PontoDeMarcha | null {
+  if (pontos.length < 2) return null;
+  const trechos = pontos.slice(1).map((p, i) => {
+    const anterior = pontos[i] as PontoDeMarcha;
+    return Math.hypot(p.x - anterior.x, p.y - anterior.y);
+  });
+  const total = trechos.reduce((soma, t) => soma + t, 0);
+  if (total <= 0) return null;
+  let faltam = total / 2;
+  for (const [i, comprimento] of trechos.entries()) {
+    if (comprimento <= 0) continue;
+    if (faltam > comprimento) {
+      faltam -= comprimento;
+      continue;
+    }
+    const de = pontos[i] as PontoDeMarcha;
+    const para = pontos[i + 1] as PontoDeMarcha;
+    const fracao = faltam / comprimento;
+    return { x: de.x + (para.x - de.x) * fracao, y: de.y + (para.y - de.y) * fracao };
+  }
+  return pontos[pontos.length - 1] ?? null;
+}
+
+/**
  * Onde desenhar cada hoste, e de que cor. **Uma peça por HOSTE, não por província.**
  *
  * ⚠️ Era uma por província, e por isso o segundo exército sumia do mapa: numa cidade sitiada
@@ -64,11 +104,41 @@ function pontoDe(jogo: Jogo, idProvincia: string): PontoDeMarcha {
 export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
   const { campanha, atlas, selecao } = jogo;
   const meu = campanha.jogador?.id ?? null;
+  /**
+   * Quantas peças do MESMO poder já saíram nesta província — o desvio de cada uma.
+   *
+   * ⚠️ **É o preço do destacamento, e ele é de interface.** Desde que mandar parte da hoste a
+   * parte na hora, duas peças suas ocupam o mesmo centro de província durante a rodada; sem
+   * desviar, a de baixo some sob a de cima e deixa de receber clique — o jogador divide a tropa
+   * e perde metade dela de vista. Espalhadas, ele vê as duas colunas e comanda qualquer uma.
+   */
+  const jaNoLugar = new Map<string, number>();
+  const desvioDe = (idPoder: string, provincia: string): number => {
+    const chave = `${idPoder}@${provincia}`;
+    const quantas = jaNoLugar.get(chave) ?? 0;
+    jaNoLugar.set(chave, quantas + 1);
+    // 0, +46, −46, +92, −92… A primeira fica no centro, para que uma província com uma hoste
+    // só continue exatamente como sempre foi. O passo é a largura mínima da peça mais um fio:
+    // menos que isso e as duas se encostam, que foi o que a primeira medição mostrou.
+    const passo = Math.ceil(quantas / 2) * 46;
+    return quantas === 0 ? 0 : quantas % 2 === 1 ? passo : -passo;
+  };
   // `campanha.hostes()` já vem ordenado por id: a ordem no DOM não pode depender de quem foi
   // recrutado primeiro.
   const emArmas = campanha.hostes().map((exercito) => {
     const poder = campanha.poder(exercito.poder);
-    const onde = pontoDaHoste(jogo, exercito);
+    // ⚠️ **Quem tem ordem já está na estrada.** É o que separa as duas peças de um
+    // destacamento sem inventar deslocamento nenhum: a que fica mora no centro da província, a
+    // que parte mora no meio da seta dela. Ver `meioDaMarcha`.
+    const ordemDela = campanha.ordemDaHoste(exercito.id);
+    const naEstrada =
+      ordemDela === undefined
+        ? null
+        : meioDaMarcha([
+            pontoDe(jogo, ordemDela.origem),
+            ...ordemDela.rota.map((id) => pontoDe(jogo, id)),
+          ]);
+    const onde = naEstrada ?? pontoDaHoste(jogo, exercito);
     const cerco = campanha.cercoEm(exercito.posicao);
     const formacao = campanha.formacaoEm(exercito.posicao);
     // A leva engrossa o marcador da hoste do MESMO poder. Numa cidade sitiada a leva é do
@@ -79,6 +149,9 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
       provincia: exercito.posicao,
       x: onde.x,
       y: onde.y,
+      // Só quem está no centro da província disputa lugar: quem já saiu para a estrada tem o
+      // caminho dele só para si.
+      desvio: naEstrada ? 0 : desvioDe(exercito.poder, exercito.posicao),
       forca: forcaDe(exercito),
       emFormacao: leva,
       // A cor é a do DONO DA HOSTE, não a do chão: assim que a tropa pisar em terra alheia as
@@ -109,6 +182,7 @@ export function marcadoresDasHostes(jogo: Jogo): MarcadorDeHoste[] {
         provincia,
         x: centro.x,
         y: centro.y,
+        desvio: desvioDe(formacao.poder, provincia),
         forca: 0,
         emFormacao: homensEmFormacao(formacao),
         cor: poder.cor,
@@ -187,6 +261,24 @@ function rotasDe(jogo: Jogo, idHoste: string, foco: RotasEmFoco): ReadonlyMap<st
   return foco.idHoste === idHoste ? foco.rotas : jogo.campanha.rotasLongasDaHoste(idHoste);
 }
 
+/**
+ * A rota da marcha em composição — **UMA, a do lugar para onde o jogador está olhando.**
+ *
+ * ⚠️ **Eram todas ao mesmo tempo, e é isto que travava o jogo.** Esta função montava os pontos
+ * de cada destino alcançável: quatro sem Porto, e **cento e noventa e nove com ele**, porque o
+ * cais abre o mar e o mar leva a toda parte. Medido com GPU de verdade na máquina do Henrique,
+ * no cenário dele: o quadro ia de 7 ms para **405 ms — 2,4 quadros por segundo**. E a conta era
+ * inteira de PINTURA: escondendo só a camada das rotas, com todo o JavaScript rodando igual, o
+ * mesmo quadro voltava a 18,6 ms. A busca de rotas, que parecia a culpada óbvia, custa 0,1 ms.
+ *
+ * Henrique: *"não faz sentido já ter todas as rotas à mostra, ou pontos. as rotas só deveriam
+ * aparecer quando eu clicasse na zona/província que eu queira que meu exército vá"*. Ele estava
+ * descrevendo o conserto sem saber: com uma rota por vez o mesmo quadro custa 21 ms.
+ *
+ * Duas rotas podem existir ao mesmo tempo, e só duas: a do ponteiro e a do alvo hostil já
+ * apontado — porque enquanto ele decide entre assaltar e sitiar, a rota que está em jogo tem de
+ * continuar desenhada mesmo que o mouse ande para outro lado.
+ */
 export function previsaoDaMarcha(jogo: Jogo, foco: RotasEmFoco = SEM_ROTAS): {
   origem: PontoDeMarcha | null;
   rotas: PrevisaoDeMarcha[];
@@ -199,12 +291,24 @@ export function previsaoDaMarcha(jogo: Jogo, foco: RotasEmFoco = SEM_ROTAS): {
   if (!hoste) return { origem: null, rotas: [] };
   const origem = pontoDe(jogo, hoste.posicao);
   const poder = hoste.poder;
-  const rotas = [...rotasDe(jogo, selecao.marchando, foco)].map(([destino, rota]) => ({
-    destino,
-    pontos: [origem, ...rota.map((id) => pontoDe(jogo, id))],
-    hostil:
-      poder !== undefined && !campanha.ehMar(destino) && campanha.donoDe(destino) !== poder,
-  }));
+  const todas = rotasDe(jogo, selecao.marchando, foco);
+  const querem = [selecao.alvoHostil, selecao.destinoApontado];
+  const vistos = new Set<string>();
+  const rotas: PrevisaoDeMarcha[] = [];
+  for (const destino of querem) {
+    if (destino === null || vistos.has(destino)) continue;
+    const rota = todas.get(destino);
+    // Sem rota não há linha: apontar Corinto do outro lado do mapa não desenha nada, e é o
+    // silêncio que diz que dali não se chega. A recusa em palavra vem do clique.
+    if (!rota) continue;
+    vistos.add(destino);
+    rotas.push({
+      destino,
+      pontos: [origem, ...rota.map((id) => pontoDe(jogo, id))],
+      hostil:
+        poder !== undefined && !campanha.ehMar(destino) && campanha.donoDe(destino) !== poder,
+    });
+  }
   return { origem, rotas };
 }
 
@@ -231,20 +335,20 @@ export function ordensNoMapa(jogo: Jogo): OrdemNoMapa[] {
   });
 }
 
-/** Para onde a marcha em composição pode ir. Vazio fora do modo de marcha. */
-export function destinosDaMarcha(jogo: Jogo, foco: RotasEmFoco = SEM_ROTAS): Destino[] {
-  const { campanha, atlas, ajustes, selecao } = jogo;
-  if (selecao.marchando === null) return [];
-  const poder = campanha.hoste(selecao.marchando)?.poder;
-  return [...rotasDe(jogo, selecao.marchando, foco)].map(([id, rota]) => {
-    const p = atlas.provincia(id);
-    return {
-      provincia: id,
-      nome: p.nome,
-      x: p.centro.x,
-      y: p.centro.y,
-      hostil: poder !== undefined && !campanha.ehMar(id) && campanha.donoDe(id) !== poder,
-      turnos: Math.ceil(rota.length / ajustes.jogo.combate.saltosPorRodada),
-    };
-  });
-}
+/**
+ * ⚠️ **`destinosDaMarcha` NÃO EXISTE MAIS, e este comentário é a lápide dela.**
+ *
+ * Ela devolvia um botão por destino alcançável para a camada `destinos-mapa`: quatro sem Porto,
+ * cento e noventa e nove com ele. Henrique, jogando: *"não faz sentido já ter todas as rotas à
+ * mostra, ou pontos. igual em age of history 2: eu clico na minha tropa e movo ela para onde eu
+ * quiser só selecionando uma província/zona"*.
+ *
+ * Ele está certo por duas razões independentes. A de desenho: uma lista de alvos pré-marcados
+ * responde uma pergunta que o jogador não fez — ele já sabe para onde quer ir. A de custo: com
+ * os botões, o único jeito de o mapa dizer "aqui dá" era desenhar a rota de todos ao mesmo
+ * tempo, e isso derrubava o jogo para 2,4 quadros por segundo.
+ *
+ * Agora o mapa inteiro é clicável enquanto a marcha está sendo composta; a rota aparece sob o
+ * ponteiro; e o clique impossível recebe a palavra de `avaliarOrdem` em vez de nada.
+ * Ver `aplicacao/ligar-acoes.ts`, na interceptação de `cena.aoSelecionar`.
+ */

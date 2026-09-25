@@ -41,7 +41,7 @@
 
 .menu-pausa__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 27px;
+  font-size: var(--texto-titulo);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -50,7 +50,7 @@
 .menu-pausa__subtitulo {
   margin-top: 3px;
   color: var(--ui-texto-tenue);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -69,7 +69,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-corpo);
-  font-size: 12px;
+  font-size: var(--texto-corpo);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-align: left;
@@ -102,7 +102,7 @@
   display: grid;
   gap: 10px;
   color: var(--ui-texto-fraco);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -144,7 +144,7 @@
 
 .menu-pausa__chave-nome {
   display: block;
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   font-weight: 600;
   color: var(--ui-texto);
 }
@@ -152,7 +152,7 @@
 .menu-pausa__chave-nota {
   display: block;
   margin-top: 3px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   line-height: 1.35;
   color: var(--ui-texto-tenue);
 }
@@ -191,7 +191,7 @@
   background: transparent;
   color: var(--ui-texto-tenue);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
   transition: color 120ms ease, border-color 120ms ease, background 120ms ease;

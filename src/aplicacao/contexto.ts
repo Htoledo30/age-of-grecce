@@ -23,7 +23,6 @@ import type { BarraTurno } from '@/ui/barra-turno';
 import type { JanelaDeBatalha } from '@/ui/batalha';
 import type { CercosMapa } from '@/ui/cercos-mapa';
 import type { Cronica } from '@/ui/cronica';
-import type { DestinosMapa } from '@/ui/destinos-mapa';
 import type { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import type { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import type { FimDeJogo } from '@/ui/fim-de-jogo';
@@ -63,7 +62,6 @@ export interface Tela {
   hostesMapa: HostesMapa;
   cercosMapa: CercosMapa;
   marchasMapa: MarchasMapa;
-  destinosMapa: DestinosMapa;
   animacaoDeMarcha: AnimacaoDeMarcha;
   painelFps: PainelFps;
   lateral: PainelLateral;
@@ -104,11 +102,41 @@ export class SelecaoDaTela {
   /**
    * O ID da hoste que está compondo uma marcha, ou `null`.
    *
-   * Modo, e não intenção guardada: enquanto ele existe, o mapa mostra destinos e um clique
-   * fora deles cancela. Nada é reservado, nada é gasto — a ordem só acontece no clique no
-   * destino.
+   * Modo, e não intenção guardada: enquanto ele existe, **qualquer província do mapa é um
+   * destino** e o clique nela é a ordem. Nada é reservado, nada é gasto até o clique.
    */
   marchando: string | null = null;
+
+  /**
+   * A província sob o PONTEIRO enquanto o jogador escolhe destino.
+   *
+   * ⚠️ **É o campo que substitui os 199 botões de destino, e ele nasceu de uma medição.**
+   * A tela desenhava, de uma vez, a rota até TODOS os destinos alcançáveis — quatro sem
+   * Porto, cento e noventa e nove com ele, porque o mar abre o mapa inteiro. Medido com GPU
+   * de verdade na máquina do Henrique: o quadro ia de 7 ms para **405 ms — 2,4 quadros por
+   * segundo** —, e a conta era 100% PINTURA das polilinhas. Com as camadas escondidas e todo
+   * o JavaScript rodando igual, o quadro voltava aos mesmos 7 ms: a busca de rotas custa
+   * 0,1 ms e nunca foi o problema.
+   *
+   * Henrique, jogando: *"não faz sentido já ter todas as rotas à mostra, ou pontos. igual em
+   * age of history 2: eu clico na minha tropa e movo ela para onde eu quiser só selecionando
+   * uma província/zona"*. Com uma rota por vez — a do lugar para onde ele está olhando — o
+   * mesmo quadro custa 21 ms. O desenho que ele pediu e o conserto do travamento são a mesma
+   * mudança, e não duas.
+   */
+  destinoApontado: string | null = null;
+
+  /**
+   * Por que o último clique de destino não virou ordem. Vazio quando não houve recusa.
+   *
+   * ⚠️ **Existe porque, sem os botões, não existe mais "clicar fora".** Antes os alvos legais
+   * estavam desenhados e um clique em qualquer outro lugar cancelava em silêncio — o que era
+   * certo, porque o jogador não podia errar. Agora o mapa inteiro aceita o clique, e clicar
+   * em Corinto sem guerra declarada precisa de RESPOSTA: `avaliarOrdem` já sabe dizer *"não
+   * há caminho livre até Corinto"* e *"Corinto não está em guerra com você — declare antes de
+   * marchar"*, e esses motivos nunca tinham onde aparecer.
+   */
+  recusaDaMarcha = '';
 
   /** Quantos homens o jogador quer mandar na próxima ordem. O painel é quem escreve. */
   homensParaMarchar = 0;

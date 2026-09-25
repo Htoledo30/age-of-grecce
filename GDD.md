@@ -583,8 +583,7 @@ do CAIS, e não da rota no meio do mar.
   manutenção, movimento, cerco, conquista, mar e diplomacia. Ela constrói, decreta imposto,
   planeja comida, recruta, defende, ataca, sitia, faz surtida, desembarca, intercepta e bloqueia.
 - Os estilos guerreiro, mercador, cauteloso e equilibrado mudam prioridades e tolerância a
-  risco. Eles ainda não mudam o que cada personalidade admira ou despreza diplomaticamente;
-  esse gosto por estilo é aprofundamento pendente.
+  risco, e o que cada um pesa na mesa: força, ouro, segurança ou confiança.
 - Não há bônus secretos de IA. A diferença entre jogador e IA é a decisão automática, não a
   regra econômica ou militar.
 - Relação é simétrica por par e caminha para um alvo legível. Além dos atos bilaterais, pesam

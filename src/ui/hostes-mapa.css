@@ -1,9 +1,20 @@
+/* ⚠️ **A camada do MAPA fica fora da régua de texto dos painéis.** Estes rótulos são
+   desenhados SOBRE o mapa, competem com a arte e com a densidade das províncias, e descem
+   abaixo do menor degrau da escala (`--texto-micro`, 10px) porque precisam caber num marcador
+   de vinte pixels. Forçá-los à régua engordaria o mapa inteiro para arrumar uma tabela de CSS.
+   A escala governa PAINEL; o mapa tem a medida dele. Ver `estilo/tokens.css`. */
 #ui > .hostes {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
+/* ⚠️ **Compondo uma marcha, as peças somem do ponteiro.** Ver `HostesMapa.escolhendoDestino`:
+   a marca tem 47×29 px sobre o centro da província e o clique do mapa é escutado no canvas, de
+   modo que ela engoliria justamente o clique de atacar uma província defendida. */
+.hostes[data-escolhendo='sim'] .hostes__marca {
+  pointer-events: none;
+}
 .hostes__marca {
   position: absolute;
   top: 0;

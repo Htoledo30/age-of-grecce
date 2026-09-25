@@ -10,7 +10,15 @@
    nunca deixar um lado ter um campo que o outro não tem.
 
    Estética da casa: pedra escura, bronze, marfim, pouquíssima ornamentação. O mapa é colorido;
-   a interface é moldura neutra. Nenhuma cor nova entra aqui — tudo sai dos tokens. */
+   a interface é moldura neutra. Nenhuma cor nova entra aqui — tudo sai dos tokens.
+
+   ⚠️ **E nenhum TAMANHO de texto entra aqui tampouco.** Esta folha era a pior do projeto no
+   assunto: 32 declarações de fonte em 12 tamanhos diferentes — 9.5, 10, 11, 12, 13, 14, 15, 16,
+   17, 19, 20, 26 —, e a queixa de Henrique foi exatamente essa: *"hierarquia é o texto, você
+   tenta utilizar todos tamanhos de texto, precisamos de um padrão"*. Com doze degraus não existe
+   hierarquia nenhuma: existe ruído com aparência de intenção. As 32 passaram a sair dos SEIS
+   degraus de `tokens.css`, e a regra daqui em diante é escolher pela FUNÇÃO do texto — nota,
+   corpo, medida, destaque — e nunca por um número. Ver a escala em `estilo/tokens.css`. */
 .diplomacia {
   position: absolute;
   inset: 0;
@@ -23,6 +31,19 @@
   background: rgb(6 10 11 / 34%);
 }
 .diplomacia__janela {
+  /* ⚠️ **AS QUATRO RANHURAS DE TEXTURA.** Henrique: *"pensando que no futuro vamos trazer
+     texturas para os fundos que precisarem"*. Cada superfície que um dia recebe arte já é uma
+     variável, e hoje é um gradiente discreto; quando a textura existir, troca-se o valor por
+     `url(...)` e nenhuma outra regra desta folha muda.
+
+     moldura → a borda da janela e a barra do título; chao → o fundo atrás das colunas;
+     pinax → as tábuas (tira de confronto, fichas de proposta); estela → a face do documento
+     em que o pedido dele é lido. */
+  --tex-moldura: linear-gradient(158deg, #232a2b, #171d1f 58%, #1e2527);
+  --tex-chao: var(--ui-fundo-elevado);
+  --tex-pinax: var(--ui-fundo-suave);
+  --tex-estela: linear-gradient(176deg, #27312f 0%, #1f2927 44%, #232c2a 100%);
+
   position: relative;
   display: flex;
   flex-direction: column;
@@ -35,7 +56,7 @@
   max-height: min(760px, calc(var(--palco-altura, 1080px) - 48px));
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-2);
-  background: var(--ui-fundo-elevado);
+  background: var(--tex-chao);
   color: var(--ui-texto);
   box-shadow: 0 28px 80px var(--ui-sombra);
 }
@@ -43,15 +64,69 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 26px 16px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
+  padding: 16px 26px 15px;
+  background: var(--tex-moldura);
 }
 .diplomacia__titulo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0;
   font-family: var(--fonte-titulo);
-  font-size: 26px;
+  font-size: var(--texto-titulo);
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+/* O estandarte do reino do jogador: quem está falando, e não mais um ícone de "diplomacia"
+   ao lado da palavra "Negociações". */
+.diplomacia__selo-reino {
+  display: flex;
+  align-items: center;
+}
+
+/* ── O MEANDRO ──
+   ⚠️ A assinatura grega em dezesseis pixels de SVG. É o mesmo papel que os roletes de madeira
+   fazem na mesa do Rome: dizer de que mundo é a tela antes de qualquer palavra — e é a única
+   ornamentação da janela, de propósito. */
+.diplomacia__meandro {
+  flex: none;
+  height: 13px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='13' viewBox='0 0 16 13'%3E%3Cpath d='M1 12V1h14v8H5V5h6' fill='none' stroke='%236f5128' stroke-width='1.6'/%3E%3C/svg%3E")
+    repeat-x center;
+  border-top: 1px solid var(--ui-bronze-escuro);
+  border-bottom: 1px solid var(--ui-bronze-escuro);
+  opacity: 0.9;
+}
+.diplomacia__meandro[data-baixo] {
+  transform: scaleY(-1);
+}
+
+/* ── O RODAPÉ ──
+   A sua palavra e a data, uma vez na janela. A reputação saiu da tira de confronto, onde era
+   uma linha repetida dos dois lados em quase todos os pares — e onde era redesenhada a cada
+   clique num interlocutor, apesar de ser um dado só, seu, igual para todos eles. */
+.diplomacia__rodape {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 26px 11px;
+  background: var(--tex-moldura);
+  font-size: var(--texto-nota);
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__palavra[data-tom='bom'] {
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__palavra[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__quando {
+  font-family: var(--fonte-numero);
+  letter-spacing: 0.06em;
 }
 .diplomacia__fechar {
   width: 36px;
@@ -60,7 +135,7 @@
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
-  font-size: 20px;
+  font-size: var(--texto-destaque);
   cursor: pointer;
 }
 .diplomacia__fechar:hover {
@@ -72,11 +147,13 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 14px 26px 22px;
+  /* O rodapé e as duas faixas de meandro passaram a comer 60 px da altura: o respiro de baixo
+     saiu daqui, onde ele era margem sobrando, e não do conteúdo, que precisa caber inteiro. */
+  padding: 14px 26px 14px;
 }
 .diplomacia__resumo {
   margin: 0 0 12px;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -117,10 +194,16 @@
   padding-right: 6px;
   border-right: 1px solid var(--ui-borda-fraca);
 }
+/* ⚠️ **A linha ganhou um PANO, e a queixa era literal:** *"falta os banners de cada reino,
+   falta distinguir, atualmente tenho que decorar nomes, ser humano é melhor em decorar imagem
+   do que nomes"*. Dezoito linhas de texto em ordem alfabética, com nomes que rimam entre si —
+   Cálcis, Cáristo, Corinto; Erétria, Epidauro, Elêusis —, obrigavam a LER cada uma para achar
+   uma. A cor e o emblema respondem antes da palavra. */
 .diplomacia__nome {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   font: inherit;
   text-align: left;
   /* Apertado de propósito: são dezoito linhas, e a lista é a única coluna que ainda rola. */
@@ -141,21 +224,61 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-bronze-claro);
 }
+/* O texto da linha desceu um nível para o pano poder ficar ao lado dele em vez de acima. */
+.diplomacia__nome-corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
 .diplomacia__nome-texto {
   font-family: var(--fonte-nome);
-  font-size: 15px;
+  font-size: var(--texto-medida);
   letter-spacing: 0.02em;
 }
 .diplomacia__nome-linha {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
-  font-size: 11px;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
+/* O motivo pode ser longo — "Em guerra com Corinto" — e a opinião ao lado nunca pode ser
+   empurrada para fora: ele encolhe com reticências, ela não encolhe nunca. */
+.diplomacia__nome-estado {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .diplomacia__nome-forca {
+  flex: none;
+  font-family: var(--fonte-numero);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+/* ⚠️ **A barra da força: um olhar no lugar de dezessete contas.** Comparar dezessete números
+   de tropa exige aritmética; comparar dezessete barras não exige nada. O número exato continua
+   na tira de confronto, que é onde ele decide de fato. */
+.diplomacia__nome-barra {
+  display: block;
+  height: 2px;
+  margin-top: 4px;
+  background: var(--ui-borda-fraca);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.diplomacia__nome-barra i {
+  display: block;
+  height: 100%;
+  background: var(--ui-bronze-escuro);
+}
+.diplomacia__nome[data-escolhido='sim'] .diplomacia__nome-barra i {
+  background: var(--ui-bronze);
+}
+.diplomacia__nome[data-relacao='guerra'] .diplomacia__nome-barra i {
+  background: var(--ui-sangue);
 }
 /* A postura pinta a borda esquerda: o mapa inteiro se lê de relance, de bronze a sangue. */
 .diplomacia__nome[data-tom='bom'] {
@@ -172,10 +295,11 @@
   border-left-color: var(--ui-sangue);
   border-left-width: 4px;
 }
+/* ⚠️ **Sem caixa alta.** O motivo agora é uma frase — "Guerra há 22t · 246 em armas" — e
+   frase em versalete é grito. A cor vermelha já diz que é guerra; a caixa alta só tirava a
+   legibilidade que a frase precisa para ser lida de relance. */
 .diplomacia__nome[data-relacao='guerra'] .diplomacia__nome-estado {
   color: var(--ui-sangue-claro);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .diplomacia__dossie {
@@ -190,9 +314,22 @@
 }
 
 /* A coluna das AÇÕES. Ela pode rolar, e é a única que pode: o catálogo de tratados cresce com
-   o jogo (a liga entrou depois da aliança, que entrou depois do pacto) e a leitura não. */
+   o jogo (a liga entrou depois da aliança, que entrou depois do pacto) e a leitura não.
+
+   ⚠️ **Mas quem rola é só a parte de dentro.** Guerra e paz ficam pregadas no pé: com o
+   Tributo aberto — seis linhas — a ficha da guerra saía da vista e aparecia cortada pela borda
+   da janela, o que se lê como painel quebrado, não como conteúdo abaixo do corte. E é a única
+   ficha que nunca pode estar escondida: sem guerra declarada a ordem de marcha recusa. */
 .diplomacia__acoes-coluna {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: hidden;
+}
+.diplomacia__rolagem {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 10px;
   min-height: 0;
@@ -208,7 +345,7 @@
   margin: 10px 0 2px;
   padding: 0 4px;
   font-family: var(--fonte-micro, var(--fonte-interface));
-  font-size: 10px;
+  font-size: var(--texto-micro);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -221,6 +358,39 @@
    Rótulos no EIXO CENTRAL, um por linha em vez de um de cada lado: o olho compara na
    horizontal e cada substantivo aparece uma vez só. É a mesa de negociação do Total War, com
    metade dos rótulos. */
+/* ── A FRASE DO ALTO ──
+   ⚠️ *"Em guerra há 22 turnos"*. A tela nunca disse isto: a opinião, o prazo do pacto, o da
+   aliança e a trégua estavam todos lá, cada um num canto, e em lugar nenhum a situação escrita
+   por extenso. Quem abrisse a mesa sem nunca ter jogado tinha de montá-la a partir de cinco
+   números. É a primeira linha da coluna do meio, e é a única em caixa de título. */
+.diplomacia__estado {
+  padding: 9px 13px 10px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-left: 2px solid var(--ui-bronze);
+  border-radius: var(--raio-1);
+  background: var(--tex-pinax);
+}
+.diplomacia__estado[data-tom='guerra'] {
+  border-left-color: var(--ui-sangue);
+  background: var(--ui-perigo-fundo);
+}
+/* ⚠️ **A voz do NOME, e não a do TÍTULO.** Cinzel só tem capitais: escrita nela, a frase saía
+   "EM GUERRA HÁ 22 TURNOS" — um grito onde devia haver uma constatação, e exatamente o que
+   Henrique recusou (*"não quero texto feio ou jogado"*). Cormorant tem caixa baixa de verdade,
+   e é a mesma voz dos nomes de reino logo abaixo: a frase e os nomes que ela liga passam a
+   pertencer à mesma família. */
+.diplomacia__estado-frase {
+  margin: 0;
+  font-family: var(--fonte-nome);
+  font-size: var(--texto-destaque);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ui-texto);
+}
+.diplomacia__estado[data-tom='guerra'] .diplomacia__estado-frase {
+  color: var(--ui-sangue-claro);
+}
+
 .diplomacia__confronto {
   display: flex;
   flex-direction: column;
@@ -228,20 +398,67 @@
   padding: 11px 13px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
-  background: var(--ui-fundo-suave);
+  background: var(--tex-pinax);
 }
+
+/* ── AS FILEIRAS DE ESCUDO ──
+   ⚠️ É a peça que faz a mesa se ler com pouco texto, e a resposta ao print que Henrique mandou
+   do Rome: *"você vê que tem pouco texto e mesmo assim consigo entender o que está
+   acontecendo?"*. Ali as relações de cada lado são fileiras de escudo — o olho conta três
+   contra um sem ler uma palavra. Os dezoito emblemas já existiam em `estandartes.ts`. */
+.diplomacia__brasoes {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 22px;
+  cursor: help;
+}
+.diplomacia__confronto-dele.diplomacia__brasoes {
+  justify-content: flex-end;
+}
+.diplomacia__brasoes[data-vazia] {
+  color: var(--ui-inativo);
+  font-family: var(--fonte-numero);
+  cursor: default;
+}
+.diplomacia__brasoes .estandarte {
+  width: 18px;
+}
+.diplomacia__brasoes-resto {
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-nota);
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__confronto-linha[data-brasoes] {
+  min-height: 26px;
+}
+/* ⚠️ **Os dois panos frente a frente, e é o que faz a tira parecer uma MESA.** Os cartões
+   espelhados do Total War funcionam porque cada lado tem um rosto; aqui os dois lados eram dois
+   nomes na mesma fonte, e a única coisa que dizia de quem era cada coluna era a posição. Cada
+   estandarte fica na ponta de FORA da tira: o olho sabe de quem é o número antes de ler o nome,
+   e é o mesmo pano que ele acabou de escolher na lista. */
 .diplomacia__confronto-nomes {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+}
+.diplomacia__confronto-lado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.diplomacia__confronto-lado[data-dele='sim'] {
+  flex-direction: row-reverse;
 }
 .diplomacia__confronto-linha {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 10px;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
 }
 .diplomacia__confronto-meu {
@@ -258,18 +475,19 @@
   gap: 2px;
   align-items: center;
   min-width: 96px;
-  font-size: 11px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.05em;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__confronto-linha[data-forca='sim'] .diplomacia__barra-forca {
   width: 96px;
 }
+/* ⚠️ **Frase, e não telegrama em versalete.** Era `guerreiro · fronteira (2)` em caixa alta —
+   dois fragmentos que ninguém lê como frase, um deles repetindo a contagem que o selo da lista
+   já dá. Caixa mista, ponto final, e diz a única coisa que não está escrita em outro canto. */
 .diplomacia__confronto-rodape {
-  margin: 4px 0 0;
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  margin: 5px 0 0;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
 
@@ -303,7 +521,7 @@
 .diplomacia__meu-reino {
   margin: 0;
   font-family: var(--fonte-nome);
-  font-size: 20px;
+  font-size: var(--texto-destaque);
   font-weight: 500;
   letter-spacing: 0.03em;
 }
@@ -317,7 +535,7 @@
    Saber que Argos é guerreira muda toda proposta que se faz a ela. */
 .diplomacia__temperamento {
   margin: 1px 0 9px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -328,7 +546,7 @@
   grid-template-columns: auto 1fr;
   gap: 2px 12px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
 }
 .diplomacia__campos dt {
   color: var(--ui-texto-tenue);
@@ -352,7 +570,7 @@
   margin: 0;
   padding: 2px 0;
   font-family: var(--fonte-nome);
-  font-size: 16px;
+  font-size: var(--texto-medida);
   font-style: italic;
   line-height: 1.4;
   color: var(--ui-texto-fraco);
@@ -413,7 +631,7 @@
 }
 .diplomacia__regua-texto {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-tenue);
 }
 .diplomacia__regua-texto[data-tom='bom'] {
@@ -452,7 +670,7 @@
 }
 .diplomacia__forca-texto {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-tenue);
 }
 .diplomacia__forca-texto[data-tom='bom'] {
@@ -481,13 +699,13 @@
 .diplomacia__postura-nome {
   margin: 0;
   font-family: var(--fonte-titulo);
-  font-size: 19px;
+  font-size: var(--texto-destaque);
   letter-spacing: 0.14em;
 }
 .diplomacia__numero {
   margin: 0;
   font-family: var(--fonte-numero);
-  font-size: 17px;
+  font-size: var(--texto-destaque);
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
   cursor: help;
@@ -508,14 +726,14 @@
   margin: 5px 0 9px;
   padding-bottom: 9px;
   border-bottom: 1px solid var(--ui-borda-fraca);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-fraco);
 }
 .diplomacia__parcelas {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-tenue);
 }
 .diplomacia__parcelas li {
@@ -570,7 +788,7 @@
   background: var(--ui-sucesso-fundo);
 }
 .diplomacia__marca {
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   line-height: 1.35;
   color: var(--ui-texto-tenue);
 }
@@ -582,88 +800,153 @@
 }
 .diplomacia__intencao-texto {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto);
 }
 
 /* ── OS LAÇOS COM TERCEIROS ──
    Sem isto o mundo parecia ter duas pessoas dentro, e cada proposta era uma transação isolada.
    Saber que Argos está em guerra com Tebas transforma a mesma proposta numa jogada. */
-.diplomacia__lacos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 0;
-}
-.diplomacia__laco {
-  padding: 2px 8px;
-  border: 1px solid var(--ui-borda-fraca);
-  border-radius: 10px;
-  font-size: 12px;
-  color: var(--ui-texto-tenue);
-}
-.diplomacia__laco[data-tipo='guerra'] {
-  border-color: rgb(169 76 64 / 45%);
-  color: var(--ui-sangue-claro);
-}
-.diplomacia__laco[data-tipo='comercio'],
-.diplomacia__laco[data-tipo='tributo-recebe'] {
+/* ⚠️ **A tira de laços saiu daqui e virou as três linhas de escudo da tira de confronto.**
+   Era uma fileira de pastilhas de texto — "em guerra com Tebas · comercia com Corinto" — que
+   só existia para o lado DELE, em letra miúda no pé do dossiê. Espelhadas e em brasão, as
+   mesmas relações valem para os dois lados e ocupam menos do que ocupavam para um só. */
+
+/* ── O TÍTULO DE SEÇÃO DA COLUNA DE AÇÕES ──
+   ⚠️ A coluna começava direto nas fichas, sem dizer o que aquele bloco é. Quem nunca jogou
+   via oito caixas de botão sem cabeça. Uma linha, uma voz: versalete espaçado, como o rótulo
+   das fichas — a mesma família tipográfica, um degrau acima. */
+.diplomacia__secao {
+  margin: 2px 0 0;
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-nota);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--ui-bronze-claro);
 }
 
-/* ── AS PROPOSTAS ──
-   Agrupadas por assunto e nunca numa lista plana: com cinco grupos de botão do mesmo tamanho,
-   a decisão que abre o resto do jogo vira mais uma linha entre outras. */
-/* ── A GRADE DE FICHAS ──
-   ⚠️ **Duas colunas, e a coluna é o que estava sobrando.** Empilhados numa coluna só, os oito
-   grupos precisavam de 1.000 px de altura e a janela tinha 650. Lado a lado, cabem.
+/* ── AS PROPOSTAS: UMA LISTA QUE ABRE UMA FICHA POR VEZ ──────────────────────────────────
+   ⚠️ **Eram oito fichas abertas ao mesmo tempo numa grade de duas colunas, e Henrique
+   descreveu o defeito melhor do que eu:** *"a parte das ações, onde tem pacto, presente, tá
+   muito desorganizado, esses quadrados jogados, tinham que ser opções, e quando selecionados
+   abrir as opções, para deixar um embaixo do outro organizado (...) quando seleciono um
+   deseleciona o outro (...) e diminuir a quantidade de números e informações de uma vez".
 
-   A ordem dos lugares é mnemônica: à esquerda a ESCADA DA CONFIANÇA (pacto → aliança → liga,
-   cada degrau pedindo mais opinião que o anterior); à direita O QUE PASSA ENTRE VOCÊS
-   (comércio → tributo → passagem: renda, ouro, estrada). Guerra e Ouro atravessam as duas
-   porque não são acordo com prazo — são atos unilaterais, e ficam nos extremos. */
+   O que a grade produzia, medido na captura: vinte e um botões e trinta e um números na tela
+   ao mesmo tempo, em oito molduras de alturas desiguais — o Tributo com seis botões ao lado da
+   Passagem com dois, e o buraco entre elas lido como conteúdo que faltou carregar. E nenhuma
+   das oito era uma escolha, porque todas estavam sempre ali.
+
+   Agora as sete fichas de tratado são uma lista de linhas fechadas: nome, o que já está em pé,
+   e a palavra com a vontade dele. Uma abre — e só uma —, e dentro dela as opções descem numa
+   coluna com o ouro e o prazo alinhados à direita. A conta na tela cai de trinta e um números
+   para os quatro ou seis da ficha que o jogador pediu para ver.
+
+   ⚠️ **Guerra e paz não entram na sanfona.** Elas não são um tratado entre outros: são a
+   decisão que abre o resto do jogo, e a única desta tela que é pré-requisito de outra. Ficam à
+   vista no pé da coluna, com moldura própria e a cor do que são. */
 .diplomacia__acoes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-content: start;
-}
-.diplomacia__grupo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 9px 11px;
-  border: 1px solid var(--ui-borda-fraca);
+}
+
+/* Fechada, a ficha não é uma caixa: é uma linha de lista, e o filete é toda a moldura que ela
+   precisa. Aberta, ela se levanta da lista como uma tábua sobre a mesa. */
+.diplomacia__grupo {
+  border-bottom: 1px solid var(--ui-borda-fraca);
+}
+.diplomacia__grupo:last-child {
+  border-bottom: 0;
+}
+.diplomacia__grupo[data-aberto='sim'] {
+  margin: 5px 0;
+  border: 1px solid var(--ui-borda);
   border-radius: var(--raio-1);
-  background: var(--ui-fundo-suave);
+  background: var(--tex-pinax);
 }
-.diplomacia__grupo[data-vao='cheio'] {
-  grid-column: 1 / -1;
-}
+
+/* ── O CABEÇALHO DA FICHA ──
+   Botão de largura inteira nos tratados; simples `div` em guerra e paz, que não fecham. */
 .diplomacia__ficha-topo {
   display: flex;
+  width: 100%;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: var(--raio-1);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
 }
-.diplomacia__rotulo {
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+div.diplomacia__ficha-topo {
+  cursor: default;
+}
+button.diplomacia__ficha-topo:hover {
+  background: var(--ui-fundo-suave);
+}
+button.diplomacia__ficha-topo:focus-visible {
+  outline: 2px solid var(--ui-bronze);
+  outline-offset: -2px;
+}
+.diplomacia__grupo[data-aberto='sim'] .diplomacia__ficha-topo {
+  border-radius: var(--raio-1) var(--raio-1) 0 0;
+  border-bottom-color: var(--ui-borda-fraca);
+}
+/* O triângulo é a única coisa da tela que ensina que a linha abre. Discreto, e num lugar fixo
+   para que as sete se leiam como uma coluna e não como sete larguras diferentes. */
+.diplomacia__seta {
+  flex: none;
+  width: 9px;
+  font-size: var(--texto-micro);
   color: var(--ui-texto-tenue);
 }
-.diplomacia__botoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+.diplomacia__rotulo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--texto-nota);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ui-texto-fraco);
 }
+.diplomacia__grupo[data-aberto='sim'] .diplomacia__rotulo {
+  color: var(--ui-bronze-claro);
+}
+/* O que a ficha FECHADA tem para dizer: `em vigor · 34 turnos`, `você lidera`, `ele paga`.
+   Sem ele, sete linhas fechadas responderiam só "que tratados existem" — a mesma resposta
+   para os dezoito reinos da lista. */
+.diplomacia__resumo-ficha {
+  flex: none;
+  font-size: var(--texto-nota);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto-tenue);
+}
+
+.diplomacia__ficha-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 11px 10px;
+}
+.diplomacia__opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 /* ⚠️ A fala fica NA TELA, e não num tooltip. A crítica mais repetida sobre estas telas em todos
    os jogos pesquisados é informação que devia estar à vista escondida atrás do mouse parado.
    Se ele vai recusar, o jogador lê o motivo sem precisar caçar. */
-/* A linha de estado da ficha: curta, factual, e ausente quando não há o que dizer. */
 .diplomacia__fala {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   line-height: 1.35;
   color: var(--ui-texto-tenue);
 }
@@ -674,20 +957,30 @@
   color: var(--ui-sangue-claro);
 }
 
+/* ── A LINHA DE OPÇÃO ──
+   ⚠️ **Três colunas, e é a resposta ao que ele pediu:** *"quero que apareça quanto custa,
+   quantos rounds quando for mandar uma proposta"*. As duas contas moravam dentro do rótulo, e
+   cada ficha as escrevia à sua maneira — `Pagar 155 · 20 turnos` numa, `20 turnos` na de baixo,
+   `1.550 ouro · +29` ao lado. Três gramáticas, nenhuma coluna: comparar a terceira parcela do
+   tributo com a quinta era caçar um número dentro de uma frase.
+
+   Verbo à esquerda, ouro e prazo à direita em algarismo tabular, um sob o outro. A coluna do
+   ouro leva SINAL, e é a única coisa que precisa ser lida de relance: vermelho sai do cofre,
+   verde entra. */
 .diplomacia__acao {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 9px;
   font: inherit;
-  font-size: 12px;
+  font-size: var(--texto-corpo);
+  text-align: left;
   color: var(--ui-texto-fraco);
-  padding: 5px 9px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   cursor: pointer;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
   transition:
     border-color 120ms ease,
     background-color 120ms ease,
@@ -705,38 +998,120 @@
   outline: 2px solid var(--ui-bronze);
   outline-offset: 1px;
 }
-/* ⚠️ TRÊS estados e não dois, e a diferença é a tela inteira. ✓ ele assina; ✗ ele recusa mas
-   você pode propor e ouvir o não; apagado quando é a REGRA que barra — cofre curto, guerra em
-   curso, pacto em pé. Um botão apagado por falta de ouro e um apagado porque ele te odeia são
-   dois problemas com duas soluções, e a tela nunca os pinta igual. */
+.diplomacia__acao-verbo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.diplomacia__acao-custo,
+.diplomacia__acao-prazo {
+  flex: none;
+  text-align: right;
+  white-space: nowrap;
+  font-size: var(--texto-nota);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__acao-custo {
+  width: 100px;
+}
+.diplomacia__acao-prazo {
+  width: 94px;
+}
+.diplomacia__acao-custo[data-tom='bom'],
+.diplomacia__acao-prazo[data-tom='bom'] {
+  color: var(--ui-verde-claro);
+}
+.diplomacia__acao-custo[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
+}
+/* O saldo da balança com sinal; nas fichas sem balança, aceita ou recusa. Fica vazio quando a
+   REGRA barra — cofre curto, guerra em curso, pacto em pé.
+
+   A largura fixa vale mesmo vazio: sem ela, uma ficha em que só parte das linhas leva veredito
+   teria as colunas de prazo desalinhadas entre si. */
 .diplomacia__selo {
-  font-size: 12px;
+  flex: none;
+  min-width: 44px;
+  text-align: right;
+  font-size: var(--texto-nota);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto-tenue);
   opacity: 0.9;
 }
-.diplomacia__acao[data-resposta='sim'] {
-  border-color: rgb(66 107 92 / 60%);
+/* O saldo com sinal: bronze quando sobra, sangue quando falta — a mesma paleta das parcelas
+   da opinião, e nunca um selo verde/vermelho no lugar da conta. */
+.diplomacia__selo[data-tom='bom'] {
+  color: var(--ui-bronze-claro);
 }
-.diplomacia__acao[data-resposta='sim'] .diplomacia__selo {
-  color: var(--ui-verde-claro);
+.diplomacia__selo[data-tom='ruim'] {
+  color: var(--ui-sangue-claro);
 }
 .diplomacia__acao[data-resposta='nao'] {
   border-color: var(--ui-borda-fraca);
   color: var(--ui-texto-tenue);
 }
-.diplomacia__acao[data-resposta='nao'] .diplomacia__selo {
+/* A palavra dele no cabeçalho da ficha: assinaria, relutante, fechado. */
+.diplomacia__vontade {
+  margin-left: auto;
+  font-size: var(--texto-nota);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
+}
+.diplomacia__vontade[data-vontade='assinaria'] {
+  color: var(--ui-bronze-claro);
+}
+.diplomacia__vontade[data-vontade='fechado'] {
   color: var(--ui-sangue-claro);
+}
+/* A conta aberta da balança, entre a fala dele e as linhas de proposta. */
+.diplomacia__balanca {
+  margin: 2px 0 8px;
+}
+.diplomacia__balanca-saldo {
+  margin-top: 2px;
+  border-top: 1px solid var(--ui-borda-fraca);
+  padding-top: 4px;
+  color: var(--ui-texto-fraco);
 }
 .diplomacia__acao:disabled {
   opacity: 0.38;
   cursor: default;
 }
-/* Guerra e paz são a decisão que ABRE o resto do jogo, e a única do dossiê que não é uma linha
-   entre outras. Peso visual maior é o que impede que ela se perca entre cinco grupos iguais. */
+/* Romper é sempre uma traição, custe pacto, aliança ou tributo: a cor avisa antes do tooltip. */
+.diplomacia__acao[data-acao='romper'],
+.diplomacia__acao[data-acao='romper-alianca'],
+.diplomacia__acao[data-acao='romper-tributo'] {
+  border-color: rgb(169 76 64 / 45%);
+  color: var(--ui-sangue-claro);
+}
+
+/* ── GUERRA E PAZ: as duas que não fecham ────────────────────────────────────────────────
+   Moldura própria no pé da coluna e a cor do que são. Peso visual maior é o que impede que a
+   decisão que ABRE o resto do jogo vire mais uma linha entre sete tratados. */
+.diplomacia__grupo[data-fixo='sim'] {
+  flex: none;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: var(--tex-pinax);
+}
+.diplomacia__grupo[data-grupo='guerra'] {
+  border-color: rgb(169 76 64 / 45%);
+}
+.diplomacia__grupo[data-grupo='guerra'] .diplomacia__rotulo {
+  color: var(--ui-sangue-claro);
+}
+.diplomacia__grupo[data-grupo='paz'] {
+  border-color: rgb(66 107 92 / 55%);
+}
+.diplomacia__grupo[data-grupo='paz'] .diplomacia__rotulo {
+  color: var(--ui-verde-claro);
+}
 .diplomacia__acao[data-acao='guerra'],
 .diplomacia__acao[data-acao='paz'] {
-  padding: 8px 18px;
-  font-size: 14px;
-  letter-spacing: 0.03em;
   color: var(--ui-texto);
 }
 .diplomacia__acao[data-acao='guerra'] {
@@ -756,23 +1131,17 @@
   border-color: var(--ui-verde-claro);
   color: var(--ui-verde-claro);
 }
-/* Romper é sempre uma traição, custe pacto ou tributo: a cor avisa antes do tooltip. */
-.diplomacia__acao[data-acao='romper'],
-.diplomacia__acao[data-acao='romper-tributo'] {
-  border-color: rgb(169 76 64 / 45%);
-  color: var(--ui-sangue-claro);
-}
 
 /* ⚠️ Vazio, ele não existe: uma moldura sem texto na ponta da coluna lê como caixa quebrada. */
 .diplomacia__aviso:empty {
   display: none;
 }
 .diplomacia__aviso {
-  margin: 10px 0 0;
+  margin: 0 0 10px;
   min-height: 1.2em;
-  padding-top: 10px;
-  border-top: 1px solid var(--ui-borda-fraca);
-  font-size: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  font-size: var(--texto-corpo);
   color: var(--ui-bronze-claro);
 }
 
@@ -784,7 +1153,7 @@
   border: 1px solid var(--ui-borda-fraca);
   border-radius: 2px;
   font-family: var(--fonte-corpo);
-  font-size: 9.5px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -806,7 +1175,7 @@
 
 .diplomacia__pedido-fala {
   margin: 0 0 10px;
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   line-height: 1.45;
   color: var(--ui-texto);
 }
@@ -824,7 +1193,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto);
   font-family: var(--fonte-corpo);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 600;
   cursor: pointer;
 }
@@ -846,7 +1215,7 @@
   border-radius: 2px;
   background: rgb(122 86 38 / 25%);
   font-family: var(--fonte-corpo);
-  font-size: 9.5px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

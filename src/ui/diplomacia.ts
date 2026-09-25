@@ -67,19 +67,25 @@
  */
 
 import type {
+  BrasaoNaMesa,
   CartaoDoPoder,
   GrupoDaMesa,
   Proposta,
   VistaDaDiplomacia,
   VizinhoNaMesa,
 } from './diplomacia-vista';
-import { rotularComIcone } from './icones-gregos';
+import { criarEstandarte } from './estandartes';
+import { formatarAno } from '@/campanha/estado-campanha';
 import { definirTooltip } from './tooltip';
 
 export type { VistaDaDiplomacia, VizinhoNaMesa } from './diplomacia-vista';
 
 const CARTAO_VAZIO: CartaoDoPoder = {
   nome: '',
+  tesouro: 0,
+  aliados: [],
+  inimigos: [],
+  comercio: [],
   linha: '',
   provincias: 0,
   exercito: 0,
@@ -88,34 +94,97 @@ const CARTAO_VAZIO: CartaoDoPoder = {
   reputacao: 0,
 };
 
+const VISTA_VAZIA: VistaDaDiplomacia = {
+  eu: CARTAO_VAZIO,
+  meuBrasao: { id: '', nome: '', cor: '#000000' },
+  ano: 0,
+  turno: 0,
+  vizinhos: [],
+};
 
 /** A opinião com sinal, no formato que a lista e o dossiê usam igual: `+12`, `−37`, `0`. */
 function sinal(n: number): string {
   return n > 0 ? `+${n}` : n < 0 ? `−${Math.abs(n)}` : '0';
 }
 
-/** Como cada laço com um terceiro se lê. O verbo é do ponto de vista DELE. */
-const LACOS: Record<string, string> = {
-  guerra: 'em guerra com',
-  pacto: 'pacto com',
-  comercio: 'comercia com',
-  'tributo-paga': 'paga tributo a',
-  'tributo-recebe': 'recebe tributo de',
-};
+/**
+ * A faixa de MEANDRO que fecha o cabeçalho e o rodapé da janela.
+ *
+ * ⚠️ **É a assinatura grega, e ela não custa arte nenhuma.** Henrique pediu *"cara de
+ * diplomacia grega, pensando que no futuro vamos trazer texturas"* — e a grega tem uma marca
+ * que se reconhece em um segundo e cabe num SVG de dezesseis pixels. É o mesmo papel dos
+ * roletes de madeira na mesa do Rome: dizer de que mundo é a tela antes de qualquer palavra.
+ *
+ * A textura de verdade entra depois, pela ranhura `--tex-moldura`: esta faixa continua por
+ * cima dela.
+ */
+function faixaDeMeandro(invertida = false): HTMLElement {
+  const faixa = document.createElement('div');
+  faixa.className = 'diplomacia__meandro';
+  if (invertida) faixa.dataset['baixo'] = 'sim';
+  faixa.setAttribute('aria-hidden', 'true');
+  return faixa;
+}
+
+/** O título de uma seção da coluna de ações. Uma voz só para todas: versalete espaçado. */
+function tituloDaColuna(texto: string): HTMLElement {
+  const titulo = document.createElement('h3');
+  titulo.className = 'diplomacia__secao';
+  titulo.textContent = texto;
+  return titulo;
+}
+
+/**
+ * Uma fileira de estandartes — aliados, inimigos, parceiros de comércio.
+ *
+ * ⚠️ **É a peça que faz a mesa se ler com pouco texto**, e é a resposta ao que Henrique
+ * apontou no Rome: Total War: *"você vê que tem pouco texto e mesmo assim consigo entender o
+ * que está acontecendo?"*. Ali as relações de cada lado são fileiras de escudo, e o olho conta
+ * três contra um sem ler uma palavra. Aqui os dezoito emblemas já existiam em `estandartes.ts`
+ * — coruja para Atenas, kithara para Mégara, pégaso para Corinto — e ninguém os tinha pedido.
+ *
+ * ⚠️ **Teto de quatro, e o resto vira `+n`.** Um chefe de liga em guerra com meio mapa
+ * empurraria a coluna do meio para fora da janela; quatro escudos cabem em qualquer linha e
+ * `+3` ao lado já diz o tamanho da coisa. O tooltip guarda a lista inteira, por nome.
+ */
+function fileiraDeBrasoes(quais: readonly BrasaoNaMesa[], rotulo: string): HTMLElement {
+  const caixa = document.createElement('span');
+  caixa.className = 'diplomacia__brasoes';
+  if (quais.length === 0) {
+    caixa.dataset['vazia'] = 'sim';
+    caixa.textContent = '—';
+    return caixa;
+  }
+  const TETO = 4;
+  for (const brasao of quais.slice(0, TETO)) {
+    caixa.appendChild(criarEstandarte(brasao, 'hoste'));
+  }
+  if (quais.length > TETO) {
+    const resto = document.createElement('span');
+    resto.className = 'diplomacia__brasoes-resto';
+    resto.textContent = `+${quais.length - TETO}`;
+    caixa.appendChild(resto);
+  }
+  definirTooltip(caixa, {
+    titulo: rotulo,
+    corpo: quais.map((b) => b.nome).join('\n'),
+  });
+  return caixa;
+}
 
 export class Diplomacia {
   /** A tela avisa; quem decide é a aplicação, que tem a campanha e a IA na mão. */
   aoDeclararGuerra: (idPoder: string) => void = () => {};
   aoProporPaz: (idPoder: string) => void = () => {};
   aoPresentear: (idPoder: string, ouro: number) => void = () => {};
-  aoFirmarPacto: (idPoder: string, turnos: number) => void = () => {};
+  aoFirmarPacto: (idPoder: string, turnos: number, ouro: number) => void = () => {};
   aoAcordarComercio: (idPoder: string) => void = () => {};
   aoDesfazerAcordo: (idPoder: string) => void = () => {};
   aoConcederAcesso: (idPoder: string, turnos: number) => void = () => {};
   aoRevogarAcesso: (idPoder: string) => void = () => {};
   aoResponderPedido: (idPoder: string, tipo: string, aceita: boolean) => void = () => {};
   aoRomperPacto: (idPoder: string) => void = () => {};
-  aoFirmarAlianca: (idPoder: string, turnos: number) => void = () => {};
+  aoFirmarAlianca: (idPoder: string, turnos: number, ouro: number) => void = () => {};
   aoRomperAlianca: (idPoder: string) => void = () => {};
   aoFormarLiga: (idPoder: string) => void = () => {};
   aoSairDaLiga: (idPoder: string) => void = () => {};
@@ -145,13 +214,31 @@ export class Diplomacia {
   /** Com quem o jogador está falando. `null` antes de a lista existir. */
   private escolhido: string | null = null;
   /**
+   * Qual ficha de tratado está ABERTA. Uma por vez, e a escolha atravessa os reinos.
+   *
+   * ⚠️ **Três estados e não dois, e o terceiro é o que faz a coluna ter cara ao abrir.**
+   * `null` é *"ele ainda não escolheu"*, e aí a primeira ficha abre sozinha — uma coluna de
+   * sete linhas todas fechadas não ensina que elas abrem, e deixaria a tela vazia. `''` é
+   * *"ele fechou a que estava aberta"*, e essa vontade tem de ser respeitada: sem o terceiro
+   * estado, fechar a ficha faria a primeira reabrir no mesmo instante.
+   *
+   * ⚠️ **E a escolha sobrevive à troca de interlocutor de propósito.** A pergunta que se faz
+   * numa mesa raramente é "o que dá para fazer com Argos": é *"quem assinaria um pacto
+   * comigo"* — e essa se responde correndo a lista com a ficha do pacto aberta.
+   */
+  private grupoAberto: string | null = null;
+  /**
    * A última vista desenhada.
    *
    * ⚠️ **Trocar de interlocutor é decisão da TELA, e não do mundo.** Nada muda nas regras
    * quando o jogador clica noutro nome — pedir um redesenho à aplicação salvaria o jogo e
    * repintaria o mapa por causa disso. Com a vista guardada, a janela redesenha a si mesma.
    */
-  private ultima: VistaDaDiplomacia = { eu: CARTAO_VAZIO, vizinhos: [] };
+  private ultima: VistaDaDiplomacia = VISTA_VAZIA;
+  /** O estandarte do jogador, no alto da janela: quem está falando. */
+  private readonly selo = document.createElement('span');
+  /** O rodapé: a sua palavra empenhada e a data. Uma vez, e não em cada interlocutor. */
+  private readonly rodape = document.createElement('div');
 
   constructor(pai: HTMLElement) {
     this.fundo.className = 'diplomacia';
@@ -169,7 +256,14 @@ export class Diplomacia {
     barra.className = 'diplomacia__barra';
     const titulo = document.createElement('h2');
     titulo.className = 'diplomacia__titulo';
-    rotularComIcone(titulo, 'coruja', 'Diplomacia');
+    // ⚠️ **O estandarte do jogador no lugar da coruja genérica.** A coruja é de Atena e
+    // marcava o botão da barra de turno; dentro da janela ela dizia "diplomacia" pela segunda
+    // vez, ao lado da palavra "Negociações". O selo do reino diz outra coisa: *quem está
+    // falando* — que é o que falta a quem abre a mesa sem lembrar com quem está jogando.
+    this.selo.className = 'diplomacia__selo-reino';
+    const palavra = document.createElement('span');
+    palavra.textContent = 'Negociações';
+    titulo.append(this.selo, palavra);
     const fechar = document.createElement('button');
     fechar.className = 'diplomacia__fechar';
     fechar.type = 'button';
@@ -193,7 +287,9 @@ export class Diplomacia {
     colunas.append(this.lista, this.dossie, this.acoes);
     conteudo.append(colunas);
 
-    janela.append(barra, conteudo);
+    this.rodape.className = 'diplomacia__rodape';
+
+    janela.append(barra, faixaDeMeandro(), conteudo, faixaDeMeandro(true), this.rodape);
     this.fundo.appendChild(janela);
     pai.appendChild(this.fundo);
 
@@ -245,11 +341,48 @@ export class Diplomacia {
       this.escolhido = vista.vizinhos[0]?.id ?? null;
     }
 
+    this.selo.replaceChildren(
+      ...(vista.meuBrasao.id === '' ? [] : [criarEstandarte(vista.meuBrasao, 'provincia')]),
+    );
+    this.desenharRodape(vista);
     this.lista.replaceChildren(...this.listaAgrupada(vista.vizinhos));
     const escolhido = vista.vizinhos.find((v) => v.id === this.escolhido);
-    this.dossie.replaceChildren(...(escolhido ? this.leituraDe(vista.eu, escolhido) : []));
-    this.acoes.replaceChildren(...(escolhido ? this.acoesDe(escolhido) : []));
-    this.acoes.appendChild(this.aviso);
+    this.dossie.replaceChildren(
+      ...(escolhido ? this.leituraDe(vista.eu, vista.meuBrasao, escolhido) : []),
+    );
+    // ⚠️ **A resposta dele vai para o TOPO da coluna, e não para o pé.** No pé ela nascia
+    // abaixo de nove fichas numa coluna que rola — o jogador apertava "Propor paz" e a
+    // resposta aparecia fora da vista, num lugar onde ele não tinha motivo para olhar.
+    this.acoes.replaceChildren(this.aviso, ...(escolhido ? this.acoesDe(escolhido) : []));
+  }
+
+  /**
+   * O rodapé: a SUA palavra e a data, uma vez só na janela.
+   *
+   * ⚠️ **A palavra saiu da tira de confronto, e a tira ficou melhor sem ela.** Lá era uma
+   * linha `✓ palavra ✓` que dizia a mesma coisa dos dois lados em quase todos os pares — e
+   * a sua reputação não muda de interlocutor para interlocutor, então repeti-la a cada clique
+   * era desenhar dezessete vezes um dado que é um só. A dele continua onde importa: ao lado
+   * do nome dele, e só quando está suja.
+   */
+  private desenharRodape(vista: VistaDaDiplomacia): void {
+    const palavra = document.createElement('span');
+    const limpa = vista.eu.reputacao >= 0;
+    palavra.className = 'diplomacia__palavra';
+    palavra.dataset['tom'] = limpa ? 'bom' : 'ruim';
+    palavra.textContent = limpa
+      ? 'Sua palavra: nenhum acordo quebrado'
+      : `Sua palavra: ${vista.eu.reputacao} — o mundo lembra`;
+    definirTooltip(palavra, {
+      titulo: 'Reputação',
+      corpo: limpa
+        ? 'Quebrar um acordo derruba a sua reputação com TODOS os reinos, e não só com o traído.'
+        : 'Ela volta sozinha, alguns pontos por turno, enquanto você não quebrar mais nada.',
+    });
+    const quando = document.createElement('span');
+    quando.className = 'diplomacia__quando';
+    quando.textContent = `${formatarAno(vista.ano)} · rodada ${vista.turno.toLocaleString('pt-BR')}`;
+    this.rodape.replaceChildren(palavra, quando);
   }
 
   /**
@@ -309,13 +442,24 @@ export class Diplomacia {
     nome.className = 'diplomacia__nome-texto';
     nome.textContent = vizinho.nome;
 
-    // ⚠️ **O VÍNCULO no lugar da postura, e a OPINIÃO no lugar do exército.** A linha antiga
-    // dizia `cordial` e um número de tropa: medido na captura de turno 40, onze das doze linhas
-    // diziam a mesma palavra, e o exército já aparece duas vezes dentro do dossiê. Nenhum dos
-    // dois respondia a pergunta que se faz correndo a lista — *o que eu sou desse reino?*
+    // ⚠️ **O estandarte é a metade da linha que faltava, e a queixa foi literal:** *"falta os
+    // banners de cada reino, falta distinguir, atualmente tenho que decorar nomes, ser humano é
+    // melhor em decorar imagem do que nomes"*. Dezoito linhas de texto em ordem alfabética, com
+    // nomes que rimam entre si — Cálcis, Cáristo, Corinto —, obrigavam a LER cada uma para
+    // achar uma. Com o pano, a cor e o emblema respondem antes da palavra: a coruja é Atenas
+    // esteja ela onde estiver na lista.
+    const corpo = document.createElement('span');
+    corpo.className = 'diplomacia__nome-corpo';
+
+    // ⚠️ **O MOTIVO no lugar do vínculo, e é a correção que a lista esperava.** Ela mostrava o
+    // vínculo — que é VAZIO para quase todo mundo — e a opinião, que na rodada 1 vale `0` para
+    // dezesseis dos dezessete. O resultado, medido: dezessete linhas dizendo a mesma coisa, em
+    // ordem alfabética, sem nada com que escolher. Henrique, olhando a tela: *"com quem eu devo
+    // fazer diplomacia?"*. O motivo é uma frase concreta e diferente em cada linha — fronteira,
+    // guerra alheia, cobiça, prazo de acordo —, e é ela que faz a lista escolher por você.
     const estado = document.createElement('span');
     estado.className = 'diplomacia__nome-estado';
-    estado.textContent = vizinho.vinculo;
+    estado.textContent = vizinho.motivo;
 
     // ⚠️ **A fronteira virou um SELO, e não mais o filtro da lista.** Desde que a mesa abriu
     // para os 18 poderes com ficha, quem encosta em você deixou de ser "quem aparece" e
@@ -340,7 +484,16 @@ export class Diplomacia {
     baixo.className = 'diplomacia__nome-linha';
     baixo.append(estado, forca);
 
-    botao.append(nome, baixo);
+    // A barrinha da força: comparar dezessete números é conta, comparar dezessete barras é um
+    // olhar. O número exato continua na tira de confronto, onde ele decide de fato.
+    const barra = document.createElement('span');
+    barra.className = 'diplomacia__nome-barra';
+    const preenchida = document.createElement('i');
+    preenchida.style.width = `${Math.round(vizinho.forcaRelativa * 100)}%`;
+    barra.appendChild(preenchida);
+
+    corpo.append(nome, baixo, barra);
+    botao.append(criarEstandarte(vizinho.brasao, 'hoste'), corpo);
     // ⚠️ **A marca do pedido fica na LISTA**, e não só dentro do dossiê: sem ela, o jogador só
     // descobriria que alguém quer falar com ele clicando reino por reino.
     if (vizinho.pedido) {
@@ -360,14 +513,37 @@ export class Diplomacia {
   }
 
   /** A COLUNA DO MEIO: o que vocês são um do outro. Zero botões, por regra. */
-  private leituraDe(eu: CartaoDoPoder, vizinho: VizinhoNaMesa): readonly HTMLElement[] {
-    const partes: HTMLElement[] = [
-      this.confronto(eu, vizinho),
+  private leituraDe(
+    eu: CartaoDoPoder,
+    meuBrasao: BrasaoNaMesa,
+    vizinho: VizinhoNaMesa,
+  ): readonly HTMLElement[] {
+    return [
+      this.estado(vizinho),
+      this.confronto(eu, meuBrasao, vizinho),
       this.opiniao(vizinho),
       this.intencao(vizinho),
     ];
-    if (vizinho.lacos.length > 0) partes.push(this.lacos(vizinho));
-    return partes;
+  }
+
+  /**
+   * A FRASE DO ALTO: *"Em guerra há 22 turnos"*.
+   *
+   * ⚠️ **É a primeira coisa que qualquer um procura, e a tela nunca a disse.** Tudo o que
+   * compõe essa frase já estava na janela — a opinião, o prazo do pacto, o da aliança, a
+   * trégua —, cada pedaço num canto diferente, e nenhum deles respondia *o que nós somos um
+   * do outro*. Quem abrisse a mesa sem nunca ter jogado tinha de montar a situação a partir de
+   * cinco números. Agora ela abre com a resposta, e o resto da coluna a detalha.
+   */
+  private estado(vizinho: VizinhoNaMesa): HTMLElement {
+    const caixa = document.createElement('div');
+    caixa.className = 'diplomacia__estado';
+    caixa.dataset['tom'] = vizinho.emGuerra ? 'guerra' : 'paz';
+    const frase = document.createElement('p');
+    frase.className = 'diplomacia__estado-frase';
+    frase.textContent = vizinho.desde;
+    caixa.appendChild(frase);
+    return caixa;
   }
 
   /**
@@ -375,12 +551,71 @@ export class Diplomacia {
    *
    * ⚠️ **O pedido DELE vem primeiro, acima de tudo que você poderia propor.** A ordem é a
    * mensagem: quando o outro lado pede alguma coisa, é isso que está em cima da mesa.
+   *
+   * ⚠️ **E os tratados viraram uma LISTA QUE ABRE UMA POR VEZ, no lugar de oito fichas
+   * espalhadas numa grade.** Henrique, olhando a tela pronta: *"a parte das ações, onde tem
+   * pacto, presente, tá muito desorganizado, esses quadrados jogados, tinham que ser opções, e
+   * quando selecionados abrir as opções, para deixar um embaixo do outro organizado (...) e
+   * diminuir a quantidade de números e informações de uma vez"*. Ele está descrevendo o
+   * defeito com precisão: a grade de duas colunas mostrava as OITO fichas abertas ao mesmo
+   * tempo — vinte e um botões e trinta e um números de uma vez —, com alturas desiguais que
+   * deixavam buracos, e nenhuma das oito era uma escolha, porque todas estavam sempre ali.
+   *
+   * Fechadas, as sete fichas de tratado dizem duas coisas e param: o nome e o que já está em
+   * pé. Aberta, uma só, e ela mostra as opções empilhadas numa coluna com o ouro e o prazo
+   * alinhados. A conta na tela cai de trinta e um números para os quatro ou seis da ficha que
+   * o jogador escolheu ver.
    */
   private acoesDe(vizinho: VizinhoNaMesa): readonly HTMLElement[] {
+    // ⚠️ **Só os TRATADOS rolam; guerra e paz ficam pregadas no pé da coluna.** Com o Tributo
+    // aberto — seis linhas — a ficha da guerra saía da vista e aparecia cortada pela borda da
+    // janela, que se lê como painel quebrado e não como conteúdo abaixo do corte. E é a única
+    // ficha da tela que nunca pode estar escondida: sem guerra declarada a ordem de marcha
+    // recusa, e esta é a única janela onde se declara.
+    const rolagem = document.createElement('div');
+    rolagem.className = 'diplomacia__rolagem';
     const partes: HTMLElement[] = [];
-    if (vizinho.pedido) partes.push(this.pedido(vizinho));
-    partes.push(this.propostas(vizinho));
-    return partes;
+    // ⚠️ **O pedido também leva título.** Ele aparecia como uma caixa dourada com uma frase e
+    // dois botões, sem uma palavra dizendo o que aquilo é — quem abre a mesa pela primeira vez
+    // vê um bloco em destaque e não sabe se é aviso, oferta ou consequência. Os dois títulos
+    // são um par, e é o par que ensina a coluna: primeiro o que ELE quer, depois o que você
+    // pode querer.
+    if (vizinho.pedido) {
+      partes.push(tituloDaColuna(`O que ${vizinho.nome} pede`));
+      partes.push(this.pedido(vizinho));
+    }
+    const tratados = vizinho.grupos.filter((g) => g.fixo !== true);
+    if (tratados.length > 0) {
+      partes.push(tituloDaColuna(vizinho.pedido ? 'Ou proponha você' : 'O que se pode propor'));
+      const pilha = document.createElement('div');
+      pilha.className = 'diplomacia__acoes';
+      const aberto = this.qualAberto(tratados);
+      for (const grupo of tratados) {
+        pilha.appendChild(this.grupo(vizinho, grupo, grupo.titulo === aberto));
+      }
+      partes.push(pilha);
+    }
+    rolagem.append(...partes);
+    // Guerra e paz nunca fecham: ver `GrupoDaMesa.fixo`.
+    return [
+      rolagem,
+      ...vizinho.grupos.filter((g) => g.fixo === true).map((g) => this.grupo(vizinho, g, true)),
+    ];
+  }
+
+  /**
+   * Qual ficha abrir agora — a escolhida, se ela existir para este reino; senão a primeira.
+   *
+   * ⚠️ **A queda para a primeira é obrigatória, e não cortesia.** Os grupos mudam de reino
+   * para reino: quem já está na sua liga não tem ficha de liga, e quem está em guerra não tem
+   * ficha nenhuma de tratado. Sem a queda, atravessar a lista com o TRIBUTO aberto encontraria
+   * um reino sem tributo e a coluna abriria fechada, sem uma palavra dizendo por quê.
+   */
+  private qualAberto(tratados: readonly GrupoDaMesa[]): string {
+    if (this.grupoAberto === '') return '';
+    const titulos = tratados.map((g) => g.titulo);
+    if (this.grupoAberto !== null && titulos.includes(this.grupoAberto)) return this.grupoAberto;
+    return titulos[0] ?? '';
   }
 
   /**
@@ -435,22 +670,38 @@ export class Diplomacia {
    * ou quando o reino está no exílio. Na esmagadora maioria dos pares ela repetia o nome do
    * reino que está escrito no topo da própria coluna.
    */
-  private confronto(eu: CartaoDoPoder, vizinho: VizinhoNaMesa): HTMLElement {
+  private confronto(
+    eu: CartaoDoPoder,
+    meuBrasao: BrasaoNaMesa,
+    vizinho: VizinhoNaMesa,
+  ): HTMLElement {
     const dele = vizinho.cartao;
     const caixa = document.createElement('div');
     caixa.className = 'diplomacia__confronto';
 
+    // ⚠️ **Os dois panos frente a frente, e é o que faz a tira parecer uma MESA.** Os cartões
+    // espelhados do Total War funcionam porque cada lado tem um rosto; aqui os dois lados eram
+    // dois nomes na mesma fonte, e a única coisa que dizia de quem era cada coluna era a
+    // posição. Com o estandarte de cada um na ponta de fora, o olho sabe de quem é o número
+    // antes de ler o nome — e é o mesmo pano que ele acabou de escolher na lista.
     const nomes = document.createElement('div');
     nomes.className = 'diplomacia__confronto-nomes';
+    const meuLado = document.createElement('div');
+    meuLado.className = 'diplomacia__confronto-lado';
     const meuNome = document.createElement('h3');
     meuNome.className = 'diplomacia__meu-reino';
     meuNome.textContent = eu.nome;
+    meuLado.append(criarEstandarte(meuBrasao, 'reino'), meuNome);
+    const ladoDele = document.createElement('div');
+    ladoDele.className = 'diplomacia__confronto-lado';
+    ladoDele.dataset['dele'] = 'sim';
     const nomeDele = document.createElement('h3');
     // ⚠️ A classe do nome DELE não muda: é por ela que o teste de tela confere com quem o
     // jogador está falando.
     nomeDele.className = 'diplomacia__reino';
     nomeDele.textContent = dele.nome;
-    nomes.append(meuNome, nomeDele);
+    ladoDele.append(criarEstandarte(vizinho.brasao, 'reino'), nomeDele);
+    nomes.append(meuLado, ladoDele);
     caixa.appendChild(nomes);
 
     const linha = (esquerda: string, rotulo: string, direita: string): HTMLElement => {
@@ -472,30 +723,45 @@ export class Diplomacia {
     const n = (v: number): string => v.toLocaleString('pt-BR');
     caixa.appendChild(linha(n(eu.provincias), 'províncias', n(dele.provincias)));
     caixa.appendChild(this.linhaDeForca(eu, vizinho));
+    caixa.appendChild(linha(n(eu.tesouro), 'tesouro', n(dele.tesouro)));
     if (eu.capital !== eu.nome || dele.capital !== dele.nome) {
       caixa.appendChild(
         linha(eu.capital || '— exílio —', 'capital', dele.capital || '— exílio —'),
       );
     }
-    // A palavra vira selo: `palavra limpa` × `palavra limpa` era a mesma frase escrita duas
-    // vezes em quase todos os pares. O tooltip guarda o número da reputação.
-    const palavra = linha(
-      eu.palavra === 'palavra limpa' ? '✓' : '✗',
-      'palavra',
-      dele.palavra === 'palavra limpa' ? '✓' : '✗',
-    );
-    definirTooltip(palavra, {
-      titulo: 'A palavra dos dois',
-      corpo: `${eu.nome}: ${eu.palavra}
-${dele.nome}: ${dele.palavra}`,
-    });
-    caixa.appendChild(palavra);
+
+    // ⚠️ **AS TRÊS LINHAS DE ESCUDO, e são a metade nova da tira.** Antes o mundo em volta
+    // aparecia só do lado DELE, em letra miúda no rodapé do dossiê — "em guerra com Tebas ·
+    // comercia com Corinto". Espelhadas e em brasão, as mesmas relações valem para os dois
+    // lados, ficam na linha a que pertencem, e ocupam menos espaço do que ocupavam para um
+    // lado só. É o que responde *"quem está com quem"* sem uma frase.
+    for (const [rotulo, meus, seus] of [
+      ['aliados', eu.aliados, dele.aliados],
+      ['em guerra com', eu.inimigos, dele.inimigos],
+      ['comerciam com', eu.comercio, dele.comercio],
+    ] as const) {
+      if (meus.length === 0 && seus.length === 0) continue;
+      const l = document.createElement('div');
+      l.className = 'diplomacia__confronto-linha';
+      l.dataset['brasoes'] = 'sim';
+      const meio = document.createElement('span');
+      meio.className = 'diplomacia__confronto-rotulo';
+      meio.textContent = rotulo;
+      const esquerda = fileiraDeBrasoes(meus, `${eu.nome} — ${rotulo}`);
+      esquerda.classList.add('diplomacia__confronto-meu');
+      const direita = fileiraDeBrasoes(seus, `${dele.nome} — ${rotulo}`);
+      direita.classList.add('diplomacia__confronto-dele');
+      l.append(esquerda, meio, direita);
+      caixa.appendChild(l);
+    }
 
     const rodape = document.createElement('p');
     rodape.className = 'diplomacia__confronto-rodape';
-    const marcas = [dele.linha];
-    if (vizinho.fronteira.length > 0) marcas.push(`fronteira (${vizinho.fronteira.length})`);
-    rodape.textContent = marcas.join(' · ');
+    // ⚠️ **Uma frase, e não uma lista de marcas.** Era `guerreiro · fronteira (2)` — dois
+    // fragmentos telegráficos separados por ponto, que ninguém lê como frase e que repetem a
+    // contagem da fronteira já contada no selo da lista. Agora o rodapé diz a única coisa que
+    // não está escrita em nenhum outro canto: como ELE joga.
+    rodape.textContent = `${dele.nome} joga como ${dele.linha}.`;
     definirTooltip(rodape, {
       titulo: `${dele.nome} joga como ${dele.linha}`,
       corpo: vizinho.conduta,
@@ -574,7 +840,10 @@ ${dele.nome}: ${dele.palavra}`,
     const rotulo = document.createElement('p');
     rotulo.className = 'diplomacia__postura-nome';
     rotulo.dataset['tom'] = vizinho.tomDaPostura;
-    rotulo.textContent = vizinho.emGuerra ? 'EM GUERRA' : vizinho.postura.toUpperCase();
+    // ⚠️ **A postura, sempre — e nunca mais "EM GUERRA" aqui.** A frase do alto já diz que há
+    // guerra, e com quanto tempo; repetir a palavra três linhas abaixo gastava o lugar do
+    // único dado que este rótulo tem para dar, que é o NOME da faixa em que a opinião caiu.
+    rotulo.textContent = vizinho.postura.toUpperCase();
 
     const numero = document.createElement('p');
     numero.className = 'diplomacia__numero';
@@ -597,7 +866,10 @@ ${dele.nome}: ${dele.palavra}`,
 
     const conta = document.createElement('ul');
     conta.className = 'diplomacia__parcelas';
-    for (const parcela of vizinho.parcelas) {
+    // ⚠️ **Parcela de zero não entra.** "indiferença 0" ocupava uma linha inteira para dizer
+    // que nada acontece — e é a primeira linha da conta, a que o olho lê antes das outras. Uma
+    // conta de opinião só precisa mostrar o que mexeu nela.
+    for (const parcela of vizinho.parcelas.filter((p) => p.pontos !== 0)) {
       const linha = document.createElement('li');
       linha.dataset['tom'] = parcela.pontos >= 0 ? 'bom' : 'ruim';
       const nome = document.createElement('span');
@@ -654,15 +926,19 @@ ${dele.nome}: ${dele.palavra}`,
     texto.className = 'diplomacia__regua-texto';
     const acima = vizinho.relacao > vizinho.linhaDeAtaque;
     const indoParaLa = vizinho.alvo <= vizinho.linhaDeAtaque;
+    // ⚠️ **Frase inteira, e não fragmento.** Era `abaixo da linha de Elêusis` — minúscula, sem
+    // verbo e sem ponto —, e quem nunca jogou não tinha como saber que "a linha" é o ponto em
+    // que o vizinho passa a considerar marchar. A frase agora diz a CONSEQUÊNCIA, que é o que
+    // se precisa saber; o tooltip da régua continua explicando de onde ela sai.
     texto.dataset['tom'] = acima ? 'morno' : 'ruim';
     texto.textContent = !acima
-      ? `abaixo da linha de ${vizinho.nome}`
+      ? `${vizinho.nome} já considera marchar sobre você.`
       : indoParaLa
-        ? `caminha para a linha de ${vizinho.nome}`
+        ? `A opinião caminha para o ponto em que ${vizinho.nome} considera marchar.`
         : '';
     definirTooltip(trilho, {
       titulo: `A linha de ${vizinho.nome}`,
-      corpo: `Como ${vizinho.cartao.linha}, ele só considera marchar sobre você com a opinião em ${vizinho.linhaDeAtaque} ou menos — e é a mesma linha que decide se ele assina um pacto.`,
+      corpo: `Como ${vizinho.cartao.linha}, ele só considera marchar sobre você com a opinião em ${vizinho.linhaDeAtaque} ou menos — e é o temperamento que pesa contra você em todo acordo.`,
     });
 
     caixa.append(trilho, texto);
@@ -701,114 +977,186 @@ ${dele.nome}: ${dele.palavra}`,
   }
 
   /**
-   * Os laços dele com TERCEIROS.
+   * Uma FICHA DE TRATADO: cabeçalho sempre visível, opções só quando ela está aberta.
    *
-   * ⚠️ **Sem isto o mundo parecia ter duas pessoas dentro.** Enquanto a tela só mostrava a
-   * relação de vocês dois, cada proposta era uma transação isolada. Saber que Argos está em
-   * guerra com Tebas e comercia com Corinto transforma a mesma proposta numa jogada dentro de
-   * um tabuleiro — e é exatamente a falta que os jogadores de Total War mais reclamam.
+   * ⚠️ **O cabeçalho fechado tem de dizer alguma coisa, senão fechar não vale a pena.** Uma
+   * lista de sete nomes de tratado responde *"o que existe no jogo"*, que é a mesma resposta
+   * para os dezoito reinos; o que muda de reino para reino é o que já foi assinado. Por isso a
+   * linha fechada carrega três marcas e nada mais: o nome, o RESUMO do que está em pé — *em
+   * vigor · 34 turnos*, *você lidera*, *ele paga* — e a palavra com a vontade dele.
+   *
+   * ⚠️ **A palavra dele fica no cabeçalho, e não é um selo.** Henrique: *"não quero um sistema
+   * de criança 'se der verde compra, vermelho erro'"*. São três palavras — assinaria,
+   * relutante, fechado — e a ficha aberta mostra a CONTA: as parcelas da balança dele e, em
+   * cada linha, o saldo no lugar onde havia um ✓ ou um ✗.
    */
-  private lacos(vizinho: VizinhoNaMesa): HTMLElement {
-    const caixa = document.createElement('p');
-    caixa.className = 'diplomacia__lacos';
-    for (const laco of vizinho.lacos) {
-      const item = document.createElement('span');
-      item.className = 'diplomacia__laco';
-      item.dataset['tipo'] = laco.tipo;
-      item.textContent = `${LACOS[laco.tipo] ?? laco.tipo} ${laco.nome}`;
-      caixa.appendChild(item);
-    }
-    return caixa;
-  }
-
-  /** Os grupos de proposta, cada um com a fala dele embaixo. */
-  private propostas(vizinho: VizinhoNaMesa): HTMLElement {
-    const caixa = document.createElement('div');
-    caixa.className = 'diplomacia__acoes';
-    for (const grupo of vizinho.grupos) caixa.appendChild(this.grupo(vizinho, grupo));
-    return caixa;
-  }
-
-  /**
-   * Um grupo vira uma FICHA de moldura própria, e não mais uma linha empilhada.
-   *
-   * ⚠️ **A ficha nunca muda de posição, só de cara.** Empilhados, um pacto assinado colapsava
-   * o grupo de três botões para um e tudo abaixo subia — a tela dançava a cada assinatura.
-   * Numa grade de posições fixas, PACTO é sempre o mesmo canto, esteja ele livre, em pé ou
-   * trancado, e o jogador aprende o tabuleiro uma vez.
-   *
-   * ⚠️ **E o selo sobe do botão para o cabeçalho quando ele é o mesmo em todos.** Medido: a
-   * tela repetia o mesmo veredito de 19 a 25 vezes, porque `aceita` é calculado uma vez por
-   * grupo e copiado em cada botão. Onde ele varia de fato — tributo, que tem dois verbos, e a
-   * paz, que tem prazos — o selo continua por botão, e aí ele significa alguma coisa.
-   */
-  private grupo(vizinho: VizinhoNaMesa, grupo: GrupoDaMesa): HTMLElement {
+  private grupo(vizinho: VizinhoNaMesa, grupo: GrupoDaMesa, aberto: boolean): HTMLElement {
     const caixa = document.createElement('div');
     caixa.className = 'diplomacia__grupo';
     caixa.dataset['grupo'] = grupo.titulo.toLowerCase();
-    // Guerra, Paz e Presente atravessam a grade: são os únicos que não são acordo com prazo —
-    // atos unilaterais, um destrutivo e um gratuito —, e ficam nos extremos da coluna.
-    if (grupo.vao) caixa.dataset['vao'] = grupo.vao;
+    caixa.dataset['aberto'] = aberto ? 'sim' : 'nao';
+    if (grupo.fixo) caixa.dataset['fixo'] = 'sim';
 
     const livres = grupo.propostas.filter((p) => p.pode);
-    const mesmoVeredito =
-      livres.length > 0 && livres.every((p) => p.aceita === livres[0]?.aceita)
-        ? (livres[0]?.aceita ?? null)
-        : null;
+    const vontade =
+      grupo.vontadeDele !== true || livres.length === 0
+        ? null
+        : livres.some((p) => p.aceita)
+          ? 'assinaria'
+          : grupo.semSaida
+            ? 'fechado'
+            : 'relutante';
 
-    const topo = document.createElement('div');
+    caixa.appendChild(this.cabecalho(vizinho, grupo, aberto, vontade));
+    if (!aberto) return caixa;
+
+    const corpo = document.createElement('div');
+    corpo.className = 'diplomacia__ficha-corpo';
+    if (grupo.fala !== '') {
+      const fala = document.createElement('p');
+      fala.className = 'diplomacia__fala';
+      // ⚠️ **A cor só entra quando a frase é DELE.** O `tom` espelha "ele assinaria isto?", e
+      // pintar a descrição do acordo com ele fazia "Nenhum dos dois marcha sobre o outro" —
+      // que é a definição de um pacto e vale sempre — sair em vermelho de alarme. Quem
+      // responde se ele aceita é a palavra do cabeçalho.
+      if (grupo.vozDele) fala.dataset['tom'] = grupo.tom;
+      fala.dataset['voz'] = grupo.vozDele ? 'dele' : 'regra';
+      fala.textContent = grupo.fala;
+      corpo.appendChild(fala);
+    }
+    // A conta aberta: as parcelas da balança dele, no mesmo desenho das parcelas da opinião.
+    if (grupo.balanca !== undefined && grupo.balanca.length > 0) {
+      corpo.appendChild(this.balanca(grupo.balanca));
+    }
+    const opcoes = document.createElement('div');
+    opcoes.className = 'diplomacia__opcoes';
+    for (const proposta of grupo.propostas) {
+      opcoes.appendChild(this.opcao(vizinho, grupo, proposta));
+    }
+    corpo.appendChild(opcoes);
+    caixa.appendChild(corpo);
+    return caixa;
+  }
+
+  /** As parcelas da balança dele, rótulo e número, com o saldo fechando a lista. */
+  private balanca(parcelas: readonly { rotulo: string; pontos: number }[]): HTMLElement {
+    const lista = document.createElement('ul');
+    lista.className = 'diplomacia__parcelas diplomacia__balanca';
+    for (const parcela of parcelas) {
+      const linha = document.createElement('li');
+      linha.dataset['tom'] = parcela.pontos >= 0 ? 'bom' : 'ruim';
+      const nome = document.createElement('span');
+      nome.textContent = parcela.rotulo;
+      const pontos = document.createElement('span');
+      pontos.className = 'diplomacia__pontos';
+      pontos.textContent = sinal(parcela.pontos);
+      linha.append(nome, pontos);
+      lista.appendChild(linha);
+    }
+    const saldo = parcelas.reduce((soma, p) => soma + p.pontos, 0);
+    const total = document.createElement('li');
+    total.className = 'diplomacia__balanca-saldo';
+    total.dataset['tom'] = saldo >= 0 ? 'bom' : 'ruim';
+    const nome = document.createElement('span');
+    nome.textContent = 'saldo';
+    const pontos = document.createElement('span');
+    pontos.className = 'diplomacia__pontos';
+    pontos.textContent = sinal(saldo);
+    total.append(nome, pontos);
+    lista.appendChild(total);
+    return lista;
+  }
+
+  /** A linha que abre e fecha a ficha — ou, em guerra e paz, só o título dela. */
+  private cabecalho(
+    vizinho: VizinhoNaMesa,
+    grupo: GrupoDaMesa,
+    aberto: boolean,
+    vontade: 'assinaria' | 'relutante' | 'fechado' | null,
+  ): HTMLElement {
+    const topo = grupo.fixo ? document.createElement('div') : document.createElement('button');
     topo.className = 'diplomacia__ficha-topo';
+
+    if (!grupo.fixo) {
+      const seta = document.createElement('span');
+      seta.className = 'diplomacia__seta';
+      seta.setAttribute('aria-hidden', 'true');
+      seta.textContent = aberto ? '\u25BE' : '\u25B8';
+      topo.appendChild(seta);
+    }
+
     const rotulo = document.createElement('span');
     rotulo.className = 'diplomacia__rotulo';
     rotulo.textContent = grupo.titulo;
     topo.appendChild(rotulo);
-    if (mesmoVeredito !== null) {
-      const selo = document.createElement('span');
-      selo.className = 'diplomacia__selo';
-      selo.dataset['resposta'] = mesmoVeredito ? 'sim' : 'nao';
-      selo.textContent = mesmoVeredito ? '✓' : '✗';
-      definirTooltip(selo, {
+
+    // O resumo é o que a ficha fechada tem para dizer, e some quando não há nada em pé.
+    if (grupo.resumo !== '') {
+      const resumo = document.createElement('span');
+      resumo.className = 'diplomacia__resumo-ficha';
+      resumo.textContent = grupo.resumo;
+      topo.appendChild(resumo);
+    }
+
+    // ⚠️ **A palavra só onde existe pergunta.** Ver `GrupoDaMesa.vontadeDele`: guerra, passagem
+    // e presente são atos unilaterais, e a marca que a tela punha neles dizia "ele topa" sobre
+    // coisas que ele não decide.
+    if (vontade !== null) {
+      const palavra = document.createElement('span');
+      palavra.className = 'diplomacia__vontade';
+      palavra.dataset['vontade'] = vontade;
+      palavra.textContent = vontade;
+      definirTooltip(palavra, {
         titulo: `${grupo.titulo} — ${vizinho.nome}`,
-        corpo: mesmoVeredito
-          ? 'Ele assinaria isto hoje.'
-          : 'Ele recusaria — mas você pode propor e ouvir o não.',
+        corpo:
+          vontade === 'assinaria'
+            ? 'Ele assinaria isto hoje.'
+            : vontade === 'relutante'
+              ? 'Ele recusaria hoje. Abra a ficha: ela diz o que o faria mudar.'
+              : 'Nada que você ofereça fecha isto hoje. Mude os fatos.',
       });
-      topo.appendChild(selo);
+      topo.appendChild(palavra);
     }
 
-    const botoes = document.createElement('div');
-    botoes.className = 'diplomacia__botoes';
-    for (const proposta of grupo.propostas) {
-      botoes.appendChild(this.botao(vizinho, proposta, mesmoVeredito === null));
+    if (topo instanceof HTMLButtonElement) {
+      topo.type = 'button';
+      topo.setAttribute('aria-expanded', String(aberto));
+      topo.addEventListener('click', () => {
+        // Clicar na aberta FECHA — e o `''` é o que impede a primeira de reabrir sozinha no
+        // redesenho seguinte. Ver `grupoAberto`.
+        this.grupoAberto = aberto ? '' : grupo.titulo;
+        this.desenhar(this.ultima);
+      });
     }
-
-    caixa.append(topo);
-    if (grupo.fala !== '') {
-      const fala = document.createElement('p');
-      fala.className = 'diplomacia__fala';
-      fala.dataset['tom'] = grupo.tom;
-      fala.textContent = grupo.fala;
-      caixa.appendChild(fala);
-    }
-    caixa.appendChild(botoes);
-    return caixa;
+    return topo;
   }
 
   /**
-   * Um botão de proposta, **com a resposta dele já em cima.**
+   * Uma opção dentro da ficha aberta — **uma LINHA de três colunas, e não um botão de rótulo.**
    *
-   * ⚠️ **Três estados e não dois**, e a diferença entre eles é a tela inteira:
-   * `✓` ele assina, `✗` ele recusa, e apagado quando é a REGRA que barra — cofre curto,
-   * guerra em curso, pacto em pé. Um botão apagado porque falta ouro e um botão apagado porque
-   * ele te odeia são dois problemas com duas soluções, e a tela nunca os pinta igual.
+   * ⚠️ **É a resposta direta ao que Henrique pediu:** *"quero que apareça quanto custa,
+   * quantos rounds quando for mandar uma proposta"*. Antes as duas contas moravam dentro do
+   * rótulo, e cada ficha as escrevia à sua maneira — `Pagar 155 · 20 turnos` numa, `20 turnos`
+   * na de baixo, `1.550 ouro · +29` ao lado. Três gramáticas, nenhuma coluna, e comparar a
+   * terceira parcela do tributo com a quinta era caçar um número dentro de uma frase.
    *
-   * ⚠️ E o `✗` **não desabilita**: recusa é resposta, não impedimento. O jogador pode propor
-   * assim mesmo e ouvir o não — que é o que se faz numa mesa.
+   * Agora o verbo alinha à esquerda e as duas contas à direita, uma sob a outra, com sinal: o
+   * que é vermelho sai do cofre, o que é verde entra. A comparação vira uma descida de olho.
+   *
+   * ⚠️ **Três estados e não dois**, e a diferença entre eles é a tela inteira: ele assina, ele
+   * recusa, e apagado quando é a REGRA que barra — cofre curto, guerra em curso, pacto em pé.
+   * Um botão apagado porque falta ouro e um apagado porque ele te odeia são dois problemas com
+   * duas soluções, e a tela nunca os pinta igual. E a recusa **não desabilita**: recusa é
+   * resposta, não impedimento — o jogador propõe assim mesmo e ouve o não.
+   *
+   * ⚠️ **A última célula é o SALDO da balança dele, e não um ✓ ou um ✗.** O número com sinal
+   * diz o quanto sobra ou falta nesta linha; as parcelas acima dizem por quê. Onde ainda não há
+   * balança (tributo, paz), a célula diz a resposta em palavra.
    */
-  private botao(
+  private opcao(
     vizinho: VizinhoNaMesa,
+    grupo: GrupoDaMesa,
     proposta: Proposta,
-    comSelo: boolean,
   ): HTMLButtonElement {
     const botao = document.createElement('button');
     botao.type = 'button';
@@ -818,25 +1166,52 @@ ${dele.nome}: ${dele.palavra}`,
     botao.disabled = !proposta.pode;
     botao.dataset['resposta'] = !proposta.pode ? 'travado' : proposta.aceita ? 'sim' : 'nao';
 
-    const texto = document.createElement('span');
-    texto.textContent = proposta.rotulo;
-    // O selo só desce ao botão quando o veredito VARIA dentro do grupo. Caso contrário ele
-    // mora no cabeçalho da ficha e aparece uma vez, não seis.
-    if (comSelo) {
-      const selo = document.createElement('span');
-      selo.className = 'diplomacia__selo';
-      selo.textContent = !proposta.pode ? '·' : proposta.aceita ? '✓' : '✗';
-      botao.append(selo, texto);
-    } else {
-      botao.appendChild(texto);
+    const verbo = document.createElement('span');
+    verbo.className = 'diplomacia__acao-verbo';
+    verbo.textContent = proposta.rotulo;
+
+    // ⚠️ **Célula VAZIA no lugar do traço.** O `—` da vista é "aqui não se mexe no cofre", e
+    // desenhado vira um sinal que o olho tem de conferir para descobrir que não diz nada — dois
+    // deles na linha de declarar guerra, que não tem preço nem prazo. A largura da coluna é
+    // fixa, então o alinhamento não depende de haver conteúdo.
+    const custo = document.createElement('span');
+    custo.className = 'diplomacia__acao-custo';
+    custo.textContent = proposta.custo === '—' ? '' : proposta.custo;
+    // O tom sai do SINAL e de mais nada: uma regra só para as nove fichas, sem uma lista de
+    // ações no CSS para manter de acordo com a vista.
+    if (proposta.custo.startsWith('+')) custo.dataset['tom'] = 'bom';
+    else if (proposta.custo.startsWith('−')) custo.dataset['tom'] = 'ruim';
+
+    const prazo = document.createElement('span');
+    prazo.className = 'diplomacia__acao-prazo';
+    prazo.textContent = proposta.prazo === '—' ? '' : proposta.prazo;
+    // O presente escreve o GANHO nesta coluna, e o sinal vale nela igual: `+20 de opinião` é o
+    // que a quantia compra, e é a única coisa que se compara entre as três linhas da ficha.
+    if (proposta.prazo.startsWith('+')) prazo.dataset['tom'] = 'bom';
+
+    // ⚠️ A célula tem lugar fixo mesmo vazia: sem ela, uma ficha em que só parte das linhas
+    // leva resposta teria as colunas de prazo desalinhadas entre si.
+    const selo = document.createElement('span');
+    selo.className = 'diplomacia__selo';
+    if (proposta.pode && grupo.vontadeDele === true) {
+      if (proposta.saldo !== undefined) {
+        selo.textContent = sinal(proposta.saldo);
+        selo.dataset['tom'] = proposta.saldo >= 0 ? 'bom' : 'ruim';
+      } else {
+        selo.textContent = proposta.aceita ? 'aceita' : 'recusa';
+      }
     }
+
+    botao.append(verbo, custo, prazo, selo);
     definirTooltip(botao, {
-      titulo: `${proposta.rotulo} — ${vizinho.nome}`,
+      titulo: `${grupo.titulo} — ${vizinho.nome}`,
       corpo: !proposta.pode
         ? proposta.bloqueio || 'as regras não deixam agora'
         : proposta.aceita
           ? 'Ele assinaria isto hoje.'
-          : 'Ele recusaria — mas você pode propor e ouvir o não.',
+          : proposta.pedido !== undefined && proposta.pedido !== ''
+            ? `Ele recusaria. ${proposta.pedido[0]?.toUpperCase() ?? ''}${proposta.pedido.slice(1)}.`
+            : 'Ele recusaria — mas você pode propor e ouvir o não.',
     });
     botao.addEventListener('click', () => this.despachar(vizinho.id, proposta));
     return botao;
@@ -860,7 +1235,7 @@ ${dele.nome}: ${dele.palavra}`,
       case 'revogar-acesso':
         return this.aoRevogarAcesso(id);
       case 'pacto':
-        return this.aoFirmarPacto(id, proposta.valor);
+        return this.aoFirmarPacto(id, proposta.valor, proposta.ouro ?? 0);
       case 'romper':
         return this.aoRomperPacto(id);
       case 'formar-liga':
@@ -872,7 +1247,7 @@ ${dele.nome}: ${dele.palavra}`,
       case 'anexar-membro':
         return this.aoAnexarMembro(id);
       case 'alianca':
-        return this.aoFirmarAlianca(id, proposta.valor);
+        return this.aoFirmarAlianca(id, proposta.valor, proposta.ouro ?? 0);
       case 'romper-alianca':
         return this.aoRomperAlianca(id);
       case 'pagar-tributo':

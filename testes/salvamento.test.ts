@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/dados/esquema';
 import { Campanha } from '../src/campanha/campanha';
+import { TIPOS_DE_PROPOSTA } from '../src/campanha/estado-campanha';
 import { lerSalvamento } from '../src/campanha/salvamento';
 import { Atlas } from '../src/mundo/atlas';
 import { ordenar } from './apoio/hostes';
@@ -74,6 +75,42 @@ describe('o salvamento vai e volta inteiro', () => {
     original.passarTurno();
     retomada.passarTurno();
     expect(JSON.parse(retomada.serializar())).toEqual(JSON.parse(original.serializar()));
+  });
+
+  /**
+   * ⚠️ **A passagem e a mesa não voltavam do disco.** `restaurarEstado` copiava campo a campo
+   * e pulava os dois: carregar a partida apagava toda estrada aberta, e o pedido que a IA fez
+   * no fim da virada — o que o jogador ia responder — sumia junto.
+   */
+  it('a estrada aberta e o pedido na mesa voltam do disco', () => {
+    const original = vivida();
+    original.concederAcesso('eleusis', 20);
+    expect(original.acessoAte('atenas', 'eleusis')).toBeDefined();
+    expect(original.proporAoJogador({ de: 'eleusis', tipo: 'comercio' })).toBe(true);
+
+    const retomada = crua();
+    retomada.restaurar(lerSalvamento(original.serializar()));
+
+    expect(retomada.acessoAte('atenas', 'eleusis')).toBe(original.acessoAte('atenas', 'eleusis'));
+    expect(retomada.propostas()).toEqual(original.propostas());
+  });
+
+  /**
+   * ⚠️ **O esquema de leitura conhecia só três dos seis tipos de pedido.** A IA punha aliança,
+   * liga e anexação na mesa; o autosave grava sem validar; a leitura recusava o arquivo inteiro
+   * e a campanha sumia no boot seguinte. A lista agora é uma só, a do estado.
+   */
+  it('o salvamento aceita todos os tipos de pedido que a mesa conhece', () => {
+    const original = vivida();
+    for (const tipo of TIPOS_DE_PROPOSTA) {
+      const bruto = JSON.parse(original.serializar()) as {
+        estado: { propostas: { de: string; tipo: string; turnos?: number }[] };
+      };
+      bruto.estado.propostas = [{ de: 'megara', tipo, turnos: 20 }];
+      const retomada = crua();
+      retomada.restaurar(lerSalvamento(JSON.stringify(bruto)));
+      expect(retomada.propostas().map((p) => p.tipo)).toEqual([tipo]);
+    }
   });
 
   it('os efêmeros não viajam: a notícia da rodada morre com a sessão', () => {

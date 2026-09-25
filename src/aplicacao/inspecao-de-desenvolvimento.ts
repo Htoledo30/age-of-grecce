@@ -12,7 +12,7 @@ import { forcaDe } from '@/combate/exercito';
 import { homensEmFormacao } from '@/combate/formacao-de-leva';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
-import { virarTurno } from './virar-turno';
+import { congelarIA, virarTurno } from './virar-turno';
 
 export function instalarInspecao(jogo: Jogo): void {
   const { campanha, atlas, cena, ajustes } = jogo;
@@ -28,6 +28,14 @@ export function instalarInspecao(jogo: Jogo): void {
      *
      * Quem TESTA comida não chama isto: é lá que a régua tem de doer.
      */
+    /**
+     * Tira a IA do caminho para o resto do teste. O irmão de `saciar()`.
+     *
+     * ⚠️ Um teste de TELA planta as próprias peças e vira turnos para ver o que a interface
+     * desenha; com a IA jogando, o jogador parado perde a capital na virada 3 ou 4 e o teste
+     * morre falando de outra coisa. Quem testa a IA não chama isto.
+     */
+    congelarIA: () => congelarIA(),
     saciar: () => {
       ajustes.jogo.alimento.soldadosPorPonto = 1_000_000;
       ajustes.jogo.alimento.subsistenciaPorReino = 1_000;
@@ -48,6 +56,21 @@ export function instalarInspecao(jogo: Jogo): void {
     // O centro assado de uma província: é o que deixa o teste de tela apontar a câmera pra
     // qualquer terra e clicar nela sem cravar coordenada de pixel.
     centroDe: (idProvincia: string) => atlas.provincia(idProvincia).centro,
+    /**
+     * Um ponto que cai DENTRO da província de verdade — para mirar a câmera e clicar nela.
+     *
+     * ⚠️ **`centroDe` não serve para isso, e um teste vermelho provou.** O centro guardado é o
+     * centroide dos dados, e o de uma água côncava cai em terra: o do Golfo Sarônico está a 151
+     * unidades do centro de Atenas. Mirar ali e clicar no meio da tela seleciona a península,
+     * não o golfo. Este pergunta à mesma textura de índices que o clique consulta, e devolve o
+     * primeiro texel que pertence mesmo à província. `null` quando ela não está desenhada.
+     */
+    pontoDentroDe: (idProvincia: string) => {
+      // O índice é o valor do pixel em `provincias.png`, guardado na própria província —
+      // nunca a posição dela no vetor. Ver `Atlas.porIndice`.
+      const provincia = atlas.provincia(idProvincia);
+      return cena.pontoDentroDe(provincia.indice, provincia.centro.x, provincia.centro.y);
+    },
     provinciasSimuladas: () => campanha.provinciasSimuladas,
     resultado: () => campanha.resultado(),
     capitalDe: (idPoder: string) => campanha.capitalDe(idPoder),
@@ -73,6 +96,9 @@ export function instalarInspecao(jogo: Jogo): void {
       return formacao ? { ...formacao, homens: homensEmFormacao(formacao) } : undefined;
     },
     dispensar: (idProvincia: string, homens: number) => campanha.dispensar(idProvincia, homens),
+    // A folha de uma hoste pela REGRA. É o que deixa o teste de tela conferir que a ficha
+    // mostra o número da campanha, em vez de cravar o soldo do dia — que é balanço, e muda.
+    manutencaoDaHoste: (idHoste: string) => campanha.manutencaoDaHoste(idHoste),
     hostesEm: (idProvincia: string) =>
       campanha.hostesEm(idProvincia).map((h) => ({
         id: h.id,

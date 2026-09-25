@@ -30,7 +30,13 @@
       "fracaoQueMarcha": 0.7,
       "vantagemParaDeclarar": 1.3,
       "relacaoParaDeclarar": 6,
-      "guerraLonga": 20
+      "guerraLonga": 20,
+      "gostos": {
+        "confianca": 1.0,
+        "forca": 1.0,
+        "renda": 1.0,
+        "seguranca": 1.0
+      }
     },
     "guerreiro": {
       "valorDaObra": {
@@ -59,7 +65,13 @@
       "fracaoQueMarcha": 0.9,
       "vantagemParaDeclarar": 1.0,
       "relacaoParaDeclarar": 16,
-      "guerraLonga": 30
+      "guerraLonga": 30,
+      "gostos": {
+        "confianca": 1.0,
+        "forca": 1.2,
+        "renda": 0.6,
+        "seguranca": 0.7
+      }
     },
     "mercador": {
       "valorDaObra": {
@@ -88,7 +100,13 @@
       "fracaoQueMarcha": 0.55,
       "vantagemParaDeclarar": 1.8,
       "relacaoParaDeclarar": 2,
-      "guerraLonga": 12
+      "guerraLonga": 12,
+      "gostos": {
+        "confianca": 1.0,
+        "forca": 0.8,
+        "renda": 1.5,
+        "seguranca": 1.0
+      }
     },
     "cauteloso": {
       "valorDaObra": {
@@ -117,7 +135,13 @@
       "fracaoQueMarcha": 0.5,
       "vantagemParaDeclarar": 2.0,
       "relacaoParaDeclarar": -2,
-      "guerraLonga": 15
+      "guerraLonga": 15,
+      "gostos": {
+        "confianca": 1.2,
+        "forca": 1.0,
+        "renda": 1.0,
+        "seguranca": 1.4
+      }
     }
   },
   "porPoder": {

@@ -38,6 +38,7 @@ import {
 } from '../diplomacia/acesso-militar';
 import {
   aceitarProposta,
+  esvaziarMesa,
   proporAoJogador,
   propostasAoJogador,
   recusarProposta,
@@ -93,10 +94,15 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
   }
 
   /**
-   * Assina o pacto de não-agressão. **A opinião dele É a aceitação** — ver `podeFirmarPacto`.
+   * Assina o pacto de não-agressão. A regra abre a porta; quem chama consulta a balança dele.
    */
-  firmarPacto(com: string, turnos: number, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (firmarPacto(this.nucleo, porPoder, com, turnos)) this.aoMudar();
+  firmarPacto(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+    ouro = 0,
+  ): void {
+    if (firmarPacto(this.nucleo, porPoder, com, turnos, ouro)) this.aoMudar();
   }
 
   /**
@@ -119,8 +125,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     com: string,
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
+    ouro = 0,
   ): void {
-    if (firmarAlianca(this.nucleo, porPoder, com, turnos)) this.aoMudar();
+    if (firmarAlianca(this.nucleo, porPoder, com, turnos, ouro)) this.aoMudar();
   }
 
   /**
@@ -136,8 +143,8 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
   /**
    * Põe um reino na SUA liga: ele continua sendo ele, e passa a te pagar e a lutar contigo.
    *
-   * ⚠️ A opinião dele é a aceitação, e ela pede mais que qualquer outro acordo — o que se
-   * assina aqui é obediência. Ver `diplomacia/liga.ts`.
+   * ⚠️ A liga ainda exige opinião mínima e razão para servir: o que se assina é obediência.
+   * Ver `diplomacia/liga.ts` e `ia/diplomacia/ligas.ts`.
    */
   formarLiga(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
     if (formarLiga(this.nucleo, porPoder, membro)) this.aoMudar();
@@ -272,6 +279,11 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
   /** O que os outros reinos estão pedindo ao jogador nesta virada. */
   propostas(): readonly Proposta[] {
     return propostasAoJogador(this.nucleo);
+  }
+
+  /** A IA esvazia a mesa antes de voltar a pedir. Só ela chama; ver `propostas.ts`. */
+  esvaziarMesa(): void {
+    if (esvaziarMesa(this.nucleo)) this.aoMudar();
   }
 
   /** A IA põe um pedido na mesa do jogador. Devolve `false` quando ele não caberia. */

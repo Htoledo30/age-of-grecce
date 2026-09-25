@@ -7,7 +7,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto);
   font-family: var(--fonte-corpo);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 650;
   letter-spacing: 0.055em;
   text-transform: uppercase;

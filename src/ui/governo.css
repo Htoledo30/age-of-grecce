@@ -1,3 +1,6 @@
+/* ⚠️ **Nenhum TAMANHO de texto entra aqui.** Seis tamanhos em sete declarações — 11.5, 12, 13, 17, 22, 28 — viraram cinco degraus. A régua é
+   `estilo/tokens.css`, e a escolha é sempre pela FUNÇÃO do texto — etiqueta, nota, corpo,
+   medida, destaque, título —, nunca por um número. */
 .governo {
   position: absolute;
   inset: 0;
@@ -30,7 +33,7 @@
 }
 .governo__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 28px;
+  font-size: var(--texto-titulo);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -42,7 +45,7 @@
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
-  font-size: 22px;
+  font-size: var(--texto-destaque);
   cursor: pointer;
 }
 .governo__fechar:hover {
@@ -62,7 +65,7 @@
   border-bottom: 0;
   background: transparent;
   color: var(--ui-texto-tenue);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -101,7 +104,7 @@
 }
 .balanco__poder {
   font-family: var(--fonte-nome);
-  font-size: 17px;
+  font-size: var(--texto-medida);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -109,7 +112,7 @@
 .balanco__ouro,
 .balanco__aviso {
   font-family: var(--fonte-numero);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-fraco);
 }
 .balanco__ouro {
@@ -122,7 +125,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
 }
 .balanco__tabela th {
   position: sticky;
@@ -131,7 +134,7 @@
   border-bottom: 1px solid var(--ui-borda);
   background: var(--ui-fundo-elevado);
   color: var(--ui-texto-tenue);
-  font-size: 11.5px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-align: left;

@@ -12,14 +12,20 @@ import { atualizarInterface } from './atualizar-interface';
 import { entrarNaCampanha } from './comecar-campanha';
 import type { Jogo } from './contexto';
 import { esquecerCampanha, salvarCampanha } from './salvamento-local';
-import { aceitaPacto } from '@/ia/diplomacia/pactos';
 import { aceitaPagarTributo, aceitaTributo } from '@/ia/diplomacia/tributos';
 import { querPaz, querPazComTributo } from '@/ia/diplomacia/paz';
 import { estiloDe } from '@/ia/estilo';
 import { virarTurno } from './virar-turno';
 import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
+import {
+  respostaAAlianca,
+  respostaALiga,
+  respostaAoComercio,
+  respostaAoPacto,
+} from './vistas/vontade-do-vizinho';
 import { vistaDeConstrucoes, vistaDeRecrutamento } from './vistas/provincia';
+import { ordensNoMapa, previsaoDaMarcha, rotasEmFoco } from './vistas/mapa';
 import { formatarAno } from '@/campanha/estado-campanha';
 
 export function ligarAcoes(jogo: Jogo): void {
@@ -205,6 +211,13 @@ export function ligarAcoes(jogo: Jogo): void {
     }
     const eu = campanha.jogador?.id;
     if (eu === undefined) return;
+    // ⚠️ A vontade dele, que este clique ignorava: a mesa pintava a recusa e o botão assinava
+    // mesmo assim. É a mesma pergunta que a IA faz antes de abrir o mercado dela.
+    const resposta = respostaAoComercio(jogo, idPoder, eu);
+    if (!resposta.aceita) {
+      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou: ${resposta.fala}`);
+      return;
+    }
     const minhaRenda = campanha.rendaDeUmAcordoCom(idPoder, eu);
     const rendaDele = campanha.rendaDeUmAcordoCom(eu, idPoder);
     campanha.acordarComercio(idPoder);
@@ -256,50 +269,54 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.diplomacia.dizer(`Comércio encerrado com ${campanha.poder(idPoder).nome}.`);
   };
 
-  tela.diplomacia.aoFirmarPacto = (idPoder, turnos) => {
+  tela.diplomacia.aoFirmarPacto = (idPoder, turnos, ouro) => {
     const eu = campanha.jogador?.id;
     if (eu === undefined) return;
-    const r = campanha.podeFirmarPacto(idPoder, turnos);
+    const r = campanha.podeFirmarPacto(idPoder, turnos, eu, ouro);
     if (!r.pode) {
       tela.diplomacia.dizer(r.motivo);
       return;
     }
-    // ⚠️ **A opinião abre a porta, mas ele ainda precisa QUERER** — a mesma pergunta que a IA
-    // faz antes de assinar com outro computador. Sem ela o jogador amarraria as mãos de um
-    // vizinho que está justamente juntando exército para atacá-lo, e foi assim que a medição
-    // pulou para 46 conquistas e 12 poderes eliminados.
-    if (!aceitaPacto(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder))) {
+    // ⚠️ **A regra abre a porta; a BALANÇA dele decide** — a mesma que a mesa mostrou antes
+    // do clique e a mesma que a IA pesa com outro computador. Sem ela o jogador amarraria as
+    // mãos de um vizinho que está justamente juntando exército para atacá-lo, e foi assim que
+    // a medição pulou para 46 conquistas e 12 poderes eliminados.
+    const resposta = respostaAoPacto(jogo, idPoder, eu, turnos, undefined, ouro);
+    if (!resposta.aceita) {
       tela.diplomacia.dizer(
-        `${campanha.poder(idPoder).nome} recusou: não pretende amarrar as próprias mãos.`,
+        `${campanha.poder(idPoder).nome} recusou: ${resposta.fala} ${resposta.pedido}.`,
       );
       return;
     }
-    campanha.firmarPacto(idPoder, turnos);
+    campanha.firmarPacto(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
-      `Pacto de ${turnos} turnos assinado com ${campanha.poder(idPoder).nome}.`,
+      `Pacto de ${turnos} turnos assinado com ${campanha.poder(idPoder).nome}` +
+        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}.`,
     );
   };
 
-  tela.diplomacia.aoFirmarAlianca = (idPoder, turnos) => {
+  tela.diplomacia.aoFirmarAlianca = (idPoder, turnos, ouro) => {
     const eu = campanha.jogador?.id;
     if (eu === undefined) return;
-    const r = campanha.podeFirmarAlianca(idPoder, turnos);
+    const r = campanha.podeFirmarAlianca(idPoder, turnos, eu, ouro);
     if (!r.pode) {
       tela.diplomacia.dizer(r.motivo);
       return;
     }
-    // ⚠️ **A opinião abre a porta e ele ainda precisa QUERER** — a mesma trava do pacto, e aqui
-    // ela pesa mais: aliança é exército emprestado, e ninguém empresta o seu a quem não lhe
-    // traz um inimigo em comum. Ver o portão em `ia/diplomacia/aliancas.ts`.
-    if (!aceitaPacto(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder))) {
+    // ⚠️ **A regra abre a porta; a BALANÇA dele decide** — e a da aliança começa devendo:
+    // exército emprestado só se empresta a quem traz uma razão, inimigo em comum ou proteção.
+    // Ver `ia/diplomacia/aliancas.ts`. Antes este clique pulava o portão que a IA exigia de si.
+    const resposta = respostaAAlianca(jogo, idPoder, eu, turnos, undefined, ouro);
+    if (!resposta.aceita) {
       tela.diplomacia.dizer(
-        `${campanha.poder(idPoder).nome} recusou: não empresta o próprio exército a você.`,
+        `${campanha.poder(idPoder).nome} recusou: ${resposta.fala} ${resposta.pedido}.`,
       );
       return;
     }
-    campanha.firmarAlianca(idPoder, turnos);
+    campanha.firmarAlianca(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
-      `Aliança de ${turnos} turnos com ${campanha.poder(idPoder).nome}. ` +
+      `Aliança de ${turnos} turnos com ${campanha.poder(idPoder).nome}` +
+        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}. ` +
         'As guerras dele passam a ser suas.',
     );
   };
@@ -315,6 +332,15 @@ export function ligarAcoes(jogo: Jogo): void {
     const r = campanha.podeFormarLiga(idPoder);
     if (!r.pode) {
       tela.diplomacia.dizer(r.motivo);
+      return;
+    }
+    const eu = campanha.jogador?.id;
+    if (eu === undefined) return;
+    // ⚠️ A vontade dele, que este clique ignorava: a IA só serve a quem a protege, e o jogador
+    // punha na liga um reino que nenhuma IA convidaria.
+    const resposta = respostaALiga(jogo, idPoder, eu);
+    if (!resposta.aceita) {
+      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou: ${resposta.fala}`);
       return;
     }
     campanha.formarLiga(idPoder);
@@ -480,12 +506,53 @@ export function ligarAcoes(jogo: Jogo): void {
   };
 
   // ── As camadas do mapa ──────────────────────────────────────────────────────────────
-  tela.destinosMapa.aoEscolher = (destino) => {
+  /**
+   * Redesenha SÓ a camada de rotas. É o caminho do ponteiro, e ele roda muito.
+   *
+   * ⚠️ **Não pode ser `repintar()`, e a diferença é a tela inteira.** Mover o mouse sobre o
+   * mapa trocaria de província dezenas de vezes por segundo; um `atualizarInterface` a cada
+   * troca remontaria ficha, painéis, barra e janelas para mudar uma linha de dois pontos.
+   * Aqui roda uma busca de rotas (0,1 ms medido) e um `polyline`.
+   */
+  const redesenharRotas = (): void => {
+    const previsao = previsaoDaMarcha(jogo, rotasEmFoco(jogo));
+    tela.marchasMapa.mostrar(previsao.origem, previsao.rotas, ordensNoMapa(jogo));
+  };
+
+  /**
+   * O clique de destino: **qualquer província do mapa, enquanto a marcha está sendo composta.**
+   *
+   * ⚠️ **Era um botão por destino alcançável, e foi isso que travou o jogo.** Com um Porto de
+   * pé o mar abre e a hoste alcança 199 lugares; a tela desenhava a rota de todos ao mesmo
+   * tempo e o quadro caía de 7 ms para 405 — 2,4 quadros por segundo, medido com GPU de
+   * verdade. Henrique: *"igual em age of history 2: eu clico na minha tropa e movo ela para
+   * onde eu quiser só selecionando uma província/zona"*. O desenho que ele pediu e o conserto
+   * do travamento são a mesma mudança.
+   *
+   * A recusa passa a ter voz: sem botões pré-marcados o jogador PODE clicar onde não dá, e
+   * `podeOrdenarMarcha` já sabia dizer por quê — só nunca tinha onde falar.
+   */
+  const mandarMarchar = (destino: string): void => {
     if (selecao.marchando === null) return;
-    // Terra alheia não vira ordem no clique: primeiro o jogador diz o que fazer ao chegar.
-    // Apontar de novo troca o alvo, e clicar fora cancela tudo.
+    selecao.recusaDaMarcha = '';
     const poder = campanha.hoste(selecao.marchando)?.poder;
-    if (poder !== undefined && campanha.donoDe(destino) !== poder) {
+    const hostil = poder !== undefined && !atlas.ehMar(destino) && campanha.donoDe(destino) !== poder;
+    // ⚠️ **A regra é consultada ANTES de qualquer coisa mudar na tela.** Com o mapa inteiro
+    // clicável, a maioria dos cliques novos é em lugar impossível — e apontar um alvo hostil
+    // inalcançável abriria a pergunta "assaltar ou sitiar?" sobre uma marcha que nunca sairia.
+    const permissao = campanha.podeOrdenarMarcha(
+      selecao.marchando,
+      destino,
+      selecao.homensParaMarchar,
+    );
+    if (!permissao.pode) {
+      selecao.recusaDaMarcha = permissao.motivo;
+      repintar();
+      return;
+    }
+    // Terra alheia não vira ordem no clique: primeiro o jogador diz o que fazer ao chegar.
+    // Apontar de novo troca o alvo, e o botão de cancelar desfaz tudo.
+    if (hostil) {
       selecao.alvoHostil = destino;
       repintar();
       return;
@@ -496,7 +563,19 @@ export function ligarAcoes(jogo: Jogo): void {
     selecao.marchando = null;
     repintar();
   };
-  tela.destinosMapa.aoDestacar = (destino) => tela.marchasMapa.destacar(destino);
+
+  // A rota nasce sob o ponteiro: uma por vez, a do lugar para onde ele está olhando.
+  cena.aoApontar = (indice) => {
+    if (selecao.marchando === null) return;
+    // ⚠️ `porIndice`, e NUNCA `provincias[indice]`: o índice é o valor do pixel em
+    // `provincias.png`, um campo da própria província, e não a posição dela no vetor. Confundir
+    // os dois faz o mapa apontar a terra errada — e em silêncio, porque os dois são números.
+    const apontado = indice === null ? null : (atlas.porIndice(indice)?.id ?? null);
+    if (apontado === selecao.destinoApontado) return;
+    selecao.destinoApontado = apontado;
+    redesenharRotas();
+    tela.marchasMapa.destacar(apontado);
+  };
 
   // Enquanto marcha, a peça está entre duas províncias; quem responde onde ela está é a
   // animação, e a camada só desenha.
@@ -542,10 +621,18 @@ export function ligarAcoes(jogo: Jogo): void {
       return;
     }
     if (selecao.fase !== 'campanha') return;
-    // Clicar fora dos destinos cancela a marcha em vez de recusar com mensagem: os alvos
-    // legais estão desenhados, e reclamar de cada clique errado seria ruído.
+    // ⚠️ **Compondo uma marcha, o clique de província É A ORDEM — e nada mais.** Ele não
+    // escolhe chão, não solta a hoste e não troca o sujeito do modo de relações: o jogador
+    // apertou "Mover" e está respondendo *para onde*. Sem esta porta, o clique caía nas linhas
+    // de baixo, que existiam para o mundo anterior — nele os alvos legais estavam desenhados e
+    // "clicar fora" só podia significar desistir.
+    if (selecao.marchando !== null && provincia) {
+      mandarMarchar(provincia.id);
+      return;
+    }
     selecao.marchando = null;
     selecao.alvoHostil = null;
+    selecao.recusaDaMarcha = '';
     // ⚠️ **Água não se seleciona, e a fase de escolha já sabia disso — a campanha, não.**
     // Clicar no mar punha a zona marítima em `selecao.provincia` e o painel abria com moldura,
     // friso e NADA dentro: é exatamente o que `desenharProvincia` diz que o jogo não pode ter.

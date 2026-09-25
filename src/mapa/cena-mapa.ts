@@ -48,6 +48,28 @@ export class CenaMapa {
    */
   aoSelecionar: (indice: number | null) => void = () => {};
 
+  /**
+   * Qual província está sob o ponteiro AGORA. Só dispara quando ela muda.
+   *
+   * ⚠️ **Nasceu para substituir o `pointerenter` dos 199 botões de destino.** Enquanto os
+   * destinos eram botões do DOM, o mapa não precisava saber onde o ponteiro estava: cada
+   * botão avisava por conta própria. Sem eles, quem responde *"para onde ele está olhando"* é
+   * a cena — e a resposta é a mesma leitura de textura de índice que o clique já fazia, um
+   * acesso a vetor em memória (`provincias-mapa.ts:244-250`). Custa nada, e só é lida quando
+   * alguém está de fato escolhendo destino.
+   */
+  aoApontar: (indice: number | null) => void = () => {};
+
+  /**
+   * Ligado só enquanto o jogador escolhe destino.
+   *
+   * Fora disso ninguém quer saber do ponteiro, e resolver a província a cada quadro seria
+   * trabalho para ninguém — a mesma disciplina das camadas que comparam a câmera antes de
+   * reprojetar.
+   */
+  seguirOPonteiro = false;
+  private ultimoApontado: number | null = null;
+
   private constructor(
     private readonly dados: Mundo,
     private readonly ajustes: Ajustes,
@@ -160,6 +182,17 @@ export class CenaMapa {
     this.camadaProvincias.calibrarFronteira(largura, forca, cor);
   }
 
+  /**
+   * Um ponto garantidamente dentro desta província, para mirar a câmera e clicar.
+   *
+   * Só a inspeção de desenvolvimento chama. Ver `ProvinciasMapa.pontoDentroDe`: o centro
+   * guardado nos dados pode cair fora do próprio polígono, e um teste que mira ali clica na
+   * província vizinha sem avisar.
+   */
+  pontoDentroDe(indice: number, xCentro: number, yCentro: number): { x: number; y: number } | null {
+    return this.camadaProvincias.pontoDentroDe(indice, xCentro, yCentro);
+  }
+
   /** Usado pelas ferramentas de captura, pra inspecionar um ponto do mundo. */
   posicionar(x: number, y: number, zoom: number): void {
     this.camera.zoom = Math.min(this.camera.zoomMaximo, Math.max(0.05, zoom));
@@ -175,6 +208,20 @@ export class CenaMapa {
     // e a mão a empurra. O botão do meio faz o mesmo, pra quem já tem o dedo lá.
     if ((entrada.botaoSegurando(0) || entrada.botaoSegurando(1)) && (m.dx !== 0 || m.dy !== 0)) {
       this.camera.arrastar(m.dx, m.dy);
+    }
+
+    // ⚠️ **A província sob o ponteiro, e só quando alguém está escolhendo destino.** É esta
+    // leitura que faz a rota aparecer sob o cursor sem existir um botão por província. Ela
+    // dispara só na TROCA: entrar e sair da mesma terra não repinta nada.
+    if (this.seguirOPonteiro) {
+      const sob = this.camera.palcoParaMundo(m.x, m.y);
+      const apontado = this.camadaProvincias.provinciaEm(sob.x, sob.y);
+      if (apontado !== this.ultimoApontado) {
+        this.ultimoApontado = apontado;
+        this.aoApontar(apontado);
+      }
+    } else if (this.ultimoApontado !== null) {
+      this.ultimoApontado = null;
     }
 
     if (entrada.botaoApertou(0)) this.percursoDoBotao = 0;

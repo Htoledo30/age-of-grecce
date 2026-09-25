@@ -6,9 +6,15 @@
  * "a hoste de Elêusis" passou a não identificar nenhuma das duas. Toda função aqui exige o
  * PODER: é o que obriga cada teste a dizer de quem é o exército de que ele está falando.
  *
- * Se houver duas hostes do mesmo poder no mesmo lugar — que a política de fusão não
- * deveria permitir — as funções estouram em vez de escolher uma. Um teste que mede o
- * exército errado em silêncio é pior que um teste que quebra.
+ * Se houver duas hostes do mesmo poder no mesmo lugar, `unicaEm` estoura em vez de escolher
+ * uma: um teste que mede o exército errado em silêncio é pior que um teste que quebra.
+ *
+ * ⚠️ **`idEm` é a exceção, e ela nasceu do destacamento.** Desde que mandar parte da hoste a
+ * PARTE na hora, duas hostes do mesmo poder convivem no mesmo lugar durante a rodada: a que
+ * ficou e a que já tem ordem. Escolher em silêncio continuaria errado, então a regra é dita:
+ * **a que FICOU** — o menor número de id, porque `destacar` conserva o id original para o
+ * resto e dá um número novo ao destacamento. É a peça que o jogador ainda comanda, e é dela
+ * que todo teste quer falar.
  */
 
 import type { Campanha } from '../../src/campanha/campanha';
@@ -27,9 +33,13 @@ export function unicaEm(c: Campanha, provincia: string): Exercito | undefined {
   return aqui[0];
 }
 
-/** O id dela, ou um id que não existe — para os casos "não há hoste aqui". */
+/** O id da que FICOU, ou um id que não existe — para os casos "não há hoste aqui". */
 function idEm(c: Campanha, provincia: string, poder: string): string {
-  const achadas = c.hostesEm(provincia).filter((h) => h.poder === poder);
+  const achadas = [...c.hostesEm(provincia).filter((h) => h.poder === poder)].sort(
+    // Por NÚMERO e não por texto: `h10` vem depois de `h9`, e ordenar como texto poria o
+    // destacamento na frente da hoste que o gerou.
+    (a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)),
+  );
   return achadas[0]?.id ?? `sem-hoste:${provincia}`;
 }
 

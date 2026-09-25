@@ -12,10 +12,10 @@
  * 2. **A terra dele encosta na do meu inimigo.** É o que faz dele o caminho e não um vizinho
  *    qualquer. Sem esta condição a IA pediria passagem ao mapa inteiro todo turno, que é
  *    exatamente o tipo de diplomacia barulhenta que não significa nada.
- * 3. **Ele deixaria.** A opinião mínima do prazo é a consulta a ELE — a mesma que o pacto usa,
- *    e o mesmo motivo pelo qual presente e comércio compram alguma coisa de verdade.
+ * 3. **Ele deixaria.** A opinião mínima do prazo é a consulta a ELE. O acesso ainda decide por
+ *    opinião fixa, ao contrário do pacto e da aliança, que pesam uma balança.
  *
- * ⚠️ **O prazo é o mais LONGO que a confiança alcança**, como no pacto: campanha curta com
+ * ⚠️ **O prazo é o mais LONGO que a confiança alcança**: campanha curta com
  * licença curta é exército preso do lado errado da fronteira quando o papel vence.
  *
  * ⚠️ **E ela não pede a quem ela mesma atacaria.** Pedir a chave da casa de alguém que se

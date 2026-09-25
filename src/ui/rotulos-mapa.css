@@ -1,3 +1,8 @@
+/* ⚠️ **A camada do MAPA fica fora da régua de texto dos painéis.** Estes rótulos são
+   desenhados SOBRE o mapa, competem com a arte e com a densidade das províncias, e descem
+   abaixo do menor degrau da escala (`--texto-micro`, 10px) porque precisam caber num marcador
+   de vinte pixels. Forçá-los à régua engordaria o mapa inteiro para arrumar uma tabela de CSS.
+   A escala governa PAINEL; o mapa tem a medida dele. Ver `estilo/tokens.css`. */
 /* ── OS NOMES DAS PROVÍNCIAS SOBRE O MAPA ────────────────────────────────────────────────
    HTML por cima do canvas, como as outras camadas: texto de verdade, com a mesma face
    inscricional do resto da interface e sem sprite nenhum.

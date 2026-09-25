@@ -74,6 +74,39 @@
   /* O livro-caixa: algarismos de largura fixa, para coluna de número não dançar entre turnos. */
   --fonte-numero: Inter, Bahnschrift, 'Segoe UI Variable', 'Segoe UI', sans-serif;
 
+  /* ── A ESCALA DO TEXTO: SETE DEGRAUS, E NENHUM A MAIS ──
+     ⚠️ **Existe porque não existia, e era a única régua que faltava.** Este arquivo já dava
+     régua para o espaço (`--gap-1..5`), para o canto (`--raio-1..2`) e para as vozes
+     (`--fonte-*`) — e o tamanho do texto era o único valor que cada arquivo escolhia sozinho.
+     O resultado, medido: **33 tamanhos diferentes** em 24 folhas de estilo, entre eles 11.5px,
+     12.5px, 10.5px, 9.5px e 10.75px. Ninguém escolhe 10.75px; isso é o resíduo de dezenas de
+     ajustes pontuais, um de cada vez, sem nada para comparar.
+
+     Henrique, jogando: *"hierarquia é o texto, você tenta utilizar todos tamanhos de texto,
+     precisamos de um padrão, ficar colocando texto grande, um pequeno, um menor, vai ficando
+     muito feio — isso aqui não é texto de faculdade"*. Ele está certo, e o efeito é o oposto do
+     pretendido: quando existem 33 tamanhos, nenhum deles significa alguma coisa. Hierarquia é
+     DIFERENÇA, e diferença precisa de poucos degraus bem separados.
+
+     Os sete saem dos tamanhos que o jogo já mais usava — 13px sozinho aparece 44 vezes —, então
+     isto não é uma tipografia nova: é a régua puxada por cima do que já existe. A razão entre
+     vizinhos fica perto de 1,25, que é o mínimo para o olho ler dois textos como diferentes
+     sem precisar medir.
+
+     ⚠️ **Escolher pela FUNÇÃO, nunca pelo tamanho.** `--texto-nota` porque é uma nota, e não
+     porque dá 11px. No dia em que a escala mudar, quem escolheu por função continua certo. */
+  --texto-micro: 10px; /* etiqueta, contador, unidade colada num número */
+  --texto-nota: 11px; /* nota, legenda, rodapé, o que se lê depois */
+  --texto-corpo: 13px; /* a voz corrente — metade da interface vive aqui */
+  --texto-medida: 16px; /* o número que decide; o nome próprio numa lista */
+  --texto-destaque: 20px; /* o valor grande de uma medida */
+  --texto-titulo: 26px; /* o nome de uma janela ou de uma província */
+  --texto-heroi: 40px; /* o título da tela de fim de jogo, e só ele */
+  /* ⚠️ **Duas medidas do jogo ficam FORA desta régua, e as duas por escrito.** O nome do jogo
+     na tela de início (66px) é cartaz e não painel: reduzi-lo a 40 o deixaria pequeno no meio
+     da própria moldura. E os rótulos da camada do MAPA descem abaixo de `--texto-micro` porque
+     precisam caber num marcador de vinte pixels sobre a arte. A régua governa painel. */
+
   --gap-1: 5px;
   --gap-2: 10px;
   --gap-3: 16px;

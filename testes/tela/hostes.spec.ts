@@ -12,6 +12,10 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
+  /** Tira a comida do caminho: este arquivo mede a TELA, não a despensa. */
+  saciar: () => void;
   comecar: (idPoder: string) => void;
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
@@ -21,6 +25,8 @@ interface Ganchos {
   declararGuerra: (contra: string, porPoder?: string) => void;
   populacaoDe: (idProvincia: string) => number;
   posicionar: (x: number, y: number, zoom: number) => void;
+  manutencaoDaHoste: (idHoste: string) => number;
+  hostesEm: (idProvincia: string) => { id: string; poder: string; forca: number }[];
 }
 
 async function campanhaComTropa(page: Page, homens: number) {
@@ -33,6 +39,8 @@ async function campanhaComTropa(page: Page, homens: number) {
   await page.waitForSelector('.barra-turno');
   await page.evaluate((quantos: number) => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.darOuro(30_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -75,10 +83,19 @@ test('a hoste aparece no mapa, e clicar nela abre a ficha dela', async ({ page }
   await expect(page.locator('.exercito__forca')).toHaveText(
     `${forca.toLocaleString('pt-BR')} homens`,
   );
-  // homens × 0,1: a taxa de CASA. Os mesmos homens em terra alheia custariam o triplo — a ficha
-  // mostra a taxa do chão em que a hoste está, e o número sobe quando ela cruza a fronteira.
+  // ⚠️ **A folha é conferida pela FÓRMULA, e nunca pelo valor do dial.** Este teste cravava
+  // `forca * 0,1` — o soldo em casa de então — e ficou vermelho no dia em que Henrique devolveu
+  // `manutencaoPorHomem.emCasa` para 0,15, dizendo de balanço uma coisa que a regra da casa
+  // proíbe: *"testes protegem relações e fórmulas, não valores de balanceamento que podem
+  // mudar"*. O que a ficha promete é a taxa do CHÃO em que a hoste pisa, e que ela é linear no
+  // número de homens: as duas continuam verdadeiras com qualquer soldo.
+  const naRegra = await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    return i.manutencaoDaHoste(i.hostesEm('atenas')[0]!.id);
+  });
+  expect(naRegra).toBeGreaterThan(0);
   await expect(page.locator('.exercito__custo')).toHaveText(
-    `custa ${Math.round(forca * 0.1).toLocaleString('pt-BR')} por turno`,
+    `custa ${naRegra.toLocaleString('pt-BR')} por turno`,
   );
 
   // A ficha mora no mesmo canto do controle de rodada, mas nunca pode ficar atrás dele.

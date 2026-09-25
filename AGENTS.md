@@ -15,15 +15,56 @@ documento de acompanhamento.
 Henrique trabalha num notebook e num desktop. O repositório privado
 `https://github.com/Htoledo30/age-of-grecce` é o ponto de encontro entre as duas máquinas.
 
-Obrigações do agente:
+### Agente principal
 
-1. rode `git pull` antes de começar;
-2. preserve alterações locais que não pertençam à tarefa;
-3. faça commit e `git push` ao terminar;
-4. avise se restar trabalho próprio não enviado.
+Estas obrigações pertencem somente ao agente principal da sessão — Claude Code principal ou Codex quando ele recebeu diretamente a tarefa.
 
-Se houver conflito no pull, não escolha um lado sozinho. Mostre o que cada máquina alterou no
-mesmo arquivo e peça a decisão de Henrique.
+O agente principal deve:
+
+1. rodar `git pull` antes de começar;
+2. preservar alterações locais que não pertençam à tarefa;
+3. trabalhar somente nos arquivos necessários;
+4. executar as verificações exigidas pelo projeto;
+5. fazer commit e `git push` ao terminar;
+6. avisar se restar trabalho próprio não enviado.
+
+Se houver conflito no `git pull`, não escolha um lado sozinho.
+
+Mostre o que cada máquina alterou no mesmo arquivo e peça a decisão de Henrique quando o conflito não puder ser resolvido de forma puramente técnica e segura.
+
+### Subagents do Claude Code
+
+Subagents trabalham subordinados ao Claude principal e não controlam o repositório.
+
+Subagents nunca devem:
+
+* executar `git pull`;
+* executar `git commit`;
+* executar `git push`;
+* trocar branch;
+* executar `git checkout`;
+* executar `git switch`;
+* executar `git reset`;
+* executar `git rebase`;
+* executar `git merge`;
+* resolver conflitos;
+* editar código, dados ou outros arquivos versionados do projeto.
+
+Subagents podem:
+
+* ler arquivos;
+* usar `git status`, `git diff`, `git log` e outros comandos Git somente de leitura;
+* executar testes;
+* executar medições;
+* executar simulações;
+* gerar artefatos temporários necessários para testes;
+* devolver diagnósticos e recomendações ao Claude principal.
+
+Quando um subagent possuir acesso a Bash, Bash deve ser usado somente para investigação, testes, medições, simulações e comandos de leitura.
+
+Subagents não devem usar Bash para modificar arquivos versionados, incluindo redirecionamentos para arquivos, `sed -i`, scripts de reescrita ou mecanismos equivalentes.
+
+O Claude principal é responsável por decidir e executar a alteração final.
 
 ## Fontes de verdade
 
@@ -90,7 +131,8 @@ de balanço, rode a ferramenta correspondente e use a saída atual:
 - economia ou construções: `npm run economia`, do poder mais pobre ao mais rico;
 - combate: `npm run armas`, que inclui ouro, comida e população;
 - IA e campanha: `npm run partida 100` ou várias sementes quando o assunto for naval;
-- diplomacia: `npm run medir-diplomacia` e contagem dos pares que passam por cada portão.
+- diplomacia: `npm run medir-diplomacia` para a tela e `npm run medir-balanca` para contar os
+  pares que passam por cada acordo e prazo.
 
 A resposta da IA a um dial é caótica: uma conquista cedo vira bola de neve. Compare cenários e
 nunca conclua por uma única partida quando a área tiver grande variância.
@@ -213,7 +255,7 @@ Use verificações proporcionais durante o trabalho e encerre com:
 2. `npm run teste-tela`;
 3. `npm run build`;
 4. bancos específicos quando a área exigir: `npm run economia`, `npm run armas`,
-   `npm run simular`, `npm run partida`, `npm run medir-diplomacia` ou
+   `npm run simular`, `npm run partida`, `npm run medir-diplomacia`, `npm run medir-balanca` ou
    `npm run medir-tamanho`.
 
 `npm run entregar` reúne verificação, tela e build.

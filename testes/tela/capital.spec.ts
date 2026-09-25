@@ -51,6 +51,14 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   const passar = page.getByRole('button', { name: /Passar o turno/ });
   await expect(passar).toBeDisabled();
   await expect(page.locator('.barra-turno')).toHaveAttribute('data-capital-perdida', 'sim');
+  // ⚠️ **O botão travado não basta, e é o que Henrique provou jogando**: ele ficou *"uns 30
+  // segundos sem entender por que não conseguia fazer nada"*. O aviso tem de estar VISÍVEL na
+  // tela — nem tooltip, que exige o ponteiro parado num botão morto, nem crônica, que fecha e
+  // não volta. Este teste falha no dia em que alguém devolver o silêncio.
+  const aviso = page.locator('.barra-turno__aviso-capital');
+  await expect(aviso).toBeVisible();
+  await expect(aviso).toContainText('A capital caiu');
+  await expect(aviso).toContainText('Assentar a capital aqui');
 
   // O jogador aponta a câmera pra Maratona, que ainda é dele, e assenta a nova sede.
   const tesouroAntes = await page.evaluate(() => {
@@ -69,6 +77,8 @@ test('a capital caída trava o turno até o jogador assentar outra', async ({ pa
   // Destravou, de graça — a escolha forçada não é castigo.
   await expect(passar).toBeEnabled();
   await expect(page.locator('.barra-turno')).toHaveAttribute('data-capital-perdida', 'nao');
+  // E o aviso some junto: alarme que fica depois de resolvido ensina o jogador a ignorá-lo.
+  await expect(page.locator('.barra-turno__aviso-capital')).toBeHidden();
   await expect(page.locator('.ficha__selo[data-tom="ouro"]')).toHaveText('capital');
   const estadoFinal = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;

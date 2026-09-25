@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { aceita } from '../src/ia/diplomacia/balanca';
 import { guerraEscolhida } from '../src/ia/diplomacia/declarar';
+import { balancaDoPacto } from '../src/ia/diplomacia/pactos';
 import { querPaz } from '../src/ia/diplomacia/paz';
 import { lerSalvamento } from '../src/campanha/salvamento';
 import type { Campanha } from '../src/campanha/campanha';
@@ -310,124 +312,70 @@ describe('o presente: ouro compra TEMPO, não amizade', () => {
   });
 });
 
-describe('o pacto CURTO se assina por interesse, e não por simpatia', () => {
+describe('o pacto se pesa numa BALANÇA, e a regra é só regra', () => {
   /**
-   * ⚠️ **A regra virou do avesso em 31/08/2026, e a virada é de Henrique.** O pacto pedia
-   * opinião e só: *"pacto de não agressão ter que precisar ter relacionamento não faz o menor
-   * sentido, olha na vida real quantos países se odeiam e fazem pactos de não agressão, wtf"*.
-   * Ele tem razão — não-agressão nunca foi confiança, é medo e conveniência.
+   * ⚠️ **Os três testes que moravam aqui guardavam limiares de opinião — e o jogo real os
+   * contradizia.** Eles diziam "com opinião X a REGRA deixa", mas a VONTADE da IA recusava no
+   * clique pela mesma opinião: Mégara odiando Atenas "assinava por medo" na regra e dizia não
+   * na mesa. Desde a balança de interesse (`ia/diplomacia/balanca.ts`) a regra só diz guerra,
+   * pacto em pé e prazo que existe; quem decide é a balança, e ela é testada em
+   * `testes/ia/balanca.test.ts` — medo, mãos ocupadas, cobiça, prazo e ouro, por relação.
    */
-  const curtoDe = (c: Campanha, com: string): { turnos: number; opiniaoMinima: number } =>
-    [...c.prazosDePacto(com)].sort((a, b) => a.turnos - b.turnos)[0]!;
-
-  /**
-   * Reescreve a opinião de um par pelo caminho oficial: salvar, editar, restaurar.
-   *
-   * ⚠️ **Escrita direta em vez de encenada, e por um motivo.** Azedar de verdade exigiria tomar
-   * terra dele — e terra tomada de outro povo se revolta, a revolta declara guerra, e guerra
-   * BARRA o pacto: o teste morreria falando de outra coisa. O que ele veio guardar é o portão,
-   * não o caminho até o rancor.
-   */
-  function comOpiniao(c: Campanha, outro: string, valor: number): Campanha {
-    const salvo = lerSalvamento(c.serializar());
-    salvo.relacoes[['atenas', outro].sort().join('|')] = valor;
-    c.restaurar(salvo);
-    return c;
-  }
-
-  /** Deixa o jogador visivelmente maior, sem tomar terra de NINGUÉM que importe ao teste. */
-  function gigante(c: Campanha): Campanha {
-    for (const id of ['eleusis', 'tanagra', 'plateia', 'tespias']) c.trocarDono(id, 'atenas');
-    return c;
-  }
-
-  it('o vizinho que te ODEIA assina o pacto curto, porque você virou grande demais', () => {
-    const c = gigante(nova());
-    const curto = curtoDe(c, 'megara');
-    comOpiniao(c, 'megara', curto.opiniaoMinima - 30);
-    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(curto.opiniaoMinima);
-
-    // Ele não gosta de você. Ele assina assim mesmo — para não ser o próximo.
-    expect(c.podeFirmarPacto('megara', curto.turnos).pode).toBe(true);
-  });
-
-  it('mas o prazo LONGO continua sendo confiança: medo não amarra meia campanha', () => {
-    const c = gigante(nova());
-    const longo = [...c.prazosDePacto('megara')].sort((a, b) => b.turnos - a.turnos)[0]!;
-    comOpiniao(c, 'megara', longo.opiniaoMinima - 30);
-    expect(c.podeFirmarPacto('megara', longo.turnos).pode).toBe(false);
-  });
-
-  it('quem já tem uma guerra nas costas assina para não ter duas', () => {
-    // Sem gigante nenhum: ninguém aqui assusta ninguém pelo tamanho.
+  it('a regra não pergunta opinião: todo prazo é permitido a quem não está em guerra', () => {
     const c = nova();
-    const curto = curtoDe(c, 'megara');
-    comOpiniao(c, 'megara', curto.opiniaoMinima - 30);
+    const salvo = lerSalvamento(c.serializar());
+    salvo.relacoes['atenas|megara'] = -80;
+    c.restaurar(salvo);
+    for (const prazo of c.prazosDePacto('megara')) {
+      expect(prazo.pode, `prazo de ${prazo.turnos}`).toBe(true);
+      expect(prazo.motivo).toBe('');
+    }
+    // Do mais longo ao mais curto, para a IA pegar o primeiro que fecha.
+    const turnos = c.prazosDePacto('megara').map((p) => p.turnos);
+    expect(turnos).toEqual([...turnos].sort((a, b) => b - a));
+  });
+
+  it('a regra barra o que é regra: guerra, pacto em pé e prazo que não existe', () => {
+    const c = nova();
+    expect(c.podeFirmarPacto('megara', 7).pode).toBe(false);
+    const curto = c.prazosDePacto('megara').at(-1)!;
+    c.firmarPacto('megara', curto.turnos);
     expect(c.podeFirmarPacto('megara', curto.turnos).pode).toBe(false);
-
-    c.declararGuerra('corinto', 'megara');
-    // Ele continua te odiando exatamente o mesmo tanto. O que mudou é que ele não pode
-    // bancar duas frentes.
-    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(curto.opiniaoMinima);
-    expect(c.podeFirmarPacto('megara', curto.turnos).pode).toBe(true);
+    expect(c.prazosDePacto('megara').every((p) => !p.pode && p.motivo !== '')).toBe(true);
+    c.declararGuerra('corinto');
+    const guerra = c.podeFirmarPacto('corinto', curto.turnos);
+    expect(guerra.pode).toBe(false);
+    expect(guerra.pode === false && guerra.motivo).toContain('guerra');
   });
 });
 
-describe('a aliança curta aceita o INIMIGO EM COMUM', () => {
-  it('dois que não se gostam se aliam diante do mesmo terceiro', () => {
-    // ⚠️ **É a aliança mais comum da história, e o jogo não a tinha.** Aliar-se era prêmio de
-    // amizade: só quem já gostava de você em +25 fechava, e dois vizinhos frios diante do mesmo
-    // gigante ficavam cada um por si — que é exatamente o que a sombra do maior existe para
-    // impedir. Medo do mesmo terceiro une quem não se gosta.
+describe('a aliança: a regra é só regra, e a razão pesa na balança', () => {
+  it('a regra não pergunta opinião nem inimigo em comum', () => {
     const c = nova();
-    const curto = [...c.prazosDeAlianca('atenas', 'megara')].sort((a, b) => a.turnos - b.turnos)[0]!;
     const salvo = lerSalvamento(c.serializar());
-    salvo.relacoes['atenas|megara'] = 0;
+    salvo.relacoes['atenas|megara'] = -80;
     c.restaurar(salvo);
-    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(curto.opiniaoMinima);
-    expect(c.podeFirmarAlianca('megara', curto.turnos).pode).toBe(false);
-
-    // O mesmo inimigo, e só isso.
-    c.declararGuerra('corinto', 'atenas');
-    c.declararGuerra('corinto', 'megara');
-    expect(c.podeFirmarAlianca('megara', curto.turnos).pode).toBe(true);
-  });
-
-  it('mas a aliança LONGA não: um inimigo de hoje não amarra o dobro do tempo', () => {
-    const c = nova();
-    const longo = [...c.prazosDeAlianca('atenas', 'megara')].sort((a, b) => b.turnos - a.turnos)[0]!;
-    const salvo = lerSalvamento(c.serializar());
-    salvo.relacoes['atenas|megara'] = 0;
-    c.restaurar(salvo);
-    c.declararGuerra('corinto', 'atenas');
-    c.declararGuerra('corinto', 'megara');
-    expect(c.podeFirmarAlianca('megara', longo.turnos).pode).toBe(false);
+    for (const prazo of c.prazosDeAlianca('atenas', 'megara')) {
+      expect(prazo.pode, `prazo de ${prazo.turnos}`).toBe(true);
+    }
+    expect(c.podeFirmarAlianca('megara', 7).pode).toBe(false);
   });
 });
 
-describe('o pacto de não-agressão: o prazo se compra com CONFIANÇA', () => {
-  it('quanto mais longo o pacto, mais opinião ele exige', () => {
+describe('o pacto de não-agressão: o que fica quando ele está de pé', () => {
+  it('o presente sobe a confiança, e a confiança é uma parcela da balança dele', () => {
     const c = nova();
-    const prazos = c.prazosDePacto('megara');
-    expect(prazos.length).toBeGreaterThan(1);
-    // Do mais longo ao mais curto, e o mais longo é o que pede mais.
-    expect(prazos[0]!.turnos).toBeGreaterThan(prazos[prazos.length - 1]!.turnos);
-    expect(prazos[0]!.opiniaoMinima).toBeGreaterThan(prazos[prazos.length - 1]!.opiniaoMinima);
-  });
-
-  it('⚠️ o presente é a ENTRADA do pacto: ouro compra o momento, o momento compra o prazo', () => {
-    const c = nova();
-    const prazos = c.prazosDePacto('megara');
-    const medio = prazos[Math.floor(prazos.length / 2)]!;
-    expect(c.podeFirmarPacto('megara', medio.turnos).pode).toBe(false);
-
+    const antes = balancaDoPacto(c, { ele: 'megara', voce: 'atenas' }, 20, estiloDe(ia, 'megara'), ajustes);
     c.darOuro(300_000, 'atenas');
     for (let i = 0; i < 6; i++) c.presentear('megara', 20_000);
-    expect(c.relacaoEntre('atenas', 'megara')).toBeGreaterThanOrEqual(medio.opiniaoMinima);
-    expect(c.podeFirmarPacto('megara', medio.turnos).pode).toBe(true);
+    const depois = balancaDoPacto(c, { ele: 'megara', voce: 'atenas' }, 20, estiloDe(ia, 'megara'), ajustes);
+    const confianca = (b: typeof antes): number =>
+      b.parcelas.find((p) => p.rotulo === 'confiança')?.pontos ?? 0;
+    expect(confianca(depois)).toBeGreaterThan(confianca(antes));
+    expect(depois.saldo).toBeGreaterThan(antes.saldo);
   });
 
-  it('⚠️ mas o prazo mais longo NÃO se compra: ouro não vira aliança', () => {
+  it('⚠️ mas o prazo mais longo NÃO se compra: o teto do presente fica abaixo do que ele pede', () => {
     // O teto do presente é o freio: ele levanta a opinião só até certa altura acima do que os
     // FATOS justificam. Para ir além é preciso mudar os fatos — e é isso que impede o reino
     // rico de comprar o mapa inteiro sem levantar um soldado.
@@ -435,8 +383,14 @@ describe('o pacto de não-agressão: o prazo se compra com CONFIANÇA', () => {
     c.darOuro(900_000, 'atenas');
     for (let i = 0; i < 20; i++) c.presentear('megara', 40_000);
     const longo = c.prazosDePacto('megara')[0]!;
-    expect(c.relacaoEntre('atenas', 'megara')).toBeLessThan(longo.opiniaoMinima);
-    expect(c.podeFirmarPacto('megara', longo.turnos).pode).toBe(false);
+    const balanca = balancaDoPacto(
+      c,
+      { ele: 'megara', voce: 'atenas' },
+      longo.turnos,
+      estiloDe(ia, 'megara'),
+      ajustes,
+    );
+    expect(aceita(balanca)).toBe(false);
   });
 
   it('enquanto ele segura, ninguém declara guerra — e a opinião sobe sozinha', () => {

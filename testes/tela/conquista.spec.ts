@@ -76,7 +76,10 @@ test('conquistar uma província muda a cor no mapa e o dono na ficha', async ({ 
 
   // Sendo dela, Mégara passa a aceitar ação — e como a Grécia central inteira tem
   // economia configurada, o painel abre com os slots e a lista de construções.
-  await expect(page.locator('.acoes')).toContainText('slots');
+  // ⚠️ O painel deixou de escrever a palavra "slots": ele diz "Construções 1/4", que é a mesma
+  // informação em números. O que este teste guarda é que a ficha ABRE com as ações da província
+  // depois da conquista, e não o vocabulário de um rótulo.
+  await expect(page.locator('.acoes')).toContainText('Construções');
 
   expect(erros, erros.join('\n')).toHaveLength(0);
 });

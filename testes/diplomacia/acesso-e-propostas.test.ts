@@ -13,6 +13,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { estiloDe } from '../../src/ia/estilo';
+import { jogarIA } from '../../src/ia/ia';
 import { aceitaAbrirAcesso, acessoPedido } from '../../src/ia/diplomacia/acesso';
 import { ajustes, ia, novaCampanha } from '../apoio/mundo';
 
@@ -151,13 +152,41 @@ describe('a mesa de propostas: o que ela assinaria com outro, ela PEDE ao jogado
     expect(c.relacaoEntre('atenas', 'eleusis')).toBe(antes);
   });
 
-  it('o mesmo reino não empilha o mesmo pedido, e a virada limpa a mesa', () => {
+  /**
+   * ⚠️ **Este teste guardava o FURO, escrito como se fosse a regra.** Ele se chamava *"a
+   * virada limpa a mesa"* e cravava a mesa vazia depois de `passarTurno`. Mas a ordem real de
+   * `virarTurno` é: a IA joga e SÓ ENTÃO a campanha vira, e por isso todo pedido da IA morria
+   * na mesma chamada em que nascia. Henrique nunca recebeu uma proposta jogando de verdade.
+   * O que se guarda agora é a ordem real: o pedido sobrevive à virada e é a jogada seguinte da
+   * IA que o tira da mesa.
+   */
+  it('o pedido SOBREVIVE à virada; é a jogada seguinte da IA que esvazia a mesa', () => {
     const c = nova();
     fazerAmizade(c, 'atenas', 'eleusis');
     expect(c.proporAoJogador({ de: 'eleusis', tipo: 'acesso', turnos: CURTO })).toBe(true);
+    // O mesmo reino não empilha o mesmo pedido.
     expect(c.proporAoJogador({ de: 'eleusis', tipo: 'acesso', turnos: CURTO })).toBe(false);
+
     c.passarTurno();
-    expect(c.propostas()).toEqual([]);
+    expect(c.propostas().map((p) => `${p.de}:${p.tipo}`)).toEqual(['eleusis:acesso']);
+
+    // A IA volta a jogar: a mesa nasce vazia, e Elêusis, sem guerra, não pede passagem de novo.
+    jogarIA(c, ia, ajustes);
+    expect(c.propostas().some((p) => p.de === 'eleusis' && p.tipo === 'acesso')).toBe(false);
+  });
+
+  it('na ordem real de virar o turno, o que a IA pede chega à mesa do jogador', () => {
+    // Mégara em guerra com Elêusis, que encosta na Ática: ela pede passagem a Atenas.
+    const c = nova();
+    c.declararGuerra('eleusis', 'megara');
+    fazerAmizade(c, 'atenas', 'megara');
+    expect(acessoPedido(c, 'megara', estiloDe(ia, 'megara'), PRAZOS)?.com).toBe('atenas');
+
+    // A ordem de `virarTurno`, sem a tela: a IA joga, a campanha vira, o jogador olha. Era
+    // entre a jogada e a virada que o pedido morria.
+    jogarIA(c, ia, ajustes);
+    c.passarTurno();
+    expect(c.propostas().map((p) => `${p.de}:${p.tipo}`)).toContain('megara:acesso');
   });
 
   it('pedido impossível nem chega à mesa', () => {

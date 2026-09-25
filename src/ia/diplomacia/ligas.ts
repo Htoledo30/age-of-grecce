@@ -43,6 +43,26 @@ function temRazaoParaServir(campanha: Campanha, membro: string, chefe: string): 
 }
 
 /**
+ * Este poder ACEITA servir na liga daquele? Razão e vontade, as duas.
+ *
+ * ⚠️ **É a mesma pergunta que a IA faz a si mesma antes de entrar numa liga — e a proposta do
+ * jogador pulava as duas.** `aoFormarLiga` só olhava a regra (a opinião mínima), e o jogador
+ * punha na liga um reino que nenhuma IA convidaria. A balança da liga vem depois; até lá, a
+ * pergunta é esta, nas duas direções.
+ */
+export function aceitaServir(
+  campanha: Campanha,
+  membro: string,
+  chefe: string,
+  estilo: EstiloDeIa,
+): boolean {
+  return (
+    temRazaoParaServir(campanha, membro, chefe) &&
+    campanha.relacaoEntre(membro, chefe) > estilo.relacaoParaDeclarar
+  );
+}
+
+/**
  * O reino que este poder poria na liga dele AGORA, ou `null`.
  *
  * ⚠️ **Só entre vizinhos que já não vão se atacar.** Ao contrário da aliança, que faz sentido
@@ -64,12 +84,9 @@ export function ligaEscolhida(
   for (const outro of [...campanha.poderesComFicha()].sort()) {
     if (outro === idPoder) continue;
     if (!campanha.podeFormarLiga(outro, idPoder).pode) continue;
-    if (!temRazaoParaServir(campanha, outro, idPoder)) continue;
     // Ninguém convida quem pretende atacar, e ninguém serve a quem pretende atacá-lo.
     if (campanha.relacaoEntre(idPoder, outro) <= estilo.relacaoParaDeclarar) continue;
-    if (campanha.relacaoEntre(outro, idPoder) <= estiloDe(dados, outro).relacaoParaDeclarar) {
-      continue;
-    }
+    if (!aceitaServir(campanha, outro, idPoder, estiloDe(dados, outro))) continue;
     // Entre dois candidatos, o que rende mais: a liga é, antes de tudo, renda.
     const renda = campanha.rendaDe(outro);
     if (renda <= melhor) continue;

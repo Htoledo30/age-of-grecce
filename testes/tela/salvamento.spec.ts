@@ -11,6 +11,10 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
+  /** Tira a comida do caminho: este arquivo mede a TELA, não a despensa. */
+  saciar: () => void;
   campanha: () => {
     jogador: string | null;
     ano: number;
@@ -47,6 +51,8 @@ test('recarregar a página oferece continuar, e retomar devolve a mesma campanha
   // Uma partida com marca própria: ouro fora do padrão, tropa em pé, dois turnos.
   const antes = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.darOuro(12_345);
     i.recrutar('atenas', 700);
     i.passarTurno();
@@ -73,6 +79,8 @@ test('recarregar a página oferece continuar, e retomar devolve a mesma campanha
 
   const depois = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     return { ...i.campanha(), forca: i.forcaEm('atenas') };
   });
   expect(depois).toEqual(antes);

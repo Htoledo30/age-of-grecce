@@ -173,17 +173,100 @@ describe('a ordem recusada diz o motivo', () => {
     });
   });
 
-  it('uma ordem por hoste de cada vez', () => {
+  /**
+   * ⚠️ **Este teste guardava o DEFEITO, escrito como se fosse a regra.**
+   *
+   * Ele se chamava *"uma ordem por hoste de cada vez"* e mandava 500 para Maratona esperando
+   * que os outros 500 fossem RECUSADOS em Sunião — que é, palavra por palavra, o que Henrique
+   * relatou jogando: *"quando movo 50% desse exército, os outros 50% não consigo fazer nada com
+   * eles. se eu quisesse atacar dois locais na mesma rodada eu poderia, dividindo a tropa"*.
+   *
+   * A regra verdadeira nunca foi "uma ordem por hoste": era "uma ordem por hoste POR ID", e o
+   * que faltava era o id novo. Mandar parte da hoste agora a parte na hora — o destacamento
+   * leva a ordem, o resto fica livre — e é isso que este teste passa a guardar.
+   */
+  it('mandar parte da hoste a PARTE, e o resto pode marchar para outro lugar', () => {
     const c = comHoste(1000);
     ordenar(c, 'atenas', 'maratona', 500);
-    expect(podeOrdenar(c, 'atenas', 'sounion', 500)).toMatchObject({
-      motivo: 'esta hoste já está cumprindo uma ordem',
-    });
-    // Cancelar libera.
-    cancelar(c, 'atenas');
-    expect(podeOrdenar(c, 'atenas', 'sounion', 500)).toMatchObject({ pode: true });
+
+    // Os 500 saíram da conta de quem ficou: é o pedido literal de Henrique.
+    expect(forcaDaQueFicou(c)).toBe(500);
+    // E o mapa continua parado: partir não é mover.
+    expect(c.forcaEm('atenas')).toBe(1000);
+
+    // O resto marcha para OUTRO lugar na mesma rodada.
+    expect(podeOrdenar(c, 'atenas', 'sounion', 300)).toMatchObject({ pode: true });
+    ordenar(c, 'atenas', 'sounion', 300);
+    expect(forcaDaQueFicou(c)).toBe(200);
+    expect(c.ordens()).toHaveLength(2);
+
+    // Na virada, as três colunas estão onde foram mandadas.
+    c.passarTurno();
+    expect(c.forcaEm('maratona')).toBe(500);
+    expect(c.forcaEm('sounion')).toBe(300);
+    expect(c.forcaEm('atenas')).toBe(200);
+  });
+
+  /**
+   * ⚠️ **O defeito que o destacamento quase reintroduziu, achado por revisão adversária.**
+   *
+   * A primeira versão de `reunir` devolvia os homens à irmã MAIS VELHA do mesmo poder no mesmo
+   * lugar, sem perguntar se ela ia a algum lugar. O estrago, reproduzido: manda-se 100 a
+   * Maratona (nasce a peça do destacamento) e depois os 900 restantes INTEIROS para outro lado
+   * — essa segunda ordem fica no id original, porque hoste inteira não se divide. Cancelar essa
+   * ordem entregava os 900 à peça que já estava marchando para Maratona e APAGAVA a hoste que o
+   * jogador tinha selecionada. Ele ficava outra vez sem nada para comandar: a queixa exata que
+   * o destacamento nasceu para resolver.
+   */
+  it('cancelar NÃO entrega os homens a uma peça que já está marchando', () => {
+    const c = comHoste(1000);
+    ordenar(c, 'atenas', 'maratona', 100);
+    const doDestacamento = c.ordens()[0]?.idHoste;
+    expect(doDestacamento).toBeDefined();
+
+    // Os 900 que ficaram marcham INTEIROS: não há divisão, a ordem cai no id original.
+    ordenar(c, 'atenas', 'sounion', 900);
+    expect(c.ordens()).toHaveLength(2);
+    const daQueFicou = c.ordens().find((o) => o.idHoste !== doDestacamento)?.idHoste;
+    expect(daQueFicou).toBeDefined();
+
+    c.cancelarOrdem(daQueFicou!);
+
+    // A peça que ficou continua existindo, com os 900, e sem ordem.
+    expect(c.hostesEm('atenas')).toHaveLength(2);
+    expect(c.forcaDaHoste(daQueFicou!)).toBe(900);
+    expect(c.ordens().map((o) => o.idHoste)).toEqual([doDestacamento]);
+    // E a marcha dos 100 segue de pé, com os 100 dela.
+    expect(c.forcaDaHoste(doDestacamento!)).toBe(100);
+  });
+
+  it('cancelar REÚNE o destacamento de volta, em vez de deixar duas peças', () => {
+    const c = comHoste(1000);
+    ordenar(c, 'atenas', 'maratona', 400);
+    expect(c.hostesEm('atenas')).toHaveLength(2);
+
+    // Cancelar pela hoste que LEVA a ordem: é ela que tem o que desfazer.
+    const comOrdem = c.ordens()[0];
+    expect(comOrdem).toBeDefined();
+    c.cancelarOrdem(comOrdem!.idHoste);
+
+    expect(c.hostesEm('atenas')).toHaveLength(1);
+    expect(c.forcaEm('atenas')).toBe(1000);
+    expect(c.ordens()).toEqual([]);
   });
 });
+
+/** Quantos homens sobraram na hoste que NÃO recebeu ordem — a que o jogador ainda comanda. */
+function forcaDaQueFicou(c: {
+  hostesEm: (p: string) => readonly { id: string; contingentes: readonly { homens: number }[] }[];
+  ordens: () => readonly { idHoste: string }[];
+}): number {
+  const comOrdem = new Set(c.ordens().map((o) => o.idHoste));
+  return c
+    .hostesEm('atenas')
+    .filter((h) => !comOrdem.has(h.id))
+    .reduce((t, h) => t + h.contingentes.reduce((s, x) => s + x.homens, 0), 0);
+}
 
 /** `porTerra` tolerando hoste ausente: o teste falha na asserção, não num `undefined`. */
 function porTerraOuVazio(e: { contingentes: readonly { terra: string; homens: number }[] } | undefined) {

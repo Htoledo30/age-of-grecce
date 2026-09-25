@@ -8,7 +8,7 @@
  *
  * Aqui a pergunta é feita ANTES, para cada ação, com a mesma função que a IA usa quando
  * decide de verdade. Não é estimativa nem chance: **é a resposta dela, consultada de graça.**
- * Se `aceitaPacto` diz não, o botão já chega dizendo não, e dizendo por quê.
+ * Se a balança não fecha, o botão já chega dizendo não e abre a conta que explica por quê.
  *
  * ⚠️ **E ela é honesta até quando não interessa ao jogador.** Um "ele recusaria" sobre um
  * presente que ele nem precisava mandar é informação boa: quer dizer que dali não vem invasão
@@ -21,7 +21,17 @@
 
 import type { Jogo } from '../contexto';
 import { estiloDe } from '@/ia/estilo';
-import { aceitaPacto } from '@/ia/diplomacia/pactos';
+import { balancaDaAlianca } from '@/ia/diplomacia/aliancas';
+import {
+  type Balanca,
+  type Lados,
+  aceita,
+  cobicadasPor,
+  ouroQueFecha,
+  prazoMaisCurto,
+} from '@/ia/diplomacia/balanca';
+import { aceitaServir } from '@/ia/diplomacia/ligas';
+import { aceitaComercio, balancaDoPacto } from '@/ia/diplomacia/pactos';
 import { querPaz, querPazComTributo } from '@/ia/diplomacia/paz';
 import { aceitaPagarTributo, aceitaTributo } from '@/ia/diplomacia/tributos';
 import { oportunidadesDe } from '@/ia/percepcao/oportunidade';
@@ -48,21 +58,234 @@ export interface PrazoComResposta {
 
 const SIM_PACTO = 'Amarrar as mãos contra você não me custa nada. Assino.';
 const NAO_PACTO = 'Não amarro minhas mãos contra você.';
+const SIM_ALIANCA = 'As minhas lanças ao lado das suas. Assino.';
+const NAO_ALIANCA = 'Não empresto o meu exército a você.';
 const SIM_COMERCIO = 'Mercador atravessa fronteira que exército não atravessa. Assino.';
 const NAO_COMERCIO = 'Não abro meu mercado a quem eu pretendo enfrentar.';
+const SIM_LIGA = 'Melhor servir a você do que cair sozinho. Aceito.';
+const NAO_LIGA = 'Não me dobro a quem não me protege.';
 const SIM_PAZ = 'Esta guerra já não me serve. Aceito a paz.';
 const NAO_PAZ = 'Ainda tenho o que ganhar aqui.';
+const SEM_SAIDA = 'não há o que oferecer';
 
-/** Ele assinaria o pacto de não-agressão, se a opinião permitisse o prazo? */
-export function respostaAoPacto(jogo: Jogo, com: string, eu: string): Resposta {
-  const quer = aceitaPacto(jogo.campanha, com, eu, estiloDe(jogo.ia, com));
-  return { aceita: quer, fala: quer ? SIM_PACTO : NAO_PACTO };
+/**
+ * Uma resposta com a CONTA aberta: a balança que a produziu e, quando é não, o que a viraria.
+ *
+ * ⚠️ **É o que Henrique pediu no lugar do selo:** *"quero igual os jogos de estratégia fazem,
+ * só que melhor: posso influenciar dependendo do que ofertar, e se me odeiam muito seja
+ * impossível"*. As parcelas dizem POR QUÊ; o pedido diz O QUE FAZER — ouro, guarnecer a terra
+ * que ele cobiça, entrar na guerra dele — ou que não há saída hoje.
+ */
+export interface RespostaComBalanca extends Resposta {
+  balanca: Balanca;
+  /** O que viraria a balança. Vazio quando ele aceita. */
+  pedido: string;
+}
+
+/** Um prazo cotado com a balança dele junto. */
+export interface PrazoComBalanca extends PrazoComResposta {
+  resposta: RespostaComBalanca;
+}
+
+/** Ele assinaria o pacto de não-agressão deste prazo? O mais curto, quando não se diz qual. */
+export function respostaAoPacto(
+  jogo: Jogo,
+  com: string,
+  eu: string,
+  turnos = prazoMaisCurto(jogo.ajustes.jogo.diplomacia.pacto.prazos),
+  cobicadas?: readonly string[],
+  ouro = 0,
+): RespostaComBalanca {
+  const estilo = estiloDe(jogo.ia, com);
+  const lados: Lados = { ele: com, voce: eu };
+  const lidas = cobicadas ?? cobicadasPor(jogo.campanha, lados, estilo, jogo.ajustes.jogo);
+  const balanca = balancaDoPacto(jogo.campanha, lados, turnos, estilo, jogo.ajustes.jogo, {
+    cobicadas: lidas,
+    ouro,
+  });
+  const quer = aceita(balanca);
+  return {
+    aceita: quer,
+    fala: quer ? SIM_PACTO : NAO_PACTO,
+    balanca,
+    pedido: quer ? '' : pedidoQueFecha(jogo, lados, balanca, lidas, 'pacto'),
+  };
+}
+
+/** Ele assinaria a aliança deste prazo? */
+export function respostaAAlianca(
+  jogo: Jogo,
+  com: string,
+  eu: string,
+  turnos = prazoMaisCurto(jogo.ajustes.jogo.diplomacia.alianca.prazos),
+  cobicadas?: readonly string[],
+  ouro = 0,
+): RespostaComBalanca {
+  const estilo = estiloDe(jogo.ia, com);
+  const lados: Lados = { ele: com, voce: eu };
+  const lidas = cobicadas ?? cobicadasPor(jogo.campanha, lados, estilo, jogo.ajustes.jogo);
+  const balanca = balancaDaAlianca(jogo.campanha, lados, turnos, estilo, jogo.ajustes.jogo, {
+    cobicadas: lidas,
+    ouro,
+  });
+  const quer = aceita(balanca);
+  return {
+    aceita: quer,
+    fala: quer ? SIM_ALIANCA : NAO_ALIANCA,
+    balanca,
+    pedido: quer ? '' : pedidoQueFecha(jogo, lados, balanca, lidas, 'alianca'),
+  };
+}
+
+/**
+ * Os prazos de pacto da escada, cada um com a regra E a balança dele.
+ *
+ * A cobiça é lida uma vez: ela roda uma previsão de batalha por província, e três prazos não
+ * mudam o que ele cobiça.
+ */
+export function prazosDePactoComResposta(
+  jogo: Jogo,
+  com: string,
+  eu: string,
+): readonly PrazoComBalanca[] {
+  const lados: Lados = { ele: com, voce: eu };
+  const cobicadas = cobicadasPor(jogo.campanha, lados, estiloDe(jogo.ia, com), jogo.ajustes.jogo);
+  return jogo.campanha
+    .prazosDePacto(com, eu)
+    .map((p) =>
+      cotarPrazo(jogo, lados, p, (ouro) =>
+        respostaAoPacto(jogo, com, eu, p.turnos, cobicadas, ouro),
+      ),
+    );
+}
+
+/** Os prazos de aliança da escada, cada um com a regra E a balança dele. */
+export function prazosDeAliancaComResposta(
+  jogo: Jogo,
+  com: string,
+  eu: string,
+): readonly PrazoComBalanca[] {
+  const lados: Lados = { ele: com, voce: eu };
+  const cobicadas = cobicadasPor(jogo.campanha, lados, estiloDe(jogo.ia, com), jogo.ajustes.jogo);
+  return jogo.campanha
+    .prazosDeAlianca(eu, com)
+    .map((p) =>
+      cotarPrazo(jogo, lados, p, (ouro) =>
+        respostaAAlianca(jogo, com, eu, p.turnos, cobicadas, ouro),
+      ),
+    );
+}
+
+/**
+ * Cota o menor ouro que faz ESTE prazo fechar e o põe dentro da proposta.
+ *
+ * Assim a coluna `custo` é uma oferta de verdade: o clique pesa a mesma quantia e a assinatura
+ * a transfere. Antes a mesa prometia "N de ouro fechariam", mas não havia como oferecer N.
+ */
+function cotarPrazo(
+  jogo: Jogo,
+  lados: Lados,
+  prazo: { turnos: number; pode: boolean; motivo: string },
+  responder: (ouro: number) => RespostaComBalanca,
+): PrazoComBalanca {
+  const base = responder(0);
+  if (!prazo.pode || base.aceita) return { ...prazo, ouro: 0, resposta: base };
+
+  const { campanha } = jogo;
+  const estilo = estiloDe(jogo.ia, lados.ele);
+  const limite = Math.max(campanha.tesouroDe(lados.voce), campanha.rendaDe(lados.ele) * 60);
+  const oferta = ouroQueFecha(
+    campanha,
+    lados,
+    base.balanca.saldo,
+    estilo,
+    jogo.ajustes.jogo,
+    limite,
+  );
+  if (oferta === null) return { ...prazo, ouro: 0, resposta: base };
+
+  const cabeNoCofre = campanha.tesouroDe(lados.voce) >= oferta;
+  if (!cabeNoCofre) {
+    return {
+      turnos: prazo.turnos,
+      ouro: oferta,
+      pode: false,
+      motivo: `seu tesouro não tem ${oferta.toLocaleString('pt-BR')} de ouro`,
+      resposta: base,
+    };
+  }
+  return {
+    turnos: prazo.turnos,
+    ouro: oferta,
+    pode: true,
+    motivo: '',
+    resposta: responder(oferta),
+  };
+}
+
+/** Ele entraria na sua liga? A mesma pergunta que a IA faz a si mesma. */
+export function respostaALiga(jogo: Jogo, com: string, eu: string): Resposta {
+  const quer = aceitaServir(jogo.campanha, com, eu, estiloDe(jogo.ia, com));
+  return { aceita: quer, fala: quer ? SIM_LIGA : NAO_LIGA };
+}
+
+/**
+ * O que viraria esta balança — **a recusa como PEDIDO, e não como veredito.**
+ *
+ * Na ordem do que o jogador consegue fazer agora: ouro que o cofre tem; ouro que o cofre não
+ * tem; guarnecer a terra que ele cobiça; entrar na guerra que ele já tem; ou nada — e "nada"
+ * é a resposta honesta para quem te odeia, porque o ouro rende no máximo `ouro.maximo` pontos.
+ */
+function pedidoQueFecha(
+  jogo: Jogo,
+  lados: Lados,
+  balanca: Balanca,
+  cobicadas: readonly string[],
+  acordo: 'pacto' | 'alianca',
+): string {
+  if (aceita(balanca)) return '';
+  const { campanha } = jogo;
+  const estilo = estiloDe(jogo.ia, lados.ele);
+  const ajustes = jogo.ajustes.jogo;
+  const cofre = campanha.tesouroDe(lados.voce);
+  const noCofre = ouroQueFecha(campanha, lados, balanca.saldo, estilo, ajustes, cofre);
+  if (noCofre !== null) return `${noCofre.toLocaleString('pt-BR')} de ouro fechariam`;
+  // Até sessenta turnos da renda dele: além disso não é preço, é o teto do ouro.
+  const semCofre = ouroQueFecha(
+    campanha,
+    lados,
+    balanca.saldo,
+    estilo,
+    ajustes,
+    Math.max(cofre, campanha.rendaDe(lados.ele) * 60),
+  );
+  if (semCofre !== null) {
+    return `${semCofre.toLocaleString('pt-BR')} de ouro fechariam, e o seu cofre não alcança`;
+  }
+  if (cobicadas.length > 0) {
+    const nomes = cobicadas.map((id) => campanha.nomeDe(id));
+    return `guarneça ${nomes.join(', ')}: é o que ele cobiça`;
+  }
+  if (acordo === 'alianca') {
+    const guerraDele = campanha
+      .guerrasDe(lados.ele)
+      .find((id) => id !== lados.voce && !campanha.emGuerra(lados.voce, id));
+    if (guerraDele !== undefined) {
+      return `entre na guerra dele contra ${campanha.poder(guerraDele).nome}`;
+    }
+  }
+  return SEM_SAIDA;
+}
+
+/** A frase que diz que nada fecha hoje — a mesa a reconhece para dizer "fechado". */
+export function semSaida(pedido: string): boolean {
+  return pedido === SEM_SAIDA;
 }
 
 /** Ele abriria comércio? A mesma pergunta que a IA faz: *eu pretendo atacá-lo?* */
 export function respostaAoComercio(jogo: Jogo, com: string, eu: string): Resposta {
   const estilo = estiloDe(jogo.ia, com);
-  const quer = jogo.campanha.relacaoEntre(com, eu) > estilo.relacaoParaDeclarar;
+  const quer = aceitaComercio(jogo.campanha, com, eu, estilo);
   return { aceita: quer, fala: quer ? SIM_COMERCIO : NAO_COMERCIO };
 }
 
@@ -193,11 +416,12 @@ export interface Intencao {
 export function intencaoDe(jogo: Jogo, id: string, eu: string): Intencao {
   const { campanha } = jogo;
   const estilo = estiloDe(jogo.ia, id);
-  const cobicadas = oportunidadesDe(campanha, id)
+  const cobicadasIds = oportunidadesDe(campanha, id)
     .filter((o) => o.dono === eu)
     .filter((alvo) => valeAPena(campanha, id, alvo, estilo, jogo.ajustes.jogo.combate))
-    .map((o) => campanha.nomeDe(o.provincia))
+    .map((o) => o.provincia)
     .sort();
+  const cobicadas = cobicadasIds.map((provincia) => campanha.nomeDe(provincia));
 
   if (cobicadas.length > 0) {
     const lista = cobicadas.join(', ');
@@ -219,8 +443,12 @@ export function intencaoDe(jogo: Jogo, id: string, eu: string): Intencao {
   }
 
   // Sem apetite pela sua terra: o que sobra é o que ele assinaria de bom grado.
-  const querPacto = respostaAoPacto(jogo, id, eu).aceita;
-  const querComercio = respostaAoComercio(jogo, id, eu).aceita;
+  const curto = prazoMaisCurto(jogo.ajustes.jogo.diplomacia.pacto.prazos);
+  const querPacto =
+    campanha.podeFirmarPacto(id, curto, eu).pode &&
+    respostaAoPacto(jogo, id, eu, curto, cobicadasIds).aceita;
+  const querComercio =
+    campanha.podeAcordarComercio(id, eu).pode && respostaAoComercio(jogo, id, eu).aceita;
   if (querPacto && querComercio) {
     return {
       frase: 'Não quer nada seu. Assinaria pacto e comércio hoje mesmo.',
@@ -250,10 +478,10 @@ export function intencaoDe(jogo: Jogo, id: string, eu: string): Intencao {
  * abaixo de −40, o guerreiro já considera abaixo de +20. Cinquenta e dois pontos de diferença
  * entre dois vizinhos, e a mesma opinião "+12" significando coisas opostas nos dois.
  *
- * ⚠️ **E é UMA linha para DUAS mecânicas**, o que é o que a torna barata e honesta: o mesmo
- * `relacaoParaDeclarar` decide se ele te ataca (`guerraEscolhida`) e se ele assina um pacto
- * com você (`aceitaPacto`). Um traço na régua explica de uma vez "acima daqui ele assina e
- * não te ataca; abaixo daqui ele não assina e começa a te olhar".
+ * ⚠️ **E é a mesma linha que entra em toda balança como o TEMPERAMENTO dele**: o mesmo
+ * `relacaoParaDeclarar` decide se ele te ataca (`guerraEscolhida`) e é a primeira parcela
+ * contra qualquer acordo (`balanca.ts › temperamento`). Um traço na régua explica de uma vez
+ * "abaixo daqui ele começa a te olhar, e acima daqui a confiança passa a contar a favor".
  */
 export function linhaDeAtaqueDe(jogo: Jogo, id: string): number {
   return estiloDe(jogo.ia, id).relacaoParaDeclarar;
@@ -280,4 +508,3 @@ export function ouroQueCobre(jogo: Jogo, id: string, pontos: number): number | n
   }
   return null;
 }
-

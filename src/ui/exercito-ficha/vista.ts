@@ -83,6 +83,17 @@ export interface VistaDoExercito {
    * único comando da tela que podia estourar em silêncio.
    */
   recusaDaOrdem: string;
+  /**
+   * Por que o ÚLTIMO clique no mapa não virou ordem. Vazio quando não houve recusa.
+   *
+   * ⚠️ **Nasceu junto com o mapa inteiro clicável.** Enquanto os destinos eram botões
+   * desenhados, o jogador não podia errar: clicar em outro lugar só podia significar desistir,
+   * e recusar com mensagem seria ruído. Agora que qualquer província aceita o clique, clicar em
+   * Corinto sem guerra declarada precisa de resposta — e `avaliarOrdem` já sabia dar: *"não há
+   * caminho livre até Corinto"*, *"Corinto não está em guerra com você — declare antes de
+   * marchar"*. Faltava onde falar.
+   */
+  recusaDoDestino: string;
   alvo: {
     nome: string;
     /**

@@ -1,9 +1,11 @@
 /**
  * Marchar: para onde esta hoste pode ir, e a ordem que ela leva pra virada.
  *
- * **Nada se move no clique.** A ordem fica registrada, revisável e cancelável, e só
- * acontece quando o turno vira — junto com as de todo mundo. É o ponto da resolução
- * simultânea: enquanto o turno não vira, jogador e IA decidem contra o MESMO mundo.
+ * **Nada se MOVE no clique** — mas a hoste se PARTE no clique. A ordem fica registrada,
+ * revisável e cancelável, e a marcha só acontece quando o turno vira, junto com as de todo
+ * mundo: é o ponto da resolução simultânea. O que mudou é que mandar PARTE da tropa destaca a
+ * parte na hora, para que o resto continue livre para receber outra ordem na mesma rodada. A
+ * posição não muda no clique; a contagem de peças, sim.
  */
 
 import { temAcessoA } from '../diplomacia/acesso-militar';
@@ -15,6 +17,7 @@ import type { Postura } from '@/combate/cerco';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe } from '../provincia/consultas';
 import { emGuerra } from '../diplomacia/relacoes';
+import { cercoEm } from './cercos';
 import { ordemDaHoste, surtidaDe } from './ordens-da-rodada';
 
 /**
@@ -121,7 +124,26 @@ export function podeOrdenarMarcha(
   });
 }
 
-/** Registra a ordem. **Nada se move agora.** */
+/**
+ * Registra a ordem. **Nada se move agora — mas a hoste se PARTE agora.**
+ *
+ * ⚠️ **Mandar parte da hoste destaca a parte na hora, e é o conserto do relato de Henrique:**
+ * *"quero poder quebrar uma hoste em várias hostes no mesmo turno. se eu fiz um pedido de 500
+ * para ir até Maratona, elas têm que sair da conta das que ficam em Atenas"*. Antes os 500
+ * ficavam pendurados numa ORDEM sobre a hoste inteira: a ficha continuava dizendo 1.000, o
+ * botão de mover sumia, e os outros 500 não podiam receber ordem nenhuma — porque as ordens são
+ * um `Record` por id de hoste e a segunda sobrescreveria a primeira.
+ *
+ * A divisão já existia; só acontecia tarde demais. `movimento/resolucao/forcas.ts` cria um
+ * destacamento a cada virada — *"parte da antiga fica, parte vai, e as duas passam a existir ao
+ * mesmo tempo"* — e `pousar.ts` funde de volta quem para junto. Isto adianta o corte para o
+ * clique, que é onde o jogador precisa dele.
+ *
+ * ⚠️ **A hoste NOVA leva a ordem; o id ORIGINAL fica com o resto.** É a metade que decide a
+ * usabilidade: a seleção do jogador aponta para o id original, então a ficha continua aberta na
+ * tropa que sobrou, com a barra já no número novo, pronta para a segunda ordem no mesmo gesto.
+ * Ao contrário, ele teria de caçar o marcador irmão a cada destacamento.
+ */
 export function ordenarMarcha(
   nucleo: NucleoDaCampanha,
   idHoste: string,
@@ -136,7 +158,18 @@ export function ordenarMarcha(
   if (!r.pode) throw new Error(r.motivo);
   const hoste = nucleo.mobilizacao.hoste(idHoste);
   if (!hoste) throw new Error(`não há hoste ${idHoste}`);
-  nucleo.estado.ordens[idHoste] = {
+  // Parte da hoste vira uma hoste; a hoste inteira vai por si e não se divide. `destacar`
+  // devolve `undefined` no segundo caso, e aí a ordem fica no id de sempre.
+  //
+  // ⚠️ **A guarnição CERCADA não se divide, e é regra e não limitação técnica.** Dentro de um
+  // cerco existe uma guarnição, e ela sai inteira ou não sai: partir a defesa em duas colunas
+  // enquanto o inimigo está sentado no portão faria a surtida — que é a hoste toda saindo —
+  // conviver com um destacamento pela mesma porta, e a resolução decide surtida por PROVÍNCIA,
+  // não por hoste. Quem está cercado marcha inteiro, ou surte, ou fica.
+  const sitiada = cercoEm(nucleo, hoste.posicao)?.sitiante;
+  const podeDividir = sitiada === undefined || sitiada === hoste.poder;
+  const deQuem = (podeDividir ? nucleo.mobilizacao.destacar(idHoste, homens) : undefined) ?? idHoste;
+  nucleo.estado.ordens[deQuem] = {
     origem: hoste.posicao,
     rota: r.rota,
     homens,
@@ -164,5 +197,15 @@ export function cancelarOrdem(nucleo: NucleoDaCampanha, idHoste: string): boolea
   if (!tinhaOrdem && !tinhaSurtida) return false;
   delete nucleo.estado.ordens[idHoste];
   nucleo.estado.surtidas = nucleo.estado.surtidas.filter((id) => id !== idHoste);
+  // ⚠️ **Cancelar REÚNE, e sem isto o desfazer não desfaz.** Desde que mandar parte da hoste a
+  // parte de verdade, a ordem cancelada deixaria duas peças suas paradas no mesmo lugar — uma
+  // divisão que o jogador nunca pediu e que ele não tem comando para desmanchar. A resolução já
+  // funde quem para junto, mas só na virada seguinte: aqui é agora.
+  // Livre é quem não vai a lugar nenhum: devolver os homens a uma peça que já está de partida
+  // os mandaria embora sem ninguém pedir.
+  nucleo.mobilizacao.reunir(
+    idHoste,
+    (id) => ordemDaHoste(nucleo, id) === undefined && !surtidaDe(nucleo, id),
+  );
   return true;
 }

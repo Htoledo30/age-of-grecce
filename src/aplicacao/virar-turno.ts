@@ -14,6 +14,25 @@ import { batalhasDoJogador } from './vistas/batalhas';
 import { trechosDaRodada } from './vistas/mapa';
 import type { VistaDaBatalha } from '@/ui/batalha';
 
+/**
+ * A IA está congelada? **Andaime dos testes de TELA, e nunca ligado no jogo.**
+ *
+ * ⚠️ **Existe porque a IA passou a ganhar, e isso quebrou vinte testes de uma vez.** Um teste
+ * de marcha, de muralha ou de crônica planta as próprias peças e vira alguns turnos para ver o
+ * que a TELA faz — e desde que a IA ataca de verdade, o jogador parado perde Atenas na virada
+ * 3 ou 4. O teste então morria em "esta província não é sua", que não diz nada sobre marcha.
+ *
+ * É o mesmo raciocínio do comentário logo abaixo, levado até o fim: a IA vive fora de
+ * `passarTurno` para que virar turnos num teste não signifique dezessete poderes agindo dentro
+ * dele. Quem TESTA a IA não congela — e há teste de sobra para ela em `testes/ia/`.
+ */
+let iaCongelada = false;
+
+/** Desliga a IA nesta sessão. Só o gancho de inspeção chama, e ele só existe em DEV. */
+export function congelarIA(): void {
+  iaCongelada = true;
+}
+
 export function virarTurno(jogo: Jogo): void {
   // ⚠️ **A IA joga ANTES de a rodada resolver, e é a única hora possível.** As ordens deste
   // jogo são simultâneas: se ela decidisse depois, estaria vendo as cartas do jogador.
@@ -21,7 +40,7 @@ export function virarTurno(jogo: Jogo): void {
   // E ela vive AQUI, fora de `passarTurno`, porque é um jogador e não uma regra da campanha —
   // se morasse lá dentro, os testes que viram turnos passariam a ter dezessete poderes agindo
   // dentro deles, e um teste sobre fome deixaria de ser sobre fome.
-  jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo);
+  if (!iaCongelada) jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo);
   jogo.campanha.passarTurno();
   jogo.tela.cronica.mostrar(jogo.campanha.turno, noticiasDaRodada(jogo));
   // ⚠️ A animação começa DEPOIS de resolver e ANTES de repintar, e a ordem importa: só depois

@@ -91,10 +91,22 @@ export class ComandoDeMarcha {
         : 'A ordem será resolvida na próxima virada.',
     });
 
-    // Com o alvo apontado, a instrução some: a pergunta acima já diz o que falta fazer.
-    this.instrucao.hidden = !vista.marchando || vista.alvo !== null;
-    this.instrucao.textContent = vista.marchando
-      ? `Clique num dos ${numero(vista.destinos)} destinos marcados no mapa. Clicar em outro lugar cancela.`
-      : '';
+    // ⚠️ **A instrução deixou de contar destinos, porque não há mais destinos a contar.** Ela
+    // dizia *"clique num dos 199 destinos marcados no mapa"* — e 199 marcas era exatamente o
+    // que derrubava o jogo para 2,4 quadros por segundo. Agora o mapa inteiro é o alvo, a rota
+    // aparece sob o ponteiro, e quem cancela é o próprio botão de cima, que já diz "cancelar".
+    //
+    // E ela cede o lugar à RECUSA quando existe uma: instrução e recusa respondem a mesma
+    // pergunta — *o que eu faço agora* —, e mostrar as duas juntas faria o jogador ler a
+    // errada primeiro.
+    const recusa = vista.marchando ? vista.recusaDoDestino : '';
+    this.instrucao.hidden = !vista.marchando || (vista.alvo !== null && recusa === '');
+    this.instrucao.dataset['tom'] = recusa === '' ? 'instrucao' : 'recusa';
+    this.instrucao.textContent =
+      recusa !== ''
+        ? recusa
+        : vista.marchando
+          ? 'Clique na província ou zona de mar para onde a hoste deve ir.'
+          : '';
   }
 }

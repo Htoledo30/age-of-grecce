@@ -9,6 +9,6 @@
   background: var(--ui-overlay);
   color: var(--ui-texto-tenue);
   font-family: var(--fonte-numero);
-  font-size: 11px;
+  font-size: var(--texto-nota);
   letter-spacing: 0.03em;
 }

@@ -27,6 +27,7 @@
     "ver-provincias": "python ferramentas/ver-provincias.py",
     "calibrar-fronteira": "node ferramentas/calibrar-fronteira.mjs",
     "medir-diplomacia": "tsx ferramentas/medir-diplomacia.ts",
+    "medir-balanca": "tsx ferramentas/medir-balanca.ts",
     "medir-tamanho": "tsx ferramentas/medir-tamanho.ts"
   },
   "type": "module",

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { fecharBatalhas } from './apoio';
+import { clicarProvincia, fecharBatalhas } from './apoio';
 
 /**
  * O cerco visto de fora: escolher a postura, ver a cidade resistir, trocar de ideia.
@@ -9,6 +9,8 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
   /** Tira a comida do caminho: ver a nota acima de `test`. */
   saciar: () => void;
   populacaoDe: (idProvincia: string) => number;
@@ -62,6 +64,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
     i.darOuro(60_000);
     // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
@@ -72,6 +75,10 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
     // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
     // falta: nenhuma afirmação daqui é sobre arma ou treino.
     i.plantarHoste('eleusis', 'eleusis', 500);
+    // ⚠️ A guerra que a marcha passou a exigir em 29/08. Este arquivo é de INTERFACE — o que
+    // ele guarda é o painel, o marcador e a ordem —, e sem esta linha a pergunta do destino
+    // vira "declare antes de marchar", que não é sobre cerco.
+    i.declararGuerra('eleusis');
     i.recrutar('atenas', 700);
     i.passarTurno(); // a leva leva uma rodada para virar hoste
   });
@@ -85,7 +92,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   await expect(page.locator('.exercito__pergunta')).toBeHidden();
   await expect(page.locator('.exercito__botao--postura').first()).toBeHidden();
 
-  await page.locator('.destinos__marca[data-provincia="eleusis"]').click();
+  await clicarProvincia(page, 'eleusis');
   await expect(page.locator('.exercito__pergunta')).toContainText(
     'Elêusis: o que fazer ao chegar?',
   );
@@ -102,6 +109,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
       return { dono: i.donoDe('eleusis'), forca: i.forcaEm('eleusis') };
     }),
@@ -125,6 +133,7 @@ test('sitiar Elêusis: a cidade resiste, a renda dela cai e a postura troca', as
   // A cidade sitiada perde produção e comércio e mantém só o imposto.
   const sitiada = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
     return i.economiaDe('eleusis');
   });
@@ -165,6 +174,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   // Elêusis mantém a guarnição de pé de propósito: é ela que faz a segunda peça existir.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
     i.darOuro(60_000);
     // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
@@ -175,6 +185,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
     // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
     // falta: nenhuma afirmação daqui é sobre arma ou treino.
     i.plantarHoste('eleusis', 'eleusis', 500);
+    i.declararGuerra('eleusis');
     i.recrutar('atenas', 900);
     i.passarTurno();
   });
@@ -182,7 +193,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
 
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await page.getByRole('button', { name: 'Mover' }).click();
-  await page.locator('.destinos__marca[data-provincia="eleusis"]').click();
+  await clicarProvincia(page, 'eleusis');
   await page.getByRole('button', { name: /Sitiar/ }).click();
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
@@ -207,6 +218,7 @@ test('com duas hostes na mesma província, cada marcador comanda a sua', async (
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
       return i.donoDe('eleusis');
     }),
@@ -237,6 +249,7 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
     i.darOuro(60_000);
     // ⚠️ **NADA de esperar obra ficar pronta aqui, e a razão é o jogo estar mais duro.** Este
@@ -247,6 +260,10 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
     // funcionando. Este arquivo veio falar de cerco, não de invasão, e o Quartel nunca fez
     // falta: nenhuma afirmação daqui é sobre arma ou treino.
     i.plantarHoste('eleusis', 'eleusis', 500);
+    // ⚠️ A guerra que a marcha passou a exigir em 29/08. Este arquivo é de INTERFACE — o que
+    // ele guarda é o painel, o marcador e a ordem —, e sem esta linha a pergunta do destino
+    // vira "declare antes de marchar", que não é sobre cerco.
+    i.declararGuerra('eleusis');
     i.recrutar('atenas', 700);
     i.passarTurno(); // a leva vira hoste
 
@@ -278,6 +295,7 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
       return i.forcaEm('atenas', 'atenas');
     }),
@@ -298,6 +316,7 @@ test('sitiado em casa, o jogador sai para atacar quem o cerca', async ({ page })
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
     i.saciar();
       return { meus: i.forcaEm('atenas', 'atenas'), deles: i.forcaEm('atenas', 'eleusis') };
     }),

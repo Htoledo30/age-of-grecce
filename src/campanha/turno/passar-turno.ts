@@ -75,10 +75,9 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   limparTregoas(nucleo);
   // A licença de passagem vence como a trégua, e some pela mesma razão.
   limparAcessosVencidos(nucleo);
-  // ⚠️ **E a mesa de propostas é limpa toda virada.** Proposta é do turno em que foi feita:
-  // acumular pedidos velhos faria o jogador responder a um mundo que já mudou — e faria a
-  // mesma oferta reaparecer empilhada dez vezes.
-  nucleo.estado.propostas = [];
+  // ⚠️ A mesa de propostas NÃO se limpa aqui. A IA joga ANTES desta virada, e limpar agora
+  // apagava o pedido dela antes de o jogador vê-lo. Quem esvazia é a jogada seguinte da IA,
+  // ver `diplomacia/propostas.ts`.
   // A opinião anda um passo por turno, como o humor do povo — e pelos mesmos motivos.
   andarRelacoes(nucleo, poderesComFicha(nucleo));
   // A reputação volta devagar para zero e os pactos vencidos somem.

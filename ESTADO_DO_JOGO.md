@@ -256,6 +256,19 @@ A diplomacia possui:
   território, tesouro e exército;
 - anexação de membro de liga somente com consentimento dele.
 
+Quem decide se um acordo é assinado é a balança de interesse: cada reino soma parcelas com
+sinal e aceita em saldo zero ou mais. Pacto e aliança pesam confiança (a opinião, multiplicada
+pelo gosto do temperamento), temperamento, cobiça pelas terras do outro que valem a marcha,
+prazo acima do mais curto e ouro oferecido. Só o pacto pesa medo do outro em terra e em armas e
+mãos ocupadas em outra guerra; só a aliança pesa o custo de emprestar o exército, inimigo em
+comum, proteção, patrocínio, guerras herdadas e fraqueza do parceiro. Pacto e aliança usam a
+balança nos dois
+sentidos, na mesa, no clique e entre computadores; a regra só barra guerra, acordo em pé e
+prazo inexistente. O ouro rende no máximo um teto de pontos, então ódio não se compra. Comércio
+ainda decide por opinião dos dois lados, liga por opinião e razão, e passagem por opinião. A IA
+propõe quando a própria
+balança passa da iniciativa e a do outro fecha.
+
 A IA apresenta ao jogador propostas que faria a outro poder, e o jogador pode aceitar ou
 recusar. Recusar uma proposta não custa opinião. A régua de acordos vai de comércio e pacto até
 aliança e liga; a liga é o único vínculo desigual.
@@ -275,9 +288,9 @@ Os poderes não controlados pelo jogador usam a mesma fachada e as mesmas regras
 - usa presente, pacto, comércio, tributo, acesso, aliança, liga e anexação.
 
 Os estilos guerreiro, mercador, cauteloso e equilibrado mudam prioridades econômicas e
-militares. Eles ainda não alteram o que a personalidade aprecia diplomaticamente. A IA é
-determinística e decide novamente a cada turno; planos que precisem sobreviver a uma virada
-exigirão memória salva no estado.
+militares e os gostos da balança diplomática: o guerreiro pesa força, o mercador pesa ouro, o
+cauteloso pesa segurança e confiança. A IA é determinística e decide novamente a cada turno;
+planos que precisem sobreviver a uma virada exigirão memória salva no estado.
 
 ## Interface, áudio e acessibilidade
 
@@ -290,12 +303,30 @@ no detalhe e reaparece como faixa no patrimônio assim que a obra ocupa um slot.
 Diplomacia, crônica, ficha de hoste e janela de batalha apresentam os mesmos números usados
 pelas regras.
 
+Mandar PARTE de uma hoste a divide na hora: os homens saem da conta de quem fica, viram hoste
+própria com a ordem, e o resto continua livre para receber outra ordem na mesma rodada — três
+colunas saindo da mesma cidade para três destinos é uma sequência de cliques, não uma exceção.
+Cancelar a ordem reúne o destacamento de volta. A guarnição de uma província cercada não se
+divide: ela sai inteira, surte, ou fica.
+
+Para mandar uma hoste marchar, o jogador a seleciona no mapa, aperta **Mover** e clica na
+província ou zona de mar de destino — qualquer uma. Nada é marcado de antemão: a rota aparece só
+sob o ponteiro, e um clique impossível recebe o motivo escrito no painel em vez de silêncio.
+Terra alheia continua pedindo a segunda decisão, assaltar ou sitiar, antes de virar ordem.
+
+A mesa de Diplomacia tem três colunas: a lista de reinos agrupada por estado, a leitura do que
+os dois são um do outro e a coluna de propostas. Os tratados são uma lista de fichas que abre
+uma por vez; fechada, cada ficha mostra o que já está em pé e a palavra dele (assinaria,
+relutante ou fechado), e aberta mostra a conta da balança dele, a frase com o que a viraria e as
+opções com ouro, prazo e saldo em colunas alinhadas. Não há selo de sim ou não. Guerra e paz
+não fecham e ficam presas ao pé da coluna.
+
 Os 18 poderes com economia completa possuem estandartes vetoriais próprios inspirados em tipos
-monetários, cultos locais e mitos reconhecíveis. A mesma cor e insígnia aparece na escolha de
-poder, barra principal, ficha da província, ficha da hoste e marcador no mapa. Os demais
-poderes do Atlas e reinos nascidos por independência recebem uma marca determinística. Os
-vetores são empacotados no jogo, portanto nenhuma identidade depende da rede em execução nem
-fica sem representação.
+monetários, cultos locais e mitos reconhecíveis. A mesma cor e insígnia aparece na escolha de poder, barra principal, ficha da
+província, ficha da hoste, marcador no mapa e mesa de Diplomacia, onde identifica cada linha da
+lista, os dois lados da tira de confronto e as fileiras de aliado, inimigo e parceiro. Os demais poderes do Atlas e reinos nascidos por
+independência recebem uma marca determinística. Os vetores são empacotados no jogo, portanto
+nenhuma identidade depende da rede em execução nem fica sem representação.
 
 O modo político mostra posse; o modo de relações repinta o mapa segundo a opinião sobre o poder
 selecionado. Nomes de província vivem no mapa, encolhem para caber e podem ser ocultados nas
@@ -329,7 +360,8 @@ Comandos principais:
 - `npm run economia`: mede a economia do menor ao maior poder;
 - `npm run armas`: mede combate junto com ouro, comida e população;
 - `npm run partida`: simula uma campanha inteira com IA;
-- `npm run medir-diplomacia`: mede os portões diplomáticos;
+- `npm run medir-diplomacia`: mede a aba de Diplomacia (botões, prosa, conteúdo escondido);
+- `npm run medir-balanca`: mede a balança de interesse par a par em quatro cortes da partida;
 - `npm run medir-tamanho`: verifica os quatro tamanhos de interface e transbordos.
 
 ## Limitações atuais conhecidas
@@ -337,7 +369,7 @@ Comandos principais:
 - 171 províncias de terra ainda não possuem autoria econômica e social;
 - assimilação, migração, governadores e espionagem não existem;
 - construções continuam ativas quando a manutenção não pode ser paga;
-- estilos de IA ainda não possuem gostos diplomáticos próprios;
+- comércio, liga, passagem e tributo ainda não usam a balança de interesse;
 - alianças e tréguas ainda têm as arestas descritas na seção de Diplomacia;
 - não há desgaste naval adicional nem escolta de rota;
 - oferta, demanda e preços regionais não existem;

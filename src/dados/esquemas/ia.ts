@@ -229,6 +229,22 @@ const Estilo = z.object({
    * O guerreiro aguenta mais tempo antes de desistir; o mercador quer voltar a vender.
    */
   guerraLonga: z.number().int().positive(),
+  /**
+   * Os GOSTOS: o que este temperamento pesa mais na balança de um acordo.
+   *
+   * ⚠️ **É o que faz dois reinos com a mesma opinião responderem coisas diferentes** — e o que
+   * `ESTADO_DO_JOGO.md` listava como pendente: "estilos ainda não alteram o que a
+   * personalidade aprecia diplomaticamente". Cada gosto multiplica um grupo de parcelas:
+   * `confianca` a opinião; `forca` o medo, a proteção e a fraqueza do parceiro; `renda` o ouro
+   * oferecido; `seguranca` as mãos ocupadas e as guerras herdadas. Em 1,0 o gosto não pesa.
+   * Ver `ia/diplomacia/balanca.ts`.
+   */
+  gostos: z.object({
+    confianca: z.number().nonnegative(),
+    forca: z.number().nonnegative(),
+    renda: z.number().nonnegative(),
+    seguranca: z.number().nonnegative(),
+  }),
 });
 
 export const Ia = z.object({

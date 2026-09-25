@@ -23,7 +23,7 @@
 }
 .fim-de-jogo__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 44px;
+  font-size: var(--texto-heroi);
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -32,7 +32,7 @@
 }
 .fim-de-jogo__texto {
   margin: 14px 0 26px;
-  font-size: 14px;
+  font-size: var(--texto-corpo);
   line-height: 1.5;
 }
 .fim-de-jogo__acoes {

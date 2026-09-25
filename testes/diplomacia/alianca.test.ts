@@ -14,24 +14,17 @@ import { ajustes, novaCampanha } from '../apoio/mundo';
 const PRAZO = ajustes.diplomacia.alianca.prazos[0]!.turnos;
 
 /**
- * Uma campanha com a opinião empurrada para onde a aliança é possível.
+ * Uma campanha em que a aliança pode ser assinada.
  *
- * ⚠️ **O andaime é o PRESENTE, e não um número escrito na mão.** A opinião mínima é balanço e
- * mora nos ajustes; o teste não pode cravá-la nem contorná-la. Dar ouro até a porta abrir é o
- * que um jogador faria, e é a única forma de o cenário continuar de pé no dia em que Henrique
- * mexer no número pelo editor. O laço para assim que ela abre — e se nunca abrir, o teste que
- * depende dela falha dizendo isso, que é a informação certa.
+ * ⚠️ **A REGRA não pergunta opinião desde a balança de interesse**: guerra, aliança em pé e
+ * prazo que existe são as travas dela. Quem decide se ELE assina é a balança, testada em
+ * `testes/ia/balanca.test.ts`; aqui a fachada registra o acordo, e o que se guarda é o que a
+ * aliança faz depois de assinada.
  */
 function comAliancaPossivel(a: string, b: string) {
   const c = novaCampanha();
   c.comecar(a);
-  c.darOuro(2_000_000, a);
-  c.darOuro(2_000_000, b);
-  for (let i = 0; i < 60 && !c.prazosDeAlianca(a, b).some((p) => p.pode); i++) {
-    c.presentear(b, 30_000, a);
-    c.presentear(a, 30_000, b);
-    c.passarTurno();
-  }
+  expect(c.prazosDeAlianca(a, b).some((p) => p.pode)).toBe(true);
   return c;
 }
 

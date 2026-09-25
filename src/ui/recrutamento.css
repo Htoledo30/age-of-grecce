@@ -1,6 +1,9 @@
+/* ⚠️ **Nenhum TAMANHO de texto entra aqui.** Sete tamanhos em nove declarações — 11, 11.5, 12, 13, 17, 18, 19 — viraram quatro degraus. A régua é
+   `estilo/tokens.css`, e a escolha é sempre pela FUNÇÃO do texto — etiqueta, nota, corpo,
+   medida, destaque, título —, nunca por um número. */
 /* A janela de recrutamento. A moldura vem de `janela.css`; aqui está só o miolo. */
 .recrutamento__recusa {
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   line-height: 1.5;
   color: var(--ui-texto-tenue);
 }
@@ -28,7 +31,7 @@
   border-left: 0;
 }
 .recrutamento__dado-rotulo {
-  font-size: 11px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -37,7 +40,7 @@
 .recrutamento__dado strong {
   margin-top: 2px;
   font-family: var(--fonte-numero);
-  font-size: 18px;
+  font-size: var(--texto-destaque);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto);
@@ -81,7 +84,7 @@
 }
 .recrutamento__arma-nome {
   font-family: var(--fonte-nome);
-  font-size: 19px;
+  font-size: var(--texto-destaque);
   font-weight: 600;
   line-height: 1;
   color: var(--ui-texto);
@@ -93,7 +96,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1px 8px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
 }
 .recrutamento__arma-numeros dt {
   color: var(--ui-texto-tenue);
@@ -110,7 +113,7 @@
 /* O que falta para levantar esta arma. Vazio quando ela está liberada — e um elemento
    vazio não ocupa linha, então o cartão liberado é mais curto por si. */
 .recrutamento__arma-trava:not(:empty) {
-  font-size: 11.5px;
+  font-size: var(--texto-nota);
   line-height: 1.3;
   color: var(--ui-sangue-claro);
 }
@@ -122,7 +125,7 @@
 }
 .recrutamento__quantidade {
   font-family: var(--fonte-numero);
-  font-size: 17px;
+  font-size: var(--texto-medida);
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto);
 }
@@ -151,7 +154,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-numero);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-weight: 650;
   cursor: pointer;
 }
@@ -166,7 +169,7 @@
 .recrutamento__previsao {
   min-height: 18px;
   font-family: var(--fonte-numero);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   line-height: 1.45;
   color: var(--ui-texto-fraco);
 }

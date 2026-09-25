@@ -43,7 +43,7 @@
 }
 .janela__titulo {
   font-family: var(--fonte-titulo);
-  font-size: 21px;
+  font-size: var(--texto-destaque);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -54,7 +54,7 @@
 .janela__legenda {
   margin-top: 3px;
   padding-left: 30px;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   letter-spacing: 0.04em;
   color: var(--ui-texto-tenue);
 }
@@ -66,7 +66,7 @@
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
-  font-size: 21px;
+  font-size: var(--texto-destaque);
   line-height: 1;
   cursor: pointer;
 }

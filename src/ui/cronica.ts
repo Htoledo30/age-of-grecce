@@ -23,6 +23,21 @@ import type { NomeDoIconeGrego } from './icones-gregos';
 export interface LinhaDaCronica {
   /** O tom decide a cor da borda: vitória, perda ou fato sem lado. */
   tom: 'ganho' | 'perda' | 'neutro';
+  /**
+   * Isto aconteceu COMIGO, ou é o mundo lá fora? Decide o bloco, o tamanho e a ordem.
+   *
+   * ⚠️ **É a hierarquia que faltava, e a queixa é literal.** Henrique: *"a crônica mistura
+   * muita coisa pouco relevante com o que é importante"*, e a referência que ele deu foi o
+   * Total War — *"quando dois reinos entram em guerra, eu recebo a informação e imediatamente
+   * entendo o que aconteceu"*. Aqui todas as notícias eram o mesmo `<li>`, no mesmo tamanho e
+   * na ordem em que a resolução calculou: "Elêusis perdeu 40 defensores" saía com o mesmo peso
+   * de "SEU reino perdeu a capital", e numa rodada movimentada eram vinte linhas achatadas.
+   *
+   * ⚠️ **Nada é removido — só ordenado.** Ele foi explícito: *"não quero resolver isso
+   * retirando profundidade; o problema não é ter muita informação, é a informação não estar
+   * organizada"*. Ausente vale `normal`.
+   */
+  peso?: 'grave' | 'normal';
   icone: NomeDoIconeGrego;
   texto: string;
 }
@@ -70,22 +85,46 @@ export class Cronica {
     }
 
     this.titulo.textContent = `Rodada ${rodada.toLocaleString('pt-BR')}`;
-    this.lista.replaceChildren(
-      ...linhas.map((linha) => {
-        const item = document.createElement('li');
-        item.className = 'cronica__linha';
-        item.dataset['tom'] = linha.tom;
-        const texto = document.createElement('span');
-        texto.className = 'cronica__texto';
-        texto.textContent = linha.texto;
-        item.append(iconeGrego(linha.icone, 'cronica__icone'), texto);
-        return item;
-      }),
-    );
+
+    const graves = linhas.filter((l) => l.peso === 'grave');
+    const resto = linhas.filter((l) => l.peso !== 'grave');
+    // ⚠️ **Só separa quando há os DOIS lados.** Uma rodada em que tudo aconteceu com ele, ou
+    // em que nada aconteceu, não tem hierarquia a mostrar: separar ali daria um subtítulo
+    // pendurado sobre um bloco vazio, ou encolheria a notícia inteira sem nada com que
+    // comparar. Sem separação, tudo se lê no tamanho de cima.
+    const separado = graves.length > 0 && resto.length > 0;
+
+    const itens: HTMLElement[] = graves.map((l) => desenharLinha(l, 'grave'));
+    if (separado) itens.push(divisor('no resto do mundo'));
+    for (const l of resto) itens.push(desenharLinha(l, separado ? 'normal' : 'grave'));
+
+    this.lista.replaceChildren(...itens);
   }
 
   /** Fecha sem apagar o conteúdo. É o que a virada do turno faz antes de reescrever. */
   esconder(): void {
     this.raiz.hidden = true;
   }
+}
+
+function desenharLinha(linha: LinhaDaCronica, peso: 'grave' | 'normal'): HTMLElement {
+  const item = document.createElement('li');
+  item.className = 'cronica__linha';
+  item.dataset['tom'] = linha.tom;
+  // No DOM porque a cor e o tamanho não identificam nada para quem procura — nem o teste de
+  // tela, nem o leitor de tela. É a mesma regra do `data-medida` da ficha de província.
+  item.dataset['peso'] = peso;
+  const texto = document.createElement('span');
+  texto.className = 'cronica__texto';
+  texto.textContent = linha.texto;
+  item.append(iconeGrego(linha.icone, 'cronica__icone'), texto);
+  return item;
+}
+
+/** O corte entre "o que aconteceu comigo" e "o que aconteceu no mundo". */
+function divisor(texto: string): HTMLElement {
+  const item = document.createElement('li');
+  item.className = 'cronica__divisor';
+  item.textContent = texto;
+  return item;
 }

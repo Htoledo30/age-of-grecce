@@ -43,10 +43,14 @@
 import type { Arma } from '@/combate/exercito';
 import { ARMAS } from '@/combate/exercito';
 import { COR_DA_ARMA, NOME_DA_ARMA } from './armas';
+import { criarEstandarte } from './estandartes';
+import { iconeGrego } from './icones-gregos';
 import { definirTooltip } from './tooltip';
 
 /** Um lado como ele entrou na batalha. */
 interface LadoNaTela {
+  /** O poder, para o estandarte. Vazio no lado `ninguem` — província tomada sem defensor. */
+  id: string;
   nome: string;
   cor: string;
   homens: number;
@@ -251,10 +255,16 @@ export class JanelaDeBatalha {
     // diferença de tamanho dos exércitos, estava apagado pelo CSS. Com a régua comum, o maior
     // desenha mais linha e a sobra fica à vista. Custa uma divisão.
     const regua = Math.max(a.homens, b.homens, 1);
+    // ⚠️ **O desfecho pinta as duas colunas, e é o pagamento da tela.** A batalha terminava
+    // com os dois lados desenhados exatamente iguais e a resposta escrita só numa linha de
+    // texto lá embaixo — o jogador assistia três rounds de tensão e o fim não tinha imagem.
+    // Agora o vencedor acende e o perdedor perde a cor: quem venceu se lê antes de ler.
+    const fim = (qual: 'a' | 'b'): 'venceu' | 'perdeu' | null =>
+      !acabou || vista.vencedor === null ? null : vista.vencedor === qual ? 'venceu' : 'perdeu';
     this.campo.replaceChildren(
-      colunaDoLado(a, 'a', agora.a, antes.a, fase, regua, vista.limiarDeQuebra),
-      cruzada(this.round, vista.rounds.length, acabou),
-      colunaDoLado(b, 'b', agora.b, antes.b, fase, regua, vista.limiarDeQuebra),
+      colunaDoLado(a, 'a', agora.a, antes.a, fase, regua, vista.limiarDeQuebra, fim('a')),
+      meioDoCampo(this.round, vista.rounds.length, acabou, fase),
+      colunaDoLado(b, 'b', agora.b, antes.b, fase, regua, vista.limiarDeQuebra, fim('b')),
     );
 
     this.faixaDaFase.dataset['canal'] = acabou ? 'fim' : (fase ?? 'inicio');
@@ -430,15 +440,36 @@ function colunaDoLado(
   fase: string | null,
   regua: number,
   limiar: number,
+  fim: 'venceu' | 'perdeu' | null,
 ): HTMLElement {
   const coluna = document.createElement('div');
   coluna.className = 'batalha__lado';
   coluna.dataset['lado'] = qual;
+  if (fim) coluna.dataset['fim'] = fim;
+  // ⚠️ **O golpe deste round marca a coluna que o levou.** A barra já encolhia e o fantasma já
+  // mostrava a fatia perdida, mas nada acontecia com o NÚMERO — e o número é onde o olho está
+  // parado enquanto os rounds correm. Um lampejo de 300 ms no lado que apanhou é o que faz o
+  // round ser um acontecimento em vez de uma atualização.
+  if (antes - vivos > 0) coluna.dataset['golpe'] = 'sim';
 
+  // ⚠️ **O ESTANDARTE, e é o que faltava para isto ser um confronto.** Duas colunas espelhadas
+  // resolvem a comparação, mas não a IDENTIDADE: os dois lados eram dois nomes na mesma fonte,
+  // e a única tela em que dois povos se enfrentam era a única sem uma insígnia. Henrique, sobre
+  // a lista de diplomacia: *"ser humano é melhor em decorar imagem do que nomes"* — e aqui vale
+  // dobrado, porque a batalha é o momento em que ele mais precisa saber de que lado torcer.
+  const cabeca = document.createElement('div');
+  cabeca.className = 'batalha__cabeca';
   const nome = document.createElement('h3');
   nome.className = 'batalha__nome';
   nome.textContent = lado.nome;
-  coluna.appendChild(nome);
+  if (lado.id === '') cabeca.appendChild(nome);
+  else {
+    const pano = criarEstandarte({ id: lado.id, nome: lado.nome, cor: lado.cor }, 'reino');
+    // Fincados: o da esquerda pende para fora, o da direita também. São duas hastes plantadas
+    // no campo, e não dois ícones alinhados numa barra de ferramentas.
+    cabeca.append(...(qual === 'a' ? [pano, nome] : [nome, pano]));
+  }
+  coluna.appendChild(cabeca);
 
   const estado = document.createElement('p');
   estado.className = 'batalha__estado';
@@ -455,15 +486,27 @@ function colunaDoLado(
   // responde a pergunta que o jogador está fazendo, que é se aquela linha aguenta mais um
   // empurrão. E é a palavra MUDANDO que vira o evento — duas escadas em velocidades diferentes
   // contam a batalha inteira sem um número na tela.
+  // ⚠️ **A palavra em versalete, a conta em caixa normal — e antes era tudo maiúscula.**
+  // `FIRME · FALTAM 209 PARA QUEBRAR` é uma frase inteira gritada em corpo 12: caixa alta serve
+  // a UMA palavra, e a partir da segunda ela custa exatamente a legibilidade de que a frase
+  // precisa para ser lida de relance. É a mesma lição que a mesa de diplomacia já tinha
+  // aprendido. A palavra é o estado; a conta é o suspense, e ela é o número mais importante
+  // desta tela depois dos dois grandes.
   const firmeza = document.createElement('p');
   firmeza.className = 'batalha__firmeza';
   const palavra = estadoDaLinha(lado.homens, vivos, limiar);
   firmeza.dataset['estado'] = palavra;
   const restam = Math.max(0, vivos - Math.ceil(lado.homens * (1 - limiar)));
-  firmeza.textContent =
-    palavra === 'cedeu' || palavra === 'sem ninguém'
-      ? palavra
-      : `${palavra} · faltam ${separarMilhar(restam)} para quebrar`;
+  const rotulo = document.createElement('span');
+  rotulo.className = 'batalha__firmeza-palavra';
+  rotulo.textContent = palavra;
+  firmeza.appendChild(rotulo);
+  if (palavra !== 'cedeu' && palavra !== 'sem ninguém') {
+    const conta = document.createElement('span');
+    conta.className = 'batalha__firmeza-conta';
+    conta.textContent = `faltam ${separarMilhar(restam)} para quebrar`;
+    firmeza.appendChild(conta);
+  }
   coluna.appendChild(firmeza);
 
   const trilho = document.createElement('div');
@@ -554,17 +597,47 @@ function colunaDoLado(
   return coluna;
 }
 
-/** O meio do campo: as espadas cruzadas e o contador de rounds. */
-function cruzada(round: number, total: number, acabou: boolean): HTMLElement {
+/**
+ * O MEIO DO CAMPO: onde os dois se encontram.
+ *
+ * ⚠️ **Era o lugar mais vazio da tela, e devia ser o mais cheio.** Um glifo de espadas em corpo
+ * 20 e um `0/3` em corpo 12, numa coluna de 64 px entre os dois exércitos — o centro de uma
+ * janela de batalha ocupado por duas marcas que ninguém olha. Agora ele carrega o relógio da
+ * batalha: o round como NÚMERO grande, o total embaixo, e as espadas mudando de cor com a fase
+ * — bronze no choque, sangue na perseguição, fogo na retirada. É o único ponto da tela que se
+ * move em toda rodada, e é para ele que o olho volta entre um lado e o outro.
+ */
+function meioDoCampo(
+  round: number,
+  total: number,
+  acabou: boolean,
+  fase: string | null,
+): HTMLElement {
   const meio = document.createElement('div');
   meio.className = 'batalha__meio';
+  meio.dataset['fase'] = acabou ? 'fim' : (fase ?? 'inicio');
+
+  // ⚠️ **Lanças de verdade, e não um glifo de fonte.** Eram `⚔` e `·` — caracteres Unicode,
+  // que cada fonte desenha do seu jeito e nenhuma desenha bem: no cartão saía um risco fino e
+  // pálido no ponto mais central da tela. O projeto já tem vocabulário próprio em
+  // `icones-gregos.ts` e a lança estava lá desde sempre. Duas, uma espelhada, cruzam no meio do
+  // campo; no fim elas dão lugar ao escudo, que é quem ficou com ele.
   const marca = document.createElement('span');
   marca.className = 'batalha__cruzada';
-  marca.textContent = acabou ? '·' : '⚔';
-  const conta = document.createElement('span');
-  conta.className = 'batalha__round';
-  conta.textContent = acabou ? 'fim' : `${round}/${total}`;
-  meio.append(marca, conta);
+  if (acabou) marca.appendChild(iconeGrego('escudo'));
+  else marca.append(iconeGrego('lanca'), iconeGrego('lanca'));
+
+  const numero = document.createElement('span');
+  numero.className = 'batalha__round';
+  numero.textContent = acabou ? 'fim' : String(round);
+
+  meio.append(marca, numero);
+  if (!acabou) {
+    const de = document.createElement('span');
+    de.className = 'batalha__round-total';
+    de.textContent = `de ${total}`;
+    meio.appendChild(de);
+  }
   return meio;
 }
 

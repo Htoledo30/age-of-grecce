@@ -47,6 +47,9 @@ export function vistaDoExercito(
     // ⚠️ Perguntada com o MESMO poder e os MESMOS homens que o botão vai usar: uma recusa
     // calculada com outros números seria uma tela que promete o que a regra nega.
     recusaDaOrdem: motivoDaRecusa(jogo, exercito),
+    // Só a hoste que está compondo a marcha mostra a recusa: a de outra tropa seria uma
+    // resposta a uma pergunta que ninguém fez.
+    recusaDoDestino: selecao.marchando === exercito.id ? selecao.recusaDaMarcha : '',
     alvo:
       selecao.alvoHostil === null
         ? null

@@ -55,6 +55,10 @@ function ladoNaTela(
   const conhecido = lado.poder !== 'ninguem';
   const poder = conhecido ? jogo.campanha.poder(lado.poder) : null;
   return {
+    // ⚠️ **O id vai junto porque a janela agora HASTEIA os dois estandartes.** Ela tinha a cor
+    // do poder e mais nada: dois exércitos frente a frente eram dois nomes na mesma fonte, e a
+    // única tela do jogo em que dois povos se enfrentam era a única sem uma insígnia.
+    id: conhecido ? lado.poder : '',
     nome: poder?.nome ?? 'ninguém',
     cor: poder?.cor ?? '#8a8f92',
     homens: lado.homens,

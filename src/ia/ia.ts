@@ -146,6 +146,10 @@ export function jogarIA(
   ajustes: Ajustes['jogo'],
 ): readonly LanceDaIa[] {
   const lances: (LanceDaIa & { pazes: readonly string[] })[] = [];
+  // ⚠️ **A mesa do jogador nasce vazia a cada jogada, e é AQUI que ela se esvazia.** Esta
+  // jogada vem antes de `passarTurno`; limpar lá apagava o pedido feito aqui antes de a tela
+  // o mostrar. Ver `campanha/diplomacia/propostas.ts`.
+  campanha.esvaziarMesa();
   for (const idPoder of poderesDaIa(campanha)) {
     const estilo = estiloDe(dados, idPoder);
 
@@ -230,7 +234,7 @@ export function jogarIA(
     // ele responde. Henrique: *"não sinto a IA tentando se conectar comigo (...) e eu ter opção
     // de aceitar ou recusar"*. Antes disto, pacto e comércio com o jogador eram fato consumado
     // — ele descobria na aba de Diplomacia que tinha assinado alguma coisa.
-    const pacto = pactoEscolhido(campanha, idPoder, estilo, dados);
+    const pacto = pactoEscolhido(campanha, idPoder, estilo, dados, ajustes);
     if (pacto !== null) {
       if (pacto.com === campanha.jogador?.id) {
         campanha.proporAoJogador({ de: idPoder, tipo: 'pacto', turnos: pacto.turnos });
@@ -241,9 +245,9 @@ export function jogarIA(
 
     // ⚠️ **A ALIANÇA depois do pacto, e nunca antes.** Ela é o degrau caro: põe este reino nas
     // guerras do outro sem perguntar. Tentá-la antes do pacto faria uma IA comprar guerra alheia
-    // onde uma assinatura de graça já lhe garantiria a fronteira. Ver `diplomacia/aliancas.ts`,
-    // que tem um portão próprio — inimigo em comum ou ameaça na porta — antes de olhar opinião.
-    const alianca = aliancaEscolhida(campanha, idPoder, estilo, dados);
+    // onde uma assinatura de graça já lhe garantiria a fronteira. Ver `diplomacia/aliancas.ts`:
+    // a balança dela começa com o custo da guerra emprestada, e só uma razão o cobre.
+    const alianca = aliancaEscolhida(campanha, idPoder, estilo, dados, ajustes);
     if (alianca !== null) {
       if (alianca.com === campanha.jogador?.id) {
         campanha.proporAoJogador({ de: idPoder, tipo: 'alianca', turnos: alianca.turnos });
@@ -296,7 +300,7 @@ export function jogarIA(
 
     // O comércio por último entre os acordos: ele é a decisão mais fácil — lucro dos dois lados
     // — e não tira nada da mesa, então nunca compete com pacto nem com guerra.
-    const comercio = comercioEscolhido(campanha, idPoder, estilo);
+    const comercio = comercioEscolhido(campanha, idPoder, estilo, dados);
     if (comercio !== null) {
       if (comercio === campanha.jogador?.id) {
         campanha.proporAoJogador({ de: idPoder, tipo: 'comercio' });

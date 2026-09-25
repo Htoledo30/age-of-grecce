@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
+  /** Tira a comida do caminho: este arquivo mede a TELA, não a despensa. */
+  saciar: () => void;
   campanha: () => { tesouro: number; renda: number };
   custoDaObraEm: (idProvincia: string, idConstrucao: string, nivel: number) => number;
   economiaDe: (idProvincia: string) => { total: number } | null;
@@ -226,6 +230,8 @@ test('o Governo mostra o balanço de cada província e o total', async ({ page }
   await expect(page.locator('[data-aba="balanco"] .balanco__tabela tbody tr')).toHaveCount(3);
   const conta = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     return { reino: i.campanha().renda, trocas: i.rendaDeTrocas('atenas') };
   });
   // ⚠️ **O rodapé soma as TERRAS; o resumo soma o REINO.** A rede de trocas é nacional e não

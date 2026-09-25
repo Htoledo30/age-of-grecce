@@ -16,7 +16,6 @@ import { BarraTurno } from '@/ui/barra-turno';
 import { JanelaDeBatalha } from '@/ui/batalha';
 import { CercosMapa } from '@/ui/cercos-mapa';
 import { Cronica } from '@/ui/cronica';
-import { DestinosMapa } from '@/ui/destinos-mapa';
 import { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import { FimDeJogo } from '@/ui/fim-de-jogo';
@@ -71,7 +70,6 @@ export function montarTela(
   const animacaoDeMarcha = new AnimacaoDeMarcha();
   // Os destinos ficam por cima das hostes: o alvo de uma ordem em curso tem que estar
   // clicável mesmo quando cai sobre uma província que já tem tropa.
-  const destinosMapa = new DestinosMapa(ui);
   // A hoste escolhida ganha região própria, em baixo-centro: ela não é a província, e assim
   // que marchar as duas deixam de coincidir.
   const exercitoFicha = new ExercitoFicha(ui);
@@ -129,7 +127,6 @@ export function montarTela(
     hostesMapa,
     cercosMapa,
     marchasMapa,
-    destinosMapa,
     animacaoDeMarcha,
     painelFps,
     lateral,

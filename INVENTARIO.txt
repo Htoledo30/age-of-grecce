@@ -1,0 +1,419 @@
+====================================================================
+INVENTARIO DO AGE OF GRECCE  -  marque F (fica) ou S (sai)
+====================================================================
+
+Como usar: escreva F ou S dentro dos colchetes. Se ficar na duvida,
+deixe em branco que a gente conversa sobre esse item.
+
+Nada aqui e apagado. "Sai" quer dizer DESLIGADO da partida — o codigo
+continua no git, com os testes dele, e volta quando voce quiser.
+
+Onde um item DEPENDE de outro, esta escrito embaixo. Cortar o de cima
+derruba o de baixo junto, e e melhor voce saber antes.
+
+*  As palavras marcadas com asterisco estao explicadas no fim do
+   arquivo, no DICIONARIO. Se bater duvida em alguma, e la.
+
+--------------------------------------------------------------------
+1. O TABULEIRO
+--------------------------------------------------------------------
+
+[ ]  Mapa de 244 provincias, das quais 25 sao simuladas*
+[ ]  18 poderes* jogaveis na regiao simulada
+[ ]  139 poderes no mapa inteiro (os outros so tem cor e nome)
+[ ]  Capital* do reino (muda de lugar por 2.000 moedas)
+[ ]  Perder a capital trava o turno ate assentar outra
+[ ]  Vitoria: dominar toda a Grecia central configurada
+[ ]  Derrota: ficar sem chao e sem tropa
+
+     VOCE FALOU EM "NO MAXIMO 2 INIMIGOS". Se for isso, marque aqui
+     quantos poderes voce quer na partida:  ____
+     (hoje sao 18; com 3 o mapa cabe na cabeca)
+
+--------------------------------------------------------------------
+2. ECONOMIA
+--------------------------------------------------------------------
+
+[ ]  Renda por provincia (imposto + producao* + transito*)
+[ ]  Imposto com 4 decretos*: baixo, normal, alto, confisco*
+[ ]  Corrupcao* por TAMANHO da populacao (a Agora reduz)
+[ ]  Corrupcao* por DISTANCIA ate a capital (a Estrada reduz)
+[ ]  Produtos* por terra (graos, azeite, prata, madeira, pedra...)
+[ ]  Rede interna*: cada bem distinto que o reino alcanca paga uma vez
+[ ]  Rota ate a capital*: terra cortada perde o transito
+[ ]  Folha* das construcoes saindo do tesouro
+[ ]  Soldo* das tropas (taxa em casa, taxa maior em campanha)
+
+     Se sai CORRUPCAO -> a Agora e a Estrada perdem a funcao delas
+     Se sai REDE INTERNA -> o Mercado perde metade do efeito
+     Se sai TRANSITO -> o Porto perde metade do efeito
+
+--------------------------------------------------------------------
+3. COMIDA E POPULACAO
+--------------------------------------------------------------------
+
+[ ]  Saldo de comida* do reino (subsistencia* + producao - populacao)
+[ ]  Comida limita o tamanho do exercito (1 ponto = 500 soldados)
+[ ]  Faixa de populacao* decide quanto a provincia come (1 a 5)
+[ ]  Fome mata civis (1% ao turno) e tropa (5% ao turno)
+[ ]  Crescimento populacional, travado quando falta comida
+[ ]  Cidade sitiada vive da propria despensa* e depois definha
+[ ]  Obras de comida: Fazenda, Pastagem, Porto pesqueiro
+
+     Se sai COMIDA -> sai o teto de exercito, a fome do cerco, e as
+     tres obras de comida ficam sem efeito. O exercito passa a ser
+     limitado so por ouro e por populacao.
+
+--------------------------------------------------------------------
+4. GENTE, HUMOR E REVOLTA
+--------------------------------------------------------------------
+
+[ ]  Humor* da provincia (0 a 100, caminha 4 pontos por turno)
+[ ]  Humor multiplica a renda inteira da provincia
+[ ]  Greve fiscal*: provincia no fundo do poco para de pagar imposto
+[ ]  Nacionalidade*: povo conquistado continua sendo do reino antigo
+[ ]  Revolta* em terra conquistada (o dono antigo volta ao jogo)
+[ ]  Independencia*: terra do proprio povo vira reino novo  (feito hoje)
+[ ]  Choque da conquista* (a cidade tomada odeia voce por um tempo)
+
+     Se sai HUMOR -> saem a greve fiscal, a revolta e a independencia,
+     e o Templo e o Confisco perdem o sentido
+
+--------------------------------------------------------------------
+5. CONSTRUCOES
+--------------------------------------------------------------------
+
+[ ]  4 slots* por provincia
+[ ]  DEMOLIR para liberar slot                              (feito hoje)
+[ ]  Niveis I, II e III (hoje o II e o III quase nunca se pagam)
+[ ]  Agora, Mercado, Templo, Muralha, Porto, Estrada
+[ ]  Fazenda, Pastagem, Porto pesqueiro, Lagar, Vinhedo
+[ ]  Serraria, Mina, Pedreira
+[ ]  Armaria, Acampamento de arqueiro, Treinamento de cavaleiros
+[ ]  Quartel (treino*, multiplica o ataque da leva)
+
+     Sao 18 obras. Se voce quiser cortar, escreva aqui quantas quer
+     no total:  ____   (eu escolho as que sobrevivem e te mostro)
+
+--------------------------------------------------------------------
+6. GUERRA POR TERRA
+--------------------------------------------------------------------
+
+[ ]  Recrutar da populacao da provincia (a leva*)
+[ ]  Hostes* que se dividem e se juntam
+[ ]  Marchar de provincia em provincia (1 salto por rodada)
+[ ]  Marchar em terra alheia exige guerra declarada
+[ ]  Batalha com choque*, linha de quebra* e perseguicao*
+[ ]  Janela de batalha rodada a rodada
+[ ]  4 armas: leve, hoplita, arqueiro, cavalaria
+[ ]  Triangulo* hoplita > cavalaria > arqueiro > hoplita
+[ ]  Milicia* local defendendo a cidade
+[ ]  Sitiar* (ocupa o campo sem tomar a cidade)
+[ ]  Assaltar* (enfrenta milicia e guarnicao*)
+[ ]  Muralha exige 2/3/4 rodadas de cerco antes do assalto
+[ ]  Surtida* (o sitiado sai para atacar quem o cerca)
+[ ]  Recuar antes da quebra, com refugio
+[ ]  Desercao* quando o soldo nao e pago
+
+     Se saem as 4 ARMAS -> saem o triangulo, o Quartel e as tres
+     obras de armas; todo mundo luta com lanca leve
+
+--------------------------------------------------------------------
+7. MAR
+--------------------------------------------------------------------
+
+[ ]  48 zonas maritimas
+[ ]  Hoste atravessa o mar sozinha (nao existe frota)
+[ ]  Embarcar exige Porto proprio
+[ ]  Desembarcar livre em qualquer costa
+[ ]  Batalha na agua
+[ ]  Bloqueio naval* (frota inimiga fecha o teu cais)
+[ ]  A IA navega, desembarca, intercepta e bloqueia
+
+     Se sai O MAR -> Salamina, Egina e as ilhas ficam inalcancaveis
+     (ou saem do mapa), o Porto vira so renda, e a vitoria muda
+
+--------------------------------------------------------------------
+8. DIPLOMACIA
+--------------------------------------------------------------------
+
+[ ]  Opiniao* de -100 a +100 entre cada par de reinos
+[ ]  A opiniao caminha para um alvo* feito de razoes com nome
+[ ]  Declarar guerra / fazer paz
+[ ]  Tregua* de 20 turnos depois da paz
+[ ]  Presente em ouro
+[ ]  Acordo de comercio* (renda para os dois lados)
+[ ]  Pacto de nao-agressao* (20/40/80 turnos)
+[ ]  Alianca militar* (20/40 turnos)
+[ ]  Passagem militar* (20/50 turnos)
+[ ]  Tributo* (um paga ao outro todo turno)
+[ ]  Liga*, ou vassalagem (chefe, membro, desejo de sair, anexacao)
+[ ]  Reputacao* (quem quebra acordo perde com o mapa inteiro)
+[ ]  A IA PROPOE coisas a voce, e voce aceita ou recusa
+[ ]  Tela de diplomacia com as 3 colunas
+
+     Se sai a OPINIAO -> sai a diplomacia inteira, e a IA passa a
+     atacar so por oportunidade. Guerra e paz continuam existindo.
+
+--------------------------------------------------------------------
+9. A IA
+--------------------------------------------------------------------
+
+[ ]  4 estilos*: equilibrado, guerreiro, mercador, cauteloso
+[ ]  Ela constroi e escolhe obra por retorno
+[ ]  Ela troca de obra derrubando a que menos serve     (feito hoje)
+[ ]  Ela decreta imposto olhando o humor
+[ ]  Ela planeja comida antes de recrutar
+[ ]  Ela recruta dentro do que aguenta pagar
+[ ]  Ela defende a terra ameacada
+[ ]  Ela ataca quem vale a pena
+[ ]  Ela navega e bloqueia
+[ ]  Ela negocia (pacto, comercio, tributo, alianca, liga)
+[ ]  Ela NAO aproveita inimigo ocupado em duas guerras   (falta fazer)
+
+--------------------------------------------------------------------
+10. INTERFACE E VOLTA E MEIA
+--------------------------------------------------------------------
+
+[ ]  Salvar e continuar a campanha
+[ ]  Cronica* da rodada (o que aconteceu no turno)
+[ ]  Nomes das provincias no mapa
+[ ]  Modo de relacoes no mapa (cores por opiniao)
+[ ]  Tamanho da interface 90/100/115/130%          (feito hoje)
+[ ]  Audio (musica e efeitos)
+[ ]  Editor de balanceamento no F2
+[ ]  Painel de diagnostico no F3
+
+
+====================================================================
+DUAS PERGUNTAS QUE VALEM MAIS QUE A LISTA
+====================================================================
+
+1. Em uma frase, o que voce quer que o jogador SINTA jogando isso?
+
+   ____________________________________________________________
+
+2. Qual e a decisao mais interessante que ele toma numa partida?
+
+   ____________________________________________________________
+
+Se a resposta da 2 for uma coisa so, a gente corta tudo que nao
+serve a ela e o jogo fica bom rapido.
+
+
+====================================================================
+DICIONARIO  -  as palavras marcadas com * la em cima
+====================================================================
+(em ordem alfabetica)
+
+ALIANCA MILITAR
+   Acordo em que as guerras dele viram suas. Se ele for atacado, voce
+   entra junto. E o papel mais caro de romper do jogo.
+
+ALVO (da opiniao ou do humor)
+   O numero PARA ONDE a coisa esta indo, e nao onde ela esta. Opiniao e
+   humor nao pulam: andam alguns pontos por turno rumo ao alvo. Por isso
+   a tela mostra "0 -> +12": hoje e zero, mas vai virar doze.
+
+ASSALTAR
+   Atacar a cidade para tomar. Enfrenta a milicia e a guarnicao, e mata
+   civis. E o oposto de sitiar, que so senta na porta.
+
+BLOQUEIO NAVAL
+   Tropa inimiga parada na agua que banha o teu Porto. Enquanto ela
+   estiver la, o Porto para de ligar teu reino por mar e de levar
+   mercadoria. Nao impede embarcar — senao seria inquebravel.
+
+CAPITAL
+   A sede do reino. Toda provincia mede a distancia ate ela, e essa
+   distancia vira corrupcao. Mudar de capital recalcula o reino inteiro.
+
+CHOQUE (na batalha)
+   As primeiras rodadas da luta, em que os dois lados se batem de frente.
+   Depois vem a linha de quebra e, se alguem quebrar, a perseguicao.
+
+CHOQUE DA CONQUISTA
+   O tombo no humor da cidade no turno em que voce a toma. Ela te odeia
+   de uma vez, e depois vai subindo devagar.
+
+CONFISCO
+   O mais pesado dos quatro decretos de imposto: arrecada 2,5 vezes e
+   derruba 20 pontos do humor. E para pagar a guerra de hoje aceitando
+   a conta de amanha.
+
+CORRUPCAO
+   O que se perde no caminho entre a provincia e o teu cofre. Nao e um
+   evento, e um vazamento constante: uma parte da renda simplesmente nao
+   chega. Duas causas somadas — cidade grande demais para administrar
+   (a Agora reduz) e cidade longe demais da capital (a Estrada reduz).
+   Hoje ela chega a comer 41% da renda de uma provincia, e o jogo nao
+   mostra isso em tela nenhuma.
+
+CRONICA
+   O relatorio do que aconteceu na virada do turno: batalhas, cercos,
+   conquistas, fome. Rodada sem noticia nao escreve nada.
+
+DECRETO (de imposto)
+   O nivel de imposto que voce manda cobrar numa provincia: baixo,
+   normal, alto ou confisco. Mais imposto, menos humor.
+
+DESERCAO
+   Tropa que vai embora sozinha quando o soldo nao e pago. E o que
+   impede um reino falido de manter exercito no papel.
+
+DESPENSA (da cidade sitiada)
+   Os turnos de comida que a cidade cercada tem guardados. Enquanto ela
+   dura, ninguem morre la dentro e a cidade nao cresce. Quando acaba, o
+   povo e a guarnicao comecam a definhar juntos.
+
+ESTILO (da IA)
+   A personalidade de um reino da maquina: equilibrado, guerreiro,
+   mercador ou cauteloso. Decide o que ele constroi, quanto arrisca,
+   quanto guarda no cofre e com que opiniao ele te ataca.
+
+FAIXA DE POPULACAO
+   O tamanho da cidade em degraus — pequena, media, grande, imensa,
+   descomunal. O degrau decide quanto ela come de comida (1 a 5). Nao e
+   a populacao exata: e o degrau em que ela caiu.
+
+FOLHA
+   O custo por turno de uma coisa. Folha das construcoes e o que os
+   predios cobram todo turno; folha militar e o soldo da tropa.
+
+GREVE FISCAL
+   Provincia no fundo do poco de humor para de pagar imposto. Ela
+   continua produzindo e comerciando — o Estado e que nao entra la.
+
+GUARNICAO
+   A tropa que esta DENTRO da cidade defendendo. Diferente da milicia:
+   guarnicao e exercito de verdade que voce deixou la.
+
+HOSTE
+   Um exercito seu no mapa, com identidade propria. Da para dividir uma
+   hoste em duas e juntar duas em uma.
+
+HUMOR
+   O contentamento da provincia, de 0 a 100. Ele multiplica a renda
+   INTEIRA dela — povo satisfeito entrega mais, povo azedo entrega
+   menos. Anda 4 pontos por turno rumo ao alvo.
+
+INDEPENDENCIA
+   Quando a terra do TEU proprio povo e espremida ate o fundo, ela
+   declara independencia e vira um reino novo, com nome e cor no mapa.
+   Voce nao perde so o imposto: perde a terra.
+
+LEVA
+   Os homens que voce recruta numa provincia. Eles saem da populacao
+   dela, levam uma rodada para virar hoste, e o Quartel carimba o
+   treino deles.
+
+LIGA (vassalagem)
+   Um reino continua sendo ele mesmo, mas paga tributo a voce e as
+   guerras dele passam a ser suas. Dentro dela corre um "desejo de
+   sair"; passou do limite, ele se revolta.
+
+LINHA DE QUEBRA
+   O ponto em que um exercito para de lutar e corre. Quem quebra perde
+   a hoste; os sobreviventes voltam para as cidades de origem.
+
+MILICIA
+   A defesa que toda cidade tem de graca, sem voce recrutar. E tropa
+   leve, e so a Muralha aumenta a quantidade dela.
+
+NACIONALIDADE
+   De que povo e a gente de cada provincia. Terra conquistada continua
+   cheia de gente do reino antigo, e e isso que permite a revolta.
+
+OPINIAO
+   Um unico numero de -100 a +100 entre voce e cada reino. Nao e
+   "simpatia": e a soma de razoes com nome — fronteira comum, terra
+   tomada, inimigo em comum, decadas de paz. Ela decide quem assina o
+   que com voce e quem te ataca.
+
+PACTO DE NAO-AGRESSAO
+   Nenhum dos dois marcha no outro pelo prazo combinado. Nao obriga a
+   nada alem disso.
+
+PASSAGEM MILITAR
+   Voce deixa o exercito dele atravessar tua terra sem que isso seja
+   guerra.
+
+PERSEGUICAO
+   O que acontece depois que um lado quebra e corre: o vencedor caca os
+   fugitivos. A cavalaria e quem mais aproveita essa fase.
+
+PODER
+   Um reino do jogo. Sao 139 no mapa, mas so 18 tem economia de verdade
+   e entram na conta.
+
+PRODUCAO (na renda)
+   A parcela da renda que vem do que a terra produz — graos, azeite,
+   prata. Diferente do imposto, que vem da gente.
+
+PRODUTO
+   O que a terra da, com um nivel de I a V. O nivel e literalmente
+   quanto ela produz: Graos V da 5 pontos de comida, Graos II da 2.
+
+PROVINCIA SIMULADA
+   Das 244 do mapa, so 25 tem economia, populacao e ficha de verdade.
+   As outras existem so como cor e nome — nao arrecadam nem recrutam.
+
+REDE INTERNA
+   O reino paga uma vez por cada BEM DIFERENTE que ele alcanca. Ter duas
+   provincias de graos nao paga duas vezes; ter graos e prata paga duas.
+   E o que faz um reino variado render mais que um reino repetido.
+
+REPUTACAO
+   O que o mapa inteiro pensa de voce como assinador de papel. Quebrar
+   pacto ou alianca derruba a reputacao, e ela pesa com TODOS, nao so
+   com quem voce traiu. Volta devagar.
+
+REVOLTA
+   Terra conquistada, cheia de gente de outro reino e infeliz demais,
+   pega em armas em nome do dono antigo — que volta ao jogo por causa
+   disso, mesmo que ja estivesse eliminado.
+
+ROTA ATE A CAPITAL
+   O caminho por terra propria (ou entre dois Portos) da provincia ate
+   tua sede. Se o inimigo corta o caminho, a provincia perde a parcela
+   de transito da renda.
+
+SITIAR
+   Sentar o exercito na frente da cidade sem atacar. Ela para de
+   produzir e de comerciar, e vive da despensa. Ninguem morre no choque.
+
+SLOT
+   Um dos 4 espacos de construcao que cada provincia tem. Cheios os
+   quatro, so da para erguer outra coisa derrubando uma.
+
+SOLDO
+   O custo por turno de cada soldado. Em casa e mais barato; em terra
+   alheia, inclusive em cerco, e mais caro.
+
+SUBSISTENCIA
+   Os pontos de comida que todo reino ganha de graca, so por existir.
+   Hoje e 1, e e a unica folga que um reino sem obra de comida tem.
+
+SURTIDA
+   O sitiado sai da cidade para atacar quem o cerca, em vez de esperar.
+   Se perder, perde a guarnicao inteira fora do muro.
+
+TRANSITO
+   A parcela da renda que vem da posicao comercial da provincia. So
+   entra se houver rota ate a capital.
+
+TREGUA
+   O periodo depois de uma paz em que os dois nao podem se atacar de
+   novo. Hoje sao 20 turnos.
+
+TREINO
+   O multiplicador de ataque que o Quartel carimba na leva no momento
+   em que ela e recrutada. Fica gravado naqueles homens para sempre.
+
+TRIANGULO (das armas)
+   Hoplita ganha da cavalaria, cavalaria ganha do arqueiro, arqueiro
+   ganha do hoplita. E o que impede uma arma unica de ser sempre certa.
+
+TRIBUTO
+   Um reino paga ao outro uma parte da renda dele, todo turno, por um
+   prazo. Para EXIGIR e preciso ser bem mais forte; para OFERECER, nao.

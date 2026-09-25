@@ -10,7 +10,6 @@ import type { Jogo } from './contexto';
 import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
 import {
-  destinosDaMarcha,
   marcadoresDasHostes,
   marcasDeCerco,
   ordensNoMapa,
@@ -77,8 +76,13 @@ export function atualizarInterface(jogo: Jogo): void {
   const foco = rotasEmFoco(jogo);
   const previsao = previsaoDaMarcha(jogo, foco);
   tela.marchasMapa.mostrar(previsao.origem, previsao.rotas, ordensNoMapa(jogo));
-  tela.destinosMapa.mostrar(destinosDaMarcha(jogo, foco));
   tela.exercitoFicha.mostrar(vistaDoExercito(jogo, foco));
+  // ⚠️ **A cena só lê o ponteiro enquanto há marcha a compor.** É o que substituiu os 199
+  // botões de destino: sem eles, quem responde "para onde ele está olhando" é o mapa — e fora
+  // do modo de marcha ninguém quer saber.
+  jogo.cena.seguirOPonteiro = selecao.marchando !== null;
+  if (selecao.marchando === null) selecao.destinoApontado = null;
+  tela.hostesMapa.escolhendoDestino(selecao.marchando !== null);
 
   // A janela de governo se redesenha junto com o resto, mas só quando está aberta: fechada,
   // montar as tabelas seria trabalho jogado fora a cada turno.

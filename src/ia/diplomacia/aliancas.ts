@@ -1,90 +1,131 @@
 /**
- * A IA escolhendo com quem se ALIAR — **e ela só se alia quando tem por quê.**
+ * A IA escolhendo com quem se ALIAR — **e o que ela pesa, porque aliança é um pacto caro.**
  *
- * ⚠️ **Aliança não é um pacto melhor, é um pacto caro.** Ela te põe nas guerras do outro sem
- * perguntar, e por isso uma IA que assinasse aliança sempre que a opinião permitisse estaria
- * comprando guerras alheias de graça. O pacto continua sendo a resposta certa para quase todo
- * mundo: ele custa nada e já garante a fronteira.
+ * ⚠️ **Aliança não é um pacto melhor, é um pacto que obriga.** Ela te põe nas guerras do outro
+ * sem perguntar, e por isso uma IA que assinasse aliança sempre que a opinião permitisse
+ * estaria comprando guerras alheias de graça. O pacto continua sendo a resposta certa para
+ * quase todo mundo: ele custa nada e já garante a fronteira.
  *
- * Então existe um PORTÃO antes da opinião, e ele é o motivo de existir da aliança:
+ * A BALANÇA (ver `balanca.ts`) começa com um custo fixo — a guerra emprestada — e só fecha
+ * quando alguma razão o cobre:
  *
- * 1. **o inimigo em comum** — os dois já sangram contra o mesmo reino. É a aliança de
- *    conveniência, e é a razão mais honesta que este jogo sabe produzir: ela nasce da guerra de
- *    um terceiro e morre com ela;
- * 2. **ou a ameaça na porta** — há exército alheio nas suas terras ou encostado nelas, e o
- *    parceiro é mais forte que você. É a aliança do fraco, e ela é o que dá a um reino pequeno
- *    uma resposta que não seja pagar tributo ou morrer.
+ * - **o inimigo em comum** — os dois já sangram contra o mesmo reino. É a aliança de
+ *   conveniência, e a razão mais honesta que este jogo sabe produzir: nasce da guerra de um
+ *   terceiro e morre com ela;
+ * - **a proteção** — ele está ameaçado e você é mais forte. É a aliança do fraco, e é o que dá
+ *   a um reino pequeno uma resposta que não seja pagar tributo ou morrer;
+ * - **a confiança**, que sozinha só chega lá quando é muito alta.
  *
- * Fora desses dois casos ela não assina, por mais que goste do vizinho.
+ * E o que pesa contra: as SUAS guerras, que ele herdaria; a sua fraqueza, se você não segura a
+ * própria terra; a cobiça, se ele tem terra sua que vale a marcha; o temperamento; e o prazo.
  *
- * ⚠️ **A RAZÃO é do par; a VONTADE é de cada um.** São duas perguntas e elas se checam
- * diferente. Basta um lado ter razão — exigir os dois matava a aliança do fraco por construção,
- * porque quem está ameaçado tem motivo e o forte que poderia salvá-lo justamente não está
- * ameaçado. Medido com a exigência dupla: **9 pares-turno de 13.247, e zero alianças em 150
- * turnos.** Já a vontade continua sendo consultada nos dois sentidos, como no pacto: ninguém
- * assina com quem pretende atacar.
+ * ⚠️ **Antes havia um PORTÃO de razão (`temRazaoParaAliar`) que a IA exigia de si mesma e
+ * pulava quando a proposta vinha do jogador** — ele só precisava de opinião. A balança é uma
+ * só nas duas direções: a razão virou parcela, e o portão virou a `iniciativa` de quem propõe.
  */
 
 import type { Campanha } from '@/campanha/campanha';
-import type { EstiloDeIa, Ia } from '@/dados/esquema';
+import type { Ajustes, EstiloDeIa, Ia } from '@/dados/esquema';
 import { estiloDe } from '../estilo';
-import { estaAmeacado, forcaTotalDe } from '../percepcao/ameaca';
+import { forcaTotalDe } from '../percepcao/ameaca';
+import {
+  type Balanca,
+  type ExtrasDaBalanca,
+  type Lados,
+  cobica,
+  cobicadasPor,
+  confianca,
+  fraquezaSua,
+  inimigoEmComum,
+  ouro,
+  patrocinio,
+  pesar,
+  prazo,
+  prazoMaisCurto,
+  protecao,
+  suasGuerras,
+  temperamento,
+} from './balanca';
+
+type AjustesDoJogo = Ajustes['jogo'];
 
 /**
- * Este poder tem RAZÃO para se aliar àquele — e não apenas simpatia por ele?
+ * A balança de `ele` diante de uma aliança de `turnos` proposta por `voce`.
  *
- * Basta que UM dos dois lados responda sim. Ver o portão no topo do arquivo.
+ * A MESMA função na mesa, no clique e entre computadores. Não há segunda pergunta.
  */
-function temRazaoParaAliar(campanha: Campanha, idPoder: string, com: string): boolean {
-  const meus = new Set(campanha.guerrasDe(idPoder));
-  const comuns = campanha.guerrasDe(com).filter((id) => id !== idPoder && meus.has(id));
-  if (comuns.length > 0) return true;
-  // A aliança do fraco: só vale contra quem pode de fato ajudar.
-  return estaAmeacado(campanha, idPoder) && forcaTotalDe(campanha, com) > forcaTotalDe(campanha, idPoder);
+export function balancaDaAlianca(
+  campanha: Campanha,
+  lados: Lados,
+  turnos: number,
+  estilo: EstiloDeIa,
+  ajustes: AjustesDoJogo,
+  extras: ExtrasDaBalanca = {},
+): Balanca {
+  const d = ajustes.diplomacia.balanca.alianca;
+  return pesar([
+    confianca(campanha, lados, estilo),
+    temperamento(estilo),
+    { rotulo: 'guerra emprestada', pontos: -d.custoDeAliar },
+    inimigoEmComum(campanha, lados, ajustes),
+    protecao(campanha, lados, estilo, ajustes),
+    patrocinio(campanha, lados, estilo, ajustes),
+    suasGuerras(campanha, lados, estilo, ajustes),
+    fraquezaSua(campanha, lados, estilo, ajustes),
+    cobica(campanha, lados, estilo, ajustes, extras.cobicadas),
+    prazo(turnos, prazoMaisCurto(ajustes.diplomacia.alianca.prazos), ajustes),
+    ouro(campanha, lados, extras.ouro ?? 0, estilo, ajustes),
+  ]);
 }
 
 /**
  * A aliança que este poder assinaria AGORA, ou `null`.
  *
- * ⚠️ **Só entre quem já não vai se atacar.** A busca varre os poderes com ficha e não só os
- * vizinhos — ao contrário do pacto, que é sobre a fronteira. Uma aliança pelo inimigo em comum
- * faz todo sentido através do mar, e é justamente ela que dá um uso à opinião que a tribo e o
- * inimigo comum passaram a produzir à distância.
+ * ⚠️ **Varre os poderes com ficha e não só os vizinhos** — ao contrário do pacto, que é sobre
+ * a fronteira. Uma aliança pelo inimigo em comum faz todo sentido através do mar, e é
+ * justamente ela que dá um uso à opinião que a tribo e o inimigo comum produzem à distância.
+ *
+ * Quem propõe precisa da própria balança acima de `iniciativa` e da do outro fechando; entre
+ * dois candidatos, o de maior saldo próprio — e, empatados, o mais forte, porque aliança é
+ * exército emprestado e o do forte vale mais.
  */
 export function aliancaEscolhida(
   campanha: Campanha,
   idPoder: string,
   estilo: EstiloDeIa,
   dados: Ia,
+  ajustes: AjustesDoJogo,
 ): { com: string; turnos: number } | null {
-  let escolhido: { com: string; turnos: number } | null = null;
-  let maisForte = 0;
+  const iniciativa = ajustes.diplomacia.balanca.iniciativa;
+  const prazos = [...ajustes.diplomacia.alianca.prazos].sort((x, y) => y.turnos - x.turnos);
+
+  let escolhido: { com: string; turnos: number; saldo: number; forca: number } | null = null;
   // Em ordem de id: a mesma partida assina as mesmas alianças em qualquer máquina.
   for (const outro of [...campanha.poderesComFicha()].sort()) {
     if (outro === idPoder) continue;
     if (campanha.emGuerra(idPoder, outro)) continue;
     if (campanha.aliancaAte(idPoder, outro) !== undefined) continue;
-    // ⚠️ **A razão é do PAR, e basta um lado tê-la.** Exigir os dois matava a aliança do fraco
-    // por construção: quem está ameaçado tem razão, e o forte que poderia salvá-lo justamente
-    // não está ameaçado — logo nunca tinha. Medido com a exigência dupla: **9 pares-turno de
-    // 13.247 passavam**, e zero alianças em 150 turnos. Uma aliança precisa de um motivo para
-    // existir, não de dois; o que os dois ainda precisam ter é a vontade, logo abaixo.
-    if (!temRazaoParaAliar(campanha, idPoder, outro) && !temRazaoParaAliar(campanha, outro, idPoder)) {
-      continue;
+    const estiloDele = estiloDe(dados, outro);
+    const meusLados: Lados = { ele: idPoder, voce: outro };
+    const ladosDele: Lados = { ele: outro, voce: idPoder };
+    const minhas = { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
+    const delas = { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
+    for (const p of prazos) {
+      if (!campanha.podeFirmarAlianca(outro, p.turnos, idPoder).pode) continue;
+      const minha = balancaDaAlianca(campanha, meusLados, p.turnos, estilo, ajustes, minhas);
+      if (minha.saldo < iniciativa) continue;
+      const dele = balancaDaAlianca(campanha, ladosDele, p.turnos, estiloDele, ajustes, delas);
+      if (dele.saldo < 0) continue;
+      const forca = forcaTotalDe(campanha, outro);
+      if (
+        escolhido === null ||
+        minha.saldo > escolhido.saldo ||
+        (minha.saldo === escolhido.saldo && forca > escolhido.forca)
+      ) {
+        escolhido = { com: outro, turnos: p.turnos, saldo: minha.saldo, forca };
+      }
+      break;
     }
-    // Assinar com quem se pretende atacar seria assinar para romper — a mesma pergunta do pacto.
-    if (campanha.relacaoEntre(idPoder, outro) <= estilo.relacaoParaDeclarar) continue;
-    if (campanha.relacaoEntre(outro, idPoder) <= estiloDe(dados, outro).relacaoParaDeclarar) {
-      continue;
-    }
-    // O prazo mais longo que a confiança alcança: `prazosDeAlianca` vem do maior ao menor.
-    const prazo = campanha.prazosDeAlianca(idPoder, outro).find((p) => p.pode);
-    if (!prazo) continue;
-    // Entre dois possíveis, o mais forte: aliança é exército emprestado, e o do forte vale mais.
-    const dele = forcaTotalDe(campanha, outro);
-    if (dele <= maisForte && escolhido !== null) continue;
-    maisForte = dele;
-    escolhido = { com: outro, turnos: prazo.turnos };
   }
-  return escolhido;
+  return escolhido === null ? null : { com: escolhido.com, turnos: escolhido.turnos };
 }

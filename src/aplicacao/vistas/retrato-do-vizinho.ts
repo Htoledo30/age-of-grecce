@@ -105,8 +105,6 @@ export interface Postura {
   rotulo: string;
   /** `bom`, `morno` ou `ruim` — é o que o CSS usa para escolher bronze, marfim ou sangue. */
   tom: string;
-  /** O que essa faixa significa na prática, na voz de um conselheiro. */
-  leitura: string;
 }
 
 /**
@@ -118,49 +116,16 @@ export interface Postura {
  * lado, com a conta aberta embaixo, para quem quiser conferir. É a mesma escolha que o jogo já
  * faz na felicidade: a palavra na frente, a aritmética atrás, e nenhuma das duas escondida.
  *
- * ⚠️ Os cortes NÃO são redondos por acaso: eles caem onde o jogo muda de comportamento. −25 é
- * onde o comércio trava, −20 onde o pacto mais curto abre, +15 e +45 os outros dois prazos. A
- * palavra muda no turno em que uma porta abre ou fecha, e não num múltiplo de dez bonito.
+ * ⚠️ Os cortes são faixas de LEITURA, e só isso. Desde a balança de interesse nenhum acordo
+ * abre ou fecha num número fixo de opinião: a confiança é uma parcela entre outras, e o mesmo
+ * +20 fecha um pacto com um vizinho pequeno e não fecha com um guerreiro que cobiça a sua
+ * terra. A palavra diz como ele te olha; a conta de cada acordo diz o que ele assina.
  */
 export function posturaDaRelacao(relacao: number): Postura {
-  if (relacao >= 45) {
-    return {
-      rotulo: 'Fiel',
-      tom: 'bom',
-      leitura: 'Assina com você o prazo mais longo que existe. Não teme suas fronteiras.',
-    };
-  }
-  if (relacao >= 15) {
-    return {
-      rotulo: 'Amistoso',
-      tom: 'bom',
-      leitura: 'Confia o bastante para um pacto de vinte turnos.',
-    };
-  }
-  if (relacao >= -20) {
-    return {
-      rotulo: 'Cordial',
-      tom: 'morno',
-      leitura: 'Comercia e assina o pacto curto. É onde vive quase todo vizinho.',
-    };
-  }
-  if (relacao >= -25) {
-    return {
-      rotulo: 'Frio',
-      tom: 'morno',
-      leitura: 'Ainda abre o mercado, mas já não amarra as próprias mãos.',
-    };
-  }
-  if (relacao >= -60) {
-    return {
-      rotulo: 'Hostil',
-      tom: 'ruim',
-      leitura: 'Fechou o mercado e o pacto. Resta o ouro: presente ou tributo.',
-    };
-  }
-  return {
-    rotulo: 'Inimigo',
-    tom: 'ruim',
-    leitura: 'Só falta a declaração. Se ele tiver vantagem, ela vem.',
-  };
+  if (relacao >= 45) return { rotulo: 'Fiel', tom: 'bom' };
+  if (relacao >= 15) return { rotulo: 'Amistoso', tom: 'bom' };
+  if (relacao >= -20) return { rotulo: 'Cordial', tom: 'morno' };
+  if (relacao >= -25) return { rotulo: 'Frio', tom: 'morno' };
+  if (relacao >= -60) return { rotulo: 'Hostil', tom: 'ruim' };
+  return { rotulo: 'Inimigo', tom: 'ruim' };
 }

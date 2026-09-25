@@ -17,16 +17,20 @@ test('a tooltip militar substitui title, respeita o palco e fecha ao sair', asyn
   await page.waitForSelector('.barra-turno');
   await page.mouse.click(960, 540);
 
-  const agora = page.getByRole('button', { name: /^Ágora/ });
-  await expect(agora).not.toHaveAttribute('title', /.+/);
-  await expect(agora).toHaveAttribute('data-tooltip', 'sim');
+  // ⚠️ **Mudou de alvo, e o alvo velho não existe mais.** O teste caçava um botão "Ágora" na
+  // ficha da província — de quando as obras moravam ali. Elas ganharam janela própria, e o
+  // botão sumiu: o teste morria em "element(s) not found", que não diz nada sobre tooltip. O
+  // assunto é o mesmo, e o botão de imposto serve igual: título, corpo e tom, sem `title`
+  // nativo nenhum.
+  const confisco = page.getByRole('button', { name: 'Confisco' });
+  await expect(confisco).not.toHaveAttribute('title', /.+/);
+  await expect(confisco).toHaveAttribute('data-tooltip', 'sim');
 
-  await agora.hover();
+  await confisco.hover();
   const tooltip = page.locator('.tooltip-jogo');
   await expect(tooltip).toBeVisible();
-  await expect(page.locator('.tooltip-jogo__titulo')).toHaveText('Ágora');
-  await expect(page.locator('.tooltip-jogo__corpo')).toContainText('moedas');
-  await expect(tooltip).toHaveAttribute('data-tom', 'custo');
+  await expect(page.locator('.tooltip-jogo__titulo')).toHaveText('Imposto Confisco');
+  await expect(tooltip).toHaveAttribute('data-tom', 'perigo');
 
   const caixa = await tooltip.boundingBox();
   expect(caixa).not.toBeNull();

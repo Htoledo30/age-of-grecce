@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { fecharBatalhas } from './apoio';
+import { clicarProvincia, fecharBatalhas } from './apoio';
 
 /**
  * A muralha vista pelo jogador: a cidade que dá para assaltar hoje e a que faz esperar.
@@ -12,6 +12,10 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
+  /** Tira a comida do caminho: este arquivo mede a TELA, não a despensa. */
+  saciar: () => void;
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -32,6 +36,8 @@ async function comExercito(page: Page): Promise<void> {
 
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -63,14 +69,14 @@ test('contra a cidade murada o assalto não é escolha do dia; contra a aberta �
   // Tanagra tem Muralha desde 700 a.C.: o botão de assaltar continua na tela, mas
   // desabilitado, e a pergunta em cima diz por quê. Sumir com ele faria a diferença entre
   // as duas cidades parecer defeito da interface.
-  await page.locator('.destinos__marca[data-provincia="tanagra"]').click();
+  await clicarProvincia(page, 'tanagra');
   await expect(page.locator('.exercito__pergunta')).toContainText(
     'Tanagra é murada: exige 2 rodadas de cerco antes de um assalto',
   );
   await expect(page.getByRole('button', { name: /Assaltar/ })).toBeDisabled();
 
   // Elêusis é aberta: a mesma hoste, o mesmo turno, e a escolha existe.
-  await page.locator('.destinos__marca[data-provincia="eleusis"]').click();
+  await clicarProvincia(page, 'eleusis');
   await expect(page.locator('.exercito__pergunta')).toContainText(
     'Elêusis: o que fazer ao chegar?',
   );
@@ -99,7 +105,7 @@ test('sentado duas rodadas diante da muralha, o assalto libera e a cidade cai', 
   await comExercito(page);
   await page.locator('.hostes__marca[data-provincia="atenas"]').click();
   await page.getByRole('button', { name: 'Mover' }).click();
-  await page.locator('.destinos__marca[data-provincia="tanagra"]').click();
+  await clicarProvincia(page, 'tanagra');
   await page.getByRole('button', { name: /Sitiar/ }).click();
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
@@ -128,6 +134,8 @@ test('sentado duas rodadas diante da muralha, o assalto libera e a cidade cai', 
   expect(
     await page.evaluate(() => {
       const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
       return i.donoDe('tanagra');
     }),
   ).toBe('atenas');

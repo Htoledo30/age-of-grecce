@@ -44,6 +44,20 @@ export interface MarcadorDeHoste {
   /** Centro da província, em unidades de mundo. */
   x: number;
   y: number;
+  /**
+   * Deslocamento em PIXELS DE TELA para peças do mesmo poder que dividem uma província.
+   *
+   * ⚠️ **Nasceu com o destacamento.** Desde que mandar parte da hoste a parte na hora, duas
+   * peças suas convivem no mesmo lugar durante a rodada — e o ponto delas é o mesmo centro de
+   * província. Sobrepostas, a de baixo fica invisível E inclicável, e o jogador que acabou de
+   * dividir a tropa não encontra metade dela.
+   *
+   * ⚠️ **Em pixel de tela, e não em unidade de mundo.** Um desvio no mundo encolhe com o zoom:
+   * afastado o bastante para o mapa inteiro, ele jogaria a peça para dentro da província
+   * vizinha; perto o bastante para o zoom máximo, elas voltariam a se cobrir de longe. Em
+   * pixel, a distância entre as duas é a mesma em qualquer aproximação.
+   */
+  desvio: number;
   /** Homens já prontos para receber ordens. */
   forca: number;
   /** Recrutas pagos que só entram na hoste no próximo turno. */
@@ -70,6 +84,20 @@ export interface MarcadorDeHoste {
 
 export class HostesMapa {
   private readonly camada = document.createElement('div');
+
+  /**
+   * Enquanto se escolhe destino, as peças deixam de receber o ponteiro.
+   *
+   * ⚠️ **Sem isto o ataque mais comum do jogo seria impossível de clicar.** A marca de uma
+   * hoste tem 47×29 px e `pointer-events: auto`, assentada no CENTRO da província — e o clique
+   * do mapa é escutado no canvas, de modo que qualquer botão por cima o engole antes. Mirar o
+   * meio de uma província DEFENDIDA, que é o alvo natural de um ataque, cairia na peça
+   * inimiga: ela selecionaria a hoste do inimigo e derrubaria a marcha em composição. O
+   * jogador clicaria no alvo e o jogo desistiria da ordem sem dizer nada.
+   */
+  escolhendoDestino(sim: boolean): void {
+    this.camada.dataset['escolhendo'] = sim ? 'sim' : 'nao';
+  }
   /** Um botão por HOSTE, reaproveitado entre redesenhos. A chave é o id dela. */
   private readonly marcadores = new Map<string, HTMLButtonElement>();
   private atual: readonly MarcadorDeHoste[] = [];
@@ -219,6 +247,9 @@ export class HostesMapa {
     const emMarcha = this.ondeEstaMarchando(hoste.id);
     const onde = emMarcha ?? hoste;
     const p = camera.mundoParaPalco(onde.x, onde.y);
+    // Em marcha a peça anda sozinha pelo mapa e não divide lugar com ninguém: o desvio das
+    // peças co-locadas vale só para quem está parado.
+    const desvio = emMarcha ? 0 : hoste.desvio;
     // ⚠️ **A posição vai na propriedade `translate`, NUNCA em `transform`.** A matriz final
     // do CSS é `translate · rotate · scale · transform`, ou seja, um `scale` independente
     // MULTIPLICA o que estiver em `transform`. Com o pulso de chegada indo de `scale: 0.72`
@@ -230,7 +261,7 @@ export class HostesMapa {
     // ela é desenhada, e uma animação não empurra mais a outra. O `- 50%` centra a peça no
     // ponto; sem ele ela pende pra baixo e pra direita, e em zoom alto o número deixa de
     // cair sobre a província.
-    elemento.style.translate = `calc(${p.x}px - 50%) calc(${p.y}px - 50%)`;
+    elemento.style.translate = `calc(${p.x}px - 50% + ${desvio}px) calc(${p.y}px - 50%)`;
     elemento.dataset['posicionada'] = 'sim';
     // Tropa em movimento não se pega no meio do passo: durante a marcha a peça deixa de
     // aceitar clique, senão selecioná-la abriria a ficha de uma província onde ela ainda

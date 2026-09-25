@@ -1,12 +1,14 @@
 /* A BARRA DE COMANDOS da província: dois portões, o imposto e a capital.
-   Mora dentro da moldura do painel (`ficha-provincia.css`), separada por um filete. */
+   Mora dentro da moldura do painel (`ficha-provincia.css`), separada por um filete — e por
+   isso segue a mesma régua de texto que ele: os quatro tamanhos daqui (11, 12, 12.5, 13) eram
+   quatro alturas diferentes dentro de uma barra de três linhas. Ver `estilo/tokens.css`. */
 .acoes {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--ui-borda-fraca);
 }
 .acoes__recusa {
-  font-size: 12.5px;
+  font-size: var(--texto-corpo);
   line-height: 1.4;
   color: var(--ui-texto-tenue);
 }
@@ -55,7 +57,7 @@
   min-width: 0;
 }
 .acoes__portao-nome {
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   font-weight: 650;
   letter-spacing: 0.03em;
   color: var(--ui-texto);
@@ -63,7 +65,7 @@
 .acoes__portao-contador {
   overflow: hidden;
   font-family: var(--fonte-numero);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -87,7 +89,7 @@
 }
 .acoes__rotulo {
   flex: none;
-  font-size: 11px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -105,7 +107,7 @@
   border-radius: var(--raio-1);
   background: transparent;
   color: var(--ui-texto-fraco);
-  font-size: 12.5px;
+  font-size: var(--texto-corpo);
   cursor: pointer;
 }
 .acoes__nivel-imposto:hover:not(:disabled) {
@@ -130,7 +132,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-corpo);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   cursor: pointer;
 }
 .acoes__capital:hover:not(:disabled) {

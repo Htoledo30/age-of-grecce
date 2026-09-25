@@ -14,6 +14,7 @@
  */
 
 import type { Ajustes } from '@/dados/esquema';
+import { exercitoVazio, forcaDe, retirar, somarLeva } from '../exercito';
 import type { Exercito, Arma } from '../exercito';
 import type { LevaEmFormacao, ResultadoDasFormacoes } from '../formacao-de-leva';
 import { avaliarLeva, maximoDaLeva } from '../recrutamento';
@@ -80,6 +81,79 @@ export class Mobilizacao {
 
   todas(): readonly Exercito[] {
     return todas(this.estado);
+  }
+
+  /**
+   * DESTACA parte de uma hoste: nasce uma hoste nova ao lado, com os homens que saíram.
+   *
+   * ⚠️ **Isto não inventa nada — adianta para o clique o que a virada já fazia.**
+   * `movimento/resolucao/forcas.ts` cria um destacamento a cada rodada, com o comentário
+   * *"o destacamento é uma hoste NOVA: parte da antiga fica, parte vai, e as duas passam a
+   * existir ao mesmo tempo"*, e `proximoId` sempre listou *"o destacamento"* entre os quatro
+   * criadores de hoste. O que faltava era o jogador poder fazê-lo quando quisesse.
+   *
+   * Henrique, jogando: *"quero poder quebrar uma hoste em várias hostes no mesmo turno. se eu
+   * fiz um pedido de 500 para ir até Maratona, elas têm que sair da conta das que ficam em
+   * Atenas"*. É exatamente isto: os homens saem da conta AGORA, e o que fica volta a ser uma
+   * hoste inteira, livre para receber a próxima ordem.
+   *
+   * Os homens saem proporcionalmente de cada contingente (ver `retirar`): metade de um
+   * exército misto custa metade a cada cidade que o formou e a cada arma que ele traz.
+   *
+   * Devolve o id da hoste nova, ou `undefined` quando não há o que destacar — pedido de zero,
+   * de mais do que existe, ou da hoste inteira, que não se divide: ela vai por si.
+   */
+  destacar(idHoste: string, homens: number): string | undefined {
+    const origem = hoste(this.estado, idHoste);
+    if (!origem) return undefined;
+    const total = forcaDe(origem);
+    if (!Number.isInteger(homens) || homens <= 0 || homens >= total) return undefined;
+    // ⚠️ `retirar` JÁ desconta da origem e já fecha o arredondamento (ver `exercito.ts`):
+    // ela devolve quem saiu e deixa o exército com o resto. Descontar de novo aqui apagaria
+    // metade dos homens do mundo em silêncio.
+    const partem = retirar(origem, homens);
+    if (partem.length === 0) return undefined;
+
+    const novo = exercitoVazio(proximoId(this.estado), origem.poder, origem.posicao);
+    novo.contingentes = partem;
+    this.estado.hostes[novo.id] = novo;
+    return novo.id;
+  }
+
+  /**
+   * REÚNE esta hoste com outra do mesmo poder parada no mesmo lugar. Devolve o id que sobrou.
+   *
+   * ⚠️ **É o desfazer do destacamento, e ele precisa existir na hora.** A resolução já funde
+   * hostes que param juntas (`movimento/resolucao/pousar.ts`), mas isso só acontece na virada
+   * — e cancelar uma ordem deixaria o jogador com duas peças no mesmo lugar até lá, sem ter
+   * pedido nenhuma divisão.
+   *
+   * ⚠️ **`livre` decide QUEM pode acolher, e sem ele isto recria o defeito que veio consertar.**
+   * A primeira versão fundia na irmã mais velha sem perguntar nada, e a revisão adversária
+   * reproduziu o estrago: com 1.000 em Atenas, mandar 100 a Maratona e depois os 900 inteiros a
+   * outro lugar põe a ordem no id ORIGINAL; cancelar essa ordem entregava os 900 à peça que já
+   * estava marchando e APAGAVA a hoste selecionada do jogador. Ele voltava a não ter o que
+   * comandar — exatamente a queixa que o destacamento nasceu para resolver.
+   *
+   * Quem chama é que sabe o que é estar livre (a mobilização não conhece ordens), e por isso a
+   * pergunta vem de fora.
+   */
+  reunir(idHoste: string, livre: (id: string) => boolean): string | undefined {
+    const dela = hoste(this.estado, idHoste);
+    if (!dela) return undefined;
+    const irma = hostesEm(this.estado, dela.posicao)
+      .filter((h) => h.poder === dela.poder && h.id !== dela.id && livre(h.id))
+      // ⚠️ Por NÚMERO, e não por texto. `['h9','h10'].sort()` devolve `['h10','h9']`: a partir
+      // do décimo id, "a mais velha acolhe" deixava de ser verdade e a fusão caía na peça
+      // errada — um defeito que só nasceria numa partida longa, onde teste nenhum o veria.
+      .sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)))[0];
+    if (!irma) return undefined;
+    // ⚠️ `somarLeva` e não concatenar: fundir listas cruas empilha contingentes de mesma chave
+    // em vez de somá-los. Medido pela revisão: dez ciclos de ordenar-e-cancelar levavam a lista
+    // de 2 para 57 entradas, todas iguais. Os homens fechavam, o arquivo de save é que inchava.
+    for (const c of dela.contingentes) somarLeva(irma, c.terra, c.homens, c.arma, c.qualidade);
+    delete this.estado.hostes[dela.id];
+    return irma.id;
   }
 
   forcaDaHoste(idHoste: string): number {

@@ -114,7 +114,6 @@ export async function iniciarJogo(): Promise<void> {
     tela.cercosMapa.posicionar(cena.camera);
     tela.hostesMapa.posicionar(cena.camera);
     tela.marchasMapa.posicionar(cena.camera);
-    tela.destinosMapa.posicionar(cena.camera);
     tela.painelFps.atualizar(relogio, cena.camera);
     entrada.novoQuadro();
   });

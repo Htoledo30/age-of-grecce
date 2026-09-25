@@ -63,39 +63,66 @@
       "pacto": {
         "prazos": [
           {
-            "turnos": 20,
-            "opiniaoMinima": -20
+            "turnos": 20
           },
           {
-            "turnos": 40,
-            "opiniaoMinima": 15
+            "turnos": 40
           },
           {
-            "turnos": 80,
-            "opiniaoMinima": 45
+            "turnos": 80
           }
         ],
         "pontos": 15,
         "choqueDeRuptura": -50,
         "reputacaoDaRuptura": -25,
-        "reputacaoPorTurno": 1,
-        "vantagemQueAssusta": 3
+        "reputacaoPorTurno": 1
       },
       "alianca": {
         "prazos": [
           {
-            "turnos": 20,
-            "opiniaoMinima": 25
+            "turnos": 20
           },
           {
-            "turnos": 40,
-            "opiniaoMinima": 35
+            "turnos": 40
           }
         ],
         "pontos": 25,
         "choqueDeRuptura": -70,
-        "reputacaoDaRuptura": -35,
-        "opiniaoComInimigoComum": 0
+        "reputacaoDaRuptura": -35
+      },
+      "balanca": {
+        "iniciativa": 10,
+        "prazo": {
+          "custoPorTurno": 0.7
+        },
+        "medo": {
+          "limiar": 3,
+          "porProvincia": 8,
+          "provinciasMaximo": 40,
+          "porVezDeExercito": 10,
+          "exercitoMaximo": 30
+        },
+        "maosOcupadas": {
+          "porGuerra": 15,
+          "maximo": 25
+        },
+        "cobica": {
+          "porProvincia": 20,
+          "maximo": 60
+        },
+        "ouro": {
+          "maximo": 40
+        },
+        "alianca": {
+          "custoDeAliar": 20,
+          "porInimigoComum": 25,
+          "inimigoComumMaximo": 40,
+          "protecao": 20,
+          "patrocinio": 10,
+          "porGuerraSua": 15,
+          "fraquezaSua": 10,
+          "fracoAbaixoDe": 0.5
+        }
       },
       "liga": {
         "niveisDeTributo": {
@@ -226,7 +253,7 @@
     },
     "alimento": {
       "subsistenciaPorReino": 1,
-      "soldadosPorPonto": 500,
+      "soldadosPorPonto": 1000,
       "mortePorFome": 0.01,
       "mortePorFomeNaTropa": 0.05,
       "cerco": {
@@ -291,7 +318,7 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": {
-        "emCasa": 0.1,
+        "emCasa": 0.15,
         "emCampanha": 0.3
       },
       "populacaoMinima": 2000,

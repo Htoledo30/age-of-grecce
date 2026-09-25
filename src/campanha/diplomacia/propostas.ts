@@ -15,8 +15,18 @@
  * também não, e por um motivo diferente — ela já é decidida pelos dois lados, num passo
  * próprio no fim do turno da IA.
  *
- * A mesa é do TURNO: `passarTurno` a esvazia. Proposta guardada de uma virada para outra faria
- * o jogador responder a um mundo que já mudou, e faria o mesmo pedido empilhar dez vezes.
+ * A mesa é do TURNO, e quem a esvazia é a JOGADA SEGUINTE da IA, antes de ela pedir de novo.
+ * Proposta guardada de uma virada para outra faria o jogador responder a um mundo que já
+ * mudou, e faria o mesmo pedido empilhar dez vezes.
+ *
+ * ⚠️ **Ela era esvaziada em `passarTurno`, e isso apagava TODO pedido antes de o jogador
+ * vê-lo.** A ordem real de `virarTurno` é: a IA joga, e só então a campanha vira. O pedido
+ * nascia na jogada e morria na virada, dentro da mesma chamada e antes de a tela redesenhar,
+ * desde o dia em que a mesa nasceu. Ninguém viu porque o teste de tela injeta o pedido à mão
+ * com a IA congelada, o teste unitário guardava *"a virada limpa a mesa"* como se fosse a
+ * regra, e `npm run partida` contava os pedidos DENTRO da jogada, antes do apagão. Henrique
+ * jogou semanas sem receber uma proposta: *"não sinto a IA tentando se conectar comigo"*
+ * continuou verdadeiro depois de a mesa existir. Ver `esvaziarMesa`.
  */
 
 import type { Proposta } from '../estado-campanha';
@@ -34,6 +44,20 @@ import {
   podeFirmarPacto,
   podeFormarLiga,
 } from './relacoes';
+
+/**
+ * Esvazia a mesa. A IA chama isto no começo da jogada dela, e é o ÚNICO lugar que esvazia.
+ *
+ * ⚠️ Aqui e não em `passarTurno`: a jogada da IA vem ANTES da virada, então limpar na virada
+ * apagava o que acabara de ser pedido. Limpar no começo da jogada dá ao pedido a vida certa,
+ * o turno inteiro do jogador, e o mesmo reino continua sem empilhar o mesmo pedido, porque a
+ * mesa nasce vazia toda vez que ele volta a falar. Devolve se havia alguma coisa nela.
+ */
+export function esvaziarMesa(nucleo: NucleoDaCampanha): boolean {
+  const havia = nucleo.estado.propostas.length > 0;
+  nucleo.estado.propostas = [];
+  return havia;
+}
 
 /** O que está na mesa do jogador agora. Ordenado por quem pede, para a tela não dançar. */
 export function propostasAoJogador(nucleo: NucleoDaCampanha): readonly Proposta[] {

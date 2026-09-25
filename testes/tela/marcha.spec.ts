@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { fecharBatalhas } from './apoio';
+import { apontarProvincia, clicarProvincia, fecharBatalhas } from './apoio';
 
 /**
  * A marcha, de ponta a ponta: escolher a hoste, dizer quantos vão, pedir para mover, ver
@@ -13,6 +13,10 @@ import { fecharBatalhas } from './apoio';
  */
 
 interface Ganchos {
+  /** Desliga a IA: este arquivo mede a TELA, não o adversário. */
+  congelarIA: () => void;
+  /** Tira a comida do caminho: este arquivo mede a TELA, não a despensa. */
+  saciar: () => void;
   darOuro: (valor: number) => void;
   construir: (idProvincia: string, idConstrucao: string) => void;
   passarTurno: () => void;
@@ -36,6 +40,8 @@ async function comHoste(page: Page, homens: number) {
   await page.waitForSelector('.barra-turno');
   await page.evaluate((quantos: number) => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.darOuro(60_000);
     i.construir('atenas', 'quartel');
     for (let n = 0; n < 4; n++) i.passarTurno();
@@ -67,44 +73,40 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
   // A barra nasce com a força inteira: mandar tudo é o caso comum, sem digitar.
   await expect(page.locator('.exercito__valor')).toHaveAttribute('type', 'range');
   await expect(page.locator('.exercito__valor')).toHaveValue('1500');
-  await expect(page.locator('.destinos__marca')).toHaveCount(0);
+  await expect(page.locator('.marchas__previsao')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Mover' }).click();
 
-  // Terras próprias e inimigas adjacentes aparecem; terra inimiga é destino terminal.
-  await expect(page.locator('.destinos__marca')).toHaveCount(4);
-  await expect(page.locator('.destinos__nome')).toHaveText([
-    'Elêusis',
-    'Maratona',
-    'Sunião',
-    'Tanagra',
-  ]);
-  await expect(page.locator('.marchas__previsao')).toHaveCount(4);
+  // ⚠️ **NENHUM destino é marcado, e é a mudança inteira.** A tela punha um botão sobre cada
+  // terra alcançável e desenhava a rota de todas ao mesmo tempo: quatro aqui, mas cento e
+  // noventa e nove com um Porto de pé, porque o cais abre o mar. Medido com GPU de verdade, o
+  // quadro caía de 7 ms para 405 — 2,4 quadros por segundo. Henrique: *"não faz sentido já ter
+  // todas as rotas à mostra, ou pontos. igual em age of history 2: eu clico na minha tropa e
+  // movo ela para onde eu quiser só selecionando uma província/zona"*.
+  //
+  // O que a tela promete agora: enquanto ninguém aponta nada, o mapa fica limpo.
+  await expect(page.locator('.marchas__previsao')).toHaveCount(0);
   await expect(page.locator('.marchas__origem')).toBeVisible();
-  await expect(page.locator('.destinos__marca[data-provincia="maratona"]')).toHaveAttribute(
-    'data-hostil',
-    'nao',
-  );
-  await expect(page.locator('.destinos__marca[data-provincia="tanagra"]')).toHaveAttribute(
-    'data-hostil',
-    'sim',
-  );
-  await expect(page.locator('.destinos__marca[data-provincia="tanagra"]')).toHaveAttribute(
-    'aria-label',
-    'Atacar Tanagra',
-  );
+  await expect(page.locator('.exercito__instrucao')).toContainText('Clique na província');
   await expect(page.locator('.hostes__marca[data-provincia="atenas"]')).toHaveAttribute(
     'data-escolhendo-destino',
     'sim',
   );
 
-  // Apontar um destino engrossa exatamente a rota correspondente.
-  await page.locator('.destinos__marca[data-provincia="maratona"]').hover();
+  // Apontar uma terra desenha UMA rota — a dela, e nenhuma outra.
+  await apontarProvincia(page, 'maratona');
+  await expect(page.locator('.marchas__previsao')).toHaveCount(1);
   await expect(page.locator('.marchas__previsao[data-destino="maratona"]')).toHaveAttribute(
     'data-destacada',
     'sim',
   );
-  await page.locator('.destinos__marca[data-provincia="maratona"]').click();
+
+  // E apontar outra TROCA a rota, em vez de somar mais uma ao mapa.
+  await apontarProvincia(page, 'sounion');
+  await expect(page.locator('.marchas__previsao')).toHaveCount(1);
+  await expect(page.locator('.marchas__previsao[data-destino="sounion"]')).toHaveCount(1);
+
+  await clicarProvincia(page, 'maratona');
 
   // ⚠️ O MAPA NÃO MUDOU. É o ponto inteiro da resolução simultânea.
   expect(
@@ -121,7 +123,6 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
   // A ordem está registrada, visível e desfazível.
   await expect(page.locator('.exercito__ordem')).toContainText('1.500 marcham para Maratona');
   await expect(page.getByRole('button', { name: 'Cancelar ordem' })).toBeVisible();
-  await expect(page.locator('.destinos__marca')).toHaveCount(0);
   await expect(page.locator('.marchas__previsao')).toHaveCount(0);
   await expect(page.locator('.marchas__ordem[data-destino="maratona"]')).toHaveCount(1);
   await expect(page.locator('.marchas__seta[data-minha="sim"]')).toHaveCount(1);
@@ -152,7 +153,7 @@ test('escolher destino registra a ordem, e a marcha só acontece na virada', asy
 test('cancelar a ordem devolve a hoste ao estado de quem não decidiu nada', async ({ page }) => {
   await comHoste(page, 1000);
   await page.getByRole('button', { name: 'Mover' }).click();
-  await page.locator('.destinos__marca[data-provincia="sounion"]').click();
+  await clicarProvincia(page, 'sounion');
   await expect(page.locator('.exercito__ordem')).toBeVisible();
 
   await page.getByRole('button', { name: 'Cancelar ordem' }).click();
@@ -180,8 +181,19 @@ test('só parte da hoste marcha, e o resto fica defendendo', async ({ page }) =>
     barra.dispatchEvent(new Event('input', { bubbles: true }));
   });
   await page.getByRole('button', { name: 'Mover' }).click();
-  await page.locator('.destinos__marca[data-provincia="maratona"]').click();
-  await expect(page.locator('.exercito__ordem')).toContainText('400 marcham');
+  await clicarProvincia(page, 'maratona');
+
+  // ⚠️ **A ficha passa a mostrar QUEM FICOU, e é a mudança que Henrique pediu.** Mandar parte
+  // da hoste a PARTE na hora: os 400 saem da conta, viram hoste própria com a ordem, e a peça
+  // que sobra volta a ser uma tropa inteira de 600 — com o botão Mover de novo em pé, pronta
+  // para a segunda ordem da mesma rodada. Antes a ficha dizia 1.000 com uma ordem pendurada e
+  // escondia o Mover: os outros 600 não podiam fazer nada.
+  await expect(page.locator('.exercito__forca')).toHaveText('600 homens');
+  await expect(page.locator('.exercito__ordem')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Mover' })).toBeVisible();
+  // A ordem existe, e está desenhada no mapa com a coluna que partiu.
+  await expect(page.locator('.marchas__ordem[data-destino="maratona"]')).toHaveCount(1);
+  await expect(page.locator('.marchas__quantidade')).toHaveText('400');
 
   await page.getByRole('button', { name: 'Passar o turno' }).click();
 
@@ -193,17 +205,33 @@ test('só parte da hoste marcha, e o resto fica defendendo', async ({ page }) =>
   ).toEqual({ atenas: 600, maratona: 400 });
 });
 
-test('clicar fora dos destinos cancela a escolha em vez de reclamar', async ({ page }) => {
+/**
+ * ⚠️ **Esta promessa MUDOU de conteúdo, e a mudança é de Henrique.**
+ *
+ * Ela era *"clicar fora dos destinos cancela a escolha em vez de reclamar"*: os alvos legais
+ * estavam desenhados como botões, o jogador não podia errar, e reclamar de cada clique errado
+ * seria ruído. Agora o mapa inteiro aceita o clique — *"eu clico na minha tropa e movo ela para
+ * onde eu quiser só selecionando uma província/zona"* — e não existe mais "fora".
+ *
+ * A promessa que substitui é a que o novo desenho tem de cumprir: **clicar num lugar impossível
+ * não vira ordem, não vira silêncio, e não derruba a marcha em composição.** O jogador continua
+ * escolhendo destino, e a tela passa a dizer POR QUE aquele não serve — coisa que `avaliarOrdem`
+ * já sabia responder e nunca tinha onde falar. Quem cancela é o botão, que diz "cancelar".
+ */
+test('clicar em terra inalcançável recusa com o motivo, sem largar a marcha', async ({ page }) => {
   await comHoste(page, 1000);
   await page.getByRole('button', { name: 'Mover' }).click();
-  await expect(page.locator('.destinos__marca')).toHaveCount(4);
-
-  await page.mouse.click(1500, 800); // mar aberto
-
-  await expect(page.locator('.destinos__marca')).toHaveCount(0);
   await expect(page.locator('.marchas__previsao')).toHaveCount(0);
-  await expect(page.locator('.marchas__origem')).toBeHidden();
+
+  // Corinto está do outro lado de Mégara: sem guerra e sem caminho pelo próprio território.
+  await clicarProvincia(page, 'corinto');
+
   await expect(page.locator('.exercito__ordem')).toBeHidden();
+  await expect(page.locator('.marchas__ordem')).toHaveCount(0);
+  // A marcha continua em pé: o clique errado não custa o modo.
+  await expect(page.getByRole('button', { name: /cancelar/i })).toBeVisible();
+  await expect(page.locator('.exercito__instrucao')).toHaveAttribute('data-tom', 'recusa');
+  await expect(page.locator('.exercito__instrucao')).not.toBeEmpty();
 });
 
 /**
@@ -215,6 +243,8 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
   await comHoste(page, 1000);
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.conquistar('maratona', 'megara');
     i.conquistar('sounion', 'megara');
   });
@@ -230,9 +260,17 @@ test('terra alheia é destino de ataque, mas não caminho para além dela', asyn
   expect(alcance).toContain('maratona');
   expect(alcance).toContain('sounion');
 
+  // ⚠️ **Conferido pela ROTA, e não por um botão marcado.** Terra alheia é destino de ataque
+  // mas não caminho: apontar Maratona e Sunião — as duas agora de Mégara — desenha a rota até
+  // cada uma; apontar Corinto, que fica ATRÁS delas, não desenha nada, porque a marcha não
+  // atravessa terra de terceiro.
   await mover.click();
-  await expect(page.locator('.destinos__marca[data-provincia="maratona"]')).toHaveCount(1);
-  await expect(page.locator('.destinos__marca[data-provincia="sounion"]')).toHaveCount(1);
+  await apontarProvincia(page, 'maratona');
+  await expect(page.locator('.marchas__previsao[data-destino="maratona"]')).toHaveCount(1);
+  await apontarProvincia(page, 'sounion');
+  await expect(page.locator('.marchas__previsao[data-destino="sounion"]')).toHaveCount(1);
+  await apontarProvincia(page, 'corinto');
+  await expect(page.locator('.marchas__previsao')).toHaveCount(0);
 });
 
 test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page }) => {
@@ -252,6 +290,8 @@ test('a hoste MARCHA de uma província à outra em vez de saltar', async ({ page
 
   const partida = await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.saciar();
     i.ordenarMarcha(i.hostesEm('atenas')[0]!.id, 'maratona', 1500);
     i.passarTurno();
     const marca = document.querySelector<HTMLElement>('.hostes__marca[data-provincia="maratona"]');

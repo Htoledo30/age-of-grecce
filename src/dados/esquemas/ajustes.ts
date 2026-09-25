@@ -265,20 +265,13 @@ export const Ajustes = z.object({
       /**
        * O pacto de não-agressão: prazos, o que ele vale, e o que custa rompê-lo.
        *
-       * ⚠️ **O que estica o prazo não é ouro, é CONFIANÇA.** Pagar mais por um pacto mais longo
-       * transformaria diplomacia em loja; exigir mais opinião faz o presente virar a entrada do
-       * pacto — o ouro compra o momento, e o momento compra o prazo.
+       * ⚠️ **Quem decide se ele é assinado é a BALANÇA** (`balanca`, abaixo, e
+       * `ia/diplomacia/balanca.ts`): os prazos aqui são só a escada. O mais curto sai de graça,
+       * e cada turno acima dele pesa `balanca.prazo.custoPorTurno` contra a assinatura.
        */
       pacto: z.object({
-        /** Os prazos oferecidos, do mais curto ao mais longo, com a opinião que cada um pede. */
-        prazos: z
-          .array(
-            z.object({
-              turnos: z.number().int().positive(),
-              opiniaoMinima: z.number().min(-100).max(100),
-            }),
-          )
-          .min(1),
+        /** Os prazos oferecidos, do mais curto ao mais longo. */
+        prazos: z.array(z.object({ turnos: z.number().int().positive() })).min(1),
         /** O que um pacto em pé vale na conta da opinião, enquanto durar. */
         pontos: z.number(),
         /** O tombo na opinião de quem foi traído. */
@@ -287,54 +280,80 @@ export const Ajustes = z.object({
         reputacaoDaRuptura: z.number(),
         /** Quantos pontos de reputação voltam por turno. Rancor não é eterno. */
         reputacaoPorTurno: z.number().positive(),
-        /**
-         * De quantas províncias de vantagem sobre ele você precisa para que o MEDO baste.
-         *
-         * ⚠️ **É o portão que faz o pacto parar de ser um prêmio por amizade.** Henrique:
-         * *"olha na vida real quantos países se odeiam e fazem pactos de não agressão, wtf"*. E
-         * ele tem razão: não-agressão não é confiança, é medo e conveniência — Molotov-Ribbentrop
-         * foi assinado entre dois que se odiavam, justamente por isso. Quem é claramente menor
-         * que você assina para não ser o próximo; quem já tem uma guerra nas costas assina para
-         * não ter duas. O caminho da opinião continua existindo ao lado, para quem gosta de você.
-         *
-         * É o mesmo número da `sombraLimiar`: abaixo dele a diferença é o mapa inicial, não
-         * ameaça.
-         */
-        vantagemQueAssusta: z.number().int().positive(),
       }),
       /**
        * A ALIANÇA: o topo da escada, e o único acordo que obriga a FAZER.
        *
-       * ⚠️ **Pede muito mais opinião que o pacto, e é por isso que ela não o canibaliza.** O
-       * pacto é de graça e só te impede de atacar; a aliança te põe em guerras que você não
-       * escolheu. Quem quer segurança sem risco assina pacto — e é a resposta certa para quase
-       * todo mundo. Ver `campanha/diplomacia/alianca.ts`.
+       * ⚠️ **Começa devendo o custo de emprestar o exército.** Inimigo em comum, proteção e
+       * patrocínio podem cobri-lo; as guerras herdadas e a fraqueza do parceiro pesam contra.
+       * Quem quer segurança sem esse risco continua preferindo o pacto. Ver
+       * `ia/diplomacia/aliancas.ts`.
        */
       alianca: z.object({
-        /** Os prazos oferecidos, com a opinião que cada um pede. Guerra emprestada é cara. */
-        prazos: z
-          .array(
-            z.object({
-              turnos: z.number().int().positive(),
-              opiniaoMinima: z.number().min(-100).max(100),
-            }),
-          )
-          .min(1),
+        /** Os prazos oferecidos. Quem decide é a balança; ver `balanca.alianca`. */
+        prazos: z.array(z.object({ turnos: z.number().int().positive() })).min(1),
         /** O que uma aliança em pé vale na conta da opinião. Acima do pacto, por definição. */
         pontos: z.number(),
         /** O tombo na opinião de quem foi abandonado. Maior que o do pacto. */
         choqueDeRuptura: z.number(),
         /** E o tombo na REPUTAÇÃO de quem abandonou — abandonar aliado é pior que romper pacto. */
         reputacaoDaRuptura: z.number(),
-        /**
-         * A opinião que basta quando os dois têm o MESMO inimigo.
-         *
-         * ⚠️ **Medo do mesmo terceiro une quem não se gosta**, e é a aliança mais comum da
-         * história. Sem isto, aliar-se era prêmio de amizade: só quem já gostava de você em +25
-         * fechava, e dois vizinhos frios diante do mesmo gigante ficavam cada um por si — que é
-         * exatamente o que a sombra do maior existe para impedir.
-         */
-        opiniaoComInimigoComum: z.number(),
+      }),
+      /**
+       * A BALANÇA DE INTERESSE: os pesos com que um reino decide se um acordo lhe serve.
+       *
+       * ⚠️ **Substituiu os limiares de opinião** (`opiniaoMinima` por prazo, `vantagemQueAssusta`,
+       * `opiniaoComInimigoComum`). Cada acordo soma parcelas com sinal e fecha em saldo zero ou
+       * mais; a opinião entra como UMA parcela, pesada pelo gosto do temperamento
+       * (`dados/ia.json › gostos`). Ver `ia/diplomacia/balanca.ts`, que explica cada parcela.
+       *
+       * Os valores iniciais foram derivados dos limiares antigos para que, com todos os gostos em
+       * 1,0, a balança reproduza o comportamento anterior: pacto de 40 turnos fecha em opinião
+       * `linha + 14`, de 80 em `linha + 42`. Medido com `npm run partida 100` e
+       * `npm run medir-balanca`.
+       */
+      balanca: z.object({
+        /** Saldo mínimo da PRÓPRIA balança para a IA propor. Ninguém pede acordo indiferente. */
+        iniciativa: z.number(),
+        /** Quanto cada turno acima do prazo mais curto pesa contra. */
+        prazo: z.object({ custoPorTurno: z.number().nonnegative() }),
+        /** O medo: você maior em terra (a partir de `limiar` províncias) ou em armas. */
+        medo: z.object({
+          limiar: z.number().int().positive(),
+          porProvincia: z.number().nonnegative(),
+          provinciasMaximo: z.number().nonnegative(),
+          /** Por cada vez que o seu exército excede o dele (2× = uma vez a mais). */
+          porVezDeExercito: z.number().nonnegative(),
+          exercitoMaximo: z.number().nonnegative(),
+        }),
+        /** Mãos ocupadas: guerras que ele já tem em outro lugar. */
+        maosOcupadas: z.object({
+          porGuerra: z.number().nonnegative(),
+          maximo: z.number().nonnegative(),
+        }),
+        /** A cobiça: cada província sua que vale a marcha para ele pesa contra. */
+        cobica: z.object({
+          porProvincia: z.number().nonnegative(),
+          maximo: z.number().nonnegative(),
+        }),
+        /** O teto do ouro em pontos, DEPOIS do gosto: o gosto muda o preço, não o teto. */
+        ouro: z.object({ maximo: z.number().nonnegative() }),
+        /** As parcelas próprias da aliança. */
+        alianca: z.object({
+          /** O custo fixo de emprestar o exército: alguma razão precisa cobri-lo. */
+          custoDeAliar: z.number().nonnegative(),
+          porInimigoComum: z.number().nonnegative(),
+          inimigoComumMaximo: z.number().nonnegative(),
+          /** Quanto vale, para quem está ameaçado, um aliado mais forte. */
+          protecao: z.number().nonnegative(),
+          /** E quanto vale, para o mais forte, ganhar um protegido que está ameaçado. */
+          patrocinio: z.number().nonnegative(),
+          /** Cada guerra sua que ele herdaria. */
+          porGuerraSua: z.number().nonnegative(),
+          /** O peso de um aliado fraco demais, e a fração da força dele abaixo da qual você é. */
+          fraquezaSua: z.number().nonnegative(),
+          fracoAbaixoDe: z.number().min(0).max(1),
+        }),
       }),
       /**
        * A LIGA: mandar num reino sem tomá-lo. Ver `campanha/diplomacia/liga.ts`.
@@ -399,8 +418,8 @@ export const Ajustes = z.object({
       /**
        * O ACESSO MILITAR: a licença de atravessar a terra de quem não é inimigo.
        *
-       * ⚠️ **Exige MAIS confiança que o pacto curto, e menos que o longo.** O pacto é uma
-       * promessa de não fazer; o acesso é uma chave da porta de casa. Pedir opinião de menos
+       * ⚠️ **Continua decidido por opinião fixa por prazo, fora da balança.** O acesso é uma
+       * chave da porta de casa. Pedir opinião de menos
        * transformaria toda fronteira em corredor, e a geografia — que é metade deste jogo —
        * deixaria de decidir qualquer coisa.
        *
@@ -425,10 +444,10 @@ export const Ajustes = z.object({
       /**
        * O TRIBUTO: o ano de sossego que se compra quando não há confiança para pedi-lo de graça.
        *
-       * ⚠️ **É o pacto pelo avesso, e é isso que o mantém honesto.** O pacto não custa moeda e
-       * exige opinião; o tributo não exige opinião nenhuma e custa ouro todo turno. Quem tem
-       * confiança para o pacto seria tolo de pagar por um — então os dois nunca competem pelo
-       * mesmo momento da partida, e o ouro entra exatamente onde a confiança não chega.
+       * ⚠️ **É o pacto pelo avesso, e é isso que o mantém honesto.** O pacto pesa uma balança e
+       * não custa nada por turno; o tributo não pesa balança nenhuma e custa ouro todo turno.
+       * Quem fecha a balança do pacto seria tolo de pagar por um — então os dois não competem
+       * pelo mesmo momento da partida.
        */
       tributo: z.object({
         /**

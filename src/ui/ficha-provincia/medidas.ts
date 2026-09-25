@@ -102,14 +102,31 @@ function saldo(vista: VistaDaProvincia): Medida {
     `+${moeda(e.producao)} produção`,
     `+${moeda(e.transito)} trânsito` + (e.cortada ? ' (rota cortada)' : ''),
   ];
-  if (e.manutencao > 0) linhas.push(`−${moeda(e.manutencao)} construções`);
-  if (e.tropa > 0) linhas.push(`−${moeda(e.tropa)} tropas`);
+  // ⚠️ **A CORRUPÇÃO não aparecia em tela nenhuma** — nem aqui, nem no Governo —, e é a maior
+  // mordida silenciosa da economia: numa terra grande e longe da capital ela leva mais de um
+  // terço de tudo. O jogador via a renda pequena e não tinha como descobrir por quê, nem que a
+  // Ágora e a Estrada existem exatamente para isso.
+  //
+  // Ela vem junto do humor porque as duas são a mesma espécie de coisa — multiplicadores sobre
+  // as três parcelas de cima —, e por isso ficam coladas nelas, antes das despesas de verdade.
+  if (e.corrupcao > 0) {
+    // As três parcelas chegam aqui LÍQUIDAS (`economia.ts` já multiplicou por 1−corrupção): o
+    // que se perdeu é o que falta para o bruto, e não uma fatia do que sobrou.
+    const perdido = Math.round(
+      ((e.impostos + e.producao + e.transito) * e.corrupcao) / (1 - e.corrupcao),
+    );
+    linhas.push(
+      `corrupção: −${Math.round(e.corrupcao * 100)}% nas três parcelas (−${moeda(perdido)})`,
+    );
+  }
   // A linha que liga o humor ao dinheiro. Sem ela o jogador vê a felicidade mexer e não
   // descobre onde ela vira moeda.
   if (e.fatorDoHumor !== 1) {
     const p = Math.round((e.fatorDoHumor - 1) * 100);
     linhas.push(`humor: ${p >= 0 ? '+' : '−'}${Math.abs(p)}% nas três parcelas`);
   }
+  if (e.manutencao > 0) linhas.push(`−${moeda(e.manutencao)} construções`);
+  if (e.tropa > 0) linhas.push(`−${moeda(e.tropa)} tropas`);
   return {
     rotulo: 'saldo',
     valor: comSinal(e.saldo),

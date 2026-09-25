@@ -83,12 +83,18 @@ export function partir(estado: EstadoDaResolucao): Forca[] {
     if (ordem) {
       // `retirar` já tira proporcionalmente de cada terra natal — é o que faz o destacamento
       // levar uma parcela de cada origem em vez da primeira da lista.
+      // ⚠️ **Id NOVO só quando sobra alguém para trás.** Marchar com a hoste INTEIRA rebatizava
+      // a tropa a cada rodada — medido: h1 vai a Maratona e vira h2, volta e vira h3 —, e o
+      // jogador perdia a seleção na virada porque a ficha aponta para um id que deixou de
+      // existir. O comentário deste arquivo já prometia que quem pousa reaproveita a
+      // identidade; era só a marcha inteira que não cumpria.
+      const inteira = ordem.homens >= forcaDe(hoste);
       const partem = retirar(hoste, Math.min(ordem.homens, forcaDe(hoste)));
       if (Object.keys(partem).length > 0) {
         forcas.push({
           // O destacamento e uma hoste NOVA: parte da antiga fica, parte vai, e as duas
-          // passam a existir ao mesmo tempo.
-          hoste: `h${estado.proximaHoste++}`,
+          // passam a existir ao mesmo tempo. Indo tudo, não há antiga: o id continua sendo dela.
+          hoste: inteira ? id : `h${estado.proximaHoste++}`,
           poder: hoste.poder,
           contingentes: partem,
           rota: ordem.rota,

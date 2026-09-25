@@ -53,6 +53,20 @@ export class BarraTurno {
   private readonly controleTurno = document.createElement('section');
   private readonly cronologia = document.createElement('p');
   private readonly estandarte = document.createElement('span');
+  /**
+   * O aviso da capital caída, colado no botão que ele trava.
+   *
+   * ⚠️ **Existe porque os três avisos que já existiam somem.** O botão desabilita, ganha
+   * tooltip e a crônica escreve a linha — e mesmo assim Henrique jogando ficou *"uns 30
+   * segundos sem entender por que não conseguia fazer nada"*. E é fácil ver por quê: a crônica
+   * fecha no × e não volta, e o tooltip exige o ponteiro parado em cima de um botão apagado,
+   * que é o último lugar onde alguém pousa o mouse. Sobrava um botão morto e uma tela muda.
+   *
+   * Este fica. Mora ao lado do botão travado — onde o olho vai quando o clique não faz nada —
+   * e diz as três coisas que ele pediu: **o que aconteceu**, **o que fazer** e **o que está
+   * bloqueado até lá**.
+   */
+  private readonly avisoCapital = document.createElement('p');
   private readonly botao = document.createElement('button');
   private readonly botaoGoverno = document.createElement('button');
   private readonly botaoDiplomacia = document.createElement('button');
@@ -121,8 +135,14 @@ export class BarraTurno {
 
     this.cabecalhoNacao.append(this.estandarte, this.botaoGoverno, this.botaoDiplomacia);
     this.nacao.append(this.cabecalhoNacao, this.tesouro);
+    this.avisoCapital.className = 'barra-turno__aviso-capital';
+    this.avisoCapital.hidden = true;
+    // Região viva: quem usa leitor de tela ouve o impedimento no instante em que ele nasce,
+    // sem ter de varrer a tela procurando o que mudou.
+    this.avisoCapital.setAttribute('role', 'status');
+
     this.controleTurno.append(this.cronologia, this.botao);
-    this.raiz.append(this.nacao, this.controleTurno);
+    this.raiz.append(this.nacao, this.avisoCapital, this.controleTurno);
     pai.appendChild(this.raiz);
   }
 
@@ -163,7 +183,17 @@ export class BarraTurno {
     // jogador preso sem saber o que o jogo está esperando.
     this.botao.disabled = vista.capitalPerdida;
     this.raiz.dataset['capitalPerdida'] = vista.capitalPerdida ? 'sim' : 'nao';
+    this.avisoCapital.hidden = !vista.capitalPerdida;
     if (vista.capitalPerdida) {
+      // As três frases que ele pediu, nesta ordem: o que aconteceu, o que fazer, o que está
+      // travado. `replaceChildren` e não `textContent` porque a primeira precisa de peso
+      // próprio — um parágrafo cinzento uniforme se lê como rodapé, e isto não é rodapé.
+      const titulo = document.createElement('strong');
+      titulo.textContent = 'A capital caiu.';
+      const ordem = document.createElement('span');
+      ordem.textContent =
+        ' Selecione uma província sua e use “Assentar a capital aqui”. O turno não passa até lá.';
+      this.avisoCapital.replaceChildren(titulo, ordem);
       definirTooltip(this.botao, {
         titulo: 'A capital caiu',
         corpo: 'Selecione uma província sua e assente a nova capital.',

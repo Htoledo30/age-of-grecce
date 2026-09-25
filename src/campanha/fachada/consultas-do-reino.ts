@@ -406,14 +406,19 @@ export abstract class ConsultasDoReino {
     return aceitaSerAnexado(this.nucleo, membro);
   }
 
-  /** Os prazos de aliança que este par consegue assinar hoje, do mais longo ao mais curto. */
-  prazosDeAlianca(a: string, b: string): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+  /** Os prazos de aliança da escada, do mais longo ao mais curto, com o que a regra diz. */
+  prazosDeAlianca(a: string, b: string): readonly { turnos: number; pode: boolean; motivo: string }[] {
     return prazosDeAlianca(this.nucleo, a, b);
   }
 
   /** Esta aliança pode ser assinada, e se não, por quê. */
-  podeFirmarAlianca(com: string, turnos: number, porPoder: string = this.nucleo.estado.jogador ?? ''): Permissao {
-    return podeFirmarAlianca(this.nucleo, porPoder, com, turnos);
+  podeFirmarAlianca(
+    com: string,
+    turnos: number,
+    porPoder: string = this.nucleo.estado.jogador ?? '',
+    ouro = 0,
+  ): Permissao {
+    return podeFirmarAlianca(this.nucleo, porPoder, com, turnos, ouro);
   }
 
   /** O tributo em pé entre estes dois, com quem paga, quanto e até quando. */
@@ -502,11 +507,11 @@ export abstract class ConsultasDoReino {
     return podeAcordarComercio(this.nucleo, porPoder, com);
   }
 
-  /** Os prazos de pacto que dá para assinar hoje, do mais longo ao mais curto. */
+  /** Os prazos de pacto da escada, do mais longo ao mais curto, com o que a regra diz. */
   prazosDePacto(
     com: string,
     porPoder: string = this.nucleo.estado.jogador ?? '',
-  ): readonly { turnos: number; opiniaoMinima: number; pode: boolean }[] {
+  ): readonly { turnos: number; pode: boolean; motivo: string }[] {
     return prazosDePacto(this.nucleo, porPoder, com);
   }
 
@@ -514,8 +519,9 @@ export abstract class ConsultasDoReino {
     com: string,
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
+    ouro = 0,
   ): Permissao {
-    return podeFirmarPacto(this.nucleo, porPoder, com, turnos);
+    return podeFirmarPacto(this.nucleo, porPoder, com, turnos, ouro);
   }
 
   /** Quanto este presente valeria para ele, em pontos de opinião. A tela mostra antes. */

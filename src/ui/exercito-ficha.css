@@ -1,3 +1,6 @@
+/* ⚠️ **Nenhum TAMANHO de texto entra aqui.** Cinco tamanhos em treze declarações — 11.5, 12, 13, 19, 24 — viraram quatro degraus. A régua é
+   `estilo/tokens.css`, e a escolha é sempre pela FUNÇÃO do texto — etiqueta, nota, corpo,
+   medida, destaque, título —, nunca por um número. */
 .exercito {
   position: absolute;
   /* Reserva os 60 px do controle de rodada no canto inferior direito e conserva a
@@ -21,7 +24,7 @@
   padding-bottom: 10px;
   border-bottom: 1px solid var(--ui-borda-fraca);
   font-family: var(--fonte-nome);
-  font-size: 19px;
+  font-size: var(--texto-destaque);
   font-weight: 600;
   color: var(--ui-texto);
 }
@@ -29,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ui-texto-fraco);
@@ -44,24 +47,24 @@
 .exercito__forca {
   margin-top: 10px;
   font-family: var(--fonte-numero);
-  font-size: 24px;
+  font-size: var(--texto-titulo);
   font-weight: 650;
   color: var(--ui-texto);
 }
 .exercito__custo {
-  font-size: 12px;
+  font-size: var(--texto-nota);
   color: var(--ui-bronze-claro);
 }
 .exercito__aviso {
   margin-top: 5px;
-  font-size: 12px;
+  font-size: var(--texto-corpo);
   color: var(--ui-sangue-claro);
 }
 .exercito__grupo {
   margin: 14px 0 6px;
   padding-bottom: 5px;
   border-bottom: 1px solid var(--ui-borda-fraca);
-  font-size: 11.5px;
+  font-size: var(--texto-nota);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -74,7 +77,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 3px 12px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   color: var(--ui-texto-fraco);
 }
 .exercito__armas dd,
@@ -92,7 +95,7 @@
 .exercito__quantidade {
   margin-top: 8px;
   font-family: var(--fonte-numero);
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto);
 }
 .exercito__botao {
@@ -130,20 +133,24 @@
   border-left: 2px solid var(--ui-sangue);
   background: var(--ui-perigo-fundo);
   color: var(--ui-sangue-claro);
-  font-size: 12px;
+  font-size: var(--texto-nota);
 }
 .exercito__ordem {
   margin-top: 10px;
   padding: 9px 10px;
   border-left: 2px solid var(--ui-bronze);
   background: var(--ui-pressionado);
-  font-size: 12px;
+  font-size: var(--texto-nota);
   line-height: 1.4;
   color: var(--ui-bronze-claro);
 }
+/* A recusa fala no lugar da instrução, e com a cor de quem foi barrado. */
+.exercito__instrucao[data-tom='recusa'] {
+  color: var(--ui-sangue-claro);
+}
 .exercito__instrucao {
   margin-top: 7px;
-  font-size: 12px;
+  font-size: var(--texto-nota);
   line-height: 1.4;
   color: var(--ui-bronze-claro);
 }
@@ -162,7 +169,7 @@
    soltos não dizem sobre o que se está decidindo. */
 .exercito__pergunta {
   margin-top: 10px;
-  font-size: 13px;
+  font-size: var(--texto-corpo);
   color: var(--ui-texto);
 }
 
@@ -183,7 +190,7 @@
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-numero);
-  font-size: 11.5px;
+  font-size: var(--texto-nota);
   font-weight: 650;
   cursor: pointer;
 }

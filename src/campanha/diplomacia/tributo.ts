@@ -2,13 +2,14 @@
  * O TRIBUTO: **o fraco compra o ano que ele não conseguiria pedir de graça.**
  *
  * ⚠️ **Ele existe porque o fundo da régua estava morto.** A opinião vai de −100 a +100, mas o
- * comércio abre em −25 e o pacto mais curto em −20 — abaixo disso não havia mais nada a fazer
- * com o número. Um vizinho que te odeia a −70 e um que te odeia a −40 ofereciam ao jogador
+ * comércio abre em −25 e o pacto antigo também tinha um limiar — abaixo disso não havia mais
+ * nada a fazer com o número. Um vizinho que te odeia a −70 e um que te odeia a −40 ofereciam
+ * ao jogador
  * exatamente as mesmas opções: nenhuma. Sessenta pontos de escala que não viravam decisão.
  *
  * O tributo é a decisão que faltava ali, e ela é a inversa do pacto:
  *
- * - **o pacto é de graça e exige CONFIANÇA** — opinião mínima, prazo maior pedindo mais;
+ * - **o pacto pesa uma BALANÇA** — confiança, risco, prazo e o que vier na oferta;
  * - **o tributo não exige confiança nenhuma e se paga em OURO, todo turno.**
  *
  * É por isso que ele não canibaliza o pacto: quem tem opinião para assinar um pacto seria tolo

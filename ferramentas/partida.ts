@@ -123,6 +123,9 @@ let marchas = 0;
 let travessias = 0;
 let acessos = 0;
 let propostasAoJogador = 0;
+// ⚠️ Contado DEPOIS de `passarTurno`, que é quando o jogador olha. Era a diferença entre
+// "pedido" e "visto": a mesa era apagada na virada, esta conta dava zero e a de cima dava 54.
+let propostasNaMesa = 0;
 let guerrasDeclaradas = 0;
 let pactos = 0;
 let aliancas = 0;
@@ -254,6 +257,7 @@ for (let turno = 0; turno < TURNOS; turno++) {
     c.mudarCapital([...c.provinciasDe('atenas')].sort()[0]!);
   }
   c.passarTurno();
+  propostasNaMesa += c.propostas().length;
   if (c.rodada.conquistas.length > 0 && conquistas === 0) primeiraConquista = turno;
   conquistas += c.rodada.conquistas.length;
   cercoTurnos += c.cercos().length;
@@ -377,7 +381,8 @@ console.log(`  marchas que a IA ordenou sobre terra alheia: ${marchas}`);
 console.log(`  trechos de travessia pelo mar: ${travessias}`);
 console.log(
   `  passagens militares concedidas: ${acessos}` +
-    ` · propostas feitas ao jogador: ${propostasAoJogador}`,
+    ` · propostas feitas ao jogador: ${propostasAoJogador}` +
+    ` · que chegaram à mesa dele: ${propostasNaMesa}`,
 );
 {
   // ⚠️ Zero propostas pode ser mecânica morta OU jogador impopular. A diferença importa, e

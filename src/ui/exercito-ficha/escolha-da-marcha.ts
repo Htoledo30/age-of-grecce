@@ -69,8 +69,14 @@ export class EscolhaDaMarcha {
     this.vista = vista;
     // O `max` vem antes do valor para o navegador não limitá-lo ao padrão 100.
     this.campo.max = String(vista.forca);
-    if (this.quantidadeDe !== vista.hoste.id) {
-      this.quantidadeDe = vista.hoste.id;
+    // ⚠️ **Reinicia pela FORÇA também, e não só pelo id.** Desde que mandar parte da hoste a
+    // parte na hora, a peça que fica conserva o id e ENCOLHE: mandados 100 de 1.000, a barra
+    // continuava valendo 100 sobre uma tropa de 900, e a segunda ordem nascia com o número da
+    // primeira. Pior no caso em que a força cai abaixo do valor guardado: o `max` novo aparava
+    // o campo e a ficha passava a prometer um número que a barra já não tinha.
+    const chave = `${vista.hoste.id}:${vista.forca}`;
+    if (this.quantidadeDe !== chave) {
+      this.quantidadeDe = chave;
       this.campo.value = String(vista.forca);
       this.aoMudarQuantidade(vista.forca);
     }

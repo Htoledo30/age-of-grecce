@@ -6,7 +6,8 @@
  * salva o PNG em capturas/ e relata qualquer erro de console.
  *
  * uso: npm run capturar -- [nome] [--espera=1000] [--visivel] [--afastar] [--tela=1600x900]
- *      [--andar=tecla:milissegundos] [--executar='<javascript>']
+ *      [--andar=tecla:milissegundos] [--executar='<javascript>'] [--mover=x,y]
+ *      [--recorte=<seletor css>]
  *
  * Sem --visivel o navegador roda oculto e renderiza por SOFTWARE (SwiftShader), o que
  * trava o requestAnimationFrame em ~20/s. Serve pra conferir layout e erro, NUNCA pra
@@ -54,6 +55,27 @@ const zoomPedido = Number(argumentos.find((a) => a.startsWith('--zoom='))?.split
 const cliques = argumentos
   .filter((a) => a.startsWith('--clicar='))
   .map((a) => a.split('=')[1] ?? '');
+/**
+ * --mover=x,y : deixa o ponteiro PARADO nesse ponto da tela antes do print.
+ *
+ * ⚠️ **Existe porque `--clicar` não serve para ver tooltip.** O tooltip some no
+ * `pointerdown` — de propósito, para não cobrir o que o clique acabou de abrir —, e por isso
+ * um `--clicar` em cima de uma medida fotografa a medida sem a explicação dela. Metade do que
+ * a interface sabe dizer vive nesses balões, e sem isto eu não conseguia conferir nenhum.
+ *
+ * Roda DEPOIS dos cliques: o caso comum é clicar para abrir um painel e só então pousar o
+ * ponteiro sobre um número dele.
+ */
+const mover = argumentos.find((a) => a.startsWith('--mover='))?.split('=')[1];
+/**
+ * --recorte=<seletor> : fotografa SÓ esse elemento, e não a tela inteira.
+ *
+ * ⚠️ **Existe porque um painel de 380 px dentro de 1920 é ilegível na conferência.** A
+ * crônica, a ficha da província e a mesa de diplomacia ocupam um canto da tela; para julgar
+ * a tipografia e o espaçamento deles eu precisava do recorte em tamanho real, e não da
+ * captura inteira encolhida. É o mesmo motivo do `--tela`: ver o que se está julgando.
+ */
+const recorte = argumentos.find((a) => a.startsWith('--recorte='))?.slice('--recorte='.length);
 const andar = argumentos.find((a) => a.startsWith('--andar='))?.slice('--andar='.length);
 /**
  * --executar='<javascript>' : roda um trecho na página, com `inspecao` à mão, antes dos
@@ -157,12 +179,39 @@ async function capturar(): Promise<void> {
     // seguidos chegariam juntos e um deles se perderia
     await pagina.waitForTimeout(200);
   }
+  if (mover) {
+    const [mx = 0, my = 0] = mover.split(',').map(Number);
+    // Dois movimentos: o primeiro tira o ponteiro de onde ele estava, o segundo entra no
+    // alvo. Sem a saída, um `--mover` para dentro do mesmo elemento que acabou de receber o
+    // clique não dispara `pointerover` nenhum, e o balão nunca aparece.
+    await pagina.mouse.move(mx + 200, my + 200);
+    await pagina.mouse.move(mx, my);
+  }
   await pagina.waitForTimeout(espera);
 
   const pasta = resolve('capturas');
   mkdirSync(pasta, { recursive: true });
   const arquivo = resolve(pasta, `${nome}.png`);
-  await pagina.screenshot({ path: arquivo });
+  if (recorte) {
+    // ⚠️ **`clip` da página inteira, e NUNCA `locator.screenshot()`.** O painel do jogo é
+    // vidro: fundo translúcido mais `backdrop-filter: blur`. Fotografado isoladamente, o
+    // elemento é composto sobre o nada — o vidro fica preto e o texto some dentro dele. O
+    // `clip` compõe a página toda e só então corta, que é o que o olho vê de verdade.
+    const caixa = await pagina.locator(recorte).first().boundingBox();
+    if (!caixa) throw new Error(`nada na tela casa com o seletor: ${recorte}`);
+    const margem = 8;
+    await pagina.screenshot({
+      path: arquivo,
+      clip: {
+        x: Math.max(0, caixa.x - margem),
+        y: Math.max(0, caixa.y - margem),
+        width: Math.min(LARGURA, caixa.width + margem * 2),
+        height: Math.min(ALTURA, caixa.height + margem * 2),
+      },
+    });
+  } else {
+    await pagina.screenshot({ path: arquivo });
+  }
 
   const erroFatal = await pagina.evaluate(() => document.body.dataset['erro'] ?? null);
 
