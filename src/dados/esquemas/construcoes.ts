@@ -240,6 +240,16 @@ export const Construcoes = z.object({
         ])
         .optional(),
       /**
+       * Quanto esta obra soma à taxa de crescimento da província, por nível.
+       *
+       * ⚠️ **Fora do `efeito`, pela mesma razão das outras capacidades.** O Mercado rende
+       * ouro E atrai gente; uma oficina futura pode fazer só uma das duas. Obras diferentes
+       * somam — ver `taxaDeCrescimento`.
+       */
+      prosperidade: z
+        .tuple([z.number().nonnegative(), z.number().nonnegative(), z.number().nonnegative()])
+        .optional(),
+      /**
        * Esta obra liga a província ao resto do reino POR MAR.
        *
        * ⚠️ **Fora do `efeito`, pela mesma razão do `impedeAssaltoImediato`.** Multiplicar

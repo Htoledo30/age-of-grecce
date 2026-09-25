@@ -183,6 +183,11 @@ a terra; um acordo compra renda e paz, não a capacidade estratégica da provín
   capacidade e nunca pode causar fome.
 - Não existe capacidade populacional artificial; alimento, felicidade e outros sistemas
   reais limitam o crescimento.
+- **O ritmo do crescimento é a PROSPERIDADE da província**, por decisão de Henrique: a taxa
+  natural é baixa, e cada obra de riqueza ou civil erguida ali soma à taxa. A partida começa
+  lenta e acelera conforme as cidades se desenvolvem, e as obras de riqueza passam a servir a
+  outra coisa além do ouro. A comida continua sendo o portão: prosperidade sem despensa não
+  faz ninguém nascer.
 
 ### Circulação e comércio
 

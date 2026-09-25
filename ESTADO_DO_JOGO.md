@@ -128,10 +128,17 @@ Saldo civil negativo causa fome local nas províncias dependentes e perdas no ex
 civil fechado com saldo final negativo pune somente as tropas. Crescimento só acontece quando
 o novo tamanho continuaria sustentável; não há capacidade populacional artificial.
 
+A taxa de crescimento é de cada província: a natural, baixa, mais a prosperidade das obras
+erguidas nela. Ágora, Mercado, Porto, Estrada, Templo e as oficinas de produção somam à taxa
+por nível, e obras diferentes se acumulam; obras militares e de comida não somam. A terra nua
+cresce devagar e a cidade desenvolvida acelera, então a população sobe pouco no começo da
+partida e mais depressa no meio. Os números vivem em `populacao.taxaNatural` e no campo
+`prosperidade` de cada obra.
+
 Desde 31/08/2026 a subsistência que todo reino recebe de graça é 1, por decisão de Henrique, e
 isso faz da Fazenda a primeira obra da partida: **Atenas abre com saldo alimentar ZERO**. Sem
-comida nova ela não cresce um habitante em 500 turnos de paz — com Fazenda I chega a 84.323 em
-100 — e não sustenta um soldado, porque um ponto alimenta 500 homens e não há ponto sobrando.
+comida nova ela não cresce um habitante e não sustenta um soldado, porque não há ponto sobrando;
+cada ponto de comida alimenta 1.000 homens.
 Cercar Mégara com 800 homens custa 319 deles em 30 turnos, de fome, sem um combate.
 
 Cidade sitiada sai da circulação do reino e vive dos próprios mantimentos. Enquanto a despensa

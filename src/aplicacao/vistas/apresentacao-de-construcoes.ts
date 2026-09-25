@@ -13,6 +13,21 @@ export function apresentacaoDaConstrucao(
   nivel: number,
   ganhoPorTurno: number,
 ): ApresentacaoDaConstrucao {
+  const apresentacao = apresentacaoDoEfeito(construcao, nivel, ganhoPorTurno);
+  const prosperidade = construcao.prosperidade?.[nivel - 1] ?? 0;
+  if (prosperidade <= 0) return apresentacao;
+  const crescimento = `+${(prosperidade * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% crescimento`;
+  return {
+    ...apresentacao,
+    apoio: apresentacao.apoio ? `${apresentacao.apoio} · ${crescimento}` : crescimento,
+  };
+}
+
+function apresentacaoDoEfeito(
+  construcao: ConstrucaoDoCatalogo,
+  nivel: number,
+  ganhoPorTurno: number,
+): ApresentacaoDaConstrucao {
   const efeito = construcao.efeito;
   const indice = nivel - 1;
   const renda = (): Pick<

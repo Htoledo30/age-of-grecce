@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Campanha } from '../src/campanha/campanha';
 import { Ajustes, Construcoes, Economia, Exercitos, Provincias } from '../src/dados/esquema';
 import { Atlas } from '../src/mundo/atlas';
-import { calcularCrescimentoPopulacional } from '../src/populacao/crescimento';
+import { calcularCrescimentoPopulacional, taxaDeCrescimento } from '../src/populacao/crescimento';
 
 function ler<T>(esquema: { parse: (v: unknown) => T }, caminho: string): T {
   return esquema.parse(JSON.parse(readFileSync(resolve(caminho), 'utf8')));
@@ -102,9 +102,37 @@ describe('crescimento populacional', () => {
     expect(ajustes.combate.populacaoMinima).toBeGreaterThan(limiar);
   });
 
-  it('nenhuma construção atual multiplica crescimento por uma regra escondida', () => {
+  it('a terra nua cresce na taxa natural, sem regra escondida', () => {
     const c = nova();
     c.comecar('atenas');
     expect(c.crescimentoDe('atenas')?.fatorConstrucoes).toBe(1);
+  });
+
+  it('a prosperidade de cada obra soma à taxa da província, e obra sem ela não soma', () => {
+    const catalogo = construcoes.construcoes;
+    const comProsperidade = Object.entries(catalogo).filter(([, c]) => c.prosperidade);
+    const semProsperidade = Object.entries(catalogo).filter(([, c]) => !c.prosperidade);
+    expect(comProsperidade.length).toBeGreaterThan(1);
+    expect(semProsperidade.length).toBeGreaterThan(0);
+
+    const natural = ajustes.populacao.taxaNatural;
+    for (const [id, c] of comProsperidade) {
+      for (const nivel of [1, 2, 3]) {
+        const taxa = taxaDeCrescimento({ [id]: nivel }, catalogo, ajustes.populacao);
+        expect(taxa).toBeCloseTo(natural + (c.prosperidade?.[nivel - 1] ?? 0), 12);
+      }
+    }
+    for (const [id] of semProsperidade) {
+      expect(taxaDeCrescimento({ [id]: 3 }, catalogo, ajustes.populacao)).toBe(natural);
+    }
+
+    // Duas obras somam, e a população cresce pela taxa somada.
+    const [a, b] = comProsperidade;
+    const erguidas = { [a![0]]: 1, [b![0]]: 1 };
+    const somada = natural + (a![1].prosperidade?.[0] ?? 0) + (b![1].prosperidade?.[0] ?? 0);
+    expect(taxaDeCrescimento(erguidas, catalogo, ajustes.populacao)).toBeCloseTo(somada, 12);
+    expect(
+      calcularCrescimentoPopulacional(50_000, erguidas, catalogo, ajustes.populacao).crescimento,
+    ).toBe(Math.floor(50_000 * taxaDeCrescimento(erguidas, catalogo, ajustes.populacao)));
   });
 });

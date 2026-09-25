@@ -201,7 +201,7 @@
       "opiniaoMinima": -25
     },
     "populacao": {
-      "taxaNatural": 0.003,
+      "taxaNatural": 0.001,
       "faixas": [
         {
           "ate": 14999,

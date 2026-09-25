@@ -139,7 +139,7 @@ nunca conclua por uma única partida quando a área tiver grande variância.
 
 `alimento.subsistenciaPorReino` é 1 por decisão de Henrique, e isso faz da Fazenda a primeira
 obra da partida: Atenas abre com saldo alimentar ZERO, não cresce um habitante sem comida nova e
-não sustenta um soldado — um ponto alimenta 500 homens e não há ponto sobrando. Testes que só
+não sustenta um soldado — um ponto alimenta 1.000 homens e não há ponto sobrando. Testes que só
 precisam de tropa usam `ajustesFartos`, que neutraliza a comida pelos dois lados.
 
 A infantaria leve sobrevive por 0,85%: o estilo `barata` compara `ataque × aguento ÷ custo²`, e
@@ -170,7 +170,7 @@ e entregar menos renda.
 
 ## O que ainda depende do olho de Henrique
 
-- aperto alimentar de Atenas e o valor de 500 soldados por ponto;
+- aperto alimentar de Atenas e o valor de 1.000 soldados por ponto;
 - economia e construções em poder rico, médio e pequeno;
 - corrupção, impostos, confisco, felicidade e revoltas jogando;
 - quatro armas, muralhas, cerco, recuo e manutenção em casa e campanha;

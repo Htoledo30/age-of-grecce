@@ -30,6 +30,28 @@ export interface CrescimentoPopulacional {
 }
 
 /**
+ * A taxa de crescimento DESTA província: a natural mais a prosperidade de cada obra erguida.
+ *
+ * ⚠️ **Por província, por decisão de Henrique.** A terra nua cresce devagar; a cidade com
+ * praça, mercado e oficinas cresce mais depressa. É o que faz a partida começar lenta e ir
+ * acelerando, e o que dá às obras de riqueza um papel além do ouro. Obras diferentes SOMAM:
+ * cada uma é mais um motivo para gente vir morar ali.
+ */
+export function taxaDeCrescimento(
+  construcoes: Readonly<Record<string, number>>,
+  catalogo: Catalogo,
+  ajustes: AjustesPopulacao,
+): number {
+  let taxa = ajustes.taxaNatural;
+  for (const [id, nivel] of Object.entries(construcoes)) {
+    const porNivel = catalogo[id]?.prosperidade;
+    if (porNivel === undefined || nivel <= 0) continue;
+    taxa += porNivel[Math.min(2, nivel - 1)] ?? 0;
+  }
+  return taxa;
+}
+
+/**
  * Curva logística discreta.
  *
  * A taxa é aplicada diretamente sobre quem está vivo. A disponibilidade de alimento
@@ -37,22 +59,21 @@ export interface CrescimentoPopulacional {
  *
  * ⚠️ **Zero não se repovoa sozinho**, e isso é o que dá sentido ao piso de
  * `populacaoMinima` do recrutamento: `Math.floor` faz o crescimento arredondar pra zero
- * abaixo de ~101 habitantes, e dali a província nunca mais volta.
+ * abaixo de `1 / taxaNatural` habitantes, e dali a província nunca mais volta.
  */
 export function calcularCrescimentoPopulacional(
   atual: number,
-  _construcoes: Readonly<Record<string, number>>,
-  _catalogo: Catalogo,
+  construcoes: Readonly<Record<string, number>>,
+  catalogo: Catalogo,
   ajustes: AjustesPopulacao,
   fatorAlimento = 1,
 ): CrescimentoPopulacional {
   const populacaoAtual = Math.max(0, Math.floor(atual));
-  const fatorConstrucoes = 1;
+  const taxa = taxaDeCrescimento(construcoes, catalogo, ajustes);
+  const fatorConstrucoes = taxa / ajustes.taxaNatural;
 
   const crescimento =
-    populacaoAtual === 0
-      ? 0
-      : Math.floor(populacaoAtual * ajustes.taxaNatural * fatorConstrucoes * fatorAlimento);
+    populacaoAtual === 0 ? 0 : Math.floor(populacaoAtual * taxa * fatorAlimento);
 
   return {
     atual: populacaoAtual,
