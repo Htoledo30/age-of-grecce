@@ -25,6 +25,7 @@
 import type { Arma } from '@/combate/exercito';
 import { NOME_DA_ARMA, PAPEL_DA_ARMA } from './armas';
 import { imagemDaConstrucao } from './imagens-de-construcoes';
+import { iconeGrego } from './icones-gregos';
 import { Janela } from './janela';
 import { moedaAteniense } from './moeda';
 import { definirTooltip } from './tooltip';
@@ -235,9 +236,11 @@ export class Recrutamento {
     nome.textContent = NOME_DA_ARMA[arma];
     const preco = document.createElement('span');
     preco.className = 'recrutamento__arma-preco';
+    const status = document.createElement('span');
+    status.className = 'recrutamento__arma-status';
     const trava = document.createElement('span');
     trava.className = 'recrutamento__arma-trava';
-    botao.append(nome, preco, trava);
+    botao.append(nome, preco, status, trava);
     botao.addEventListener('click', () => {
       this.arma = arma;
       // Trocar de arma troca o preço, e com ele o teto: manter o número anterior ofereceria
@@ -305,14 +308,14 @@ export class Recrutamento {
       botao.dataset['escolhida'] = dados.arma === escolhida ? 'sim' : 'nao';
       const preco = botao.querySelector('.recrutamento__arma-preco');
       if (preco) preco.replaceChildren(moedaAteniense(), ` ${numero(dados.custoPorHomem)}`);
+      const status = botao.querySelector('.recrutamento__arma-status');
+      if (status) status.replaceChildren(...statusDaArma(dados));
       const trava = botao.querySelector('.recrutamento__arma-trava');
       if (trava) trava.textContent = dados.liberada ? '' : dados.motivo;
       // O papel e os números de combate ficam aqui, para quem quiser: a janela não os impõe.
       definirTooltip(botao, {
         titulo: NOME_DA_ARMA[dados.arma],
-        corpo:
-          `${PAPEL_DA_ARMA[dados.arma]}\n` +
-          `ataque ×${dados.ataque} · aguento ×${dados.aguento} · comida ×${dados.comida}`,
+        corpo: PAPEL_DA_ARMA[dados.arma],
         tom: dados.liberada ? 'informacao' : 'bloqueio',
       });
     }
@@ -391,6 +394,32 @@ const ARTE_DA_ARMA: Readonly<Record<Arma, string>> = {
   arqueiro: 'acampamento-de-arqueiro',
   cavalaria: 'treinamento-de-cavaleiros',
 };
+
+/**
+ * Ataque, defesa e comida no cartão: **ícone e número inteiro, sem "×".**
+ *
+ * Henrique: *"ataque x1, defesa x1, muito feio — tinha que ter um ícone e só o valor"*. Os
+ * multiplicadores dos dados (1; 1,1; 1,5) viram inteiros com o leve valendo 10, para 11 e 15
+ * se distinguirem de relance; a conta do combate não muda. "Aguento" virou DEFESA, a palavra
+ * que todo jogador de estratégia lê, e o ícone é o hóplon espartano que ele escolheu.
+ */
+function statusDaArma(dados: ArmaParaLeva): HTMLElement[] {
+  const item = (icone: Element, valor: number, rotulo: string): HTMLElement => {
+    const caixa = document.createElement('span');
+    caixa.className = 'recrutamento__status';
+    caixa.title = rotulo;
+    caixa.append(icone, String(Math.round(valor * 10)));
+    return caixa;
+  };
+  const trigo = document.createElement('i');
+  trigo.className = 'recrutamento__trigo';
+  trigo.setAttribute('aria-hidden', 'true');
+  return [
+    item(iconeGrego('lancas'), dados.ataque, 'ataque'),
+    item(iconeGrego('hoplon'), dados.aguento, 'defesa'),
+    item(trigo, dados.comida, 'comida'),
+  ];
+}
 
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR');

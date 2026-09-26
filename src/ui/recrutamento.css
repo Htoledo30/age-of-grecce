@@ -229,3 +229,39 @@
 .recrutamento__previsao[data-pode='fome'] {
   color: var(--ui-perda);
 }
+
+/* ATAQUE, DEFESA E COMIDA: ícone e número, numa linha embaixo do preço. */
+.recrutamento__arma-status {
+  grid-row: 4;
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 4px;
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-nota);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-texto);
+}
+.recrutamento__arma-trava {
+  grid-row: 5;
+}
+.recrutamento__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.recrutamento__status .icone-grego {
+  width: 13px;
+  height: 13px;
+  color: var(--ui-texto-fraco);
+}
+.recrutamento__trigo {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  background: url('/interface/comida-trigo-v1.png') center / contain no-repeat;
+}
+.recrutamento__arma:disabled .recrutamento__arma-status {
+  opacity: 0.55;
+}
