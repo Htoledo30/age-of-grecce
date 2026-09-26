@@ -522,7 +522,6 @@ export class Diplomacia {
       this.estado(vizinho),
       this.confronto(eu, meuBrasao, vizinho),
       this.opiniao(vizinho),
-      this.intencao(vizinho),
     ];
   }
 
@@ -918,63 +917,18 @@ export class Diplomacia {
     agora.style.left = emPercentual(vizinho.relacao);
     trilho.append(risco, marca, agora);
 
-    // ⚠️ **A frase da régua virou CONDICIONAL: prosa acionada por informação.** Ela existia
-    // sempre, inclusive para dizer que estava tudo bem — e a régua já desenha isso. Agora ela
-    // só fala quando há o que dizer: você abaixo da linha dele, ou a caminho dela. Quando não
-    // há perigo, não há frase.
-    const texto = document.createElement('p');
-    texto.className = 'diplomacia__regua-texto';
-    const acima = vizinho.relacao > vizinho.linhaDeAtaque;
-    const indoParaLa = vizinho.alvo <= vizinho.linhaDeAtaque;
-    // ⚠️ **Frase inteira, e não fragmento.** Era `abaixo da linha de Elêusis` — minúscula, sem
-    // verbo e sem ponto —, e quem nunca jogou não tinha como saber que "a linha" é o ponto em
-    // que o vizinho passa a considerar marchar. A frase agora diz a CONSEQUÊNCIA, que é o que
-    // se precisa saber; o tooltip da régua continua explicando de onde ela sai.
-    texto.dataset['tom'] = acima ? 'morno' : 'ruim';
-    texto.textContent = !acima
-      ? `${vizinho.nome} já considera marchar sobre você.`
-      : indoParaLa
-        ? `A opinião caminha para o ponto em que ${vizinho.nome} considera marchar.`
-        : '';
+    // ⚠️ **Sem frase embaixo da régua.** "Atenas já considera marchar sobre você" era frase de
+    // efeito sobre uma régua que já desenha a linha; Henrique: *"coisas inúteis e ruins"*. A
+    // marca basta, e o número da linha fica no tooltip.
     definirTooltip(trilho, {
-      titulo: `A linha de ${vizinho.nome}`,
-      corpo: `Como ${vizinho.cartao.linha}, ele só considera marchar sobre você com a opinião em ${vizinho.linhaDeAtaque} ou menos — e é o temperamento que pesa contra você em todo acordo.`,
+      titulo: `Linha de ataque: ${vizinho.linhaDeAtaque}`,
+      corpo: `Com a opinião nesta marca ou abaixo, ${vizinho.nome} pode declarar guerra.`,
     });
 
-    caixa.append(trilho, texto);
+    caixa.append(trilho);
     return caixa;
   }
 
-  /**
-   * **O QUE ELE QUER DE VOCÊ** — e, quando quer a sua terra, quais províncias.
-   *
-   * ⚠️ **É a informação mais valiosa desta tela, e ela é honesta:** sai das mesmas funções que
-   * a IA consulta ao escolher para onde mandar a hoste. Não é um aviso vago de perigo, é a
-   * lista de nomes que ela tem na mão. É a ideia de "agenda" do Civilization, mas sem inventar
-   * mecânica nova — a intenção já existia dentro da IA e ninguém a tinha perguntado.
-   */
-  private intencao(vizinho: VizinhoNaMesa): HTMLElement {
-    const caixa = document.createElement('div');
-    caixa.className = 'diplomacia__intencao';
-    caixa.dataset['tom'] = vizinho.tomDaIntencao;
-
-    const marca = document.createElement('span');
-    marca.className = 'diplomacia__marca';
-    marca.textContent = vizinho.tomDaIntencao === 'ameaca' ? '⚑' : '◆';
-
-    const frase = document.createElement('p');
-    frase.className = 'diplomacia__intencao-texto';
-    frase.textContent = vizinho.intencao;
-
-    caixa.append(marca, frase);
-    if (vizinho.fronteira.length > 0) {
-      definirTooltip(caixa, {
-        titulo: 'O que ele pretende',
-        corpo: `Faz fronteira com você em ${vizinho.fronteira.join(', ')}.`,
-      });
-    }
-    return caixa;
-  }
 
   /**
    * Uma FICHA DE TRATADO: cabeçalho sempre visível, opções só quando ela está aberta.

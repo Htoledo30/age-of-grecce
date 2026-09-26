@@ -219,9 +219,10 @@ export class FichaProvincia {
   private avisoDoHumor(vista: VistaDaProvincia): HTMLElement | null {
     const h = vista.humor;
     if (!h) return null;
-    // Duas situações merecem alarme, e são diferentes: a terra que JÁ está no fundo, e a que
-    // ainda está bem mas está CAINDO. A segunda é a que dá tempo de reagir — e era invisível.
-    const caindo = h.alvo < h.valor;
+    // Duas situações merecem alarme: a terra que JÁ está no fundo, e a que está caindo PARA a
+    // faixa em que o povo pega em armas. ⚠️ **Cair de 62 para 50 não é alarme** — era, e
+    // Henrique chamou de inútil: o número e a seta já estão na medida, e a conta no tooltip.
+    const caindo = h.alvo < h.valor && h.alvoEmRisco;
     const ruim = h.posicao <= 0.25;
     if (!caindo && !ruim) return null;
     const causas = h.parcelas

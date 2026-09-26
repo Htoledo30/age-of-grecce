@@ -113,6 +113,8 @@ export interface VistaDaProvincia {
     faixa: string;
     posicao: number;
     alvo: number;
+    /** O alvo cai na faixa em que o povo pega em armas — é só aí que vale um alarme. */
+    alvoEmRisco: boolean;
     parcelas: readonly { rotulo: string; pontos: number }[];
   } | null;
   /**

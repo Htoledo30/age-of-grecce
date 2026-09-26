@@ -505,7 +505,7 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     resumo: recebida > 0 ? `ele te dá ${recebida} turnos` : '',
     propostas,
     // Travado, o motivo já está no `bloqueio` de cada prazo — repeti-lo aqui era dizer duas vezes.
-    fala: travado ? '' : `Ele atravessa a sua terra sem declarar guerra.${nota}`,
+    fala: travado ? '' : nota.trim(),
     tom: travado ? 'ruim' : 'neutro',
   };
 }
@@ -535,7 +535,7 @@ function grupoDaGuerra(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     // ⚠️ **A trégua é dita UMA vez, e antes eram três** — aqui, na leitura da postura e no
     // bloqueio do botão. E a frase que sobrava sem trégua ("sem guerra declarada, sua hoste não
     // marcha") era tautologia: dizia o nome do botão de novo.
-    fala: tregoa > 0 ? `A trégua ainda segura por ${tregoa} turnos.` : '',
+    fala: tregoa > 0 ? `Trégua: ${tregoa} turnos.` : '',
     tom: 'ruim',
   };
 }
@@ -581,11 +581,9 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     propostas,
     // ⚠️ **A ÚNICA voz que sobrou na tela inteira, e ela mora aqui de propósito**: a fala dele
     // só aparece onde a decisão é a guerra. Em todo o resto da mesa, o estado é factual.
-    fala: resposta.aceita
-      ? resposta.fala
-      : comprada
-        ? `«${resposta.fala}» ${comprada.ouro}/turno o demoveria.`
-        : `«${resposta.fala}»`,
+    // ⚠️ **Sem frase de efeito.** Era a fala dele entre aspas — "Ainda tenho o que ganhar
+    // aqui." —, e Henrique: *"frases de efeito, patético"*. Fica o número que muda a conta.
+    fala: !resposta.aceita && comprada ? `Tributo de ${comprada.ouro} por turno.` : '',
     tom: resposta.aceita || comprada ? 'bom' : 'ruim',
     vozDele: true,
   };
@@ -598,10 +596,7 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const rendaDele = campanha.rendaDeUmAcordoCom(eu, id);
   // "por turno" por extenso, como nos outros cinco grupos: `/turno` era a última abreviação
   // sobrando numa coluna que passou a escrever frases.
-  const valores =
-    minhaRenda === rendaDele
-      ? 'Rende o mesmo para os dois lados.'
-      : `Ele ganha +${rendaDele} por turno com isto.`;
+  const valores = minhaRenda === rendaDele ? '' : `Ele: +${rendaDele} por turno.`;
   const permissao = campanha.podeAcordarComercio(id);
   const resposta = respostaAoComercio(jogo, id, eu);
   return {
@@ -761,7 +756,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
             : permissao.motivo,
       },
     ],
-    fala: resposta.fala,
+    fala: '',
     tom: resposta.aceita ? 'bom' : 'ruim',
     vozDele: true,
   };
@@ -798,7 +793,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       ],
       fala:
         guerras > 0
-          ? `Em vigor. Ele está em ${guerras} guerra${guerras === 1 ? '' : 's'}, e elas são suas.`
+          ? `Em vigor · ${guerras} guerra${guerras === 1 ? '' : 's'} dele.`
           : 'Em vigor.',
       tom: 'bom',
     };
@@ -821,12 +816,11 @@ function grupoComBalanca(
   // `prazosDe*` vem do mais longo ao mais curto: o primeiro que fecha é o mais longo que fecha.
   const fecha = prazos.find((p) => p.pode && p.resposta.aceita);
   const curto = prazos[prazos.length - 1];
+  // Sem a fala dele: quando fecha, a linha já diz; quando não, fica só o que viraria a conta.
   const fala =
-    fecha !== undefined
-      ? fecha.resposta.fala
-      : curto === undefined
-        ? ''
-        : `«${curto.resposta.fala}» ${curto.resposta.pedido}.`;
+    fecha !== undefined || curto === undefined || semSaida(curto.resposta.pedido)
+      ? ''
+      : `${maiuscula(curto.resposta.pedido)}.`;
   return {
     titulo,
     vontadeDele: true,
@@ -872,7 +866,7 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: 'Em vigor. Nenhum dos dois marcha sobre o outro.',
+      fala: 'Em vigor.',
       tom: 'bom',
     };
   }
@@ -905,8 +899,8 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
         },
       ],
       fala: euPago
-        ? `Você paga ${emCurso.ouro} moedas por turno, e ele não te ataca.`
-        : `Ele paga ${emCurso.ouro} moedas por turno, e você não o ataca.`,
+        ? `Você paga ${emCurso.ouro} por turno.`
+        : `Ele paga ${emCurso.ouro} por turno.`,
       tom: euPago ? 'ruim' : 'bom',
     };
   }
@@ -953,7 +947,7 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     // ⚠️ **A função escrita, e ela faltava.** Henrique, no inventário: *"Tributo — não
     // aprovado, porque não entendo a função"*. O que a tela mostrava eram seis botões com
     // quantias e prazos, e em lugar nenhum o que o acordo FAZ: quem paga compra sossego.
-    fala: 'Quem paga não é atacado por quem recebe, enquanto durar.',
+    fala: '',
     tom: querReceber?.aceita === true || querPagar?.aceita === true ? 'bom' : 'ruim',
   };
 }
