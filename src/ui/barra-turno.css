@@ -183,7 +183,9 @@
   font-size: var(--texto-nota);
 }
 .barra-turno__variacao[data-tom='ganho'] {
-  color: var(--ui-ganho);
+  /* Dinheiro é SEMPRE ouro, entrando ou parado — Henrique: "ou é verde ou dourado, não dá
+     pra ficar trocando". Só a saída ganha o vermelho. */
+  color: var(--ui-ouro);
 }
 .barra-turno__variacao[data-tom='perda'] {
   color: var(--ui-perda);

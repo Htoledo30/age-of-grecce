@@ -242,7 +242,7 @@
 .balanco__grao-custo {
   font-family: var(--fonte-numero);
   font-size: var(--texto-corpo);
-  color: var(--ui-bronze-claro);
+  color: var(--ui-perda);
 }
 .balanco__grao-custo[data-tom='bloqueio'] {
   color: var(--ui-texto-tenue);

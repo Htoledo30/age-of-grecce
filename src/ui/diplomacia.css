@@ -1020,7 +1020,10 @@ button.diplomacia__ficha-topo:focus-visible {
 .diplomacia__acao-prazo {
   width: 94px;
 }
-.diplomacia__acao-custo[data-tom='bom'],
+.diplomacia__acao-custo[data-tom='bom'] {
+  /* O custo é dinheiro: entrando, é ouro, como em toda tela. */
+  color: var(--ui-ouro);
+}
 .diplomacia__acao-prazo[data-tom='bom'] {
   color: var(--ui-verde-claro);
 }

@@ -112,10 +112,10 @@ export class Balanco implements AbaDoGoverno {
       trecho('balanco__dado', formatarAno(vista.ano)),
       trecho('balanco__dado', `turno ${vista.turno}`),
       rotulado(moeda(vista.tesouro), 'moedas', 'ouro'),
-      rotulado('terras', comSinal(somas.total), somas.total < 0 ? 'perda' : 'ganho'),
-      rotulado('rede', `+${moeda(vista.trocas)}`, 'ganho'),
+      rotulado('terras', comSinal(somas.total), somas.total < 0 ? 'perda' : 'ouro'),
+      rotulado('rede', `+${moeda(vista.trocas)}`, 'ouro'),
       // A renda pode ser negativa desde a manutenção de construção — o sinal é honesto.
-      rotulado(comSinal(doReino), 'por turno', doReino < 0 ? 'perda' : 'ganho'),
+      rotulado(comSinal(doReino), 'por turno', doReino < 0 ? 'perda' : 'ouro'),
       trecho('balanco__dado', `${vista.linhas.length} províncias`),
     ];
     // Dizer quantas ainda não arrecadam é honestidade: sem isso o total parece o teto do
