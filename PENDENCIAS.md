@@ -43,6 +43,9 @@ para servir à conquista, não para ocupar o jogador.
   "200 mil de ouro só com ~100 províncias" dependem de simular mais terra (trabalho de dados).
 - **Preço das construções escala com a riqueza da província** (Mercado 3.065 em Atenas, 942 em
   Hermíone). É proposital; Henrique ainda não disse se gosta.
+- **A resposta da IA aparece antes de negociar** ("ASSINARIA", "RELUTANTE", "recusa" em cada
+  acordo). Henrique não gosta, mas ela nasceu de um pedido antigo dele ("posso influenciar
+  dependendo do que ofertar"). Decidir: esconder tudo até propor, ou mostrar só uma pista.
 - **Quanto cortar da renda:** esperar Henrique jogar com o grão e a IA gastando o cofre.
 
 ## Frentes grandes em aberto (ordem sugerida)
