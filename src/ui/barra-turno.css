@@ -236,7 +236,8 @@
   gap: 8px;
 }
 
-.barra-turno__ouro .icone-grego {
+.barra-turno__ouro .icone-grego,
+.barra-turno__folego .icone-grego {
   display: none;
 }
 
@@ -247,6 +248,15 @@
   height: 27px;
   background: url('/interface/moeda-ateniense-v1.png') center / contain no-repeat;
   filter: brightness(1.22) saturate(1.1) drop-shadow(0 1px 3px rgb(0 0 0 / 60%));
+}
+
+.barra-turno__folego::before {
+  content: '';
+  flex: none;
+  width: 27px;
+  height: 27px;
+  background: url('/interface/comida-trigo-v1.png') center / contain no-repeat;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 60%));
 }
 
 @container palco (max-width: 760px) {

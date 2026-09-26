@@ -18,6 +18,7 @@ para servir à conquista, não para ocupar o jogador.
 
 | assunto | o que mudou | commit |
 |---|---|---|
+| Ícone de comida | espigas de trigo douradas na barra, no mesmo estilo da moeda | ver `git log` |
 | Trabalho de setembro só nesta máquina | salvo no GitHub | `752fc3f` |
 | População | cresce pela PROSPERIDADE de cada província: taxa base 0,1%/turno, cada obra de riqueza ou civil soma 0,05/0,10/0,15 p.p. | `3642ce9` |
 | Comida | 1.000 soldados por ponto (mudança de Henrique no F2) | `752fc3f` |
