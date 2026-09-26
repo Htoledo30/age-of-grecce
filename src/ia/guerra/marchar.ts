@@ -674,6 +674,13 @@ function posturaQueToma(
  * Esta é a pergunta do PLANO: vale declarar, vale insistir, vale continuar a guerra. Quem
  * responde *"e já posso ir hoje?"* é `hosteQueToma`, dentro de `ataquesEscolhidos` — e é a
  * distância entre as duas respostas que faz a IA passar alguns turnos juntando o exército.
+ *
+ * ⚠️ **`continuando` é a pergunta da PAZ, e ela é outra.** Começar uma guerra pede a casa em
+ * ordem e gente livre para sair; continuar uma só pergunta se ainda há o que tomar. Medido em 250
+ * turnos, 29 de 37 pazes entre computadores eram o ATACANTE desistindo no turno em que declarou
+ * ou no seguinte — 18 porque o inimigo tinha posto um barco de 85 homens na água em frente
+ * ("ameaçado"), 11 porque o exército que já marchava deixava de contar como exército. A guerra
+ * acabava antes da primeira batalha, e vinte turnos de trégua congelavam o par.
  */
 export function valeAPena(
   campanha: Campanha,
@@ -681,11 +688,14 @@ export function valeAPena(
   alvo: Oportunidade,
   estilo: EstiloDeIa,
   ajustes: AjustesDeCombate,
+  continuando = false,
 ): boolean {
-  if (estaAmeacado(campanha, idPoder)) return false;
+  if (!continuando && estaAmeacado(campanha, idPoder)) return false;
   const emPe = forcaTotalDe(campanha, idPoder);
+  // Quem já está em campo é o exército que toma; só para COMEÇAR ele deixa de estar livre.
   const naEstrada =
-    Math.floor(emPe * estilo.fracaoQueMarcha) - emTerraAlheia(campanha, idPoder);
+    Math.floor(emPe * estilo.fracaoQueMarcha) -
+    (continuando ? 0 : emTerraAlheia(campanha, idPoder));
   if (naEstrada <= 0 || emPe <= 0) return false;
 
   // Todas as minhas hostes como um exército só, encolhido à fatia que pode sair de casa.

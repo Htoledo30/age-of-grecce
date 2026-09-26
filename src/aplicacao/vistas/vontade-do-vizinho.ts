@@ -418,7 +418,9 @@ export function intencaoDe(jogo: Jogo, id: string, eu: string): Intencao {
   const estilo = estiloDe(jogo.ia, id);
   const cobicadasIds = oportunidadesDe(campanha, id)
     .filter((o) => o.dono === eu)
-    .filter((alvo) => valeAPena(campanha, id, alvo, estilo, jogo.ajustes.jogo.combate))
+    .filter((alvo) =>
+      valeAPena(campanha, id, alvo, estilo, jogo.ajustes.jogo.combate, campanha.emGuerra(eu, id)),
+    )
     .map((o) => o.provincia)
     .sort();
   const cobicadas = cobicadasIds.map((provincia) => campanha.nomeDe(provincia));

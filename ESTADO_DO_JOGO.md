@@ -300,7 +300,9 @@ Os poderes não controlados pelo jogador usam a mesma fachada e as mesmas regras
 - administra imposto, tesouro, construções e alimentação;
 - recruta respeitando população, comida, ouro, armas e manutenção local;
 - reage a ameaças, socorre cidades, faz surtidas e abandona campanhas que perderam sentido;
-- escolhe guerras, alvos, concentração, assalto, cerco, retirada e paz;
+- escolhe guerras, alvos, concentração, assalto, cerco, retirada e paz; para COMEÇAR uma guerra
+  exige a casa sem ameaça e gente livre para sair, mas para CONTINUAR só pergunta se o exército
+  inteiro, inclusive o que já está em campo, ainda toma alguma terra do inimigo;
 - navega, desembarca, intercepta e bloqueia;
 - usa presente, pacto, comércio, tributo, acesso, aliança, liga e anexação.
 

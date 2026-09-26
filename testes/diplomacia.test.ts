@@ -161,6 +161,21 @@ describe('a IA passa pela mesma porta', () => {
     // Caristo é uma ilha: ela não faz fronteira com Mégara, então não há o que tomar.
     expect(querPaz(c, 'caristo', 'megara', estiloDe(ia, 'caristo'), ajustes.combate)).toBe(true);
   });
+
+  it('quem está ganhando não desiste por um barco na porta nem pelo exército já em campo', () => {
+    // ⚠️ Medido em 250 turnos: 29 de 37 pazes entre computadores eram o atacante desistindo no
+    // turno em que declarou. Um barco inimigo em frente o dava por "ameaçado", e o exército que
+    // já marchava deixava de contar — as duas perguntas de COMEÇAR uma guerra, feitas para
+    // decidir se ela CONTINUA.
+    const c = nova('atenas');
+    c.declararGuerra('eleusis', 'megara');
+    c.plantarHoste('eleusis', 'megara', 8000);
+    const agua = c.vizinhasDe('megara').find((v) => c.ehMar(v))!;
+    c.plantarHoste(agua, 'eleusis', 100);
+
+    const estilo = estiloDe(ia, 'megara');
+    expect(querPaz(c, 'megara', 'eleusis', estilo, ajustes.combate)).toBe(false);
+  });
 });
 
 describe('a relação: o humor entre reinos', () => {

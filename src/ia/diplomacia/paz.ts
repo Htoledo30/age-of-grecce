@@ -57,7 +57,7 @@ export function querPaz(
 
   // "Não há mais o que tomar dele."
   const alvos = oportunidadesDe(campanha, idPoder).filter((o) => o.dono === inimigo);
-  return !alvos.some((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes));
+  return !alvos.some((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes, true));
 }
 
 /**
@@ -97,7 +97,7 @@ export function querPazComTributo(
   // outros já não são prêmio nenhum, e contá-los faria qualquer oferta parecer pequena.
   const premio = oportunidadesDe(campanha, idPoder)
     .filter((o) => o.dono === inimigo)
-    .filter((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes))
+    .filter((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes, true))
     .reduce(
       (soma, o) =>
         soma + Math.max(0, o.renda) + o.bemNovo + (o.capital ? estilo.valorDaCapital : 0),
