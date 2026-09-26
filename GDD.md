@@ -769,6 +769,9 @@ Henrique; uma possibilidade pode ser removida se não combinar com o jogo.
 - gosto diplomático próprio de cada estilo de IA;
 - arestas da aliança e memória longa de trégua violada;
 - migração, governadores e espionagem;
+- rejogabilidade: forma de governo, ou bônus e personalidade de jogo próprios de cada reino —
+  o foco declarado por Henrique é conquistar, aliar e crescer, sem a complexidade de Victoria 3
+  ou Crusader Kings 3;
 - preços, oferta e demanda regionais;
 - extensão dos danos a construções além da perda atual de um nível na conquista;
 - abastecimento militar por distância além do desconto local já dado pela Estrada;
