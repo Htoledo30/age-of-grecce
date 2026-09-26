@@ -10,6 +10,7 @@
 import { Janela } from './janela';
 import { iconeDaConstrucao, iconeGrego } from './icones-gregos';
 import { imagemDaConstrucao } from './imagens-de-construcoes';
+import { moedaAteniense } from './moeda';
 import { definirTooltip } from './tooltip';
 
 type CategoriaDaConstrucao = 'cidade' | 'guerra' | 'rotas' | 'terra';
@@ -168,7 +169,7 @@ export class JanelaDeConstrucoes {
     const nome = document.createElement('span');
     nome.textContent = 'Tesouro';
     const valor = document.createElement('strong');
-    valor.append(iconeGrego('moeda'), document.createTextNode(moeda(vista.tesouro)));
+    valor.append(moedaAteniense(), document.createTextNode(moeda(vista.tesouro)));
     tesouro.append(nome, valor);
 
     this.resumo.replaceChildren(titulo, trilha, tesouro);
@@ -281,7 +282,7 @@ export class JanelaDeConstrucoes {
       preco.textContent = `${t} ${t === 1 ? 'turno' : 'turnos'}`;
     } else {
       const ouro = document.createElement('strong');
-      ouro.append(iconeGrego('moeda', 'construcoes__moeda'), moeda(opcao.custo));
+      ouro.append(moedaAteniense(), moeda(opcao.custo));
       const prazo = document.createElement('small');
       prazo.textContent = `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`;
       preco.append(ouro, prazo);

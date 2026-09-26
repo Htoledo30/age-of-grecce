@@ -1,7 +1,6 @@
-/* ⚠️ **Nenhum TAMANHO de texto entra aqui.** Sete tamanhos em nove declarações — 11, 11.5, 12, 13, 17, 18, 19 — viraram quatro degraus. A régua é
-   `estilo/tokens.css`, e a escolha é sempre pela FUNÇÃO do texto — etiqueta, nota, corpo,
-   medida, destaque, título —, nunca por um número. */
-/* A janela de recrutamento. A moldura vem de `janela.css`; aqui está só o miolo. */
+/* ⚠️ **Nenhum TAMANHO de texto solto aqui.** A régua é `estilo/tokens.css`, e a escolha é
+   sempre pela FUNÇÃO do texto — etiqueta, nota, corpo, medida, destaque, título, herói. */
+/* A janela de recrutamento: QUANTOS e QUANTO. A moldura vem de `janela.css`. */
 .recrutamento__recusa {
   font-size: var(--texto-corpo);
   line-height: 1.5;
@@ -12,139 +11,140 @@
   gap: 18px;
 }
 
-/* A reserva: os números que limitam a leva antes de qualquer escolha. */
-/* Só existe quando há o que dizer: formação em curso e treino da terra. Vazio, some. */
-.recrutamento__resumo:not(:empty) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  padding-bottom: 13px;
-  border-bottom: 1px solid var(--ui-borda-fraca);
-}
-.recrutamento__dado {
-  display: grid;
-  padding: 0 18px;
-  border-left: 1px solid var(--ui-borda-fraca);
-}
-.recrutamento__dado:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-.recrutamento__dado-rotulo {
-  font-size: var(--texto-nota);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ui-texto-tenue);
-}
-.recrutamento__dado strong {
-  margin-top: 2px;
-  font-family: var(--fonte-numero);
-  font-size: var(--texto-destaque);
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  color: var(--ui-texto);
-}
-
-/* AS QUATRO ARMAS: nome e quatro números, e mais nada.
-   ⚠️ Cada cartão trazia um parágrafo descrevendo o papel da arma, e escolher entre quatro
-   botões virava ler quatro textos. O papel foi para o tooltip; aqui ficou o que se compara. */
+/* AS QUATRO ARMAS: a arte da casa que as forma, o nome e o preço por homem. */
 .recrutamento__armas {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
 }
 .recrutamento__arma {
+  position: relative;
   display: grid;
+  grid-template-rows: 64px auto auto auto;
   align-content: start;
-  gap: 6px;
-  padding: 10px 11px 11px;
+  gap: 3px;
+  padding: 0 0 9px;
+  overflow: hidden;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--ui-fundo-suave);
   color: var(--ui-texto-fraco);
   font-family: var(--fonte-corpo);
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition:
     border-color 110ms ease,
-    background 110ms ease;
+    transform 110ms ease;
+}
+.recrutamento__arma-arte {
+  width: 100%;
+  height: 64px;
+  margin-bottom: 5px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--ui-borda-fraca);
+  filter: saturate(0.85) brightness(0.9);
 }
 .recrutamento__arma:hover:not(:disabled) {
   border-color: var(--ui-bronze);
-  background: var(--ui-fundo-claro);
+}
+.recrutamento__arma:hover:not(:disabled) .recrutamento__arma-arte {
+  filter: saturate(1) brightness(1);
 }
 .recrutamento__arma:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
+}
+.recrutamento__arma:disabled .recrutamento__arma-arte {
+  filter: grayscale(1) brightness(0.55);
+}
+.recrutamento__arma:disabled .recrutamento__arma-nome,
+.recrutamento__arma:disabled .recrutamento__arma-preco {
+  opacity: 0.55;
 }
 .recrutamento__arma[data-escolhida='sim'] {
   border-color: var(--ui-bronze);
-  background: var(--ui-pressionado);
+  box-shadow:
+    inset 0 0 0 1px var(--ui-bronze),
+    0 6px 18px var(--ui-sombra-leve);
+}
+.recrutamento__arma[data-escolhida='sim'] .recrutamento__arma-arte {
+  filter: saturate(1) brightness(1.05);
 }
 .recrutamento__arma-nome {
   font-family: var(--fonte-nome);
-  font-size: var(--texto-destaque);
-  font-weight: 600;
-  line-height: 1;
+  font-size: var(--texto-medida);
+  font-weight: 650;
+  line-height: 1.1;
   color: var(--ui-texto);
 }
 .recrutamento__arma[data-escolhida='sim'] .recrutamento__arma-nome {
   color: var(--ui-bronze-claro);
 }
-.recrutamento__arma-numeros {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1px 8px;
-  font-size: var(--texto-nota);
-}
-.recrutamento__arma-numeros dt {
-  color: var(--ui-texto-tenue);
-}
-.recrutamento__arma-numeros dd {
+.recrutamento__arma-preco {
   font-family: var(--fonte-numero);
+  font-size: var(--texto-corpo);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  text-align: right;
-  color: var(--ui-texto-fraco);
+  color: var(--ui-ouro);
 }
-.recrutamento__arma[data-escolhida='sim'] .recrutamento__arma-numeros dd {
-  color: var(--ui-texto);
-}
-/* O que falta para levantar esta arma. Vazio quando ela está liberada — e um elemento
-   vazio não ocupa linha, então o cartão liberado é mais curto por si. */
+/* O que falta para levantar esta arma. Vazio quando ela está liberada. */
 .recrutamento__arma-trava:not(:empty) {
+  padding: 0 6px;
   font-size: var(--texto-nota);
-  line-height: 1.3;
-  color: var(--ui-sangue-claro);
+  line-height: 1.25;
+  color: var(--ui-perda);
 }
 
-/* A escolha da leva: quanto, e o que isso custa. */
+/* QUANTOS: o número grande no centro, a barra embaixo dele. */
 .recrutamento__escolha {
   display: grid;
-  gap: 9px;
+  gap: 10px;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(189 143 66 / 9%), transparent 70%),
+    rgb(10 15 16 / 34%);
 }
 .recrutamento__quantidade {
-  font-family: var(--fonte-numero);
-  font-size: var(--texto-medida);
-  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
   color: var(--ui-texto);
 }
-/* A barra: alta o bastante para se arrastar sem mira. O padrão do navegador tem 4 px de
-   trilho e um punho de 12, o que num painel escuro some. */
-.recrutamento__valor {
+.recrutamento__contador {
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-heroi);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.recrutamento__unidade {
+  font-family: var(--fonte-nome);
+  font-size: var(--texto-destaque);
+  color: var(--ui-texto-fraco);
+}
+/* Passar da despensa não é recusa, é escolha cara: o número fica em alerta. */
+.recrutamento__quantidade[data-fome='sim'] .recrutamento__contador {
+  color: var(--ui-perda);
+}
+/* A barra: alta o bastante para se arrastar sem mira. */
+.recrutamento__barra {
   width: 100%;
   height: 22px;
   accent-color: var(--ui-bronze);
   cursor: pointer;
 }
-.recrutamento__valor:disabled {
+.recrutamento__barra:disabled {
   cursor: not-allowed;
   opacity: 0.4;
 }
 .recrutamento__atalhos {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
+  gap: 6px;
 }
 .recrutamento__atalho {
   min-height: 30px;
@@ -166,48 +166,66 @@
   cursor: not-allowed;
   opacity: 0.4;
 }
-.recrutamento__previsao {
-  min-height: 18px;
-  font-family: var(--fonte-numero);
-  font-size: var(--texto-corpo);
-  line-height: 1.45;
-  color: var(--ui-texto-fraco);
+
+/* QUANTO: a dracma e o número em ouro, ao lado do botão que paga. */
+.recrutamento__fecho {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
 }
-.recrutamento__previsao[data-pode='nao'] {
-  color: var(--ui-sangue-claro);
+.recrutamento__custo {
+  display: grid;
+  gap: 2px;
+  margin: 0;
 }
-/* Passar da despensa não é recusa, é escolha cara: o número de soldados e a linha da fome
-   ficam em alerta, e o custo continua lendo como custo. */
-.recrutamento__quantidade[data-fome='sim'],
-.recrutamento__fome {
-  color: var(--ui-perda);
-}
-.recrutamento__fome {
-  display: block;
-}
-.recrutamento__valor {
+.recrutamento__custo-rotulo {
+  font-size: var(--texto-nota);
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ui-texto-tenue);
 }
-.recrutamento__valor[data-tom='ouro'],
-.recrutamento__arma .recrutamento__arma-numeros dd[data-tom='ouro'] {
+.recrutamento__custo-valor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--fonte-numero);
+  font-size: var(--texto-titulo);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
   color: var(--ui-ouro);
 }
-.recrutamento__valor[data-tom='perda'] {
-  color: var(--ui-perda);
-}
-.recrutamento__previsao[data-pode='espera'] {
+.recrutamento__custo[data-vazio='sim'] .recrutamento__custo-valor {
   color: var(--ui-texto-tenue);
 }
 .recrutamento__botao {
   width: 100%;
-  padding: 11px;
+  padding: 13px;
   text-align: center;
 }
-/* Desabilitado tem que PARECER desabilitado: em bronze cheio, o botão de reunir leva
-   convidava ao clique que ele mesmo recusava. */
+/* Desabilitado tem que PARECER desabilitado: em bronze cheio, o botão convidava ao clique
+   que ele mesmo recusava. */
 .recrutamento__botao:disabled {
   border-color: var(--ui-borda-fraca);
   background: transparent;
   color: var(--ui-texto-tenue);
   cursor: not-allowed;
+}
+
+/* Uma linha só, e só quando há o que dizer: por que não dá, ou quantos a comida alimenta. */
+.recrutamento__previsao {
+  min-height: 0;
+  margin: -6px 0 0;
+  font-size: var(--texto-nota);
+  text-align: center;
+  color: var(--ui-texto-tenue);
+}
+.recrutamento__previsao:empty {
+  display: none;
+}
+.recrutamento__previsao[data-pode='nao'],
+.recrutamento__previsao[data-pode='fome'] {
+  color: var(--ui-perda);
 }

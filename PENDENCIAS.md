@@ -33,6 +33,8 @@ para servir à conquista, não para ocupar o jogador.
 | Atenas voltou depois da derrota | derrota do jogador é definitiva; a revolta na terra dele cria um reino novo | `cbe9565` |
 | Visual do cerco | sitiante sempre na divisa, borda tracejada cor de fogo e chama no canto | `99fca85` |
 | Diplomacia sem resposta antecipada | decisão de Henrique (A): a resposta só vem depois da proposta; a recusa diz o que faltou; mensagens curtas | ver `git log` |
+| Janela de Recrutar | só quantos e quanto: cartões com a arte da casa de cada arma, número grande, custo com a dracma; comida só quando falta | ver `git log` |
+| Cores foscas | ouro velho, pátina e óxido no lugar de amarelo, menta e salmão; dracma da barra em toda tela de ouro | ver `git log` |
 | Catálogo de Construções | agrupado por família, com a vinheta de cada obra, efeito numa frase e preço com moeda | ver `git log` |
 | Retoque visual | convenção de cores (ouro amarelo, ganho verde, perda vermelha, rótulo em marfim) na barra, no painel, no Governo, em Construções e em Recrutar; textos pequenos subiram (11/12/14px); tamanhos soltos de Construções viraram régua; Guerra deixou de ser vermelha; custo da leva sempre visível | ver `git log` |
 

@@ -19,29 +19,29 @@
 }
 
 .construcoes [data-categoria='cidade'] {
-  --obra-cor: #d9b66e;
-  --obra-cor-fundo: rgb(217 182 110 / 12%);
-  --obra-cor-forte: #e5c887;
+  --obra-cor: #b99a5c;
+  --obra-cor-fundo: rgb(185 154 92 / 12%);
+  --obra-cor-forte: #d0b47a;
 }
 
 /* Guerra é AÇO, e não vermelho: vermelho é perda em todo o jogo, e o "+25%" do Quartel saía
    da mesma cor do "−3" de uma folha. */
 .construcoes [data-categoria='guerra'] {
-  --obra-cor: #a9b4c8;
-  --obra-cor-fundo: rgb(169 180 200 / 12%);
-  --obra-cor-forte: #cdd6e6;
+  --obra-cor: #9aa3ad;
+  --obra-cor-fundo: rgb(154 163 173 / 12%);
+  --obra-cor-forte: #bcc3ca;
 }
 
 .construcoes [data-categoria='rotas'] {
-  --obra-cor: #78abb2;
-  --obra-cor-fundo: rgb(120 171 178 / 12%);
-  --obra-cor-forte: #97c4c9;
+  --obra-cor: #6f9397;
+  --obra-cor-fundo: rgb(111 147 151 / 12%);
+  --obra-cor-forte: #8fb0b3;
 }
 
 .construcoes [data-categoria='terra'] {
-  --obra-cor: #8daa72;
-  --obra-cor-fundo: rgb(141 170 114 / 12%);
-  --obra-cor-forte: #adc493;
+  --obra-cor: #82966a;
+  --obra-cor-fundo: rgb(130 150 106 / 12%);
+  --obra-cor-forte: #a1b287;
 }
 
 /* O topo mostra o que ocupa os quatro lugares, não quatro estatísticas redundantes. */
@@ -436,11 +436,6 @@
   font-size: var(--texto-medida);
   font-weight: 700;
   color: var(--ui-ouro);
-}
-
-.construcoes__moeda {
-  width: 14px;
-  height: 14px;
 }
 
 .construcoes__cartao[data-estado='sem-ouro'] .construcoes__preco-lista strong {

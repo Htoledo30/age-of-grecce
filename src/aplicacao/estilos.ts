@@ -19,6 +19,7 @@ import '@/ui/acoes-provincia.css';
 import '@/ui/janela.css';
 import '@/ui/governo.css';
 import '@/ui/construcoes.css';
+import '@/ui/moeda.css';
 import '@/ui/diplomacia.css';
 import '@/ui/inicio-jogo.css';
 import '@/ui/controles.css';

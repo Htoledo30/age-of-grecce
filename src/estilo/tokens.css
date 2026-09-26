@@ -40,9 +40,11 @@
      Rótulo em marfim, valor com cor de FUNÇÃO: ouro em amarelo, ganho em verde, perda em
      vermelho. Henrique: *"moedas e o valor na mesma cor — teria que ser moedas em branco e o
      valor em amarelo"*. Um número de ouro fica amarelo em qualquer painel; um ganho, verde. */
-  --ui-ouro: #f2cf6b;
-  --ui-ganho: #8fc79a;
-  --ui-perda: #e08473;
+  /* ⚠️ **Foscas e metálicas, e não de brinquedo.** A primeira versão era amarelo-limão, verde
+     menta e salmão, e Henrique: *"parece de criança"*. Ouro velho, pátina de bronze e óxido. */
+  --ui-ouro: #cfa95a;
+  --ui-ganho: #86a78c;
+  --ui-perda: #c0705f;
   --ui-fogo-claro: #ffc247;
   --ui-inativo: #5f6662;
 

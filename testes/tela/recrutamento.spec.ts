@@ -113,46 +113,11 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
     barra.value = '1000';
     barra.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  await expect(page.locator('.recrutamento__previsao')).toContainText('3.000 moedas agora');
-  // ⚠️ **A previsão é conferida pela FÓRMULA, e nunca pelo valor do dial.** Este teste cravava
-  // `100 por turno` — 1.000 homens × `manutencaoPorHomem.emCasa` de 0,10 — e quedou vermelho no
-  // dia em que Henrique devolveu o soldo em casa para 0,15, dizendo de balanço uma coisa que a
-  // regra da casa proíbe: *"testes protegem relações e fórmulas, não valores de balanceamento
-  // que podem mudar"*. O que a tela promete e tem de ser guardado é que a folha é LINEAR no
-  // número de homens e que a campanha custa mais que a casa — as duas coisas continuam
-  // verdadeiras com qualquer dial.
-  const emCasaDe = async (): Promise<{ casa: number; alheia: number }> => {
-    const texto = (await page.locator('.recrutamento__previsao').textContent()) ?? '';
-    const casa = Number(/([\d.]+) por turno em casa/.exec(texto)?.[1]?.replace(/\./g, ''));
-    const alheia = Number(
-      /([\d.]+) por turno em terra alheia/.exec(texto)?.[1]?.replace(/\./g, ''),
-    );
-    return { casa, alheia };
-  };
-  const mil = await emCasaDe();
-  expect(mil.casa).toBeGreaterThan(0);
-  expect(mil.alheia).toBeGreaterThan(mil.casa);
-  await expect(page.getByRole('button', { name: 'Reunir 1.000' })).toBeEnabled();
-
-  // Metade da leva, metade da folha dos dois lados: é a fórmula, e ela não depende de dial
-  // nenhum. ⚠️ **Para BAIXO, e não para cima:** a barra é limitada pelo tesouro (`max` é o
-  // terço dele), e Atenas abre com 3.500 — pedir 2.000 seria silenciosamente cortado em 1.166,
-  // e o teste mediria o teto do cofre achando que media a folha.
-  await seletor.evaluate((elemento) => {
-    const barra = elemento as HTMLInputElement;
-    barra.value = '500';
-    barra.dispatchEvent(new Event('input', { bubbles: true }));
-  });
-  const meiaLeva = await emCasaDe();
-  expect(meiaLeva.casa * 2).toBe(mil.casa);
-  expect(meiaLeva.alheia * 2).toBe(mil.alheia);
-
-  // E volta para os mil, que é a leva que o resto do teste levanta.
-  await seletor.evaluate((elemento) => {
-    const barra = elemento as HTMLInputElement;
-    barra.value = '1000';
-    barra.dispatchEvent(new Event('input', { bubbles: true }));
-  });
+  // ⚠️ **A janela responde duas perguntas: quantos e quanto.** Henrique: *"o jogador só quer
+  // saber quanto ele vai gastar pra contratar e quanto soldados ele tá contratando"*. A folha
+  // saiu da janela e é conferida na barra do topo, depois da virada.
+  await expect(page.locator('.recrutamento__contador')).toHaveText('1.000');
+  await expect(page.locator('.recrutamento__custo')).toContainText('3.000');
   await expect(page.getByRole('button', { name: 'Reunir 1.000' })).toBeEnabled();
 
   await page.getByRole('button', { name: 'Reunir 1.000' }).click();
@@ -211,12 +176,8 @@ test('sem Quartel a leva já pode sair da população', async ({ page }) => {
   await fecharBatalhas(page);
   expect(pronta).toEqual({ forca: 1000, formacao: undefined });
   await expect(formacao).toHaveAttribute('data-somente-formacao', 'nao');
-  // ⚠️ **A barra cobra EXATAMENTE o que a janela de recrutamento prometeu.** O valor cravado
-  // aqui era `−100` — o mesmo dial de 0,10 do começo do teste —, e é a promessa errada de
-  // guardar: o que a tela tem de garantir não é quanto custa um soldado, é que a previsão do
-  // recrutamento e a folha da barra são a MESMA conta. Cravar o número deixa as duas livres
-  // para divergirem em silêncio desde que ambas mudem junto com o dial.
-  await expect(page.locator('.barra-turno__ouro')).toContainText(`−${mil.casa}`);
+  // A folha da leva aparece na barra do topo, em vermelho, assim que ela vira hoste.
+  await expect(page.locator(".barra-turno__variacao[data-tom='perda']")).toBeVisible();
 
   // Ver e dispensar a tropa NÃO moram mais aqui: mudaram para a ficha do exército, que
   // se abre clicando no marcador. Ver testes/tela/hostes.spec.ts.

@@ -14,12 +14,20 @@
  * As quatro armas aparecem SEMPRE, e as trancadas vêm apagadas com o motivo escrito. É assim
  * que o jogador descobre que existe cavalaria e o que ela exige: esconder o que ainda não dá
  * para fazer esconderia justamente a decisão de construir.
+ *
+ * ⚠️ **Só duas perguntas: quantos homens, e quanto custa.** Henrique: *"o jogador só quer
+ * saber quanto ele vai gastar pra contratar e quanto soldados ele tá contratando, só isso"*.
+ * Saíram da janela a folha em casa e em campanha, o treino, a leva em formação e os números
+ * de combate de cada arma — ataque, aguento e comida ficam no tooltip do cartão. A comida só
+ * aparece quando falta: é o único aviso que muda a decisão.
  */
 
 import type { Arma } from '@/combate/exercito';
 import { NOME_DA_ARMA, PAPEL_DA_ARMA } from './armas';
+import { imagemDaConstrucao } from './imagens-de-construcoes';
 import { Janela } from './janela';
-import { definirTooltip, removerTooltip } from './tooltip';
+import { moedaAteniense } from './moeda';
+import { definirTooltip } from './tooltip';
 
 /** Uma arma como a janela a oferece. */
 export interface ArmaParaLeva {
@@ -51,20 +59,13 @@ export type VistaDeRecrutamento =
       emFormacao: number;
       /** As quatro armas, liberadas ou não, na ordem fixa do jogo. */
       armas: readonly ArmaParaLeva[];
-      /**
-       * O treino que esta terra carimba na leva. 1 é tropa comum.
-       *
-       * Mostrado ANTES do clique porque é carimbado no recrutamento e nunca mais muda: quem
-       * levanta hoje leva o treino de hoje para o resto da campanha.
-       */
+      /** O treino que esta terra carimba na leva. 1 é tropa comum. */
       treino: number;
       /**
        * Quantos homens A MAIS a despensa do reino ainda alimenta.
        *
-       * ⚠️ **A comida é o terceiro teto da leva, e era o único mudo.** O painel já dizia o que
-       * ela custa em ouro e em gente; a comida ficava para o jogador descobrir na virada
-       * seguinte, com 5% da tropa morrendo. Medido: Atenas abre alimentando 500 homens e
-       * podendo pagar 7.740 — o pior teto militar do mapa, no reino mais rico dele.
+       * ⚠️ **É o único aviso que ficou na janela**, e só aparece quando a leva passa dele: com
+       * a comida curta, 5% da tropa morre na virada seguinte.
        */
       homensQueAComidaSustenta: number;
       /** Por homem por turno com a tropa parada em casa. */
@@ -82,13 +83,16 @@ export class Recrutamento {
   private readonly janela: Janela;
   private readonly recusa = document.createElement('p');
   private readonly conteudo = document.createElement('div');
-  private readonly resumo = document.createElement('div');
   private readonly seletor = document.createElement('div');
   private readonly botoesDeArma = new Map<Arma, HTMLButtonElement>();
   private readonly campoHomens = document.createElement('input');
   private readonly quantidade = document.createElement('p');
+  private readonly contador = document.createElement('strong');
+  private readonly unidade = document.createElement('span');
   private readonly atalhos = document.createElement('div');
   private readonly botoesDeAtalho: HTMLButtonElement[] = [];
+  private readonly custo = document.createElement('p');
+  private readonly custoValor = document.createElement('strong');
   private readonly previsao = document.createElement('p');
   private readonly botaoRecrutar = document.createElement('button');
   private vista: VistaDeRecrutamento | null = null;
@@ -105,7 +109,6 @@ export class Recrutamento {
     this.recusa.className = 'recrutamento__recusa';
     this.recusa.hidden = true;
     this.conteudo.className = 'recrutamento__conteudo';
-    this.resumo.className = 'recrutamento__resumo';
 
     this.seletor.className = 'recrutamento__armas';
     this.seletor.setAttribute('role', 'group');
@@ -114,13 +117,14 @@ export class Recrutamento {
       this.seletor.appendChild(this.cartaoDeArma(arma));
     }
 
-    const escolha = document.createElement('div');
-    escolha.className = 'recrutamento__escolha';
-
+    // O NÚMERO DE HOMENS é o centro da janela, grande: é a primeira das duas perguntas.
     this.quantidade.className = 'recrutamento__quantidade';
     this.quantidade.setAttribute('aria-live', 'polite');
+    this.contador.className = 'recrutamento__contador';
+    this.unidade.className = 'recrutamento__unidade';
+    this.quantidade.append(this.contador, this.unidade);
 
-    this.campoHomens.className = 'recrutamento__valor';
+    this.campoHomens.className = 'recrutamento__barra';
     this.campoHomens.type = 'range';
     this.campoHomens.min = '0';
     this.campoHomens.step = '1';
@@ -152,6 +156,14 @@ export class Recrutamento {
       this.atalhos.appendChild(botao);
     }
 
+    // O CUSTO é a segunda pergunta: a dracma e o número em ouro, e nada mais.
+    this.custo.className = 'recrutamento__custo';
+    const rotuloDoCusto = document.createElement('span');
+    rotuloDoCusto.className = 'recrutamento__custo-rotulo';
+    rotuloDoCusto.textContent = 'Custo';
+    this.custoValor.className = 'recrutamento__custo-valor';
+    this.custo.append(rotuloDoCusto, this.custoValor);
+
     this.previsao.className = 'recrutamento__previsao';
 
     this.botaoRecrutar.className = 'botao botao--principal recrutamento__botao';
@@ -171,8 +183,13 @@ export class Recrutamento {
       this.botaoRecrutar.blur();
     });
 
-    escolha.append(this.quantidade, this.campoHomens, this.atalhos, this.previsao, this.botaoRecrutar);
-    this.conteudo.append(this.resumo, this.seletor, escolha);
+    const escolha = document.createElement('div');
+    escolha.className = 'recrutamento__escolha';
+    escolha.append(this.quantidade, this.campoHomens, this.atalhos);
+    const fecho = document.createElement('div');
+    fecho.className = 'recrutamento__fecho';
+    fecho.append(this.custo, this.botaoRecrutar);
+    this.conteudo.append(this.seletor, escolha, fecho, this.previsao);
     this.janela.corpo.append(this.recusa, this.conteudo);
   }
 
@@ -193,25 +210,34 @@ export class Recrutamento {
   }
 
   /**
-   * Um cartão por arma: **o nome e os quatro números.** Nada de prosa.
+   * Um cartão por arma: **a arte da casa que a forma, o nome e o preço por homem.**
    *
-   * ⚠️ Cada cartão trazia uma frase explicando o papel da arma — *"A parede: encaixa o
-   * choque e não quebra"* — e escolher entre quatro botões virava ler quatro parágrafos.
-   * Custo, ataque, aguento e comida respondem a mesma pergunta de relance, e o papel
-   * escrito continua no tooltip para quem quiser.
+   * A vinheta é a do prédio que libera a arma — Quartel, Armaria, Acampamento, Treinamento —,
+   * a mesma do catálogo de Construções: quem vê o cartão apagado já reconhece o que falta.
    */
   private cartaoDeArma(arma: Arma): HTMLButtonElement {
     const botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'recrutamento__arma';
+    botao.dataset['arma'] = arma;
+    const origem = imagemDaConstrucao(ARTE_DA_ARMA[arma]);
+    if (origem) {
+      const arte = document.createElement('img');
+      arte.className = 'recrutamento__arma-arte';
+      arte.src = origem;
+      arte.alt = '';
+      arte.draggable = false;
+      arte.decoding = 'async';
+      botao.appendChild(arte);
+    }
     const nome = document.createElement('span');
     nome.className = 'recrutamento__arma-nome';
     nome.textContent = NOME_DA_ARMA[arma];
-    const numeros = document.createElement('dl');
-    numeros.className = 'recrutamento__arma-numeros';
+    const preco = document.createElement('span');
+    preco.className = 'recrutamento__arma-preco';
     const trava = document.createElement('span');
     trava.className = 'recrutamento__arma-trava';
-    botao.append(nome, numeros, trava);
+    botao.append(nome, preco, trava);
     botao.addEventListener('click', () => {
       this.arma = arma;
       // Trocar de arma troca o preço, e com ele o teto: manter o número anterior ofereceria
@@ -240,17 +266,8 @@ export class Recrutamento {
     }
     this.recusa.hidden = true;
     this.conteudo.hidden = false;
-    // Os habitantes vão para a LEGENDA, e não para uma faixa própria: é o número que dá
-    // contexto à janela inteira, e uma faixa só para ele custava 55 px de altura.
     this.janela.dizer(
       `${vista.provincia.nome} · ${vista.regiao} · ${numero(vista.populacao)} habitantes`,
-    );
-
-    // ⚠️ **Só a população.** "Podem pegar em armas" saiu: é um teto que o jogador descobre
-    // arrastando a barra, e quando ele acaba de vez o recrutamento fecha e diz por quê.
-    this.resumo.replaceChildren(
-      ...(vista.emFormacao > 0 ? [dado('em formação', numero(vista.emFormacao))] : []),
-      ...(vista.treino > 1 ? [dado('treino', `×${vista.treino.toFixed(2)}`)] : []),
     );
 
     this.pintarArmas(vista);
@@ -277,7 +294,7 @@ export class Recrutamento {
     return vista.armas.find((a) => a.arma === 'leve') ?? atual ?? SEM_ARMA;
   }
 
-  /** Acende a escolhida, apaga as trancadas, e diz em cada uma o que ela é e o que falta. */
+  /** Acende a escolhida, apaga as trancadas, e diz em cada uma o preço ou o que falta. */
   private pintarArmas(vista: Extract<VistaDeRecrutamento, { pode: true }>): void {
     const escolhida = this.escolhida(vista).arma;
     for (const dados of vista.armas) {
@@ -286,111 +303,80 @@ export class Recrutamento {
       botao.disabled = !dados.liberada;
       botao.setAttribute('aria-pressed', String(dados.arma === escolhida));
       botao.dataset['escolhida'] = dados.arma === escolhida ? 'sim' : 'nao';
-      const numeros = botao.querySelector('.recrutamento__arma-numeros');
-      if (numeros) {
-        numeros.replaceChildren(
-          stat('custo', numero(dados.custoPorHomem), 'ouro'),
-          stat('ataque', `×${dados.ataque}`),
-          stat('aguento', `×${dados.aguento}`),
-          stat('comida', `×${dados.comida}`),
-        );
-      }
+      const preco = botao.querySelector('.recrutamento__arma-preco');
+      if (preco) preco.replaceChildren(moedaAteniense(), ` ${numero(dados.custoPorHomem)}`);
       const trava = botao.querySelector('.recrutamento__arma-trava');
       if (trava) trava.textContent = dados.liberada ? '' : dados.motivo;
+      // O papel e os números de combate ficam aqui, para quem quiser: a janela não os impõe.
       definirTooltip(botao, {
         titulo: NOME_DA_ARMA[dados.arma],
-        corpo: PAPEL_DA_ARMA[dados.arma],
+        corpo:
+          `${PAPEL_DA_ARMA[dados.arma]}\n` +
+          `ataque ×${dados.ataque} · aguento ×${dados.aguento} · comida ×${dados.comida}`,
         tom: dados.liberada ? 'informacao' : 'bloqueio',
       });
     }
   }
 
-  /**
-   * Diz o que aquela leva custaria — ou por que não pode.
-   *
-   * Escrever a conta antes do clique é o que torna isto uma decisão: o jogador vê que
-   * mil homens custam duas mil moedas AGORA e duzentas TODO TURNO, e é a segunda parcela
-   * que decide, não a primeira.
-   */
+  /** Atualiza as duas respostas — quantos e quanto — e o botão. */
   private avaliar(): void {
     const vista = this.vista;
     if (!vista?.pode) return;
     const homens = Number(this.campoHomens.value);
     const escolhida = this.escolhida(vista);
 
-    this.quantidade.textContent =
-      `${numero(homens)} ${NOME_DA_ARMA[escolhida.arma].toLowerCase()}` +
-      (escolhida.maximo > 0 ? ` · máximo agora: ${numero(escolhida.maximo)}` : '');
-    // ⚠️ **Não é uma trava.** Passar da despensa continua sendo uma decisão do jogador, como é
-    // para a IA: o número fica vermelho, a previsão diz o preço, e o botão segue liberado.
-    // Cavalo come por vários, então o que cabe depende da arma escolhida.
+    this.contador.textContent = numero(homens);
+    this.unidade.textContent = NOME_DA_ARMA[escolhida.arma].toLowerCase();
+    // ⚠️ **Não é uma trava.** Passar da despensa continua sendo decisão do jogador, como é para
+    // a IA: o número fica vermelho, uma linha curta diz quantos a comida alimenta, e o botão
+    // segue liberado. Cavalo come por vários, então o que cabe depende da arma.
     const cabemNaDespensa = Math.floor(vista.homensQueAComidaSustenta / escolhida.comida);
     const passaDaDespensa = homens > cabemNaDespensa;
     this.quantidade.dataset['fome'] = passaDaDespensa ? 'sim' : 'nao';
 
+    const semCusto = (): void => {
+      this.custoValor.replaceChildren(moedaAteniense(), ' 0');
+      this.custo.dataset['vazio'] = 'sim';
+    };
+
     if (escolhida.maximo === 0) {
+      semCusto();
       this.previsao.textContent =
         vista.disponivel === 0
-          ? 'A reserva civil mínima foi alcançada: não há mais quem levantar aqui.'
-          : `O tesouro não paga nem 1 soldado (${numero(escolhida.custoPorHomem)} moedas).`;
+          ? 'Ninguém mais para levantar aqui.'
+          : 'O tesouro não paga nem 1 soldado.';
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.textContent = 'Reunir leva';
       this.botaoRecrutar.disabled = true;
-      removerTooltip(this.previsao);
       return;
     }
 
     if (homens === 0) {
-      // Nada escrito: a barra está na tela e ninguém precisa ser ensinado a arrastá-la.
+      semCusto();
       this.previsao.textContent = '';
       this.previsao.dataset['pode'] = 'espera';
       this.botaoRecrutar.textContent = 'Reunir leva';
       this.botaoRecrutar.disabled = true;
-      removerTooltip(this.previsao);
       return;
     }
     const r = vista.avaliar(homens, escolhida.arma);
 
     if (!r.pode) {
+      semCusto();
       this.previsao.textContent = r.motivo;
       this.previsao.dataset['pode'] = 'nao';
       this.botaoRecrutar.disabled = true;
-      removerTooltip(this.previsao);
       return;
     }
 
-    const manutencao = Math.round(r.homens * vista.manutencaoPorHomem);
-    const emCampanha = Math.round(r.homens * vista.manutencaoEmCampanha);
-    // ⚠️ **O custo aparece SEMPRE, e a fome vem numa linha a mais.** Com a despensa estourada o
-    // aviso substituía o custo — e como Atenas abre com saldo zero, toda leva do começo da
-    // partida era reunida sem o jogador ver as moedas. Valores com a cor da função: o ouro de
-    // agora em amarelo, a folha em vermelho, as palavras em marfim.
-    this.previsao.replaceChildren(
-      valorEm(numero(r.ouro), 'ouro'),
-      ' moedas agora · ',
-      valorEm(numero(manutencao), 'perda'),
-      ' por turno em casa · ',
-      valorEm(numero(emCampanha), 'perda'),
-      ' por turno em terra alheia · prontos no próximo turno',
-    );
-    if (passaDaDespensa) {
-      const fome = document.createElement('span');
-      fome.className = 'recrutamento__fome';
-      fome.textContent = `A despensa alimenta ${numero(cabemNaDespensa)}: o resto passa fome.`;
-      this.previsao.append(fome);
-    }
+    this.custoValor.replaceChildren(moedaAteniense(), ` ${numero(r.ouro)}`);
+    this.custo.dataset['vazio'] = 'nao';
+    this.previsao.textContent = !passaDaDespensa
+      ? ''
+      : cabemNaDespensa === 0
+        ? 'Sem comida para esta leva.'
+        : `Comida para ${numero(cabemNaDespensa)}.`;
     this.previsao.dataset['pode'] = passaDaDespensa ? 'fome' : 'sim';
-    definirTooltip(this.previsao, {
-      titulo: 'Custo da mobilização',
-      corpo:
-        `−${numero(r.ouro)} moedas agora\n` +
-        `−${numero(manutencao)} por turno em casa\n` +
-        `−${numero(emCampanha)} por turno em terra alheia\n` +
-        `−${numero(r.homens)} habitantes` +
-        (passaDaDespensa ? `
-a despensa alimenta ${numero(cabemNaDespensa)}` : ''),
-      tom: 'custo',
-    });
     this.botaoRecrutar.textContent = `Reunir ${numero(r.homens)} ${NOME_DA_ARMA[
       escolhida.arma
     ].toLowerCase()}`;
@@ -398,41 +384,16 @@ a despensa alimenta ${numero(cabemNaDespensa)}` : ''),
   }
 }
 
+/** A casa que forma cada arma — e é a arte dela que o cartão mostra. */
+const ARTE_DA_ARMA: Readonly<Record<Arma, string>> = {
+  leve: 'quartel',
+  hoplita: 'armaria',
+  arqueiro: 'acampamento-de-arqueiro',
+  cavalaria: 'treinamento-de-cavaleiros',
+};
+
 function numero(valor: number): string {
   return valor.toLocaleString('pt-BR');
-}
-
-/** Um número da arma: rótulo micro à esquerda, valor à direita. */
-/** Um número com a cor da função dele: ouro em amarelo, saída em vermelho. */
-function valorEm(texto: string, tom: 'ouro' | 'perda'): HTMLElement {
-  const forte = document.createElement('strong');
-  forte.className = 'recrutamento__valor';
-  forte.dataset['tom'] = tom;
-  forte.textContent = texto;
-  return forte;
-}
-
-function stat(rotulo: string, valor: string, tom = ''): DocumentFragment {
-  const fragmento = document.createDocumentFragment();
-  const dt = document.createElement('dt');
-  dt.textContent = rotulo;
-  const dd = document.createElement('dd');
-  dd.textContent = valor;
-  if (tom) dd.dataset['tom'] = tom;
-  fragmento.append(dt, dd);
-  return fragmento;
-}
-
-function dado(rotulo: string, valor: string): HTMLElement {
-  const caixa = document.createElement('div');
-  caixa.className = 'recrutamento__dado';
-  const nome = document.createElement('span');
-  nome.className = 'recrutamento__dado-rotulo';
-  nome.textContent = rotulo;
-  const forte = document.createElement('strong');
-  forte.textContent = valor;
-  caixa.append(nome, forte);
-  return caixa;
 }
 
 /** Recorte de segurança: nenhuma vista real chega sem o leve na lista. */
