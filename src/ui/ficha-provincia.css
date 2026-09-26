@@ -245,9 +245,12 @@
   line-height: 1.25;
   color: var(--ui-texto-tenue);
 }
-/* Ouro só para dinheiro — o saldo; o resto que vai bem fica em marfim. */
+/* Ouro só para dinheiro — o saldo. O que vai bem e não é dinheiro fica verde: o humor. */
 .ficha__medida[data-medida='saldo'][data-tom='bom'] .ficha__valor {
   color: var(--ui-ouro);
+}
+.ficha__medida[data-medida='humor'][data-tom='bom'] .ficha__valor {
+  color: var(--ui-ganho);
 }
 .ficha__medida[data-tom='ruim'] .ficha__valor,
 .ficha__medida[data-tom='ruim'] .ficha__nota {
