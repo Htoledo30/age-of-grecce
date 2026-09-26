@@ -54,8 +54,33 @@ export function folgaDaFolha(campanha: Campanha, idPoder: string, estilo: Estilo
   const renda = campanha.rendaDe(idPoder);
   const folhaAtual = campanha.manutencaoDe(idPoder);
   const teto = estaAmeacado(campanha, idPoder) ? estilo.folhaMilitar : estilo.folhaEmPaz;
-  return renda * teto - folhaAtual;
+  return renda * teto + folhaDoCofre(campanha, idPoder, estilo) - folhaAtual;
 }
+
+/**
+ * O que o COFRE acrescenta à folha, por turno: a sobra acima da guarda, gasta aos poucos.
+ *
+ * ⚠️ **Sem isto o cofre era um cemitério de moedas.** A folha só olhava a renda de hoje, e em
+ * paz a renda de hoje banca um décimo de exército — medido em 250 turnos, quem vencia a
+ * expansão guardava 120 mil moedas com três mil homens em armas. Com esta parcela o reino rico
+ * vira reino armado, que é o que o torna ameaça e o faz marchar.
+ *
+ * Não é um cheque em branco: só conta o que passa de `TURNOS_DE_RESERVA` turnos de renda, a
+ * guarda do estilo fica intocada, a fatia é por turno, e a tropa que o cofre deixa de pagar
+ * deserta na virada, como a de qualquer reino que não paga.
+ *
+ * ⚠️ **A reserva é o que mantém o turno 1 em paz.** Sem ela o tesouro inicial virava folha de
+ * saída, e o mapa acordava com 2,5% do povo em armas antes de alguém marchar — o mesmo quartel
+ * no primeiro turno que Henrique já tinha visto e mandado consertar.
+ */
+function folhaDoCofre(campanha: Campanha, idPoder: string, estilo: EstiloDeIa): number {
+  const guardado = Math.max(0, campanha.tesouroDe(idPoder)) * (1 - estilo.guardaDoTesouro);
+  const reserva = Math.max(0, campanha.rendaDe(idPoder)) * TURNOS_DE_RESERVA;
+  return Math.max(0, guardado - reserva) * estilo.cofreNaFolha;
+}
+
+/** Quantos turnos de renda o cofre guarda antes de sobrar para a folha. */
+const TURNOS_DE_RESERVA = 20;
 
 /**
  * O que comeria, em pontos, o exército que a economia deste reino BANCA.
@@ -80,7 +105,10 @@ export function comidaDoExercitoQueOReinoBanca(
   estilo: EstiloDeIa,
   ajustes: Ajustes['jogo'],
 ): number {
-  const folga = campanha.rendaDe(idPoder) * estilo.folhaMilitar - campanha.manutencaoDe(idPoder);
+  const folga =
+    campanha.rendaDe(idPoder) * estilo.folhaMilitar +
+    folhaDoCofre(campanha, idPoder, estilo) -
+    campanha.manutencaoDe(idPoder);
   if (folga <= 0) return 0;
   const homens = folga / ajustes.combate.manutencaoPorHomem.emCasa;
   return homens / ajustes.alimento.soldadosPorPonto;

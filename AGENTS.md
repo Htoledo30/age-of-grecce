@@ -148,9 +148,10 @@ sem encarecer o soldado mata a leve, e encarecer o QUARTEL não resolve — a co
 soldado. `limiarDeQuebra` fica em 0,70: em 0,75 a linha aguenta uma rodada a mais e a cavalaria
 derrotada é aniquilada até o último homem, sozinha entre as armas.
 
-`combate.manutencaoPorHomem.emCasa` fica em 0,10. Medido com `npm run partida 100`, que é
-determinístico: em 0,15 o mapa vai a 9 poderes eliminados de 18, maior reino com 8 províncias e
-desigualdade 11,8×; em 0,10, a 5, 5 e 7,2×. O soldo em casa é um imposto sobre o fraco — quem
+`combate.manutencaoPorHomem.emCasa` fica em 0,15 por decisão de Henrique, com a comida a 1.000
+soldados por ponto. A medição antiga, com a comida a 500, mostra o peso deste valor: em 0,15
+o mapa ia a 9 poderes eliminados de 18, maior reino com 8 províncias e desigualdade 11,8×; em
+0,10, a 5, 5 e 7,2×. O soldo em casa é um imposto sobre o fraco — quem
 tem pouca renda deixa de bancar defensor e é comido. Foi o ÚNICO dos cinco valores de combate
 que mexeu no resultado: hoplita, cavalaria e rodadas de choque não mudaram nada, e a letalidade
 da perseguição só mexe na desigualdade quando o soldo já está em 0,10.

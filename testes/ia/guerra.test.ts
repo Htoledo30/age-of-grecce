@@ -72,6 +72,18 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     expect(comFolha!.homens).toBeGreaterThan(0);
   });
 
+  it('o cofre CHEIO vira folha, e o cofre de reserva não', () => {
+    // ⚠️ O ouro parado era o defeito: em 250 turnos quem vencia guardava 120 mil moedas com três
+    // mil homens. Acima da reserva, o cofre paga tropa; abaixo dela, só a renda paga.
+    const c = nova('atenas');
+    const estilo = { ...estiloDe(ia, 'tebas'), folhaMilitar: 0, folhaEmPaz: 0 };
+    expect(levaEscolhida(c, 'tebas', { ...estilo, cofreNaFolha: 1 }, ajustes)).toBeNull();
+
+    c.darOuro(1_000_000, 'tebas');
+    expect(levaEscolhida(c, 'tebas', { ...estilo, cofreNaFolha: 0 }, ajustes)).toBeNull();
+    expect(levaEscolhida(c, 'tebas', { ...estilo, cofreNaFolha: 0.05 }, ajustes)).not.toBeNull();
+  });
+
   it('com a despensa no vermelho, ela não levanta ninguém', () => {
     // Cada boca a mais come de um saldo que já não fecha, e a fome mata civil, não só
     // soldado. É a trava mais dura que ela tem.
@@ -97,7 +109,9 @@ describe('a IA levanta tropa — quanto ela aguenta, não quanto ela quer', () =
     const c = nova('atenas');
     c.darOuro(400_000, 'tebas');
     c.construir('tebas', 'armaria', 'tebas');
-    for (let i = 0; i < 6; i++) correr(c, 1);
+    // Só o tempo da obra, sem a IA jogando: com 400 mil no cofre ela gastaria o presente em
+    // tropa até a despensa travar, e o teste deixaria de ser sobre a escolha da arma.
+    for (let i = 0; i < 6; i++) c.passarTurno();
     expect(c.armasEm('tebas')).toContain('hoplita');
 
     const base = estiloDe(ia, 'tebas');

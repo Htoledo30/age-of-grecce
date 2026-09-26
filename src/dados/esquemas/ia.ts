@@ -153,6 +153,13 @@ const Estilo = z.object({
    */
   fatiaParaGrao: z.number().min(0).max(1),
   /**
+   * Que fração do cofre, acima da guarda, vira folha militar a cada turno.
+   *
+   * É o que faz o reino rico ser reino armado. Zero devolve a IA antiga, que só gastava a renda
+   * de hoje e deixava o cofre crescer para sempre — ver `percepcao/sustento.ts`.
+   */
+  cofreNaFolha: z.number().min(0).max(1),
+  /**
    * Que soldado ela levanta quando a terra oferece mais de um.
    *
    * `melhor` pega quem mais vale em campo (`ataque × aguento`), custe o que custar — é o

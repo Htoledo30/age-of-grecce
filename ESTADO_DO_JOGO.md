@@ -304,6 +304,11 @@ Os poderes não controlados pelo jogador usam a mesma fachada e as mesmas regras
 - navega, desembarca, intercepta e bloqueia;
 - usa presente, pacto, comércio, tributo, acesso, aliança, liga e anexação.
 
+A folha militar da IA é uma fatia da renda (maior com inimigo na porta) mais uma fatia do
+cofre: o que passa de 20 turnos de renda, descontada a guarda do estilo, vira folha à razão de
+`cofreNaFolha` por turno. Cofre de reserva não arma ninguém; cofre cheio vira exército, e a
+tropa que ele deixa de pagar deserta como a de qualquer reino.
+
 Os estilos guerreiro, mercador, cauteloso e equilibrado mudam prioridades econômicas e
 militares e os gostos da balança diplomática: o guerreiro pesa força, o mercador pesa ouro, o
 cauteloso pesa segurança e confiança. A IA é determinística e decide novamente a cada turno;
