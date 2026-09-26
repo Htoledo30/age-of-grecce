@@ -149,3 +149,28 @@
     animation: none;
   }
 }
+
+/* O SITIANTE: acampado na divisa, fora dos muros. A borda tracejada diz "não está dentro", e a
+   chama no canto é a mesma que arde sobre a cidade — liga o exército ao cerco que ele faz. */
+.hostes__marca[data-sitiando='sim'] {
+  border-style: dashed;
+  border-color: var(--ui-fogo);
+}
+.hostes__sitio {
+  position: absolute;
+  left: -8px;
+  bottom: -9px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ui-fogo);
+  border-radius: 50%;
+  background: var(--ui-fundo);
+  color: var(--ui-fogo);
+  pointer-events: none;
+}
+.hostes__sitio svg {
+  width: 12px;
+  height: 12px;
+}

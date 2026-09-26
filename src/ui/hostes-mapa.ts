@@ -19,6 +19,7 @@
 import type { Camera } from '@/nucleo/camera';
 import type { Ponto } from '@/ui/animacao-de-marcha';
 import { criarEstandarte } from './estandartes';
+import { iconeGrego } from './icones-gregos';
 import { definirTooltip } from './tooltip';
 
 /** Uma hoste como o mapa precisa vê-la. */
@@ -178,8 +179,19 @@ export class HostesMapa {
         ),
         numero,
       );
+      // ⚠️ **O sitiante leva a mesma chama que arde sobre a cidade.** Ele acampa na divisa, e a
+      // chama no canto da peça liga os dois: aquele fogo é este exército. Sem ela, uma peça
+      // estrangeira dentro da província lia-se como conquista que não aconteceu.
+      if (hoste.sitiando) {
+        const sitio = document.createElement('span');
+        sitio.className = 'hostes__sitio';
+        sitio.appendChild(iconeGrego('fogo'));
+        elemento.appendChild(sitio);
+      }
       definirTooltip(elemento, {
-        titulo: hoste.forca > 0 ? `Hoste de ${hoste.nomeDoPoder}` : `Leva de ${hoste.nomeDoPoder}`,
+        titulo:
+          (hoste.forca > 0 ? `Hoste de ${hoste.nomeDoPoder}` : `Leva de ${hoste.nomeDoPoder}`) +
+          (hoste.sitiando ? ' · sitiando' : ''),
         corpo:
           hoste.emFormacao <= 0
             ? `${pronta} homens em armas.`

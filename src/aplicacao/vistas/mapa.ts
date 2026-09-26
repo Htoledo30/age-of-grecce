@@ -32,10 +32,19 @@ function pontoDaHoste(jogo: Jogo, hoste: Exercito): PontoDeMarcha {
 
   // Ordenado por id: sem isso a peça pularia de uma divisa pra outra conforme a ordem em que
   // as vizinhas aparecem.
-  const daBase = jogo.atlas
-    .provincia(hoste.posicao)
-    .vizinhas.filter((v) => jogo.campanha.donoDe(v) === hoste.poder)
-    .sort()[0];
+  //
+  // ⚠️ **Sempre há uma divisa, e a peça nunca volta ao centro.** Só a terra própria contava, e
+  // quem sitiava vindo do mar, por passagem, os rebeldes e os exilados caíam no meio da cidade —
+  // igual à guarnição do dono. Henrique leu como conquista que não aconteceu. A ordem de
+  // preferência diz de onde ele provavelmente veio: terra própria, água, terra de terceiro, e
+  // por último qualquer vizinha.
+  const vizinhas = [...jogo.atlas.provincia(hoste.posicao).vizinhas].sort();
+  const dono = jogo.campanha.donoDe(hoste.posicao);
+  const daBase =
+    vizinhas.find((v) => jogo.campanha.donoDe(v) === hoste.poder) ??
+    vizinhas.find((v) => jogo.campanha.ehMar(v)) ??
+    vizinhas.find((v) => jogo.campanha.donoDe(v) !== dono) ??
+    vizinhas[0];
   if (daBase === undefined) return { x: centro.x, y: centro.y };
 
   const base = jogo.atlas.provincia(daBase).centro;
