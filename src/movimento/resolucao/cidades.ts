@@ -69,7 +69,9 @@ export function resolverCidades(
    * ⚠️ Cidade que cai sem ninguém em pé não perde nada: não houve luta, não há o que
    * destruir. É essa diferença que dá dois preços a "sitiar ou assaltar?".
    */
+  const tomadas = new Set<string>();
   const tomar = (provincia: string, poder: string, aForca = false): void => {
+    tomadas.add(provincia);
     const de = mundo.donoDe(provincia);
     mundo.trocarDono(provincia, poder);
     relatorio.conquistas.push({ provincia, de, para: poder });
@@ -103,6 +105,11 @@ export function resolverCidades(
     // cidade sem milícia CAIRIA para um poder em paz com o dono dela. A paz já levanta o cerco
     // — isto é a segunda tranca, do lado da regra, porque é a regra que muda o mapa.
     if (!mundo.emGuerra(hoste.poder, donoDe(provincia))) continue;
+
+    // ⚠️ **A cidade que já caiu nesta rodada não cai de novo.** Com a foto dos donos, dois
+    // aliados em guerra com o mesmo dono entravam juntos numa praça sem milícia, e o segundo a
+    // tomava do primeiro na mesma rodada — sem estar em guerra com ele.
+    if (tomadas.has(provincia)) continue;
 
     const milicianos = mundo.miliciaDe(provincia);
     // Cidade sem quem feche o portão cai ao primeiro ingresso — mas exército do dono acampado

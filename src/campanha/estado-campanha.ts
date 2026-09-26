@@ -323,6 +323,7 @@ export const TIPOS_DE_PROPOSTA = [
   'anexacao',
   'comercio',
   'acesso',
+  'paz',
 ] as const;
 
 /** O que um reino está pedindo ao jogador nesta virada. */

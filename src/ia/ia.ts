@@ -242,6 +242,20 @@ export function jogarIA(
     const presente = presenteEscolhido(campanha, idPoder, estilo, dados);
     if (presente !== null) campanha.presentear(presente.para, presente.ouro, idPoder);
 
+    // ⚠️ **A paz com o JOGADOR também vira pedido.** Entre computadores ela sai sozinha quando
+    // os dois querem; com o jogador, só existia se ELE a propusesse — e a IA nunca pedia. Medido:
+    // quem não abria a mesa acumulava até quatro inimigos ao mesmo tempo e oitenta turnos com
+    // dois ou mais, porque nenhuma daquelas guerras acabava. Henrique: *"contra o player parece
+    // uma suruba, todo mundo vai pra cima"*.
+    const jogador = campanha.jogador?.id;
+    if (
+      jogador !== undefined &&
+      campanha.emGuerra(idPoder, jogador) &&
+      querPaz(campanha, idPoder, jogador, estilo, ajustes.combate)
+    ) {
+      campanha.proporAoJogador({ de: idPoder, tipo: 'paz' });
+    }
+
     // ⚠️ **Com o JOGADOR, a assinatura vira PEDIDO.** A decisão é a mesma; o que muda é que
     // ele responde. Henrique: *"não sinto a IA tentando se conectar comigo (...) e eu ter opção
     // de aceitar ou recusar"*. Antes disto, pacto e comércio com o jogador eram fato consumado

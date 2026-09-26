@@ -109,6 +109,23 @@ describe('a paz precisa dos dois, e a trégua faz ela valer', () => {
     expect(c.donoDe('eleusis')).toBe('eleusis');
   });
 
+  it('⚠️ a paz CANCELA a marcha que ainda não saiu', () => {
+    // Henrique viu jogando: *"quem está atacando entra dentro da província atacada como se
+    // tivesse conquistado, mas não conquistou"*. A ordem de assalto sobrevivia à paz assinada
+    // no mesmo turno, e o exército entrava na terra do ex-inimigo sem guerra nem cerco.
+    const c = nova();
+    const { id, homens } = comHoste(c, 'atenas', 3000);
+    c.declararGuerra('eleusis');
+    c.ordenarMarcha(id, 'eleusis', homens, 'atenas', 'assaltar');
+    c.fazerPaz('eleusis');
+    c.passarTurno();
+
+    expect(c.hostesEm('eleusis').filter((h) => h.poder === 'atenas')).toEqual([]);
+    expect(c.donoDe('eleusis')).toBe('eleusis');
+    // O exército ficou em casa.
+    expect(c.hostesEm('atenas').some((h) => h.poder === 'atenas')).toBe(true);
+  });
+
   it('a guerra contra quem foi eliminado acaba sozinha', () => {
     // ⚠️ **Sem isto a diplomacia trava o mapa inteiro, e travou.** A IA declarava guerra ao
     // vizinho, tomava a única terra dele no turno seguinte — e continuava em guerra com um
@@ -160,6 +177,19 @@ describe('a IA passa pela mesma porta', () => {
     c.declararGuerra('megara', 'caristo');
     // Caristo é uma ilha: ela não faz fronteira com Mégara, então não há o que tomar.
     expect(querPaz(c, 'caristo', 'megara', estiloDe(ia, 'caristo'), ajustes.combate)).toBe(true);
+  });
+
+  it('a IA que quer a paz com o JOGADOR põe o pedido na mesa, e aceitar encerra a guerra', () => {
+    // Entre computadores a paz sai sozinha; com o jogador só existia se ele a propusesse, e
+    // quem não abria a mesa acumulava inimigos que nunca iam embora.
+    const c = nova('atenas');
+    c.declararGuerra('caristo');
+    // Cáristo é uma ilha sem fronteira com Atenas: não há o que tomar, e ela quer sair.
+    correrIA(c, 1);
+    expect(c.propostas()).toContainEqual(expect.objectContaining({ de: 'caristo', tipo: 'paz' }));
+
+    expect(c.aceitarProposta('caristo', 'paz').pode).toBe(true);
+    expect(c.emGuerra('atenas', 'caristo')).toBe(false);
   });
 
   it('quem está ganhando não desiste por um barco na porta nem pelo exército já em campo', () => {

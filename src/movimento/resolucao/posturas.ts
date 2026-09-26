@@ -20,12 +20,17 @@ import type { EstadoDaResolucao } from './relatorio';
 export function posturasPorDestino(
   estado: EstadoDaResolucao,
   donoDe: (idProvincia: string) => string,
+  saltosPorRodada: number,
 ): Map<string, Postura> {
   const posturas = new Map<string, Postura>();
   for (const idHoste of Object.keys(estado.ordens).sort()) {
     const ordem = estado.ordens[idHoste];
     const destino = ordem?.rota.at(-1);
     if (!ordem || destino === undefined) continue;
+    // ⚠️ **Só quem CHEGA nesta rodada declara postura.** Um reforço ainda a dois turnos de
+    // distância, mandado para sitiar, rebaixava o assalto já liberado de quem estava na frente
+    // da cidade — e regravava o cerco do zero, sem que ninguém tivesse chegado.
+    if (ordem.rota.length > saltosPorRodada) continue;
     // ⚠️ **Marchar para casa não declara postura nenhuma.** A postura só significa alguma
     // coisa em terra alheia (ver `ordens.ts`), e como a entrada é compartilhada por DESTINO,
     // uma marcha em território próprio contaminava o inimigo sentado ali: mandar qualquer

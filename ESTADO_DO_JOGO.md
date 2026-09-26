@@ -288,7 +288,12 @@ balança passa da iniciativa e a do outro fecha.
 
 A IA apresenta ao jogador propostas que faria a outro poder, e o jogador pode aceitar ou
 recusar. Recusar uma proposta não custa opinião. A régua de acordos vai de comércio e pacto até
-aliança e liga; a liga é o único vínculo desigual.
+aliança e liga; a liga é o único vínculo desigual. Em guerra com o jogador, a IA que assinaria
+a paz com outro computador pede a paz na mesa, sem tributo.
+
+Toda ordem de marcha é reconferida na virada: a que aponta para terra de quem deixou de ser
+inimigo, sem passagem, é cancelada e a hoste fica onde está. Uma cidade muda de mão uma vez por
+rodada, e só a hoste que chega nesta rodada declara postura sobre o cerco.
 
 A IA não exige tributo e não rompe o tributo que recebe. Também não existem ainda aliança
 defensiva, recusa de convocação mediante reputação ou memória longa de trégua violada.

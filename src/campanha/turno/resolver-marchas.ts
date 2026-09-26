@@ -20,12 +20,19 @@ import { saquearProvincia } from '../guerra/saque';
 import { rotasLongasDaHoste } from '../guerra/marchas';
 
 /**
- * Reconfere viagens antes de cada trecho. Uma conquista, uma paz ou a perda de um Porto pode
+ * Reconfere TODA ordem antes de cada trecho. Uma conquista, uma paz ou a perda de um Porto pode
  * invalidar o caminho que era verdadeiro quando a ordem foi dada; nesse caso a hoste para.
+ *
+ * ⚠️ **Toda ordem, e não só as viagens longas.** Conferia só as viagens de vários turnos,
+ * supondo que as outras tinham acabado de ser dadas. Não tinham: a IA assina as pazes DEPOIS de
+ * todos os poderes darem ordens, e a ordem de assalto sobrevivia à paz. O exército entrava na
+ * terra do ex-inimigo sem guerra, sem cerco e sem conquista, e ficava no centro dela como uma
+ * guarnição — às vezes preso, sem saída que não fosse terra em paz. Henrique viu jogando:
+ * *"quem está atacando entra dentro da província atacada como se tivesse conquistado, mas não
+ * conquistou"*.
  */
 function atualizarViagens(nucleo: NucleoDaCampanha): void {
   for (const [idHoste, ordem] of Object.entries(nucleo.estado.ordens)) {
-    if (!ordem.continuar) continue;
     const hoste = nucleo.mobilizacao.hoste(idHoste);
     const destinoFinal = ordem.rota.at(-1);
     if (!hoste || !destinoFinal) {
@@ -35,16 +42,19 @@ function atualizarViagens(nucleo: NucleoDaCampanha): void {
     const donoDoDestino = donoDe(nucleo, destinoFinal);
     // ⚠️ **As chaves são as MESMAS de `podeOrdenarMarcha`, e a licença é uma delas.**
     // Sem ela as duas portas discordavam: a ordem para uma terra que abriu a estrada era aceita
-    // no clique e apagada em silêncio na virada seguinte — e como só a viagem do JOGADOR chega
-    // aqui (a IA refaz tudo todo turno), quem via o exército parar sem explicação era ele.
+    // no clique e apagada em silêncio na virada seguinte.
     const podeEntrar =
       nucleo.atlas.ehMar(destinoFinal) ||
       donoDoDestino === hoste.poder ||
       emGuerra(nucleo, hoste.poder, donoDoDestino) ||
       temAcessoA(nucleo, hoste.poder, donoDoDestino);
-    const rotaAtual = podeEntrar
-      ? rotasLongasDaHoste(nucleo, idHoste).get(destinoFinal)
-      : undefined;
+    if (!podeEntrar) {
+      delete nucleo.estado.ordens[idHoste];
+      continue;
+    }
+    // A ordem de um turno só já traz a rota certa; é a viagem longa que precisa refazê-la.
+    if (!ordem.continuar) continue;
+    const rotaAtual = rotasLongasDaHoste(nucleo, idHoste).get(destinoFinal);
     if (!rotaAtual) {
       delete nucleo.estado.ordens[idHoste];
       continue;

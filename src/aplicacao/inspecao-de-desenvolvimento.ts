@@ -154,7 +154,7 @@ export function instalarInspecao(jogo: Jogo): void {
       campanha.trocarDono(idProvincia, idPoder),
     // A mesa de propostas: é o único jeito de o teste de tela e a captura porem um pedido do
     // outro lado em cima da mesa sem esperar a IA querer.
-    proporAoJogador: (de: string, tipo: 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso', turnos?: number) =>
+    proporAoJogador: (de: string, tipo: 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso' | 'paz', turnos?: number) =>
       campanha.proporAoJogador(turnos === undefined ? { de, tipo } : { de, tipo, turnos }),
     propostas: () => campanha.propostas().map((p) => `${p.de}:${p.tipo}`),
     concederAcesso: (para: string, turnos: number, porPoder?: string) =>

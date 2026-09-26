@@ -233,3 +233,50 @@ describe('sair de campo acaba a batalha, não começa outra', () => {
     expect(c.populacaoDe('atenas')).toBeGreaterThan(crescimentoLimpo);
   });
 });
+
+describe('uma cidade muda de mão UMA vez por rodada', () => {
+  it('dois aliados que entram juntos numa praça sem milícia não a tomam um do outro', () => {
+    // ⚠️ Com a foto dos donos, o segundo a entrar via a cidade ainda com o dono antigo, em
+    // guerra com ele, e a tomava do primeiro na mesma rodada — sem estar em guerra com ele.
+    const estado: EstadoDaResolucao = {
+      hostes: tabuleiro(hoste('atenas', 'a', 500), hoste('megara', 'b', 500)),
+      proximaHoste: 90,
+      ordens: {
+        h_a: { origem: 'a', rota: ['c'], homens: 500, postura: 'assaltar' as const, recuarAos: null },
+        h_b: { origem: 'b', rota: ['c'], homens: 500, postura: 'assaltar' as const, recuarAos: null },
+      },
+      surtidas: [],
+      cercos: {},
+    };
+    const aliados = new Set(['atenas', 'megara']);
+    const mundo = {
+      ...mundoDe({ a: 'atenas', b: 'megara', c: 'eleusis' }),
+      emGuerra: (x: string, y: string) => !(aliados.has(x) && aliados.has(y)),
+    };
+    const relatorio = resolverRodada(estado, ajustes.combate, mundo);
+    expect(relatorio.conquistas).toHaveLength(1);
+    expect(relatorio.conquistas[0]).toMatchObject({ provincia: 'c', de: 'eleusis' });
+  });
+});
+
+describe('só quem chega declara postura', () => {
+  it('um reforço ainda longe, mandado para sitiar, não cancela o assalto de quem já está lá', () => {
+    const saltos = ajustes.combate.saltosPorRodada;
+    const longe = Array.from({ length: saltos }, (_, i) => `estrada${i}`);
+    const estado: EstadoDaResolucao = {
+      hostes: tabuleiro(hoste('atenas', 'c', 3000), hoste('atenas', 'x', 500)),
+      proximaHoste: 90,
+      ordens: {
+        h_x: { origem: 'x', rota: [...longe, 'c'], homens: 500, postura: 'sitiar' as const, recuarAos: null },
+      },
+      surtidas: [],
+      cercos: { c: { sitiante: 'atenas', postura: 'assaltar', rodadas: 5 } },
+    };
+    const relatorio = resolverRodada(
+      estado,
+      ajustes.combate,
+      mundoDe({ c: 'eleusis', x: 'atenas', ...Object.fromEntries(longe.map((p) => [p, 'atenas'])) }, { c: 50 }),
+    );
+    expect(relatorio.conquistas).toMatchObject([{ provincia: 'c', para: 'atenas' }]);
+  });
+});

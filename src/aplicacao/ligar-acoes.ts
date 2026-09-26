@@ -257,11 +257,11 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.diplomacia.aoResponderPedido = (idPoder, tipo, aceita) => {
     const nome = campanha.poder(idPoder).nome;
     if (!aceita) {
-      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso');
+      campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso' | 'paz');
       tela.diplomacia.dizer(`Você recusou ${nome}. Recusar não custa nada.`);
       return;
     }
-    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso');
+    const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso' | 'paz');
     tela.diplomacia.dizer(r.pode ? `Acertado com ${nome}.` : r.motivo);
   };
 

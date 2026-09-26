@@ -36,6 +36,8 @@ import { chefeDe } from './liga';
 import {
   acordarComercio,
   anexarMembro,
+  fazerPaz,
+  podeFazerPaz,
   firmarAlianca,
   formarLiga,
   firmarPacto,
@@ -112,6 +114,8 @@ function avaliar(
     case 'acesso':
       // ⚠️ Quem concede é o JOGADOR: o pedido é para atravessar a terra dele.
       return podeConcederAcesso(nucleo, jogador, proposta.de, proposta.turnos ?? 0);
+    case 'paz':
+      return podeFazerPaz(nucleo, jogador, proposta.de);
   }
 }
 
@@ -154,6 +158,9 @@ export function aceitarProposta(
       break;
     case 'acesso':
       concederAcesso(nucleo, jogador, de, proposta.turnos ?? 0);
+      break;
+    case 'paz':
+      fazerPaz(nucleo, jogador, de);
       break;
   }
   return { pode: true };

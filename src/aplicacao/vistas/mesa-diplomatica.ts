@@ -442,6 +442,7 @@ function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
       'recusar não custa nada, e ele só pode insistir rompendo a liga e invadindo.',
     comercio: 'Propõe abrir comércio: rende dos dois lados, e a guerra desfaz.',
     acesso: `Pede passagem pela sua terra por ${proposta.turnos ?? 0} turnos.`,
+    paz: 'Propõe a paz, sem tributo.',
   }[proposta.tipo];
   return { tipo: proposta.tipo, frase };
 }

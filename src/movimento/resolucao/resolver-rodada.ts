@@ -33,7 +33,7 @@ export function resolverRodada(
 
   // As posturas são lidas ANTES de qualquer coisa: as ordens são consumidas no caminho, e sem
   // isto a cidade não saberia se quem chegou veio assaltar ou sentar.
-  const posturas = posturasPorDestino(estado, mundo.donoDe);
+  const posturas = posturasPorDestino(estado, mundo.donoDe, ajustes.saltosPorRodada);
   const querLutar = (forca: Forca): boolean =>
     quemLuta(
       forca,
