@@ -74,8 +74,6 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
           faixa: perfil.felicidade.faixa,
           posicao: posicaoNaRegua(perfil.felicidade.valor, ajustes.jogo.felicidade.faixas),
           alvo: campanha.alvoDeFelicidadeEm(id),
-          alvoEmRisco:
-            campanha.alvoDeFelicidadeEm(id) <= (ajustes.jogo.felicidade.faixas[1]?.ate ?? 0),
           parcelas: campanha.parcelasDeFelicidadeEm(id),
         }
       : null,

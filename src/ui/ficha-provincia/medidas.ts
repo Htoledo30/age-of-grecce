@@ -258,5 +258,5 @@ function fraseDaEstranheza(vista: VistaDaProvincia): string {
   if (e.mesmoPovo > 0) {
     partes.push(`${Math.round(e.mesmoPovo * 100)}% é de outra cidade da mesma tribo`);
   }
-  return partes.length === 0 ? '' : `${partes.join('; ')} — e isso pesa no humor.`;
+  return partes.length === 0 ? '' : `${partes.join('; ')}.`;
 }

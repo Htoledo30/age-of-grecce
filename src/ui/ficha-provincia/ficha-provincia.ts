@@ -27,7 +27,7 @@
 import { definirTooltip } from '../tooltip';
 import { criarEstandarte } from '../estandartes';
 import { medidasDa } from './medidas';
-import { faseDoCerco, romano, tooltipDoCerco, tooltipDoHumor } from './textos';
+import { faseDoCerco, romano, tooltipDoCerco } from './textos';
 import type { VistaDaProvincia } from './vista';
 
 export type { VistaDaProvincia } from './vista';
@@ -166,29 +166,20 @@ export class FichaProvincia {
       const aviso = alarme('perigo', `Cais bloqueado por ${vista.bloqueio.por}`);
       definirTooltip(aviso, {
         titulo: 'Bloqueio naval',
-        corpo:
-          'Frota inimiga na água ao lado. O Porto para de ligar por mar e de levar ' +
-          'mercadoria: terra que só chegava à capital embarcando fica cortada, e os acordos ' +
-          'de comércio por água param de render. Embarcar continua livre — sair é atacar.',
+        corpo: 'Porto sem ligação por mar e sem comércio pela água.',
       });
       linhas.push(aviso);
     }
     if (vista.economia?.revoltosa) {
-      linhas.push(alarme('perigo', 'Em revolta: nenhum imposto entra.'));
+      linhas.push(alarme('perigo', 'Em revolta'));
     }
     if (vista.faseCritica > 0) {
       const t = vista.faseCritica;
       const aviso = alarme('atencao', `Recém-conquistada · ${t} ${t === 1 ? 'turno' : 'turnos'}`);
-      definirTooltip(aviso, {
-        titulo: 'Fase crítica',
-        corpo: 'Até o fim do prazo, este povo se levanta já insatisfeito. Depois, só no desespero.',
-      });
       linhas.push(aviso);
     }
-    const aviso = this.avisoDoHumor(vista);
-    if (aviso) linhas.push(aviso);
     if (vista.economia?.cortada) {
-      linhas.push(alarme('atencao', 'Rota até a capital cortada.'));
+      linhas.push(alarme('atencao', 'Sem rota à capital'));
     }
     if (vista.obra) {
       const t = vista.obra.turnosRestantes;
@@ -199,46 +190,6 @@ export class FichaProvincia {
     return linhas;
   }
 
-  /**
-   * POR QUE este povo está assim — a frase que faltava, e o pedido literal de Henrique.
-   *
-   * ⚠️ **A conta já existia inteira e vivia escondida atrás do mouse parado.** O painel
-   * mostrava `12 ↓` e as parcelas só apareciam no tooltip da medida; ele resumiu o problema
-   * assim: *"quero olhar para uma província e entender 'esse povo está revoltado porque eu
-   * conquistei recentemente, aumentei impostos e existe uma guerra acontecendo' — e não apenas
-   * humor = 27"*. A informação estava pronta; faltava pô-la na tela.
-   *
-   * Mora nos AVISOS, e não na nota da medida, por uma razão de espaço: a coluna da medida tem
-   * 95 px, e "de outro povo (85%)" sozinho já quebra em três linhas ali, desalinhando as
-   * outras três medidas. O aviso ocupa a largura da ficha e é justamente a faixa do "o que
-   * está errado".
-   *
-   * Só as TRÊS maiores, e só as negativas: a lista inteira é o tooltip, que continua aqui.
-   * Quem lê um alarme quer a causa principal, não o balancete.
-   */
-  private avisoDoHumor(vista: VistaDaProvincia): HTMLElement | null {
-    const h = vista.humor;
-    if (!h) return null;
-    // Duas situações merecem alarme: a terra que JÁ está no fundo, e a que está caindo PARA a
-    // faixa em que o povo pega em armas. ⚠️ **Cair de 62 para 50 não é alarme** — era, e
-    // Henrique chamou de inútil: o número e a seta já estão na medida, e a conta no tooltip.
-    const caindo = h.alvo < h.valor && h.alvoEmRisco;
-    const ruim = h.posicao <= 0.25;
-    if (!caindo && !ruim) return null;
-    const causas = h.parcelas
-      .filter((p) => p.pontos < 0)
-      .slice()
-      .sort((a, b) => a.pontos - b.pontos)
-      .slice(0, 3)
-      .map((p) => p.rotulo);
-    if (causas.length === 0) return null;
-    const aviso = alarme(
-      ruim ? 'perigo' : 'atencao',
-      `${caindo ? `Humor caindo para ${h.alvo}` : `Humor em ${h.valor}`}: ${causas.join(', ')}.`,
-    );
-    definirTooltip(aviso, tooltipDoHumor(h.valor, h));
-    return aviso;
-  }
 }
 
 function selo(texto: string, tom: string): HTMLElement {

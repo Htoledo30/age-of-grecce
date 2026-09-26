@@ -245,7 +245,8 @@
   line-height: 1.25;
   color: var(--ui-texto-tenue);
 }
-.ficha__medida[data-tom='bom'] .ficha__valor {
+/* Ouro só para dinheiro — o saldo; o resto que vai bem fica em marfim. */
+.ficha__medida[data-medida='saldo'][data-tom='bom'] .ficha__valor {
   color: var(--ui-ouro);
 }
 .ficha__medida[data-tom='ruim'] .ficha__valor,
