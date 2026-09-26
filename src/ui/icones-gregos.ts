@@ -14,7 +14,9 @@ export type NomeDoIconeGrego =
   | 'coruja'
   | 'escudo'
   | 'fogo'
+  | 'hoplon'
   | 'lanca'
+  | 'lancas'
   | 'mapa'
   | 'martelo'
   | 'mercado'
@@ -90,6 +92,53 @@ const FORMAS: Record<NomeDoIconeGrego, readonly Forma[]> = {
       },
     ],
     ['line', { x1: '6', y1: '22', x2: '18', y2: '22' }],
+  ],
+  /**
+   * ATAQUE: duas lanças de hoplita cruzadas — escolha de Henrique entre quatro desenhos.
+   *
+   * ⚠️ **Pontas em folha e conteras nas bases**, cheias e sem traço: sem elas, o par de hastes
+   * pequeno virava um "X" de fechar janela.
+   */
+  lancas: [
+    ['path', { d: 'M4.6 19.4 15.4 8.6M19.4 19.4 8.6 8.6', 'stroke-width': '2.3' }],
+    [
+      'path',
+      {
+        d: 'M21.2 2.8C20.6 6 18.9 8.8 16.4 10.8L13.2 7.6C15.2 5.1 18 3.4 21.2 2.8Z',
+        fill: 'currentColor',
+        stroke: 'none',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M2.8 2.8C3.4 6 5.1 8.8 7.6 10.8L10.8 7.6C8.8 5.1 6 3.4 2.8 2.8Z',
+        fill: 'currentColor',
+        stroke: 'none',
+      },
+    ],
+    ['path', { d: 'M5.7 18.3 2.4 21.6 4.3 17Z', fill: 'currentColor', stroke: 'none' }],
+    ['path', { d: 'M18.3 18.3 21.6 21.6 19.7 17Z', fill: 'currentColor', stroke: 'none' }],
+  ],
+  /**
+   * DEFESA: o hóplon com o lambda da Lacedemônia — escolha de Henrique.
+   *
+   * O escudo é cheio e o Λ é um BURACO nele (`evenodd`), e não um traço pintado com a cor do
+   * fundo: assim ele funciona sobre qualquer painel. O aro solto em volta é o bronze da borda.
+   */
+  hoplon: [
+    ['circle', { cx: '12', cy: '12', r: '10.2', 'stroke-width': '1.3' }],
+    [
+      'path',
+      {
+        d:
+          'M12 3.6a8.4 8.4 0 1 1 0 16.8a8.4 8.4 0 1 1 0-16.8Z' +
+          'M7.4 16.6h2.7L12 12.2l1.9 4.4h2.7L12 6.4Z',
+        fill: 'currentColor',
+        'fill-rule': 'evenodd',
+        stroke: 'none',
+      },
+    ],
   ],
   lanca: [
     ['line', { x1: '4', y1: '21', x2: '18', y2: '7' }],
