@@ -8,7 +8,9 @@ O projeto está na versão de desenvolvimento `0.2.0`. A campanha mínima ficou 
 jogo como um conjunto de sistemas já integrados, não como protótipo descartável.
 
 O Git guarda a história. Não crie roadmap, backlog, changelog, diário de decisões ou outro
-documento de acompanhamento.
+documento de acompanhamento. A única exceção, pedida por Henrique, é `PENDENCIAS.md`: o que ele
+pediu, o que já foi feito e o que falta. Leia-o no começo da sessão, junto com os bugs novos de
+`revisoes feitas por henrique.txt`, e mantenha-o curto e atual ao terminar.
 
 ## Duas máquinas, um repositório
 
