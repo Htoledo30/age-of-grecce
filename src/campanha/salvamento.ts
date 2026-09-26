@@ -152,6 +152,8 @@ const SalvamentoCampanha = z.object({
       .default({}),
     // Salvamento anterior à importação de grão abre sem encomenda nenhuma.
     importacao: z.record(z.string().min(1), z.number().int().positive()).default({}),
+    // Salvamento anterior à fase crítica abre sem terra recém-conquistada.
+    conquistadaEm: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     construcoes: z.record(
       z.string().min(1),
       z.record(z.string().min(1), z.number().int().min(1).max(3)),

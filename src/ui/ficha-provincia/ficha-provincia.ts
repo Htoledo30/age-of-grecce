@@ -176,6 +176,15 @@ export class FichaProvincia {
     if (vista.economia?.revoltosa) {
       linhas.push(alarme('perigo', 'Em revolta: nenhum imposto entra.'));
     }
+    if (vista.faseCritica > 0) {
+      const t = vista.faseCritica;
+      const aviso = alarme('atencao', `Recém-conquistada · ${t} ${t === 1 ? 'turno' : 'turnos'}`);
+      definirTooltip(aviso, {
+        titulo: 'Fase crítica',
+        corpo: 'Até o fim do prazo, este povo se levanta já insatisfeito. Depois, só no desespero.',
+      });
+      linhas.push(aviso);
+    }
     const aviso = this.avisoDoHumor(vista);
     if (aviso) linhas.push(aviso);
     if (vista.economia?.cortada) {

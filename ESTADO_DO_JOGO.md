@@ -164,14 +164,27 @@ imediato. O humor também multiplica imposto, produção e trânsito.
 A nacionalidade possui duas camadas: cidade de origem, inclusive com população mista, e povo
 grego — jônio, dório, beócio ou lócrio. Mandar na própria cidade não pesa; mandar em outra
 cidade da mesma tribo pesa menos do que governar outra tribo. A conta é proporcional às fatias
-da população e hoje não existe assimilação.
+da população.
+
+A conquista abre uma FASE CRÍTICA (`felicidade.revolta.faseCritica` turnos), que a ficha mostra
+como "Recém-conquistada". Nela, a terra de maioria estrangeira se levanta já na faixa
+"Insatisfeita". Passada a fase, toda terra — estrangeira ou do próprio povo — só pega em armas
+no fundo da régua. Além de fome, cerco, imposto e guerra, pesam no alvo o cofre vazio com tropa
+para pagar (o reino inteiro) e o povo conquistado demais (terra estrangeira, quando os
+estrangeiros do reino passam de `dominioDemais.limiar` vezes o povo do rei).
+
+A ASSIMILAÇÃO move, todo turno, uma fatia de cada nacionalidade estrangeira para a do dono
+(`assimilacao.porTurno`, multiplicada por `mesmaTribo` entre cidades da mesma tribo). Só
+assimila a terra fora da fase crítica, sem cerco e com humor de `humorMinimo` para cima. A
+composição do povo na ficha é essa régua.
 
 Tropa do dono parada na província funciona como guarnição e melhora a ordem pública até um
 teto. Tropa inimiga não conta: ela produz cerco.
 
 Na faixa revoltosa, a província entra em greve fiscal. Sob governante estrangeiro, o pavio pode
 levantar uma hoste rebelde do dono original e iniciar um cerco. Uma revolta pode reviver um
-poder eliminado.
+poder eliminado da IA; a terra do jogador vencido se levanta como reino novo, e a derrota fica
+definitiva.
 
 ## Construções
 
@@ -396,7 +409,7 @@ Comandos principais:
 ## Limitações atuais conhecidas
 
 - 171 províncias de terra ainda não possuem autoria econômica e social;
-- assimilação, migração, governadores e espionagem não existem;
+- migração, governadores e espionagem não existem;
 - construções continuam ativas quando a manutenção não pode ser paga;
 - comércio, liga, passagem e tributo ainda não usam a balança de interesse;
 - alianças e tréguas ainda têm as arestas descritas na seção de Diplomacia;
@@ -425,8 +438,9 @@ desistia numa linha. O efeito colateral era o Confisco eterno sair de graça em 
 
 Duas revoltas diferentes, e a diferença é CONTRA QUEM:
 
-- **terra sob bandeira estrangeira** (maioria que não reconhece o dono): como sempre — levanta
-  em nome do rei de 700 a.C., e basta ela ferver ("Insatisfeita" já acende o pavio);
+- **terra sob bandeira estrangeira** (maioria que não reconhece o dono): levanta em nome do rei
+  de 700 a.C.; na fase crítica basta ferver ("Insatisfeita" já acende o pavio), depois só no
+  fundo da régua;
 - **terra do próprio povo**: declara **independência**. Nasce um reino com o nome da província,
   cor própria no mapa e opinião própria na diplomacia. Você não perde só o imposto: perde a
   terra, e ela vira um vizinho para reconquistar ou negociar.

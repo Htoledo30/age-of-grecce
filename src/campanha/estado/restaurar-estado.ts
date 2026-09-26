@@ -55,6 +55,7 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   estado.capitais = { ...salvo.capitais };
   estado.nivelDeImposto = { ...salvo.nivelDeImposto };
   estado.importacao = { ...salvo.importacao };
+  estado.conquistadaEm = { ...salvo.conquistadaEm };
   estado.construcoes = Object.fromEntries(
     Object.entries(salvo.construcoes).map(([id, c]) => [id, { ...c }]),
   );

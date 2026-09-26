@@ -12,6 +12,8 @@ import { declararGuerra } from '../diplomacia/relacoes';
 import { noFundoDaRegua } from '../felicidade';
 import { donoDe, populacaoDe } from '../provincia/consultas';
 import { poderLivreDe } from './independencia';
+import { faseCriticaEm } from './assimilacao';
+import { vivo } from '../governo/poderes';
 import { povoEstranhoManda } from './nacionalidade';
 
 export interface Levante {
@@ -45,7 +47,15 @@ export function acenderPavioEm(
   // ela declara independência e vira reino. Por escolha de Henrique isso exige o fundo da
   // régua — apertar até "Insatisfeita" azeda a cidade, mas não arma ninguém.
   const contraOProprioRei = !povoEstranhoManda(nucleo, idProvincia);
-  if (contraOProprioRei && !noFundoDaRegua(humor, nucleo.ajustes.felicidade)) return null;
+  // ⚠️ **Passada a fase crítica, a terra estrangeira também só se levanta no fundo da régua.**
+  // Era o ciclo que Henrique viu: sob bandeira estrangeira a faixa "Insatisfeita" armava um
+  // levante a cada nove turnos, para sempre — Elêusis sob Mégara nos turnos 177, 186, 195… até
+  // 240. Agora o perigo é o começo; depois, só causa extrema chega ao fundo.
+  const soNoFundo = contraOProprioRei || faseCriticaEm(nucleo, idProvincia) === 0;
+  if (soNoFundo && !noFundoDaRegua(humor, nucleo.ajustes.felicidade)) {
+    delete nucleo.estado.revoltas[idProvincia];
+    return null;
+  }
 
   const pavio = (nucleo.estado.revoltas[idProvincia] ?? 0) + 1;
   if (pavio < prazo) {
@@ -55,9 +65,16 @@ export function acenderPavioEm(
   // Não empilha levante sobre levante: enquanto os rebeldes anteriores estiverem de pé na
   // província, o pavio fica aceso mas nada nasce.
   // A bandeira que os rebeldes erguem: o rei de 700 a.C., ou um reino que nasce agora.
+  const inicial = nucleo.atlas.donoInicial(idProvincia);
+  // ⚠️ **A derrota do jogador é definitiva.** Os rebeldes erguem a bandeira de 700 a.C., e o
+  // dono antigo que tinha sido eliminado voltava ao jogo com eles — inclusive o jogador, trinta
+  // turnos depois da tela de derrota. Terra do jogador vencido se levanta como reino novo.
+  const jogadorVencido = inicial === nucleo.estado.jogador && !vivo(nucleo, inicial);
   const donoAntigo = contraOProprioRei
     ? poderLivreDe(nucleo, idProvincia)
-    : nucleo.atlas.donoInicial(idProvincia);
+    : jogadorVencido
+      ? poderLivreDe(nucleo, idProvincia, nucleo.atlas.poder(inicial).povo)
+      : inicial;
   if (nucleo.mobilizacao.hostesEm(idProvincia).some((h) => h.poder === donoAntigo)) {
     nucleo.estado.revoltas[idProvincia] = pavio;
     return null;

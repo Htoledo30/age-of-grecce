@@ -45,6 +45,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
       humor: null,
       cerco: null,
       bloqueio: null,
+      faseCritica: 0,
       obra: null,
       economia: null,
     };
@@ -85,6 +86,7 @@ export function vistaDaProvincia(jogo: Jogo, id: string): VistaDaProvincia {
       if (quem.length === 0) return null;
       return { por: quem.map((idp) => campanha.poder(idp).nome).join(' e ') };
     })(),
+    faseCritica: campanha.povoEstranhoManda(id) ? campanha.faseCriticaEm(id) : 0,
     obra: obra
       ? {
           nome:

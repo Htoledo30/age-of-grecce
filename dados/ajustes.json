@@ -312,10 +312,22 @@
           -6,
           -10,
           -15
-        ]
+        ],
+        "cofreVazio": -10,
+        "dominioDemais": {
+          "limiar": 2,
+          "porExcesso": -4,
+          "maximo": -16
+        }
       },
       "revolta": {
-        "fracaoRebelde": 0.02
+        "fracaoRebelde": 0.02,
+        "faseCritica": 20
+      },
+      "assimilacao": {
+        "porTurno": 0.01,
+        "mesmaTribo": 2,
+        "humorMinimo": 40
       }
     },
     "combate": {

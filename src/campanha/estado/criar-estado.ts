@@ -108,6 +108,7 @@ export function criarEstadoInicial(
     capitais: {},
     nivelDeImposto: {},
     importacao: {},
+    conquistadaEm: {},
     construcoes,
     obras: {},
     // Todo mundo em PAZ. Não é bondade: marchar sobre o vizinho tem de ser uma decisão com

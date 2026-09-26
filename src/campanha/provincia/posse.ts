@@ -22,6 +22,8 @@ import type { NucleoDaCampanha } from '../nucleo';
 function limparAdministracao(nucleo: NucleoDaCampanha, idProvincia: string): void {
   delete nucleo.estado.nivelDeImposto[idProvincia];
   delete nucleo.estado.obras[idProvincia];
+  // A fase crítica é da conquista: a troca sem guerra não a abre, e apaga a do dono anterior.
+  delete nucleo.estado.conquistadaEm[idProvincia];
 }
 
 /**
@@ -48,6 +50,7 @@ export function conquistar(
 ): void {
   nucleo.territorios.trocarDono(idProvincia, idPoder);
   limparAdministracao(nucleo, idProvincia);
+  nucleo.estado.conquistadaEm[idProvincia] = nucleo.estado.turno;
   // A cidade tomada odeia o novo dono no dia da queda. É o único movimento de humor que
   // não é gradual, e mora aqui — no caminho da CONQUISTA.
   const humor = nucleo.estado.felicidade[idProvincia];

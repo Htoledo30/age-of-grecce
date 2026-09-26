@@ -827,10 +827,48 @@ export const Ajustes = z.object({
          * meia dúzia de valores. Uma entrada por faixa de `populacao.faixas`.
          */
         porTamanho: z.array(z.number().int()).min(1),
+        /**
+         * O cofre vazio que não paga a tropa: pesa em TODA a terra do reino.
+         *
+         * Um dos três casos extremos em que Henrique quer revolta depois da fase crítica —
+         * fome, dinheiro, e povo conquistado demais. Vale quando o tesouro está no zero e o
+         * turno fecha no vermelho, que é quando a tropa começa a desertar.
+         */
+        cofreVazio: z.number().int(),
+        /**
+         * Povo conquistado demais: gente de outras cidades muito acima da do próprio rei.
+         *
+         * Só pesa na terra de maioria estrangeira. `limiar` é quantas vezes o povo do rei os
+         * estrangeiros podem somar antes de pesar; cada vez a mais custa `porExcesso`, até
+         * `maximo`. É o império que cresce mais rápido do que consegue assimilar.
+         */
+        dominioDemais: z.object({
+          limiar: z.number().positive(),
+          porExcesso: z.number().int(),
+          maximo: z.number().int(),
+        }),
       }),
       revolta: z.object({
         /** Fração da população que pega em armas no levante. */
         fracaoRebelde: z.number().gt(0).max(1),
+        /**
+         * Turnos depois da conquista em que a terra estrangeira se levanta já na faixa
+         * "Insatisfeita". Passada a fase crítica, ela só pega em armas no fundo da régua,
+         * como a terra do próprio rei — e o fundo só se alcança com causa óbvia.
+         */
+        faseCritica: z.number().int().nonnegative(),
+      }),
+      /**
+       * O povo conquistado virando o povo do rei, devagar.
+       *
+       * A cada turno, `porTurno` de cada fatia estrangeira passa à nacionalidade do dono —
+       * `mesmaTribo` vezes mais rápido entre cidades da mesma tribo. Só assimila quem está em
+       * paz com o dono: fora da fase crítica, sem cerco e com humor de `humorMinimo` para cima.
+       */
+      assimilacao: z.object({
+        porTurno: z.number().min(0).max(1),
+        mesmaTribo: z.number().positive(),
+        humorMinimo: z.number().int(),
       }),
     }),
     /**

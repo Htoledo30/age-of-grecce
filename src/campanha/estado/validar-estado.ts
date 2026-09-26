@@ -72,6 +72,9 @@ export function validarSalvamento(nucleo: NucleoDaCampanha, salvo: EstadoCampanh
     if (!atlas.existePoder(poder)) falhar(`capital de poder inexistente: ${poder}`);
     if (!atlas.existe(capital)) falhar(`capital em província inexistente: ${capital}`);
   }
+  for (const id of Object.keys(salvo.conquistadaEm)) {
+    if (!atlas.existe(id)) falhar(`conquista em província inexistente: ${id}`);
+  }
   for (const poder of Object.keys(salvo.importacao)) {
     if (!atlas.existePoder(poder)) falhar(`importação de poder inexistente: ${poder}`);
   }

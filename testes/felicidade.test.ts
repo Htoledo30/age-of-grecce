@@ -44,7 +44,8 @@ function condenada(): Campanha {
   const c = nova();
   c.trocarDono('eleusis', 'atenas');
   c.definirImposto('eleusis', 'alto');
-  return comHumor(c, 'eleusis', 5);
+  // Recém-conquistada: é na FASE CRÍTICA que a faixa "Insatisfeita" arma levante.
+  return comHumor(c, 'eleusis', 5, true);
 }
 
 /** Turnos na faixa em que a condenada vive até o levante. */
@@ -57,9 +58,15 @@ const prazoDaCondenada = felicidade.faixas[1]?.levanteEm ?? 0;
 const prazoDaRevoltosa = felicidade.faixas[0]?.levanteEm ?? 0;
 
 /** Reescreve o humor de uma província pelo caminho oficial: salvar, editar, restaurar. */
-function comHumor(campanha: Campanha, idProvincia: string, humor: number): Campanha {
+function comHumor(
+  campanha: Campanha,
+  idProvincia: string,
+  humor: number,
+  recemConquistada = false,
+): Campanha {
   const salvo = lerSalvamento(campanha.serializar());
   salvo.felicidade[idProvincia] = humor;
+  if (recemConquistada) salvo.conquistadaEm[idProvincia] = salvo.turno;
   campanha.restaurar(salvo);
   return campanha;
 }
@@ -77,6 +84,8 @@ describe('o alvo e o passo do humor', () => {
     reinoEmGuerra: false,
     isoladaDaCapital: false,
     tamanho: 1,
+    cofreVazio: false,
+    razaoDePovoConquistado: 0,
   };
 
   it('o alvo soma a situação sobre a base, e o Templo entra pelos pontos dele', () => {
@@ -105,6 +114,8 @@ describe('o alvo e o passo do humor', () => {
         reinoEmGuerra: true,
         isoladaDaCapital: true,
         tamanho: 5,
+        cofreVazio: false,
+        razaoDePovoConquistado: 0,
       },
       catalogo,
       felicidade,
@@ -135,6 +146,8 @@ describe('o alvo e o passo do humor', () => {
       reinoEmGuerra: true,
       isoladaDaCapital: true,
       tamanho: 3,
+      cofreVazio: false,
+      razaoDePovoConquistado: 0,
     };
     const parcelas = parcelasDoAlvo(situacao, catalogo, felicidade);
     const soma = parcelas.reduce((total, p) => total + p.pontos, 0);
@@ -420,6 +433,8 @@ describe('a guarnição é ordem pública', () => {
     reinoEmGuerra: false,
     isoladaDaCapital: false,
     tamanho: 1,
+    cofreVazio: false,
+    razaoDePovoConquistado: 0,
   };
 
   it('tropa do dono parada na terra acalma o povo, proporcional ao tamanho da cidade', () => {

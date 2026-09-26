@@ -23,6 +23,7 @@ import {
   saldoAlimentarLocalEm,
 } from '../alimentacao/contribuicao';
 import { estranhezaEm, povoEstranhoManda } from '../sociedade/nacionalidade';
+import { faseCriticaEm } from '../sociedade/assimilacao';
 import { crescimentoDe } from '../alimentacao/crescimento';
 import type { CrescimentoNaProvincia } from '../alimentacao/crescimento';
 import { fomeDoCercoEm, mantimentosDeCercoEm } from '../alimentacao/mantimentos-de-cerco';
@@ -125,6 +126,11 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
   /** A MAIORIA do povo daqui não reconhece o dono? É o portão do levante. */
   povoEstranhoManda(idProvincia: string): boolean {
     return povoEstranhoManda(this.nucleo, idProvincia);
+  }
+
+  /** Turnos de fase crítica que restam depois da conquista. Zero quando já passou. */
+  faseCriticaEm(idProvincia: string): number {
+    return faseCriticaEm(this.nucleo, idProvincia);
   }
 
   alvoDeFelicidadeEm(idProvincia: string): number {

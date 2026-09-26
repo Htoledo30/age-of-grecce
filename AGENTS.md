@@ -109,7 +109,7 @@ Não trate sistemas implementados como planos futuros. Em especial:
   nome da província, cor no mapa e opinião própria. `Atlas.poderes` é lista viva e o estado
   carrega `poderesNascidos`; o salvamento os registra antes de validar.
 
-Não comece espionagem, assimilação, migração, governadores, desgaste naval ou escolta de rota
+Não comece espionagem, migração, governadores, desgaste naval ou escolta de rota
 sem nova decisão de Henrique. A IA não exige tributo e não rompe o tributo que recebe por
 decisão atual.
 

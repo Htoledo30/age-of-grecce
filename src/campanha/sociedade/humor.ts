@@ -15,7 +15,8 @@ import {
 import type { ParcelaDoAlvo, SituacaoDaProvincia } from '../felicidade';
 import type { NucleoDaCampanha } from '../nucleo';
 import { donoDe, populacaoDe } from '../provincia/consultas';
-import { estranhezaEm } from './nacionalidade';
+import { estranhezaEm, razaoDePovoConquistado } from './nacionalidade';
+import { tesouroDe } from '../governo/tesouro';
 import { estaSitiada } from '../guerra/cercos';
 import type { NivelDeImposto } from '../economia';
 import { humorDoImpostoEm } from '../governo/nivel-de-imposto';
@@ -62,6 +63,10 @@ function situacaoDeFelicidadeEm(
     // O tamanho é o nível populacional que a alimentação já calcula: uma régua só para as
     // duas coisas, e nenhum número novo para o jogador aprender.
     tamanho: nivelPopulacionalEm(nucleo, idProvincia),
+    cofreVazio:
+      tesouroDe(nucleo, donoDe(nucleo, idProvincia)) <= 0 &&
+      nucleo.mobilizacao.manutencaoDe(donoDe(nucleo, idProvincia)) > 0,
+    razaoDePovoConquistado: razaoDePovoConquistado(nucleo, donoDe(nucleo, idProvincia)),
   };
 }
 

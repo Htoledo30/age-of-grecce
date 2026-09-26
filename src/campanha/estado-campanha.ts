@@ -183,6 +183,14 @@ export interface EstadoCampanha {
    */
   importacao: Record<string, number>;
   /**
+   * O turno em que cada província foi tomada pela guerra pela última vez.
+   *
+   * É o relógio da FASE CRÍTICA: logo depois da conquista a terra estrangeira se levanta já
+   * insatisfeita, e passado o prazo só no fundo da régua. Troca de dono sem guerra apaga o
+   * registro. Ver `sociedade/assimilacao.ts`.
+   */
+  conquistadaEm: Record<string, number>;
+  /**
    * Construções erguidas, por id de província.
    *
    * Ao contrário do incentivo, isto **nunca sai** daqui: construção é permanente, e é

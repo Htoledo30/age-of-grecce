@@ -134,6 +134,11 @@ export interface VistaDaProvincia {
    * uma frase. Ver `campanha/guerra/bloqueio.ts`.
    */
   bloqueio: { por: string } | null;
+  /**
+   * Turnos que faltam para a terra conquistada sair da fase crítica. Zero fora dela, e zero
+   * quando a maioria do povo já é do dono — aí o perigo nunca foi o começo.
+   */
+  faseCritica: number;
   /** A obra em andamento, se houver. */
   obra: { nome: string; turnosRestantes: number } | null;
   /** `null` nas províncias que ainda não têm economia autoral. */

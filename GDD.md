@@ -229,7 +229,7 @@ a terra; um acordo compra renda e paz, não a capacidade estratégica da provín
 - Felicidade é provincial, guardada numericamente e mostrada em categorias compreensíveis. Ela
   caminha para um alvo formado por imposto, fome, cerco, guerra, isolamento, tamanho,
   nacionalidade, guarnição e Templo; também multiplica a renda inteira da província.
-- Nacionalidade pertence à população e pode ser misturada. Ela não muda hoje.
+- Nacionalidade pertence à população e pode ser misturada, e muda devagar pela assimilação.
 - ⚠️ **E ela tem DUAS camadas, e é o degrau entre elas que dá direção à expansão.** A
   nacionalidade é a cidade — ateniense, megarense, tebano —, com fração da população em cada
   uma; o **povo** é a tribo grega dela: jônio, dório, beócio, lócrio. Mandar no próprio povo
@@ -240,9 +240,17 @@ a terra; um acordo compra renda e paz, não a capacidade estratégica da provín
   uma coisa e não um rótulo.
 - Diferença entre governante e população cria tensão, não uma trava artificial de uso da
   província conquistada.
-- ⚠️ **A ASSIMILAÇÃO ainda não existe e não entra sem nova decisão.** Hoje o povo conquistado
-  não deixa de ser quem é: o preço é permanente e se paga com Templo, imposto baixo e
-  guarnição. Se a nacionalidade um dia caminhar, será devagar e nunca sumirá de todo.
+- ⚠️ **A conquista tem um começo crítico, e depois o tempo trabalha a favor**, por decisão de
+  Henrique (26/09/2026): *"o início é o mais crítico, precisa cuidar para não acontecer a
+  revolta, e com o tempo, se cuidou, os espartanos devagar vão se tornando atenienses"*.
+  Na FASE CRÍTICA depois da queda, a terra estrangeira insatisfeita se levanta; passada ela,
+  revolta só em caso extremo e óbvio — fome, cofre vazio, povo conquistado muito maior que o
+  do rei — somado a cerco ou confisco. A ASSIMILAÇÃO leva o povo em paz com o dono para a
+  nacionalidade dele, bem devagar e mais rápido na mesma tribo; muda o futuro sem drama, porque
+  a terra assimilada pesa como estrangeira para quem um dia a retomar.
+- ⚠️ **Revolta é tempero, não trabalho.** O foco do jogo é conquistar, aliar, guerrear e
+  crescer; nem o jogador nem a IA devem passar a partida administrando levante.
+- A derrota do jogador é definitiva: a terra dele que se revolta depois ergue um reino novo.
 - Insatisfação persistente gera greve fiscal e, sob dono estrangeiro, pode levantar uma hoste
   rebelde. Migração continua fora e exige decisão própria antes de entrar.
 - Cada poder possui uma capital. O jogador que a perde escolhe outra antes de continuar; a IA
@@ -760,7 +768,7 @@ Henrique; uma possibilidade pode ser removida se não combinar com o jogo.
 - generais, líderes e o papel de terreno confiável no combate;
 - gosto diplomático próprio de cada estilo de IA;
 - arestas da aliança e memória longa de trégua violada;
-- assimilação, migração, governadores e espionagem;
+- migração, governadores e espionagem;
 - preços, oferta e demanda regionais;
 - extensão dos danos a construções além da perda atual de um nível na conquista;
 - abastecimento militar por distância além do desconto local já dado pela Estrada;

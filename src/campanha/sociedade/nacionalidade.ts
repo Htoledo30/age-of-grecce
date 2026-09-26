@@ -53,7 +53,7 @@ const NENHUMA: EstranhezaDoDominio = { mesmoPovo: 0, outroPovo: 0 };
  * identidade de um reino mudar junto com a fronteira dele, e um conquistador viraria aos
  * poucos o povo que ele conquistou.
  */
-function nacionalidadeDoPoder(
+export function nacionalidadeDoPoder(
   nucleo: NucleoDaCampanha,
   idPoder: string,
 ): string | undefined {
@@ -116,6 +116,29 @@ export function estranhezaEm(
     else outroPovo += fracao;
   }
   return { mesmoPovo, outroPovo };
+}
+
+/**
+ * Quantas vezes o povo conquistado do reino é maior que o povo do próprio rei.
+ *
+ * Gente de outra nacionalidade sobre gente da nacionalidade do rei, em todas as terras dele.
+ * Infinito quando o rei não tem povo próprio em lugar nenhum — o império sem metrópole.
+ */
+export function razaoDePovoConquistado(nucleo: NucleoDaCampanha, idPoder: string): number {
+  const doDono = nacionalidadeDoPoder(nucleo, idPoder);
+  if (doDono === undefined) return 0;
+  let proprio = 0;
+  let conquistado = 0;
+  for (const idProvincia of nucleo.territorios.provinciasDe(idPoder)) {
+    const povos = nucleo.estado.nacionalidades[idProvincia];
+    if (povos === undefined) continue;
+    const gente = nucleo.estado.populacao[idProvincia] ?? 0;
+    const fatia = povos[doDono] ?? 0;
+    proprio += gente * fatia;
+    conquistado += gente * (1 - fatia);
+  }
+  if (conquistado <= 0) return 0;
+  return proprio > 0 ? conquistado / proprio : Number.POSITIVE_INFINITY;
 }
 
 /**

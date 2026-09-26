@@ -27,6 +27,7 @@ import { rendaDe } from '../provincia/renda';
 import { crescerPopulacao } from '../alimentacao/crescimento';
 import { assentarCapitais, capitalPerdida } from '../governo/capital';
 import { atualizarFelicidade } from '../sociedade/atualizar-felicidade';
+import { assimilar } from '../sociedade/assimilacao';
 import { donoDe } from '../provincia/consultas';
 import { arrecadar } from './arrecadar';
 import { pagarTropa } from './pagar-tropa';
@@ -69,6 +70,8 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   const rodada = resolverMarchas(nucleo);
   const quedasDeCapital = assentarCapitais(nucleo, rodada.conquistas);
   const revoltas = atualizarFelicidade(nucleo);
+  // Depois do humor: quem assimila é a terra que passou este turno em paz com o dono.
+  assimilar(nucleo);
   crescerPopulacao(nucleo);
   processarObras(nucleo);
 

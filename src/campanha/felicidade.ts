@@ -62,6 +62,10 @@ export interface SituacaoDaProvincia {
    * já calcula. Zero onde não há gente contada.
    */
   tamanho: number;
+  /** O tesouro do reino está vazio com tropa para pagar: a deserção começa. */
+  cofreVazio: boolean;
+  /** Quantas vezes o povo conquistado do reino supera o povo do rei. Ver `nacionalidade.ts`. */
+  razaoDePovoConquistado: number;
 }
 
 /** Uma parcela do alvo, com nome: é o que deixa a ficha explicar a conta inteira. */
@@ -109,6 +113,19 @@ export function parcelasDoAlvo(
   }
   if (situacao.reinoEmGuerra) {
     parcelas.push({ rotulo: 'reino em guerra', pontos: ajustes.alvo.reinoEmGuerra });
+  }
+  // ⚠️ **Os dois casos extremos que Henrique pediu além da fome**: o reino que não paga e o
+  // império que conquistou gente demais. São eles, somados à fome, ao cerco e ao confisco, que
+  // levam a terra ao fundo da régua depois da fase crítica — e só eles.
+  if (situacao.cofreVazio) {
+    parcelas.push({ rotulo: 'cofre vazio', pontos: ajustes.alvo.cofreVazio });
+  }
+  const demais = ajustes.alvo.dominioDemais;
+  const estrangeira = situacao.estranheza.mesmoPovo + situacao.estranheza.outroPovo > 0.5;
+  const excesso = situacao.razaoDePovoConquistado - demais.limiar;
+  if (estrangeira && excesso > 0) {
+    const pontos = Math.max(demais.maximo, Math.round(excesso * demais.porExcesso));
+    if (pontos !== 0) parcelas.push({ rotulo: 'povo conquistado demais', pontos });
   }
   if (situacao.isoladaDaCapital) {
     parcelas.push({ rotulo: 'sem estrada à capital', pontos: ajustes.alvo.isoladaDaCapital });

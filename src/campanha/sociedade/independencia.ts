@@ -64,7 +64,12 @@ function corDaRuptura(corDoRei: string, indiceDaProvincia: number): string {
  * se libertou, foi reconquistada e se levantou de novo levanta a MESMA bandeira, que é o que
  * qualquer um esperaria dela.
  */
-export function poderLivreDe(nucleo: NucleoDaCampanha, idProvincia: string): string {
+export function poderLivreDe(
+  nucleo: NucleoDaCampanha,
+  idProvincia: string,
+  /** A tribo dos rebeldes, quando não é a do rei de hoje — a terra do jogador vencido. */
+  povo?: string,
+): string {
   const id = idLivreDe(idProvincia);
   if (nucleo.atlas.existePoder(id)) return id;
 
@@ -78,7 +83,7 @@ export function poderLivreDe(nucleo: NucleoDaCampanha, idProvincia: string): str
     id,
     nome: repetido ? `${provincia.nome} Livre` : provincia.nome,
     // Os rebeldes SÃO o povo do rei — é exatamente essa a condição para o levante nascer aqui.
-    povo: rei.povo,
+    povo: povo ?? rei.povo,
     cor: corDaRuptura(rei.cor, provincia.indice),
   };
   nucleo.atlas.registrarPoder(poder);
