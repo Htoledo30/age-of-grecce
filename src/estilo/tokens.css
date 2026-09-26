@@ -32,19 +32,20 @@
   --ui-bronze-claro: #d9b66e;
   --ui-bronze-escuro: #6f5128;
   --ui-verde: #426b5c;
-  --ui-verde-claro: #6f9b86;
-  --ui-sangue: #a94c40;
-  --ui-sangue-claro: #d27a68;
+  --ui-verde-claro: #3fa65a;
+  --ui-sangue: #9b1c16;
+  --ui-sangue-claro: #d8322a;
   --ui-fogo: #ef7d22;
   /* ── A CONVENÇÃO DOS NÚMEROS, de todo jogo de grande estratégia ──
      Rótulo em marfim, valor com cor de FUNÇÃO: ouro em amarelo, ganho em verde, perda em
      vermelho. Henrique: *"moedas e o valor na mesma cor — teria que ser moedas em branco e o
      valor em amarelo"*. Um número de ouro fica amarelo em qualquer painel; um ganho, verde. */
-  /* ⚠️ **Foscas e metálicas, e não de brinquedo.** A primeira versão era amarelo-limão, verde
-     menta e salmão, e Henrique: *"parece de criança"*. Ouro velho, pátina de bronze e óxido. */
-  --ui-ouro: #cfa95a;
-  --ui-ganho: #86a78c;
-  --ui-perda: #c0705f;
+  /* ⚠️ **Fortes e fundas: nem de brinquedo, nem desbotadas.** A primeira versão era
+     amarelo-limão, verde menta e salmão ("parece de criança"); a segunda desbotou demais
+     ("vermelho salmão? usa cores fortes!"). Ouro de moeda, verde de esmeralda, vermelho sangue. */
+  --ui-ouro: #e3a92b;
+  --ui-ganho: #3fb45f;
+  --ui-perda: #e0332a;
   --ui-fogo-claro: #ffc247;
   --ui-inativo: #5f6662;
 

@@ -240,7 +240,7 @@
   bottom: 0;
   background: repeating-linear-gradient(
     135deg,
-    rgb(210 122 104 / 85%) 0 4px,
+    rgb(216 50 42 / 85%) 0 4px,
     rgb(169 76 64 / 70%) 4px 8px
   );
   animation: batalha-fantasma 620ms ease-out forwards;
