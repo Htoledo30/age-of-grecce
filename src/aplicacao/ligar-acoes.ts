@@ -23,6 +23,7 @@ import {
   respostaALiga,
   respostaAoComercio,
   respostaAoPacto,
+  semSaida,
 } from './vistas/vontade-do-vizinho';
 import { vistaDeConstrucoes, vistaDeRecrutamento } from './vistas/provincia';
 import { ordensNoMapa, previsaoDaMarcha, rotasEmFoco } from './vistas/mapa';
@@ -200,7 +201,7 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.diplomacia.dizer(
       pontos > 0
         ? `${nome} agradeceu o presente. Opinião +${pontos}.`
-        : `${nome} aceitou o ouro, mas já estava tão bem disposto quanto o ouro consegue deixá-lo.`,
+        : `${nome} aceitou o ouro. Opinião já no máximo que o ouro compra.`,
     );
   };
 
@@ -216,7 +217,7 @@ export function ligarAcoes(jogo: Jogo): void {
     // mesmo assim. É a mesma pergunta que a IA faz antes de abrir o mercado dela.
     const resposta = respostaAoComercio(jogo, idPoder, eu);
     if (!resposta.aceita) {
-      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou: ${resposta.fala}`);
+      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou.`);
       return;
     }
     const minhaRenda = campanha.rendaDeUmAcordoCom(idPoder, eu);
@@ -224,8 +225,8 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.acordarComercio(idPoder);
     tela.diplomacia.dizer(
       minhaRenda === rendaDele
-        ? `Comércio aberto com ${campanha.poder(idPoder).nome}: +${minhaRenda} por turno para os dois.`
-        : `Comércio aberto com ${campanha.poder(idPoder).nome}: você recebe +${minhaRenda} e ele +${rendaDele} por turno.`,
+        ? `Comércio aberto com ${campanha.poder(idPoder).nome}: +${minhaRenda} por turno.`
+        : `Comércio aberto com ${campanha.poder(idPoder).nome}: +${minhaRenda} por turno (ele +${rendaDele}).`,
     );
   };
 
@@ -239,16 +240,14 @@ export function ligarAcoes(jogo: Jogo): void {
     }
     campanha.concederAcesso(idPoder, turnos);
     tela.diplomacia.dizer(
-      `${campanha.poder(idPoder).nome} pode atravessar a sua terra por ${turnos} turnos. ` +
-        'Passagem não é conquista: ele não toma nada.',
+      `Passagem para ${campanha.poder(idPoder).nome}: ${turnos} turnos.`,
     );
   };
 
   tela.diplomacia.aoRevogarAcesso = (idPoder) => {
     campanha.revogarAcesso(idPoder);
     tela.diplomacia.dizer(
-      `Estrada fechada para ${campanha.poder(idPoder).nome}. ` +
-        'Quem já estava dentro fica onde está — e não avança mais.',
+      `Passagem revogada para ${campanha.poder(idPoder).nome}.`,
     );
   };
 
@@ -258,7 +257,7 @@ export function ligarAcoes(jogo: Jogo): void {
     const nome = campanha.poder(idPoder).nome;
     if (!aceita) {
       campanha.recusarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso' | 'paz');
-      tela.diplomacia.dizer(`Você recusou ${nome}. Recusar não custa nada.`);
+      tela.diplomacia.dizer(`Você recusou ${nome}.`);
       return;
     }
     const r = campanha.aceitarProposta(idPoder, tipo as 'pacto' | 'alianca' | 'liga' | 'anexacao' | 'comercio' | 'acesso' | 'paz');
@@ -284,9 +283,7 @@ export function ligarAcoes(jogo: Jogo): void {
     // a medição pulou para 46 conquistas e 12 poderes eliminados.
     const resposta = respostaAoPacto(jogo, idPoder, eu, turnos, undefined, ouro);
     if (!resposta.aceita) {
-      tela.diplomacia.dizer(
-        `${campanha.poder(idPoder).nome} recusou: ${resposta.fala} ${resposta.pedido}.`,
-      );
+      tela.diplomacia.dizer(recusa(campanha.poder(idPoder).nome, resposta.pedido));
       return;
     }
     campanha.firmarPacto(idPoder, turnos, eu, ouro);
@@ -309,23 +306,20 @@ export function ligarAcoes(jogo: Jogo): void {
     // Ver `ia/diplomacia/aliancas.ts`. Antes este clique pulava o portão que a IA exigia de si.
     const resposta = respostaAAlianca(jogo, idPoder, eu, turnos, undefined, ouro);
     if (!resposta.aceita) {
-      tela.diplomacia.dizer(
-        `${campanha.poder(idPoder).nome} recusou: ${resposta.fala} ${resposta.pedido}.`,
-      );
+      tela.diplomacia.dizer(recusa(campanha.poder(idPoder).nome, resposta.pedido));
       return;
     }
     campanha.firmarAlianca(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
       `Aliança de ${turnos} turnos com ${campanha.poder(idPoder).nome}` +
-        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}. ` +
-        'As guerras dele passam a ser suas.',
+        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}.`,
     );
   };
 
   tela.diplomacia.aoRomperAlianca = (idPoder) => {
     campanha.romperAlianca(idPoder);
     tela.diplomacia.dizer(
-      `Aliança rompida. Abandonar quem contava com você custa mais que voltar atrás num pacto.`,
+      `Aliança rompida com ${campanha.poder(idPoder).nome}.`,
     );
   };
 
@@ -341,23 +335,23 @@ export function ligarAcoes(jogo: Jogo): void {
     // punha na liga um reino que nenhuma IA convidaria.
     const resposta = respostaALiga(jogo, idPoder, eu);
     if (!resposta.aceita) {
-      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou: ${resposta.fala}`);
+      tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} recusou.`);
       return;
     }
     campanha.formarLiga(idPoder);
     tela.diplomacia.dizer(
-      `${campanha.poder(idPoder).nome} entrou na sua liga: paga tributo e luta nas suas guerras.`,
+      `${campanha.poder(idPoder).nome} entrou na sua liga.`,
     );
   };
 
   tela.diplomacia.aoSairDaLiga = (idPoder) => {
     campanha.romperLiga(idPoder);
-    tela.diplomacia.dizer('Você saiu da liga. O mapa inteiro viu quem quebrou a palavra.');
+    tela.diplomacia.dizer('Você saiu da liga.');
   };
 
   tela.diplomacia.aoSoltarMembro = (idPoder) => {
     campanha.romperLiga(idPoder);
-    tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} está livre. Soltar não custa nada.`);
+    tela.diplomacia.dizer(`${campanha.poder(idPoder).nome} saiu da sua liga.`);
   };
 
   tela.diplomacia.aoAnexarMembro = (idPoder) => {
@@ -407,13 +401,13 @@ export function ligarAcoes(jogo: Jogo): void {
     // barata, então o mesmo vizinho pode aceitar dez turnos e recusar quarenta.
     if (!aceitaTributo(campanha, idPoder, eu, ouro, estiloDe(jogo.ia, idPoder), ajustes)) {
       tela.diplomacia.dizer(
-        `${nome} recusou ${ouro} por turno: ou não tem ano nenhum para te vender, ou é troco perto do que ele arrecada.`,
+        `${nome} recusou ${ouro} por turno.`,
       );
       return;
     }
     campanha.pagarTributoA(idPoder, turnos);
     tela.diplomacia.dizer(
-      `${nome} aceita o tributo: ${ouro} por turno durante ${turnos} turnos, e ele não marcha.`,
+      `Tributo a ${nome}: ${ouro} por turno durante ${turnos} turnos.`,
     );
   };
 
@@ -428,7 +422,7 @@ export function ligarAcoes(jogo: Jogo): void {
       return;
     }
     if (!aceitaPagarTributo(campanha, idPoder, eu, jogo.ajustes.jogo.diplomacia.tributo)) {
-      tela.diplomacia.dizer(`${nome} recusou: não teme o bastante o seu exército.`);
+      tela.diplomacia.dizer(`${nome} recusou.`);
       return;
     }
     campanha.exigirTributoDe(idPoder, turnos);
@@ -473,7 +467,7 @@ export function ligarAcoes(jogo: Jogo): void {
     );
     if (!aceita) {
       tela.diplomacia.dizer(
-        `${nome} recusou: ${ouro} por turno é menos do que ele ainda pretende tomar de você.`,
+        `${nome} recusou ${ouro} por turno.`,
       );
       return;
     }
@@ -486,7 +480,7 @@ export function ligarAcoes(jogo: Jogo): void {
   tela.diplomacia.aoRomperTributo = (idPoder) => {
     campanha.romperTributo(idPoder);
     tela.diplomacia.dizer(
-      `Tributo rompido. ${campanha.poder(idPoder).nome} não esquece, e o mapa inteiro viu.`,
+      `Tributo rompido com ${campanha.poder(idPoder).nome}.`,
     );
   };
 
@@ -499,7 +493,7 @@ export function ligarAcoes(jogo: Jogo): void {
       return;
     }
     if (!querPaz(campanha, idPoder, eu, estiloDe(jogo.ia, idPoder), jogo.ajustes.jogo.combate)) {
-      tela.diplomacia.dizer(`${nome} recusou: acha que ainda tem o que ganhar.`);
+      tela.diplomacia.dizer(`${nome} recusou a paz.`);
       return;
     }
     campanha.fazerPaz(idPoder);
@@ -729,4 +723,15 @@ function conferirFimDeJogo(jogo: Jogo): void {
   if (resultado) {
     jogo.tela.fimDeJogo.mostrar(resultado, jogo.campanha.jogador?.nome ?? 'Seu poder');
   }
+}
+
+/**
+ * A recusa, dita DEPOIS da proposta e em poucas palavras: quem, e o que faltou.
+ *
+ * ⚠️ **Decisão de Henrique (26/09/2026): a resposta só existe depois de propor.** A mesa
+ * mostrava "assinaria/relutante" e a conta inteira antes do clique, e ele: *"já aparece a
+ * resposta do que os outros reinos querem antes de eu negociar com eles"*.
+ */
+function recusa(nome: string, pedido: string): string {
+  return pedido === '' || semSaida(pedido) ? `${nome} recusou.` : `${nome} recusou — ${pedido}.`;
 }

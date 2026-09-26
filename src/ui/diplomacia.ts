@@ -951,15 +951,11 @@ export class Diplomacia {
     caixa.dataset['aberto'] = aberto ? 'sim' : 'nao';
     if (grupo.fixo) caixa.dataset['fixo'] = 'sim';
 
-    const livres = grupo.propostas.filter((p) => p.pode);
-    const vontade =
-      grupo.vontadeDele !== true || livres.length === 0
-        ? null
-        : livres.some((p) => p.aceita)
-          ? 'assinaria'
-          : grupo.semSaida
-            ? 'fechado'
-            : 'relutante';
+    // ⚠️ **A resposta dele NÃO aparece antes da proposta** — decisão de Henrique (26/09/2026):
+    // *"já aparece a resposta do que os outros reinos querem antes de eu negociar com eles"*. A
+    // palavra do cabeçalho (assinaria, relutante, fechado), o saldo de cada linha e a conta da
+    // balança saíram da mesa; quem responde agora é a proposta, e a recusa diz o que faltou.
+    const vontade = null;
 
     caixa.appendChild(this.cabecalho(vizinho, grupo, aberto, vontade));
     if (!aberto) return caixa;
@@ -978,10 +974,6 @@ export class Diplomacia {
       fala.textContent = grupo.fala;
       corpo.appendChild(fala);
     }
-    // A conta aberta: as parcelas da balança dele, no mesmo desenho das parcelas da opinião.
-    if (grupo.balanca !== undefined && grupo.balanca.length > 0) {
-      corpo.appendChild(this.balanca(grupo.balanca));
-    }
     const opcoes = document.createElement('div');
     opcoes.className = 'diplomacia__opcoes';
     for (const proposta of grupo.propostas) {
@@ -990,35 +982,6 @@ export class Diplomacia {
     corpo.appendChild(opcoes);
     caixa.appendChild(corpo);
     return caixa;
-  }
-
-  /** As parcelas da balança dele, rótulo e número, com o saldo fechando a lista. */
-  private balanca(parcelas: readonly { rotulo: string; pontos: number }[]): HTMLElement {
-    const lista = document.createElement('ul');
-    lista.className = 'diplomacia__parcelas diplomacia__balanca';
-    for (const parcela of parcelas) {
-      const linha = document.createElement('li');
-      linha.dataset['tom'] = parcela.pontos >= 0 ? 'bom' : 'ruim';
-      const nome = document.createElement('span');
-      nome.textContent = parcela.rotulo;
-      const pontos = document.createElement('span');
-      pontos.className = 'diplomacia__pontos';
-      pontos.textContent = sinal(parcela.pontos);
-      linha.append(nome, pontos);
-      lista.appendChild(linha);
-    }
-    const saldo = parcelas.reduce((soma, p) => soma + p.pontos, 0);
-    const total = document.createElement('li');
-    total.className = 'diplomacia__balanca-saldo';
-    total.dataset['tom'] = saldo >= 0 ? 'bom' : 'ruim';
-    const nome = document.createElement('span');
-    nome.textContent = 'saldo';
-    const pontos = document.createElement('span');
-    pontos.className = 'diplomacia__pontos';
-    pontos.textContent = sinal(saldo);
-    total.append(nome, pontos);
-    lista.appendChild(total);
-    return lista;
   }
 
   /** A linha que abre e fecha a ficha — ou, em guerra e paz, só o título dela. */
@@ -1118,7 +1081,7 @@ export class Diplomacia {
     botao.dataset['acao'] = proposta.acao;
     if (proposta.valor !== 0) botao.dataset['valor'] = String(proposta.valor);
     botao.disabled = !proposta.pode;
-    botao.dataset['resposta'] = !proposta.pode ? 'travado' : proposta.aceita ? 'sim' : 'nao';
+    botao.dataset['resposta'] = proposta.pode ? 'livre' : 'travado';
 
     const verbo = document.createElement('span');
     verbo.className = 'diplomacia__acao-verbo';
@@ -1147,26 +1110,15 @@ export class Diplomacia {
     // leva resposta teria as colunas de prazo desalinhadas entre si.
     const selo = document.createElement('span');
     selo.className = 'diplomacia__selo';
-    if (proposta.pode && grupo.vontadeDele === true) {
-      if (proposta.saldo !== undefined) {
-        selo.textContent = sinal(proposta.saldo);
-        selo.dataset['tom'] = proposta.saldo >= 0 ? 'bom' : 'ruim';
-      } else {
-        selo.textContent = proposta.aceita ? 'aceita' : 'recusa';
-      }
-    }
 
     botao.append(verbo, custo, prazo, selo);
-    definirTooltip(botao, {
-      titulo: `${grupo.titulo} — ${vizinho.nome}`,
-      corpo: !proposta.pode
-        ? proposta.bloqueio || 'as regras não deixam agora'
-        : proposta.aceita
-          ? 'Ele assinaria isto hoje.'
-          : proposta.pedido !== undefined && proposta.pedido !== ''
-            ? `Ele recusaria. ${proposta.pedido[0]?.toUpperCase() ?? ''}${proposta.pedido.slice(1)}.`
-            : 'Ele recusaria — mas você pode propor e ouvir o não.',
-    });
+    // Só o que a REGRA barra vai no tooltip. O que ele acha só se sabe propondo.
+    if (!proposta.pode) {
+      definirTooltip(botao, {
+        titulo: `${grupo.titulo} — ${vizinho.nome}`,
+        corpo: proposta.bloqueio || 'as regras não deixam agora',
+      });
+    }
     botao.addEventListener('click', () => this.despachar(vizinho.id, proposta));
     return botao;
   }

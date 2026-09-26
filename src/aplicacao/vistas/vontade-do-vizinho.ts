@@ -249,7 +249,7 @@ function pedidoQueFecha(
   const ajustes = jogo.ajustes.jogo;
   const cofre = campanha.tesouroDe(lados.voce);
   const noCofre = ouroQueFecha(campanha, lados, balanca.saldo, estilo, ajustes, cofre);
-  if (noCofre !== null) return `${noCofre.toLocaleString('pt-BR')} de ouro fechariam`;
+  if (noCofre !== null) return `faltam ${noCofre.toLocaleString('pt-BR')} de ouro`;
   // Até sessenta turnos da renda dele: além disso não é preço, é o teto do ouro.
   const semCofre = ouroQueFecha(
     campanha,
@@ -260,18 +260,18 @@ function pedidoQueFecha(
     Math.max(cofre, campanha.rendaDe(lados.ele) * 60),
   );
   if (semCofre !== null) {
-    return `${semCofre.toLocaleString('pt-BR')} de ouro fechariam, e o seu cofre não alcança`;
+    return `faltam ${semCofre.toLocaleString('pt-BR')} de ouro`;
   }
   if (cobicadas.length > 0) {
     const nomes = cobicadas.map((id) => campanha.nomeDe(id));
-    return `guarneça ${nomes.join(', ')}: é o que ele cobiça`;
+    return `cobiça ${nomes.join(', ')}`;
   }
   if (acordo === 'alianca') {
     const guerraDele = campanha
       .guerrasDe(lados.ele)
       .find((id) => id !== lados.voce && !campanha.emGuerra(lados.voce, id));
     if (guerraDele !== undefined) {
-      return `entre na guerra dele contra ${campanha.poder(guerraDele).nome}`;
+      return `quer você na guerra contra ${campanha.poder(guerraDele).nome}`;
     }
   }
   return SEM_SAIDA;

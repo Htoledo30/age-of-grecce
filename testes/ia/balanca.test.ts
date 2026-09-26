@@ -196,8 +196,8 @@ describe('o prazo e o ouro', () => {
     const c = comOpiniao(nova(), 'megara', 'atenas', -100);
     c.declararGuerra('corinto', 'megara');
     const jogo = { campanha: c, ia, ajustes: Ajustes.parse(JSON.parse(readFileSync(resolve('dados/ajustes.json'), 'utf8'))) } as unknown as Jogo;
-    expect(respostaAoPacto(jogo, 'megara', 'atenas').pedido).not.toContain('entre na guerra');
-    expect(respostaAAlianca(jogo, 'megara', 'atenas').pedido).toContain('entre na guerra');
+    expect(respostaAoPacto(jogo, 'megara', 'atenas').pedido).not.toContain('na guerra contra');
+    expect(respostaAAlianca(jogo, 'megara', 'atenas').pedido).toContain('na guerra contra');
   });
 
   it('o guerreiro pesa a força, o mercador pesa o ouro', () => {

@@ -358,10 +358,12 @@ Terra alheia continua pedindo a segunda decisão, assaltar ou sitiar, antes de v
 
 A mesa de Diplomacia tem três colunas: a lista de reinos agrupada por estado, a leitura do que
 os dois são um do outro e a coluna de propostas. Os tratados são uma lista de fichas que abre
-uma por vez; fechada, cada ficha mostra o que já está em pé e a palavra dele (assinaria,
-relutante ou fechado), e aberta mostra a conta da balança dele, a frase com o que a viraria e as
-opções com ouro, prazo e saldo em colunas alinhadas. Não há selo de sim ou não. Guerra e paz
-não fecham e ficam presas ao pé da coluna.
+uma por vez; fechada, cada ficha mostra o que já está em pé, e aberta mostra as opções com
+ouro e prazo em colunas alinhadas. A resposta dele só existe depois da proposta: a mesa não
+antecipa se ele aceitaria, e a recusa diz em poucas palavras o que faltou ("faltam 1.200 de
+ouro", "cobiça Elêusis"). Só o que a regra barra aparece antes, com o motivo. Guerra e paz
+não fecham e ficam presas ao pé da coluna. O catálogo de Construções agrupa as obras por família
+(Cidade, Terra, Rotas, Guerra), com a vinheta de cada uma, o efeito numa frase e o preço em ouro.
 
 Os 18 poderes com economia completa possuem estandartes vetoriais próprios inspirados em tipos
 monetários, cultos locais e mitos reconhecíveis. A mesma cor e insígnia aparece na escolha de poder, barra principal, ficha da

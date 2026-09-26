@@ -583,7 +583,7 @@ function grupoDaPaz(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     // só aparece onde a decisão é a guerra. Em todo o resto da mesa, o estado é factual.
     // ⚠️ **Sem frase de efeito.** Era a fala dele entre aspas — "Ainda tenho o que ganhar
     // aqui." —, e Henrique: *"frases de efeito, patético"*. Fica o número que muda a conta.
-    fala: !resposta.aceita && comprada ? `Tributo de ${comprada.ouro} por turno.` : '',
+    fala: '',
     tom: resposta.aceita || comprada ? 'bom' : 'ruim',
     vozDele: true,
   };
@@ -816,11 +816,8 @@ function grupoComBalanca(
   // `prazosDe*` vem do mais longo ao mais curto: o primeiro que fecha é o mais longo que fecha.
   const fecha = prazos.find((p) => p.pode && p.resposta.aceita);
   const curto = prazos[prazos.length - 1];
-  // Sem a fala dele: quando fecha, a linha já diz; quando não, fica só o que viraria a conta.
-  const fala =
-    fecha !== undefined || curto === undefined || semSaida(curto.resposta.pedido)
-      ? ''
-      : `${maiuscula(curto.resposta.pedido)}.`;
+  // Sem fala: a resposta dele só existe depois da proposta (decisão de Henrique, 26/09/2026).
+  const fala = '';
   return {
     titulo,
     vontadeDele: true,

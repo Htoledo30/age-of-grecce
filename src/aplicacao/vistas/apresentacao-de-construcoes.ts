@@ -35,7 +35,7 @@ function apresentacaoDoEfeito(
     'destaque' | 'destaqueRotulo' | 'destaqueTom'
   > => ({
     destaque: moedaComSinal(ganhoPorTurno),
-    destaqueRotulo: 'moedas / turno',
+    destaqueRotulo: 'moedas por turno',
     destaqueTom: ganhoPorTurno > 0 ? 'ganho' : ganhoPorTurno < 0 ? 'perda' : 'neutro',
   });
 
@@ -55,7 +55,7 @@ function apresentacaoDoEfeito(
         categoria: 'terra',
         categoriaNome: 'Terra',
         destaque: `+${pontos}`,
-        destaqueRotulo: 'alimento do reino',
+        destaqueRotulo: 'comida',
         destaqueTom: 'categoria',
         apoio: '',
       };
@@ -67,7 +67,7 @@ function apresentacaoDoEfeito(
         categoria: 'guerra',
         categoriaNome: 'Guerra',
         destaque: porcentagem(fator - 1),
-        destaqueRotulo: 'milícia local',
+        destaqueRotulo: 'milícia',
         destaqueTom: 'categoria',
         apoio: cerco ? `${cerco} ${cerco === 1 ? 'turno' : 'turnos'} antes do assalto` : '',
       };
@@ -79,7 +79,7 @@ function apresentacaoDoEfeito(
         categoria: 'cidade',
         categoriaNome: 'Cidade',
         destaque: `+${pontos}`,
-        destaqueRotulo: 'felicidade-alvo',
+        destaqueRotulo: 'humor',
         destaqueTom: 'categoria',
         apoio: recuperacao > 0 ? `+${recuperacao} recuperação / turno` : '',
       };
@@ -104,8 +104,8 @@ function apresentacaoDoEfeito(
       return {
         categoria: 'guerra',
         categoriaNome: 'Guerra',
-        destaque: efeito.arma.toLocaleUpperCase('pt-BR'),
-        destaqueRotulo: 'arma disponível aqui',
+        destaque: efeito.arma.charAt(0).toLocaleUpperCase('pt-BR') + efeito.arma.slice(1),
+        destaqueRotulo: 'nova arma',
         destaqueTom: 'categoria',
         apoio: '',
       };
@@ -115,7 +115,7 @@ function apresentacaoDoEfeito(
         categoria: 'guerra',
         categoriaNome: 'Guerra',
         destaque: porcentagem(fator - 1),
-        destaqueRotulo: 'treino das novas tropas',
+        destaqueRotulo: 'treino das tropas',
         destaqueTom: 'categoria',
         apoio: '',
       };

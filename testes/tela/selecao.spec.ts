@@ -125,7 +125,7 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await armaria.click();
   await expect(detalhe.getByRole('button', { name: 'Erguer nível I' })).toBeDisabled();
   await expect(detalhe).not.toContainText('faltam');
-  await expect(fazenda).toContainText(/\+1\s*alimento do reino/);
+  await expect(fazenda).toContainText(/\+1\s*comida/);
   await expect(fazenda).toHaveAttribute('data-categoria', 'terra');
 
   await fazenda.click();

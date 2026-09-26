@@ -156,7 +156,10 @@ test('o ouro que fecha o pacto aparece como custo e viaja com a proposta', async
   const pacto = aba.locator('.diplomacia__grupo[data-grupo="pacto de não-agressão"]');
   await pacto.locator('.diplomacia__ficha-topo').click();
 
-  const proposta = pacto.locator('[data-acao="pacto"][data-resposta="sim"]').first();
+  const proposta = pacto
+    .locator('[data-acao="pacto"][data-resposta="livre"]')
+    .filter({ hasText: /de ouro/ })
+    .first();
   const custo = proposta.locator('.diplomacia__acao-custo');
   await expect(custo).toHaveText(/−[\d.]+ de ouro/);
   const ouro = Number((await custo.textContent())?.replace(/\D/g, ''));

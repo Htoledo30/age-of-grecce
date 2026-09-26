@@ -206,18 +206,25 @@ export class JanelaDeConstrucoes {
     const vista = this.vista;
     if (!vista) return;
 
-    const cabecalho = document.createElement('header');
-    cabecalho.className = 'construcoes__catalogo-cabecalho';
-    const titulo = document.createElement('h3');
-    titulo.textContent = 'Catálogo';
-    const colunas = document.createElement('span');
-    colunas.textContent = 'efeito · custo';
-    cabecalho.append(titulo, colunas);
-
+    // ⚠️ **Agrupado por família, com a arte de cada obra.** Era uma tabela de dez linhas iguais —
+    // ícone de traço, rótulos em caixa alta de 10px e "2T" no lugar de prazo —, e Henrique:
+    // *"horrível, preguiçoso, sem vida e confuso"*. A família virou título de seção, a vinheta
+    // da obra dá cara a cada linha, e o efeito é uma frase curta: "+45 moedas por turno".
     const lista = document.createElement('div');
     lista.className = 'construcoes__lista';
-    for (const opcao of opcoes) lista.append(this.cartao(opcao));
-    this.catalogo.replaceChildren(cabecalho, lista);
+    for (const [categoria, nome] of FAMILIAS) {
+      const daFamilia = opcoes.filter((o) => o.apresentacao.categoria === categoria);
+      if (daFamilia.length === 0) continue;
+      const secao = document.createElement('section');
+      secao.className = 'construcoes__familia';
+      secao.dataset['categoria'] = categoria;
+      const titulo = document.createElement('h3');
+      titulo.className = 'construcoes__familia-titulo';
+      titulo.textContent = nome;
+      secao.append(titulo, ...daFamilia.map((opcao) => this.cartao(opcao)));
+      lista.append(secao);
+    }
+    this.catalogo.replaceChildren(lista);
   }
 
   private cartao(opcao: OpcaoDeConstrucao): HTMLElement {
@@ -234,41 +241,53 @@ export class JanelaDeConstrucoes {
 
     const marca = document.createElement('span');
     marca.className = 'construcoes__marca';
-    marca.append(iconeGrego(iconeDaConstrucao(opcao.id), 'construcoes__icone'));
+    const vinheta = arteDaConstrucao(opcao.id, 'construcoes__vinheta');
+    marca.append(vinheta ?? iconeGrego(iconeDaConstrucao(opcao.id), 'construcoes__icone'));
 
     const identidade = document.createElement('span');
     identidade.className = 'construcoes__identidade';
+    const linhaDoNome = document.createElement('span');
+    linhaDoNome.className = 'construcoes__linha-do-nome';
     const nome = document.createElement('strong');
     nome.className = 'construcoes__nome';
     nome.textContent = opcao.nome;
-    const nivel = document.createElement('small');
-    nivel.textContent = `${opcao.apresentacao.categoriaNome} · ${nivelNaLista(opcao, estado)}`;
-    identidade.append(nome, nivel);
-
+    linhaDoNome.append(nome);
+    // O nível só aparece quando diz alguma coisa: ampliar, em obra, pronta. "Nova" era ruído
+    // em nove de dez linhas.
+    const situacao = nivelNaLista(opcao, estado);
+    if (situacao !== 'nova') {
+      const nivel = document.createElement('small');
+      nivel.className = 'construcoes__nivel';
+      nivel.textContent = situacao;
+      linhaDoNome.append(nivel);
+    }
     const efeito = document.createElement('span');
     efeito.className = 'construcoes__efeito-lista';
     efeito.dataset['tom'] = opcao.apresentacao.destaqueTom;
     const efeitoValor = document.createElement('strong');
     efeitoValor.textContent = opcao.apresentacao.destaque;
-    const efeitoRotulo = document.createElement('small');
-    efeitoRotulo.textContent = opcao.apresentacao.destaqueRotulo;
-    efeito.append(efeitoValor, efeitoRotulo);
+    efeito.append(efeitoValor);
+    if (opcao.apresentacao.destaqueRotulo) {
+      efeito.append(` ${opcao.apresentacao.destaqueRotulo}`);
+    }
+    identidade.append(linhaDoNome, efeito);
 
     const preco = document.createElement('span');
     preco.className = 'construcoes__preco-lista';
     if (estado === 'maximo') {
       preco.textContent = 'pronta';
     } else if (estado === 'obra') {
-      preco.textContent = `${opcao.emObra ?? 0}t`;
+      const t = opcao.emObra ?? 0;
+      preco.textContent = `${t} ${t === 1 ? 'turno' : 'turnos'}`;
     } else {
       const ouro = document.createElement('strong');
-      ouro.textContent = moeda(opcao.custo);
+      ouro.append(iconeGrego('moeda', 'construcoes__moeda'), moeda(opcao.custo));
       const prazo = document.createElement('small');
-      prazo.textContent = `${opcao.turnos}t`;
+      prazo.textContent = `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`;
       preco.append(ouro, prazo);
     }
 
-    botao.append(marca, identidade, efeito, preco);
+    botao.append(marca, identidade, preco);
     botao.addEventListener('click', () => {
       this.selecionada = opcao.id;
       for (const item of this.catalogo.querySelectorAll<HTMLButtonElement>(
@@ -460,6 +479,14 @@ function estadoDe(opcao: OpcaoDeConstrucao, tesouro: number): EstadoDaOpcao {
   if (opcao.custo > tesouro) return 'sem-ouro';
   return 'livre';
 }
+
+/** As famílias do catálogo, na ordem em que aparecem. */
+const FAMILIAS: readonly (readonly [string, string])[] = [
+  ['cidade', 'Cidade'],
+  ['terra', 'Terra'],
+  ['rotas', 'Rotas'],
+  ['guerra', 'Guerra'],
+];
 
 function nivelNaLista(opcao: OpcaoDeConstrucao, estado: EstadoDaOpcao): string {
   if (estado === 'maximo') return `nível ${romano(opcao.nivelAtual)}`;

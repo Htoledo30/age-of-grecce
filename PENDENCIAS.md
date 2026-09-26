@@ -32,6 +32,8 @@ para servir à conquista, não para ocupar o jogador.
 | Etnia | assimilação: 1%/turno (2% na mesma tribo) da população estrangeira vira do dono, se a terra estiver em paz e contente | `cbe9565` |
 | Atenas voltou depois da derrota | derrota do jogador é definitiva; a revolta na terra dele cria um reino novo | `cbe9565` |
 | Visual do cerco | sitiante sempre na divisa, borda tracejada cor de fogo e chama no canto | `99fca85` |
+| Diplomacia sem resposta antecipada | decisão de Henrique (A): a resposta só vem depois da proposta; a recusa diz o que faltou; mensagens curtas | ver `git log` |
+| Catálogo de Construções | agrupado por família, com a vinheta de cada obra, efeito numa frase e preço com moeda | ver `git log` |
 | Retoque visual | convenção de cores (ouro amarelo, ganho verde, perda vermelha, rótulo em marfim) na barra, no painel, no Governo, em Construções e em Recrutar; textos pequenos subiram (11/12/14px); tamanhos soltos de Construções viraram régua; Guerra deixou de ser vermelha; custo da leva sempre visível | ver `git log` |
 
 ## Decisões esperando Henrique
@@ -44,9 +46,6 @@ para servir à conquista, não para ocupar o jogador.
   "200 mil de ouro só com ~100 províncias" dependem de simular mais terra (trabalho de dados).
 - **Preço das construções escala com a riqueza da província** (Mercado 3.065 em Atenas, 942 em
   Hermíone). É proposital; Henrique ainda não disse se gosta.
-- **A resposta da IA aparece antes de negociar** ("ASSINARIA", "RELUTANTE", "recusa" em cada
-  acordo). Henrique não gosta, mas ela nasceu de um pedido antigo dele ("posso influenciar
-  dependendo do que ofertar"). Decidir: esconder tudo até propor, ou mostrar só uma pista.
 - **Quanto cortar da renda:** esperar Henrique jogar com o grão e a IA gastando o cofre.
 
 ## Frentes grandes em aberto (ordem sugerida)
