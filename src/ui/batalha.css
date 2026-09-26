@@ -482,9 +482,7 @@
   color: var(--ui-texto);
 }
 .batalha__linha[data-canal='inicio'] .batalha__frase {
-  font-family: var(--fonte-nome);
   font-size: var(--texto-medida);
-  font-style: italic;
   color: var(--ui-texto-tenue);
 }
 .batalha__linha[data-canal='perseguicao'] .batalha__frase {

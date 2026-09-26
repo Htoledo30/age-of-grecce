@@ -22,10 +22,12 @@
   --obra-cor-forte: #e5c887;
 }
 
+/* Guerra é AÇO, e não vermelho: vermelho é perda em todo o jogo, e o "+25%" do Quartel saía
+   da mesma cor do "−3" de uma folha. */
 .construcoes [data-categoria='guerra'] {
-  --obra-cor: #d27a68;
-  --obra-cor-fundo: rgb(210 122 104 / 12%);
-  --obra-cor-forte: #e39482;
+  --obra-cor: #a9b4c8;
+  --obra-cor-fundo: rgb(169 180 200 / 12%);
+  --obra-cor-forte: #cdd6e6;
 }
 
 .construcoes [data-categoria='rotas'] {
@@ -58,7 +60,7 @@
 
 .construcoes__patrimonio span,
 .construcoes__tesouro > span {
-  font-size: 11px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -68,7 +70,7 @@
 .construcoes__patrimonio strong {
   margin-top: 1px;
   font-family: var(--fonte-numero);
-  font-size: 17px;
+  font-size: var(--texto-medida);
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto);
 }
@@ -104,7 +106,7 @@
 
 .construcoes__slot[data-estado='livre'] {
   justify-content: center;
-  font-size: 10.5px;
+  font-size: var(--texto-micro);
   font-weight: 650;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -173,7 +175,7 @@
 .construcoes__slot small {
   margin-top: 2px;
   font-family: var(--fonte-numero);
-  font-size: 10.5px;
+  font-size: var(--texto-micro);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--obra-cor-forte) 88%, white);
@@ -220,7 +222,7 @@
   font-family: var(--fonte-numero);
   font-size: 16px;
   font-variant-numeric: tabular-nums;
-  color: var(--ui-bronze-claro);
+  color: var(--ui-ouro);
 }
 
 .construcoes__tesouro .icone-grego {
@@ -260,7 +262,7 @@
 }
 
 .construcoes__catalogo-cabecalho span {
-  font-size: 11px;
+  font-size: var(--texto-micro);
   font-weight: 650;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -332,7 +334,7 @@
 .construcoes__nome {
   overflow: hidden;
   font-family: var(--fonte-nome);
-  font-size: 15.5px;
+  font-size: var(--texto-medida);
   font-weight: 650;
   line-height: 1;
   text-overflow: ellipsis;
@@ -343,7 +345,7 @@
 .construcoes__identidade small {
   margin-top: 2px;
   overflow: hidden;
-  font-size: 11px;
+  font-size: var(--texto-micro);
   font-weight: 650;
   letter-spacing: 0.06em;
   text-overflow: ellipsis;
@@ -360,7 +362,7 @@
 .construcoes__preco-lista strong {
   overflow: hidden;
   font-family: var(--fonte-numero);
-  font-size: 12.5px;
+  font-size: var(--texto-corpo);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   line-height: 1;
@@ -371,6 +373,11 @@
 .construcoes__efeito-lista strong {
   max-width: 100%;
   color: var(--obra-cor-forte);
+}
+
+.construcoes__efeito-lista[data-tom='ganho'] strong,
+.construcoes__impacto[data-tom='ganho'] > strong {
+  color: var(--ui-ouro);
 }
 
 .construcoes__efeito-lista[data-tom='perda'] strong {
@@ -385,7 +392,7 @@
 .construcoes__preco-lista small {
   margin-top: 3px;
   overflow: hidden;
-  font-size: 10.75px;
+  font-size: var(--texto-micro);
   line-height: 1;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -396,11 +403,15 @@
 .construcoes__preco-lista {
   justify-items: end;
   font-family: var(--fonte-numero);
-  font-size: 10px;
+  font-size: var(--texto-micro);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   text-transform: uppercase;
   color: var(--ui-texto-fraco);
+}
+
+.construcoes__preco-lista strong {
+  color: var(--ui-ouro);
 }
 
 .construcoes__cartao[data-estado='sem-ouro'] .construcoes__preco-lista,
@@ -495,7 +506,7 @@
 
 .construcoes__detalhe-supra {
   overflow: hidden;
-  font-size: 11px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-overflow: ellipsis;
@@ -509,7 +520,7 @@
   overflow: hidden;
   margin-top: 1px;
   font-family: var(--fonte-nome);
-  font-size: 29px;
+  font-size: var(--texto-titulo);
   font-weight: 650;
   line-height: 1;
   text-overflow: ellipsis;
@@ -533,7 +544,7 @@
   border: 1px solid rgb(255 255 255 / 23%);
   background: rgb(5 9 10 / 62%);
   font-family: var(--fonte-numero);
-  font-size: 9px;
+  font-size: var(--texto-micro);
   color: var(--ui-texto-tenue);
 }
 
@@ -568,7 +579,7 @@
 .construcoes__impacto > span {
   grid-column: 1 / -1;
   margin-bottom: 2px;
-  font-size: 10.5px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -610,7 +621,7 @@
   align-self: start;
   margin-top: 4px;
   overflow: hidden;
-  font-size: 12.5px;
+  font-size: var(--texto-nota);
   line-height: 1.15;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -639,7 +650,7 @@
 }
 
 .construcoes__conta dt {
-  font-size: 10px;
+  font-size: var(--texto-micro);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -657,7 +668,11 @@
 }
 
 .construcoes__conta [data-tom='ganho'] dd {
-  color: var(--obra-cor-forte);
+  color: var(--ui-ganho);
+}
+
+.construcoes__conta [data-tom='ouro'] dd {
+  color: var(--ui-ouro);
 }
 
 .construcoes__conta [data-tom='perda'] dd {

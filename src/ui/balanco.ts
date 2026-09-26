@@ -111,14 +111,11 @@ export class Balanco implements AbaDoGoverno {
       trecho('balanco__poder', vista.poder.nome),
       trecho('balanco__dado', formatarAno(vista.ano)),
       trecho('balanco__dado', `turno ${vista.turno}`),
-      trecho('balanco__ouro', `${moeda(vista.tesouro)} moedas`),
-      trecho('balanco__dado', `terras ${comSinal(somas.total)}`),
-      trecho('balanco__dado', `rede +${moeda(vista.trocas)}`),
+      rotulado(moeda(vista.tesouro), 'moedas', 'ouro'),
+      rotulado('terras', comSinal(somas.total), somas.total < 0 ? 'perda' : 'ganho'),
+      rotulado('rede', `+${moeda(vista.trocas)}`, 'ganho'),
       // A renda pode ser negativa desde a manutenção de construção — o sinal é honesto.
-      trecho(
-        doReino < 0 ? 'balanco__aviso' : 'balanco__ouro',
-        `${comSinal(doReino)} por turno`,
-      ),
+      rotulado(comSinal(doReino), 'por turno', doReino < 0 ? 'perda' : 'ganho'),
       trecho('balanco__dado', `${vista.linhas.length} províncias`),
     ];
     // Dizer quantas ainda não arrecadam é honestidade: sem isso o total parece o teto do
@@ -219,9 +216,34 @@ function celulas(valores: readonly string[]): HTMLTableRowElement {
     // Da terceira coluna em diante é dinheiro: alinhado à direita, pra comparar a coluna
     // de cima a baixo sem ler número por número.
     if (i >= 2) td.className = 'balanco__numero';
+    // Saída de dinheiro em vermelho, e o SALDO (a última coluna) na cor do ouro.
+    if (i >= 2 && v.startsWith('−')) td.dataset['tom'] = 'perda';
+    else if (i === valores.length - 1 && i >= 2) td.dataset['tom'] = 'ouro';
     tr.appendChild(td);
   }
   return tr;
+}
+
+/**
+ * Rótulo e valor em cores diferentes: o valor com a cor da FUNÇÃO (ouro, ganho, perda) e o
+ * rótulo em marfim. Quem vem primeiro segue a leitura: "3.500 moedas", mas "terras +660".
+ */
+export function rotulado(
+  primeiro: string,
+  segundo: string,
+  tom: 'ouro' | 'ganho' | 'perda',
+): HTMLElement {
+  const span = document.createElement('span');
+  span.className = 'balanco__dado';
+  const valorPrimeiro = /^[+−\d]/.test(primeiro);
+  const valor = document.createElement('strong');
+  valor.className = 'balanco__valor';
+  valor.dataset['tom'] = tom;
+  valor.textContent = valorPrimeiro ? primeiro : segundo;
+  const rotulo = document.createTextNode(valorPrimeiro ? ` ${segundo}` : `${primeiro} `);
+  if (valorPrimeiro) span.append(valor, rotulo);
+  else span.append(rotulo, valor);
+  return span;
 }
 
 function trecho(classe: string, texto: string): HTMLElement {

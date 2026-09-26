@@ -69,7 +69,7 @@ export class MenuPausa {
   private montarMenu(): void {
     this.menu.className = 'menu-pausa__cartao';
     this.menu.dataset['tela'] = 'menu';
-    this.menu.append(this.cabecalho('Jogo pausado', 'A campanha espera por você.'));
+    this.menu.append(this.cabecalho('Jogo pausado', ''));
 
     const acoes = document.createElement('div');
     acoes.className = 'menu-pausa__acoes';
@@ -133,10 +133,13 @@ export class MenuPausa {
     const h = document.createElement('h2');
     h.className = 'menu-pausa__titulo';
     h.textContent = titulo;
-    const p = document.createElement('p');
-    p.className = 'menu-pausa__subtitulo';
-    p.textContent = subtitulo;
-    textos.append(h, p);
+    textos.append(h);
+    if (subtitulo) {
+      const p = document.createElement('p');
+      p.className = 'menu-pausa__subtitulo';
+      p.textContent = subtitulo;
+      textos.append(p);
+    }
     cabecalho.append(marca, textos);
     return cabecalho;
   }

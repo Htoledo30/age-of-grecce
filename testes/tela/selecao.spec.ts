@@ -93,8 +93,10 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
     () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha(),
   );
   // Pergunta às regras em vez de cravar: tesouro inicial é balanço e já mudou uma vez.
-  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
-  await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(tesouro.toLocaleString('pt-BR'));
+  await expect(page.locator(".barra-turno__variacao[data-tom='ganho']")).toHaveText(
+    `+${renda.toLocaleString('pt-BR')}`,
+  );
   // O catálogo é uma lista de leitura rápida; a primeira batida escolhe e a segunda, no
   // detalhe, compra. Efeito, custo e prazo continuam visíveis antes do gasto.
   const agora = page.locator('.construcoes__cartao', {
@@ -129,7 +131,7 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   await fazenda.click();
   await expect(detalhe.getByRole('heading', { name: 'Fazenda' })).toBeVisible();
   await expect(arte).toHaveAttribute('src', /fazenda-v1\.webp$/);
-  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro));
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(tesouro.toLocaleString('pt-BR'));
   await agora.click();
   await expect(arte).toHaveAttribute('src', /agora-v1\.webp$/);
 
@@ -151,8 +153,12 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
   const custoDaAgora = await page.evaluate(
     () => (window as unknown as { inspecao: Ganchos }).inspecao.custoDaObraEm('atenas', 'agora', 1),
   );
-  await expect(page.locator('.barra-turno__saldo')).toHaveText(String(tesouro - custoDaAgora));
-  await expect(page.locator('.barra-turno__variacao')).toHaveText(`(+${renda})`);
+  await expect(page.locator('.barra-turno__saldo')).toHaveText(
+    (tesouro - custoDaAgora).toLocaleString('pt-BR'),
+  );
+  await expect(page.locator(".barra-turno__variacao[data-tom='ganho']")).toHaveText(
+    `+${renda.toLocaleString('pt-BR')}`,
+  );
   // A obra é ALARME no painel: fica acima das medidas, onde o olho entra.
   await expect(page.locator('.ficha__aviso[data-tom="obra"]')).toContainText(
     'Ágora I em obra · 2 turnos',
@@ -179,7 +185,9 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
     () => (window as unknown as { inspecao: Ganchos }).inspecao.campanha().renda,
   );
   expect(rendaComAgora).toBeGreaterThan(renda); // a Ágora entregou
-  await expect(page.locator('.barra-turno')).toContainText(`(+${rendaComAgora})`);
+  await expect(page.locator('.barra-turno')).toContainText(
+    `+${rendaComAgora.toLocaleString('pt-BR')}`,
+  );
   // O painel não lista as construções erguidas — o contador do portão diz quantas são, e a
   // janela diz quais. Duas listas de pastilha empilhadas confundiam produto com construção.
   await expect(page.locator('.acoes__portao-contador').first()).toHaveText('1/4');

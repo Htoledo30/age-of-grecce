@@ -172,7 +172,7 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
       tom: cerco.sitiante === eu ? 'ganho' : sitiado === eu ? 'perda' : 'neutro',
       peso: peso(envolveMim(cerco.sitiante, sitiado)),
       icone: 'fogo',
-      texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)} — sem produção nem trânsito lá dentro.`,
+      texto: `${nomeDoPoder(cerco.sitiante)} sitia ${atlas.nomeDe(cerco.provincia)}.`,
     });
   }
 

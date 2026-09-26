@@ -31,6 +31,7 @@ para servir à conquista, não para ocupar o jogador.
 | Etnia | assimilação: 1%/turno (2% na mesma tribo) da população estrangeira vira do dono, se a terra estiver em paz e contente | `cbe9565` |
 | Atenas voltou depois da derrota | derrota do jogador é definitiva; a revolta na terra dele cria um reino novo | `cbe9565` |
 | Visual do cerco | sitiante sempre na divisa, borda tracejada cor de fogo e chama no canto | `99fca85` |
+| Retoque visual | convenção de cores (ouro amarelo, ganho verde, perda vermelha, rótulo em marfim) na barra, no painel, no Governo, em Construções e em Recrutar; textos pequenos subiram (11/12/14px); tamanhos soltos de Construções viraram régua; Guerra deixou de ser vermelha; custo da leva sempre visível | ver `git log` |
 
 ## Decisões esperando Henrique
 
@@ -67,5 +68,11 @@ para servir à conquista, não para ocupar o jogador.
   todos os vizinhos estão cobertos por trégua, pacto, tributo, aliança ou liga.
 - **Um cerco só por província:** dois co-beligerantes sobre a mesma cidade — o segundo fica sem
   cerco. A postura continua compartilhada por destino (`posturas.ts`).
+- **Visual ainda por fazer:** a janela de Diplomacia (letras pequenas e textos que explicam
+  demais); Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
+  fundo é `font-size-adjust` na fonte de corpo, com uma passada do `medir-tamanho`; a cor da
+  província selecionada no mapa fica marrom e apagada.
+- **Recrutar diz "falta Acampamento de arqueiro"** onde a obra nem existe no catálogo (exige
+  Madeira ou Cavalos): o motivo devia dizer o requisito da terra.
 - **Notas antigas não conferidas:** o travamento ao abrir o movimento com Porto e o cálculo de
   todas as rotas possíveis (de `revisoes feitas por henrique.txt`, antes de setembro).

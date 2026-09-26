@@ -10,6 +10,7 @@
  */
 
 import type { AbaDoGoverno } from './governo';
+import { rotulado } from './balanco';
 import { definirTooltip } from './tooltip';
 
 interface BemNoMercado {
@@ -51,7 +52,7 @@ export class Mercado implements AbaDoGoverno {
     const quantos = vista.circulando.length;
     const resumo = [
       trecho('balanco__dado', `${quantos} ${quantos === 1 ? 'bem circula' : 'bens circulam'}`),
-      trecho('balanco__ouro', `+${moeda(vista.total)} por turno`),
+      rotulado(`+${moeda(vista.total)}`, 'por turno', 'ouro'),
     ];
     // ⚠️ O aviso vem antes de tudo: sem capital a tabela fica vazia, e uma tabela vazia sem
     // explicação parece defeito em vez de consequência.
@@ -107,7 +108,10 @@ function celulas(valores: readonly string[]): HTMLTableRowElement {
   for (const [i, valor] of valores.entries()) {
     const td = document.createElement('td');
     td.textContent = valor;
-    if (i === 1) td.className = 'balanco__numero';
+    if (i === 1) {
+      td.className = 'balanco__numero';
+      td.dataset['tom'] = 'ouro';
+    }
     tr.appendChild(td);
   }
   return tr;

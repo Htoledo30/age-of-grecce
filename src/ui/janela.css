@@ -43,7 +43,7 @@
 }
 .janela__titulo {
   font-family: var(--fonte-titulo);
-  font-size: var(--texto-destaque);
+  font-size: var(--texto-titulo);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;

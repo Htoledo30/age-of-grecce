@@ -201,8 +201,12 @@ function povo(vista: VistaDaProvincia): Medida {
     // atropelava a medida vizinha. E vai numa LINHA PRÓPRIA, abaixo da faixa: escrito na
     // mesma linha, "+175 · terra grande" quebrava no meio do nome da faixa.
     delta: '',
-    nota: c ? `${vista.faixa.toLowerCase()}
-${comSinal(passo)}` : vista.faixa.toLowerCase(),
+    // O passo só aparece quando existe: um "+0" solto embaixo da faixa parecia defeito.
+    nota:
+      c && passo !== 0
+        ? `${vista.faixa.toLowerCase()}
+${comSinal(passo)}`
+        : vista.faixa.toLowerCase(),
     tom: passo < 0 ? 'ruim' : 'neutro',
     tooltip: {
       ...(c ? tooltipDaPopulacao(c) : { titulo: 'População', corpo: '' }),

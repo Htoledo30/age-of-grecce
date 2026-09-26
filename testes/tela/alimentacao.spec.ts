@@ -133,9 +133,9 @@ test('o Governo decompõe a mesma conta e mostra o papel de cada terra', async (
   const resumo = aba.locator('.balanco__resumo');
   await expect(resumo).toContainText(`subsistência +${dados.subsistencia}`);
   await expect(resumo).toContainText(`alimentos +${dados.producao}`);
-  await expect(resumo).toContainText(`população −${dados.populacao}`);
+  await expect(resumo).toContainText(`população ${comSinal(-dados.populacao)}`);
   await expect(resumo).toContainText(`civil +${dados.saldoCivil}`);
-  await expect(resumo).toContainText(`exército −${dados.exercito}`);
+  await expect(resumo).toContainText(`exército ${comSinal(-dados.exercito)}`);
   await expect(resumo).toContainText(
     `${comSinal(dados.saldo)} · ${ROTULO[dados.categoria] ?? dados.categoria}`,
   );

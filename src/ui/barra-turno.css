@@ -125,14 +125,19 @@
   font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.045em;
-  color: var(--ui-texto-fraco);
+  color: var(--ui-texto);
 }
-/* Aperto e fome se veem de longe: o número negativo é o aviso de que gente morre agora. */
-.barra-turno__folego[data-tom='aperto'] {
-  color: var(--ui-bronze-claro);
+/* O NÚMERO leva a cor do estado e a palavra fica em marfim: folga verde, aperto amarelo, fome
+   vermelha. Se veem de longe, e o rótulo continua lendo igual nos três. */
+.barra-turno__folego[data-tom='folga'] .barra-turno__folego-valor {
+  color: var(--ui-ganho);
 }
-.barra-turno__folego[data-tom='fome'] {
-  color: var(--ui-sangue-claro);
+.barra-turno__folego[data-tom='aperto'] .barra-turno__folego-valor {
+  color: var(--ui-ouro);
+}
+.barra-turno__folego[data-tom='fome'] .barra-turno__folego-valor,
+.barra-turno__folego[data-tom='fome'] .barra-turno__folego-unidade {
+  color: var(--ui-perda);
 }
 
 .barra-turno__ouro {
@@ -143,7 +148,7 @@
   font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.045em;
-  color: var(--ui-bronze-claro);
+  color: var(--ui-texto);
 }
 
 .barra-turno__valores {
@@ -154,7 +159,7 @@
 
 .barra-turno__saldo {
   font-weight: 800;
-  color: #f0cd82;
+  color: var(--ui-ouro);
 }
 
 .barra-turno__folego-valor {
@@ -174,8 +179,14 @@
 }
 
 .barra-turno__variacao {
-  font-weight: 400;
-  color: var(--ui-bronze-claro);
+  font-weight: 600;
+  font-size: var(--texto-nota);
+}
+.barra-turno__variacao[data-tom='ganho'] {
+  color: var(--ui-ganho);
+}
+.barra-turno__variacao[data-tom='perda'] {
+  color: var(--ui-perda);
 }
 
 .barra-turno__controle {

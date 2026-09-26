@@ -326,7 +326,7 @@ export class JanelaDeConstrucoes {
     const conta = document.createElement('dl');
     conta.className = 'construcoes__conta';
     if (estado !== 'maximo') {
-      conta.append(dado('Custo', moeda(opcao.custo), estado === 'sem-ouro' ? 'perda' : ''));
+      conta.append(dado('Custo', moeda(opcao.custo), estado === 'sem-ouro' ? 'perda' : 'ouro'));
       conta.append(
         dado(
           'Obra',
@@ -337,10 +337,14 @@ export class JanelaDeConstrucoes {
       );
     }
     conta.append(
-      dado('Folha', opcao.manutencao > 0 ? `−${moeda(opcao.manutencao)} / turno` : 'sem custo'),
+      dado(
+        'Folha',
+        opcao.manutencao > 0 ? `−${moeda(opcao.manutencao)} / turno` : 'sem custo',
+        opcao.manutencao > 0 ? 'perda' : '',
+      ),
     );
     if (opcao.ganhoPorTurno > 0 && Number.isFinite(opcao.turnosParaPagar)) {
-      conta.append(dado('Retorno', `${Math.ceil(opcao.turnosParaPagar)} turnos`, 'ganho'));
+      conta.append(dado('Retorno', `${Math.ceil(opcao.turnosParaPagar)} turnos`));
     }
 
     this.detalhe.replaceChildren(cabecalho, impacto, conta, this.acoes(opcao, estado));

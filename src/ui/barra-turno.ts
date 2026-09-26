@@ -214,13 +214,21 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
   valores.className = 'barra-turno__valores';
   const saldo = document.createElement('strong');
   saldo.className = 'barra-turno__saldo';
-  saldo.textContent = String(vista.tesouro);
-  const variacao = document.createElement('span');
-  variacao.className = 'barra-turno__variacao';
-  variacao.textContent =
-    vista.manutencao > 0 ? `(+${vista.renda} −${vista.manutencao})` : `(+${vista.renda})`;
-
-  valores.append(saldo, variacao);
+  saldo.textContent = vista.tesouro.toLocaleString('pt-BR');
+  // Ganho em verde e folha em vermelho, cada um com a sua cor: o parêntese único com os dois
+  // números na cor do ouro não dizia qual entrava e qual saía.
+  const ganho = document.createElement('span');
+  ganho.className = 'barra-turno__variacao';
+  ganho.dataset['tom'] = 'ganho';
+  ganho.textContent = `+${vista.renda.toLocaleString('pt-BR')}`;
+  valores.append(saldo, ganho);
+  if (vista.manutencao > 0) {
+    const perda = document.createElement('span');
+    perda.className = 'barra-turno__variacao';
+    perda.dataset['tom'] = 'perda';
+    perda.textContent = `−${vista.manutencao.toLocaleString('pt-BR')}`;
+    valores.append(perda);
+  }
   linha.append(iconeGrego('moeda'), valores);
   const variacaoLiquida = vista.renda - vista.manutencao;
   definirTooltip(linha, {

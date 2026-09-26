@@ -69,7 +69,7 @@
   padding: 12px 18px;
   border: 1px solid var(--ui-borda);
   border-radius: var(--raio-1);
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;

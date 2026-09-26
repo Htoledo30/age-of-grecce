@@ -176,10 +176,24 @@
 .recrutamento__previsao[data-pode='nao'] {
   color: var(--ui-sangue-claro);
 }
-/* Passar da despensa não é recusa, é escolha cara: mesma cor de alerta, botão liberado. */
-.recrutamento__previsao[data-pode='fome'],
-.recrutamento__quantidade[data-fome='sim'] {
-  color: var(--ui-sangue-claro);
+/* Passar da despensa não é recusa, é escolha cara: o número de soldados e a linha da fome
+   ficam em alerta, e o custo continua lendo como custo. */
+.recrutamento__quantidade[data-fome='sim'],
+.recrutamento__fome {
+  color: var(--ui-perda);
+}
+.recrutamento__fome {
+  display: block;
+}
+.recrutamento__valor {
+  font-weight: 700;
+}
+.recrutamento__valor[data-tom='ouro'],
+.recrutamento__arma .recrutamento__arma-numeros dd[data-tom='ouro'] {
+  color: var(--ui-ouro);
+}
+.recrutamento__valor[data-tom='perda'] {
+  color: var(--ui-perda);
 }
 .recrutamento__previsao[data-pode='espera'] {
   color: var(--ui-texto-tenue);

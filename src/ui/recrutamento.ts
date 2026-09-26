@@ -289,7 +289,7 @@ export class Recrutamento {
       const numeros = botao.querySelector('.recrutamento__arma-numeros');
       if (numeros) {
         numeros.replaceChildren(
-          stat('custo', numero(dados.custoPorHomem)),
+          stat('custo', numero(dados.custoPorHomem), 'ouro'),
           stat('ataque', `×${dados.ataque}`),
           stat('aguento', `×${dados.aguento}`),
           stat('comida', `×${dados.comida}`),
@@ -361,10 +361,24 @@ export class Recrutamento {
 
     const manutencao = Math.round(r.homens * vista.manutencaoPorHomem);
     const emCampanha = Math.round(r.homens * vista.manutencaoEmCampanha);
-    this.previsao.textContent = passaDaDespensa
-      ? `A despensa alimenta ${numero(cabemNaDespensa)}: o resto passa fome no próximo turno.`
-      : `${numero(r.ouro)} moedas agora · ${numero(manutencao)} por turno em casa · ` +
-        `${numero(emCampanha)} por turno em terra alheia · prontos no próximo turno`;
+    // ⚠️ **O custo aparece SEMPRE, e a fome vem numa linha a mais.** Com a despensa estourada o
+    // aviso substituía o custo — e como Atenas abre com saldo zero, toda leva do começo da
+    // partida era reunida sem o jogador ver as moedas. Valores com a cor da função: o ouro de
+    // agora em amarelo, a folha em vermelho, as palavras em marfim.
+    this.previsao.replaceChildren(
+      valorEm(numero(r.ouro), 'ouro'),
+      ' moedas agora · ',
+      valorEm(numero(manutencao), 'perda'),
+      ' por turno em casa · ',
+      valorEm(numero(emCampanha), 'perda'),
+      ' por turno em terra alheia · prontos no próximo turno',
+    );
+    if (passaDaDespensa) {
+      const fome = document.createElement('span');
+      fome.className = 'recrutamento__fome';
+      fome.textContent = `A despensa alimenta ${numero(cabemNaDespensa)}: o resto passa fome.`;
+      this.previsao.append(fome);
+    }
     this.previsao.dataset['pode'] = passaDaDespensa ? 'fome' : 'sim';
     definirTooltip(this.previsao, {
       titulo: 'Custo da mobilização',
@@ -389,12 +403,22 @@ function numero(valor: number): string {
 }
 
 /** Um número da arma: rótulo micro à esquerda, valor à direita. */
-function stat(rotulo: string, valor: string): DocumentFragment {
+/** Um número com a cor da função dele: ouro em amarelo, saída em vermelho. */
+function valorEm(texto: string, tom: 'ouro' | 'perda'): HTMLElement {
+  const forte = document.createElement('strong');
+  forte.className = 'recrutamento__valor';
+  forte.dataset['tom'] = tom;
+  forte.textContent = texto;
+  return forte;
+}
+
+function stat(rotulo: string, valor: string, tom = ''): DocumentFragment {
   const fragmento = document.createDocumentFragment();
   const dt = document.createElement('dt');
   dt.textContent = rotulo;
   const dd = document.createElement('dd');
   dd.textContent = valor;
+  if (tom) dd.dataset['tom'] = tom;
   fragmento.append(dt, dd);
   return fragmento;
 }

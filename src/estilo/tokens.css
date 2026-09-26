@@ -36,6 +36,13 @@
   --ui-sangue: #a94c40;
   --ui-sangue-claro: #d27a68;
   --ui-fogo: #ef7d22;
+  /* ── A CONVENÇÃO DOS NÚMEROS, de todo jogo de grande estratégia ──
+     Rótulo em marfim, valor com cor de FUNÇÃO: ouro em amarelo, ganho em verde, perda em
+     vermelho. Henrique: *"moedas e o valor na mesma cor — teria que ser moedas em branco e o
+     valor em amarelo"*. Um número de ouro fica amarelo em qualquer painel; um ganho, verde. */
+  --ui-ouro: #f2cf6b;
+  --ui-ganho: #8fc79a;
+  --ui-perda: #e08473;
   --ui-fogo-claro: #ffc247;
   --ui-inativo: #5f6662;
 
@@ -95,11 +102,11 @@
 
      ⚠️ **Escolher pela FUNÇÃO, nunca pelo tamanho.** `--texto-nota` porque é uma nota, e não
      porque dá 11px. No dia em que a escala mudar, quem escolheu por função continua certo. */
-  --texto-micro: 10px; /* etiqueta, contador, unidade colada num número */
-  --texto-nota: 11px; /* nota, legenda, rodapé, o que se lê depois */
-  --texto-corpo: 13px; /* a voz corrente — metade da interface vive aqui */
+  --texto-micro: 11px; /* etiqueta, contador, unidade colada num número */
+  --texto-nota: 12px; /* nota, legenda, rodapé, o que se lê depois */
+  --texto-corpo: 14px; /* a voz corrente — metade da interface vive aqui */
   --texto-medida: 16px; /* o número que decide; o nome próprio numa lista */
-  --texto-destaque: 20px; /* o valor grande de uma medida */
+  --texto-destaque: 19px; /* o valor grande de uma medida */
   --texto-titulo: 26px; /* o nome de uma janela ou de uma província */
   --texto-heroi: 40px; /* o título da tela de fim de jogo, e só ele */
   /* ⚠️ **Duas medidas do jogo ficam FORA desta régua, e as duas por escrito.** O nome do jogo

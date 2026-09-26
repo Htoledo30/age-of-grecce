@@ -246,11 +246,11 @@
   color: var(--ui-texto-tenue);
 }
 .ficha__medida[data-tom='bom'] .ficha__valor {
-  color: var(--ui-bronze-claro);
+  color: var(--ui-ouro);
 }
 .ficha__medida[data-tom='ruim'] .ficha__valor,
 .ficha__medida[data-tom='ruim'] .ficha__nota {
-  color: var(--ui-sangue-claro);
+  color: var(--ui-perda);
 }
 
 /* Telas baixas: o painel encolhe pelas margens e pelo nome, nunca pelas medidas — elas são

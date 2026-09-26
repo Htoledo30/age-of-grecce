@@ -2,6 +2,7 @@
 
 import type { CategoriaAlimentar } from '@/producao/alimentacao';
 import type { AbaDoGoverno } from './governo';
+import { rotulado } from './balanco';
 import { definirTooltip } from './tooltip';
 
 export interface LinhaDoAlimento {
@@ -106,20 +107,17 @@ export class BalancoAlimentar implements AbaDoGoverno {
     const producao = livres.reduce((total, linha) => total + linha.producao, 0);
     const populacao = livres.reduce((total, linha) => total + linha.populacao, 0);
     const comprado = vista.importacao?.chegam ?? 0;
+    // Entrada em verde, saída em vermelho, a palavra em marfim. O saldo final NÃO é ouro:
+    // comida tem a cor do estado dela.
+    const tomDe = (n: number): 'ganho' | 'perda' => (n < 0 ? 'perda' : 'ganho');
     this.resumo.replaceChildren(
-      trecho('balanco__dado', `subsistência +${vista.subsistencia}`),
-      trecho('balanco__dado', `alimentos +${producao}`),
-      ...(comprado > 0 ? [trecho('balanco__dado', `grão comprado +${comprado}`)] : []),
-      trecho('balanco__dado', `população −${populacao}`),
-      trecho(
-        vista.saldoCivil < 0 ? 'balanco__aviso' : 'balanco__dado',
-        `civil ${comSinal(vista.saldoCivil)}`,
-      ),
-      trecho('balanco__dado', `exército −${vista.exercito}`),
-      trecho(
-        vista.saldo < 0 ? 'balanco__aviso' : 'balanco__ouro',
-        `${comSinal(vista.saldo)} · ${nomeDaCategoria(vista.categoria)}`,
-      ),
+      rotulado('subsistência', `+${vista.subsistencia}`, 'ganho'),
+      rotulado('alimentos', `+${producao}`, 'ganho'),
+      ...(comprado > 0 ? [rotulado('grão comprado', `+${comprado}`, 'ganho')] : []),
+      rotulado('população', comSinal(-populacao), 'perda'),
+      rotulado('civil', comSinal(vista.saldoCivil), tomDe(vista.saldoCivil)),
+      rotulado('exército', comSinal(-vista.exercito), vista.exercito > 0 ? 'perda' : 'ganho'),
+      rotulado(comSinal(vista.saldo), `· ${nomeDaCategoria(vista.categoria)}`, tomDe(vista.saldo)),
     );
     this.desenharGrao(vista.importacao);
 
@@ -221,12 +219,6 @@ function comSinal(valor: number): string {
   return valor >= 0 ? `+${valor}` : `−${-valor}`;
 }
 
-function trecho(classe: string, texto: string): HTMLElement {
-  const span = document.createElement('span');
-  span.className = classe;
-  span.textContent = texto;
-  return span;
-}
 
 function celulas(valores: readonly string[]): HTMLTableRowElement {
   const tr = document.createElement('tr');
@@ -234,6 +226,7 @@ function celulas(valores: readonly string[]): HTMLTableRowElement {
     const td = document.createElement('td');
     td.textContent = valor;
     if (i >= 2) td.className = 'balanco__numero';
+    if (i >= 2 && valor.startsWith('−')) td.dataset['tom'] = 'perda';
     tr.appendChild(td);
   }
   return tr;
