@@ -67,7 +67,10 @@ para servir à conquista, não para ocupar o jogador.
    (31 trocas de dono em 100 turnos, e nenhuma depois do 100). Fazenda I dando 2 leva a 58
    trocas, 13 eliminados e maior reino com 9 — ele gostou da direção, não do exagero. Procurar o
    meio-termo medindo com `npm run partida 100` e 150 (comida do nível I, acordos que travam o
-   mapa depois do 100).
+   mapa depois do 100). Diagnóstico de 27/09: o mapa congela já no turno 60, com 8 sobreviventes
+   de 18; entre eles quase todo par está travado por aliança (agora sem prazo), tributo de 50–70
+   turnos, trégua ou liga, e os pares livres param em "gosta dele" ou "não tem força igual".
+   Mégara (4.882 homens) ficou 40+ turnos em guerra com Sícion (1 província) sem tomá-la.
 1. **Jogar uma partida** com tudo o que mudou e anotar em `revisoes feitas por henrique.txt`.
 2. **Renda menor** — "com 20 províncias em 200 rodadas já tem dinheiro demais".
 3. **Diplomacia** — hoje é "um checklist do que cumprir, não uma negociação".
