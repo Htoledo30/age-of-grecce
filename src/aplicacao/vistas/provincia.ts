@@ -14,6 +14,7 @@ import type { VistaDeAcoes } from '@/ui/acoes-provincia';
 import type { VistaDeConstrucoes } from '@/ui/construcoes';
 import type { VistaDaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import { ARMAS } from '@/combate/exercito';
+import type { Arma } from '@/combate/exercito';
 import { motivoDaArmaTrancada } from '@/combate/recrutamento';
 import { nomeDaRegiao } from '@/mundo/regioes';
 import type { VistaDeRecrutamento } from '@/ui/recrutamento';
@@ -257,6 +258,32 @@ export function vistaDeConstrucoes(jogo: Jogo): VistaDeConstrucoes | null {
   };
 }
 
+/** A casa que libera cada arma — o leve toda terra levanta. */
+const OBRA_DA_ARMA: Partial<Record<Arma, string>> = {
+  hoplita: 'armaria',
+  arqueiro: 'acampamento-de-arqueiro',
+  cavalaria: 'treinamento-de-cavaleiros',
+};
+
+/**
+ * Por que esta arma está trancada AQUI.
+ *
+ * ⚠️ **"Falta Acampamento de arqueiro" onde a obra nem pode ser erguida era mentira.** A regra
+ * geral manda construir a casa; quando a terra não tem o produto que a casa exige, o que falta
+ * é o produto — "exige Madeira" —, e construir não resolve.
+ */
+function motivoDaTrava(jogo: Jogo, alvo: string, arma: Arma): string {
+  const obra = OBRA_DA_ARMA[arma];
+  const { campanha } = jogo;
+  if (obra !== undefined && campanha.construcoesDisponiveisEm(alvo)[obra] === undefined) {
+    const produtos = campanha.construcoesDisponiveis[obra]?.requisito?.produtos ?? [];
+    if (produtos.length > 0) {
+      return `exige ${produtos.map((p) => campanha.nomeDoProduto(p)).join(' ou ')}`;
+    }
+  }
+  return motivoDaArmaTrancada(arma);
+}
+
 /**
  * O que a janela de recrutamento mostra agora.
  *
@@ -288,7 +315,7 @@ export function vistaDeRecrutamento(jogo: Jogo): VistaDeRecrutamento | null {
       return {
         arma,
         liberada,
-        motivo: liberada ? '' : motivoDaArmaTrancada(arma),
+        motivo: liberada ? '' : motivoDaTrava(jogo, alvo, arma),
         custoPorHomem: ajustes.jogo.combate.custoPorHomem * dados.custo,
         maximo: liberada ? campanha.maximoParaLevaEm(alvo, arma) : 0,
         comida: dados.comida,

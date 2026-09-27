@@ -157,4 +157,18 @@ describe('anexar só acontece com o SIM do membro', () => {
     // a nacionalidade, que não se apaga.
     terras.forEach((p, i) => expect(c.felicidadeEm(p)).toBe(humorAntes[i]));
   });
+
+  it('o exército do membro anexado passa a ser do chefe, e não fica abandonado', () => {
+    const c = comLiga();
+    const maisLeve = Object.entries(LIGA.niveisDeTributo).sort(
+      (a, b) => a[1].desejo - b[1].desejo,
+    )[0]![0];
+    c.mudarTributoDaLiga('eleusis', maisLeve);
+    for (let i = 0; i < LIGA.turnosParaAnexar + 40 && !c.aceitaSerAnexado('eleusis'); i++) {
+      c.passarTurno();
+    }
+    const guarda = c.plantarHoste('eleusis', 'eleusis', 400);
+    c.anexarMembro('eleusis');
+    expect(c.hoste(guarda)?.poder).toBe('atenas');
+  });
 });

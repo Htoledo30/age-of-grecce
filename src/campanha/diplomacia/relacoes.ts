@@ -50,6 +50,7 @@ import {
   podeEntrarNaLiga,
 } from './liga';
 import { trocarDono } from '../provincia/posse';
+import { herdarTropasDoMembro, repatriarDepoisDaPaz } from '../guerra/repatriar';
 import {
   aliadosDe,
   aliancaAte,
@@ -275,6 +276,9 @@ export function fazerPaz(nucleo: NucleoDaCampanha, a: string, b: string): boolea
       (cerco.sitiante === a && dono === b) || (cerco.sitiante === b && dono === a);
     if (entreOsDois) delete nucleo.estado.cercos[provincia];
   }
+  // E a tropa de cada um que pisava na terra do outro volta para casa: sem isto ela podia ficar
+  // presa para sempre, cercada de terra em paz. Ver `guerra/repatriar.ts`.
+  repatriarDepoisDaPaz(nucleo, a, b);
   return true;
 }
 
@@ -740,6 +744,7 @@ export function anexarMembro(nucleo: NucleoDaCampanha, chefe: string, membro: st
   for (const provincia of [...nucleo.territorios.provinciasDe(membro)].sort()) {
     trocarDono(nucleo, provincia, chefe);
   }
+  herdarTropasDoMembro(nucleo, membro, chefe);
   apagarVinculo(nucleo, membro);
   return true;
 }

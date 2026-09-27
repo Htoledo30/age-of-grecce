@@ -148,6 +148,11 @@ export abstract class ConsultasDaProvincia extends ConsultasDoReino {
 
   // ── Construções ─────────────────────────────────────────────────────────────────────
   /** Catálogo curto: universais mais as explorações que combinam com esta terra. */
+  /** O nome de um produto do catálogo, como a tela escreve: "Madeira", "Cavalos". */
+  nomeDoProduto(idProduto: string): string {
+    return this.nucleo.economia.produtos[idProduto]?.nome ?? idProduto;
+  }
+
   construcoesDisponiveisEm(idProvincia: string): CatalogoDeConstrucoes {
     return construcoesDisponiveisEm(this.nucleo, idProvincia);
   }

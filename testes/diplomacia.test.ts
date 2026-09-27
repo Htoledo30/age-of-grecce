@@ -109,6 +109,20 @@ describe('a paz precisa dos dois, e a trégua faz ela valer', () => {
     expect(c.donoDe('eleusis')).toBe('eleusis');
   });
 
+  it('a paz manda para casa a tropa que estava na terra do ex-inimigo', () => {
+    // Epidauro ficou presa dentro de Cinúria do turno 7 ao 62: a paz levantava o cerco, e a
+    // única saída da hoste era terra em paz com ela.
+    const c = nova();
+    c.declararGuerra('eleusis');
+    const id = c.plantarHoste('eleusis', 'atenas', 2000);
+    c.fazerPaz('eleusis');
+
+    expect(c.hostesEm('eleusis').filter((h) => h.poder === 'atenas')).toEqual([]);
+    const onde = c.hoste(id)?.posicao;
+    expect(onde).toBeDefined();
+    expect(c.donoDe(onde!)).toBe('atenas');
+  });
+
   it('⚠️ a paz CANCELA a marcha que ainda não saiu', () => {
     // Henrique viu jogando: *"quem está atacando entra dentro da província atacada como se
     // tivesse conquistado, mas não conquistou"*. A ordem de assalto sobrevivia à paz assinada

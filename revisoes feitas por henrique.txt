@@ -1,1 +1,6 @@
 NOSSO JOGO TEM QUE SER NADA MAIS E NADA MENOS QUE UM JOGO DE CONQUISTA, O RESTO SAO BONUS QUE AJUDAM NESSE OBJETIVO! O FOCO MAXIMO DEVE SER EM TRAZER AO PLAYER O TESAO DE QUERER TER UM REINO ENORME!
+
+Dia 27/09/2026: achei alguma coisa referente a diplomacia;
+1: quando chega ofertas de outros reinos ainda não tem um feedback muito claro que chegou uma proposta de negociação, em baixo da janela de onde mostra alguns acontecimentos deveria ter uma nova que aparece sempre que eu receber uma oferta de algum reino;
+2: atualmente Ha muitos pedidos de alianças, e o maior problema disso é alianças com data de validade pro exemplo "aliança por 20 turnos", isso não deveria existir
+alianças deveriam ser ate algo dar errado, ou um lado não concordar com outro ou querem se separar mesmo, querer entrar em guerra sla, saca?

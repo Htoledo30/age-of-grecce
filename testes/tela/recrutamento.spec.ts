@@ -223,7 +223,8 @@ test('as quatro armas aparecem no painel, e as trancadas dizem o que falta', asy
     await expect(arma).toBeDisabled();
     // ⚠️ O que FALTA fica escrito no cartão, em duas palavras: "falta Armaria". Por que
     // aquela construção só nasce em certas terras é assunto do catálogo, não do cartão.
-    await expect(arma).toContainText('falta ');
+    // Onde a casa nem pode ser erguida, o que falta é o produto da terra: "exige Madeira".
+    await expect(arma).toContainText(/falta |exige /);
   }
   await expect(leves).toHaveAttribute('aria-pressed', 'true');
 
