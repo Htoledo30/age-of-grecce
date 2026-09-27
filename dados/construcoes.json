@@ -370,11 +370,11 @@
         "tipo": "alimento",
         "pontos": [
           1,
-          2,
-          3
+          3,
+          5
         ]
       },
-      "promessa": "Acrescenta +1/+2/+3 ao saldo alimentar do reino.",
+      "promessa": "Acrescenta +1/+3/+5 ao saldo alimentar do reino.",
       "motivo": "Aprofunda a vocação cerealista de uma terra que já produz grãos."
     },
     "pastagem": {

@@ -259,7 +259,17 @@ describe('construções', () => {
     expect(c.podeConstruir('atenas', 'agora')).toMatchObject({ pode: true });
   });
 
-  it('Fazenda I, II e III somam +1, +2 e +3 à comida, sem estoque', () => {
+  it('Fazenda I, II e III somam à comida os pontos do catálogo, sem estoque', () => {
+    // Os pontos são balanço (hoje a Fazenda rende mais que a Pastagem, por decisão de
+    // Henrique); o que se guarda é que o nível erguido entrega o que o catálogo promete.
+    const fazenda = construcoes.construcoes['fazenda']!;
+    if (fazenda.efeito.tipo !== 'alimento') throw new Error('Fazenda deveria dar comida');
+    const pontos = fazenda.efeito.pontos;
+    const pastagem = construcoes.construcoes['pastagem']!;
+    if (pastagem.efeito.tipo !== 'alimento') throw new Error('Pastagem deveria dar comida');
+    const doGado = pastagem.efeito.pontos;
+    pontos.forEach((p, i) => expect(p).toBeGreaterThanOrEqual(doGado[i] ?? 0));
+    expect(pontos[2]).toBeGreaterThan(doGado[2]);
     const c = nova();
     c.comecar('atenas');
     c.darOuro(100_000);
@@ -269,7 +279,7 @@ describe('construções', () => {
       const prazo = construcoes.construcoes['fazenda']!.turnos[nivel - 1] ?? 0;
       for (let i = 0; i < prazo; i++) c.passarTurno();
       expect(c.nivelDaConstrucaoEm('atenas', 'fazenda')).toBe(nivel);
-      expect(c.contribuicaoAlimentarEm('atenas')).toBe(natural + nivel);
+      expect(c.contribuicaoAlimentarEm('atenas')).toBe(natural + (pontos[nivel - 1] ?? 0));
     }
   });
 

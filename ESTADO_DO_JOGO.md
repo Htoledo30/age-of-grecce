@@ -120,7 +120,8 @@ saldo final = saldo civil − consumo do exército
 ```
 
 O povo come primeiro. Cada província cai numa faixa absoluta de população, e essa faixa decide
-seu consumo. Produtos alimentares e Fazenda, Pastagem ou Porto pesqueiro sustentam o reino.
+seu consumo. Produtos alimentares e Fazenda, Pastagem ou Porto pesqueiro sustentam o reino; a
+Fazenda dá +1/+3/+5 por nível, e Pastagem e Porto pesqueiro +1/+2/+3.
 Cada ponto de comida sustenta a quantidade de soldados definida em `dados/ajustes.json`; armas
 podem consumir quantidades diferentes, e a cavalaria pesa mais na mesa.
 

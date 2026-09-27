@@ -18,6 +18,7 @@ para servir à conquista, não para ocupar o jogador.
 
 | assunto | o que mudou | commit |
 |---|---|---|
+| Fazenda igual à Pastagem | Fazenda +1/+3/+5 por nível (Pastagem e Porto pesqueiro seguem +1/+2/+3), escolha de Henrique; no nível I nada muda, então o mapa da IA fica igual | ver `git log` |
 | Mina e pedreira sem custo social | Mina e Pedreira tiram 2/3/4 do humor da província; Serraria 1/2/3. Medido: o mapa no turno 100 não mudou | ver `git log` |
 | Janela de Diplomacia | textos curtos ("Propõe uma ALIANÇA.", "Reputação: limpa", "Pedido"/"Propostas"); letra da lista, da sanfona e das opções em 14px; opinião em verde/vermelho, nunca bronze; a sanfona cabe inteira; em guerra a paz não fica sozinha no pé; "Você paga" trocado para "Ele paga" na liga que você lidera | ver `git log` |
 | Aliança com prazo | aliança não vence mais: dura até romper ou a opinião cair abaixo de −10; a crônica avisa quando ela se desfaz | ver `git log` |
