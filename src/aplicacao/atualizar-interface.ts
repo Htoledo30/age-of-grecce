@@ -9,6 +9,7 @@
 import type { Jogo } from './contexto';
 import { vistaDoAlimento, vistaDoBalanco, vistaDoMercado } from './vistas/governo';
 import { vistaDaDiplomacia } from './vistas/mesa-diplomatica';
+import { vistaDosPedidos } from './vistas/pedidos-recebidos';
 import {
   marcadoresDasHostes,
   marcasDeCerco,
@@ -49,6 +50,8 @@ export function atualizarInterface(jogo: Jogo): void {
             campanha.provinciasDe(jogador.id).length > 0,
         },
   );
+
+  tela.pedidos.mostrar(vistaDosPedidos(jogo));
 
   desenharProvincia(jogo);
 

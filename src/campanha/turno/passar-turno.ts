@@ -89,7 +89,7 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
   // A opinião anda um passo por turno, como o humor do povo — e pelos mesmos motivos.
   andarRelacoes(nucleo, poderesComFicha(nucleo));
   // A reputação volta devagar para zero e os pactos vencidos somem.
-  andarReputacao(nucleo);
+  const aliancasDesfeitas = andarReputacao(nucleo);
   // E a guerra contra quem não existe mais acaba sozinha: ver `limparGuerrasMortas`.
   limparGuerrasMortas(nucleo);
   // ⚠️ A liga anda DEPOIS da limpeza das guerras: quem perdeu o chão sai dela sem revolta e sem
@@ -99,5 +99,13 @@ export function passarTurno(nucleo: NucleoDaCampanha): EfemerosDaCampanha {
 
   // ⚠️ A notícia diplomática NÃO nasce aqui: ela é anotada quando a guerra é declarada, antes
   // de o turno virar. A fachada a carrega por cima desta lista — ver `Campanha.passarTurno`.
-  return { rodada, fome, quedasDeCapital, revoltas, revoltasDaLiga, diplomacia: [] };
+  return {
+    rodada,
+    fome,
+    quedasDeCapital,
+    revoltas,
+    revoltasDaLiga,
+    aliancasDesfeitas,
+    diplomacia: [],
+  };
 }

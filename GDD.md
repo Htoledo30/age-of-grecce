@@ -638,7 +638,8 @@ do CAIS, e não da rota no meio do mar.
 - ⚠️ **A ALIANÇA é o topo da escada dos ACORDOS, e o único que obriga a FAZER.** Guerra, trégua,
   pacto, comércio e passagem são todos promessas de não fazer; a aliança põe a guerra de um nas
   costas do outro, automaticamente e sem perguntar. A agência é assinar, e depois romper —
-  abandonar quem contava com você custa mais que voltar atrás num pacto. Só o aliado direto é
+  abandonar quem contava com você custa mais que voltar atrás num pacto. **A aliança não tem
+  prazo** (Henrique): dura até alguém romper ou a opinião azedar. Só o aliado direto é
   convocado, e promessa que já existe com o inimigo segura a convocação: nenhuma aliança faz
   alguém quebrar de graça um papel que já tinha assinado.
 - ⚠️ **A IA PEDE ao jogador o que não pode decidir por ele.** Pacto, comércio, passagem,

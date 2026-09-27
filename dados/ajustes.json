@@ -60,6 +60,7 @@
         "meiaRenda": 3,
         "tetoAcimaDoAlvo": 35
       },
+      "esfriamentoDoPedido": 10,
       "pacto": {
         "prazos": [
           {
@@ -81,14 +82,12 @@
         "prazos": [
           {
             "turnos": 20
-          },
-          {
-            "turnos": 40
           }
         ],
         "pontos": 25,
         "choqueDeRuptura": -70,
-        "reputacaoDaRuptura": -35
+        "reputacaoDaRuptura": -35,
+        "desfazAbaixoDe": -10
       },
       "balanca": {
         "iniciativa": 10,

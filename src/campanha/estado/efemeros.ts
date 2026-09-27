@@ -26,6 +26,8 @@ export interface EfemerosDaCampanha {
   revoltas: readonly Levante[];
   /** Os membros que romperam a liga à força nesta virada, e de quem. */
   revoltasDaLiga: readonly RevoltaDaLiga[];
+  /** Os pares de aliados cuja aliança se desfez nesta virada, porque a opinião azedou. */
+  aliancasDesfeitas: readonly (readonly [string, string])[];
   /**
    * O que mudou de relação nesta virada.
    *
@@ -55,6 +57,7 @@ export function efemerosVazios(): EfemerosDaCampanha {
     quedasDeCapital: [],
     revoltas: [],
     revoltasDaLiga: [],
+    aliancasDesfeitas: [],
     diplomacia: [],
   };
 }

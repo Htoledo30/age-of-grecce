@@ -37,7 +37,6 @@ import { ajustes, ia, novaCampanhaFarta } from '../apoio/mundo';
 const CURTO = Math.min(...ajustes.diplomacia.pacto.prazos.map((p) => p.turnos));
 const LONGO = Math.max(...ajustes.diplomacia.pacto.prazos.map((p) => p.turnos));
 const ALIANCA_CURTA = Math.min(...ajustes.diplomacia.alianca.prazos.map((p) => p.turnos));
-const ALIANCA_LONGA = Math.max(...ajustes.diplomacia.alianca.prazos.map((p) => p.turnos));
 
 const nova = () => {
   const c = novaCampanhaFarta();
@@ -242,15 +241,6 @@ describe('a aliança: a razão soma, a amizade só chega alto', () => {
     expect(simCom).not.toBeNull();
     expect(simCom!).toBeLessThan(simSem!);
     expect(simCom!).toBeLessThan(linhaDe('megara'));
-  });
-
-  it('a aliança longa pede mais que a curta, mesmo com razão', () => {
-    const c = nova();
-    c.declararGuerra('corinto', 'atenas');
-    c.declararGuerra('corinto', 'megara');
-    const curta = limiarDeSim(c, 'megara', 'atenas', (x, e, v) => alianca(x, e, v, ALIANCA_CURTA));
-    const longa = limiarDeSim(c, 'megara', 'atenas', (x, e, v) => alianca(x, e, v, ALIANCA_LONGA));
-    expect(longa!).toBeGreaterThan(curta!);
   });
 
   it('ninguém propõe o que não lhe serve: quem propõe tem saldo próprio acima da iniciativa', () => {

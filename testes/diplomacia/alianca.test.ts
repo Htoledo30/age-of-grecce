@@ -9,6 +9,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { lerSalvamento } from '../../src/campanha/salvamento';
 import { ajustes, novaCampanha } from '../apoio/mundo';
 
 const PRAZO = ajustes.diplomacia.alianca.prazos[0]!.turnos;
@@ -120,11 +121,25 @@ describe('a aliança obriga, e é isso que a separa do pacto', () => {
     expect(ajustes.diplomacia.alianca.pontos).toBeGreaterThan(ajustes.diplomacia.pacto.pontos);
   });
 
-  it('vencida, ela some sozinha e a guerra volta a ser possível', () => {
+  // ⚠️ Decisão de Henrique (27/09/2026): *"alianças com data de validade não deveriam
+  // existir — deveriam ser até algo dar errado"*.
+  it('ela não vence: passa de qualquer prazo e continua em pé', () => {
     const c = comAliancaPossivel('atenas', 'eleusis');
     c.firmarAlianca('eleusis', PRAZO);
-    for (let i = 0; i <= PRAZO; i++) c.passarTurno();
-    expect(c.aliancaAte('atenas', 'eleusis')).toBeUndefined();
+    for (let i = 0; i <= PRAZO * 3; i++) c.passarTurno();
+    expect(c.aliadosDe('atenas')).toContain('eleusis');
+  });
+
+  it('a opinião que azeda desfaz a aliança, sem culpado e sem preço de reputação', () => {
+    const c = comAliancaPossivel('atenas', 'eleusis');
+    c.firmarAlianca('eleusis', PRAZO);
+    const reputacao = c.reputacaoDe('atenas');
+    const salvo = lerSalvamento(c.serializar());
+    salvo.relacoes['atenas|eleusis'] = ajustes.diplomacia.alianca.desfazAbaixoDe - 30;
+    c.restaurar(salvo);
+    c.passarTurno();
     expect(c.aliadosDe('atenas')).not.toContain('eleusis');
+    expect(c.aliancasDesfeitas).toContainEqual(['atenas', 'eleusis']);
+    expect(c.reputacaoDe('atenas')).toBe(reputacao);
   });
 });

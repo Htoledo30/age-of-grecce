@@ -286,6 +286,11 @@ export interface EstadoCampanha {
    */
   propostas: Proposta[];
   /**
+   * Pedido ao jogador que ficou sem sim, por `de|tipo`, com o turno até o qual o mesmo reino
+   * não o repete. Ver `esfriamentoDoPedido` e `diplomacia/propostas.ts`.
+   */
+  pedidosEsfriando: Record<string, number>;
+  /**
    * A reputação de cada poder, de −100 a 0. Zero é quem nunca quebrou promessa.
    *
    * ⚠️ **É o que faz um pacto valer o papel.** Sem ela, assinar e trair na virada seguinte

@@ -198,6 +198,8 @@ const SalvamentoCampanha = z.object({
         }),
       )
       .default([]),
+    // Salvamento anterior ao esfriamento abre sem pedido esfriando.
+    pedidosEsfriando: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     acordos: z.record(z.string().min(1), z.number().int().nonnegative()).default({}),
     reputacao: z.record(z.string().min(1), z.number().min(-100).max(0)).default({}),
     // `default` pelo mesmo motivo de todos os outros: salvamento de antes do tributo carrega,

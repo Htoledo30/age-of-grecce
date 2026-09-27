@@ -750,12 +750,15 @@ export function anexarMembro(nucleo: NucleoDaCampanha, chefe: string, membro: st
 }
 
 /**
- * A reputação volta devagar para zero, e os pactos vencidos somem.
+ * A reputação volta devagar para zero, os pactos vencidos somem e a aliança que azedou se
+ * desfaz. Devolve os pares de aliados que deixaram de ser, para a crônica contar.
  *
  * Rancor por promessa quebrada não é eterno: quem traiu uma vez e passou cinquenta turnos sem
  * repetir volta a ser alguém com quem se assina.
  */
-export function andarReputacao(nucleo: NucleoDaCampanha): void {
+export function andarReputacao(
+  nucleo: NucleoDaCampanha,
+): readonly (readonly [string, string])[] {
   const passo = nucleo.ajustes.diplomacia.pacto.reputacaoPorTurno;
   for (const [poder, valor] of Object.entries(nucleo.estado.reputacao)) {
     const novo = Math.min(0, valor + passo);
@@ -765,7 +768,7 @@ export function andarReputacao(nucleo: NucleoDaCampanha): void {
   for (const [par, ate] of Object.entries(nucleo.estado.pactos)) {
     if (ate <= nucleo.estado.turno) delete nucleo.estado.pactos[par];
   }
-  limparAliancasVencidas(nucleo);
+  return limparAliancasVencidas(nucleo, (a, b) => relacaoEntre(nucleo, a, b));
 }
 
 /** A conta do alvo, parcela a parcela — é o que a tela mostra linha a linha. */

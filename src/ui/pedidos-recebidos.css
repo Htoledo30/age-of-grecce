@@ -1,0 +1,49 @@
+/* ⚠️ **Nenhum TAMANHO de texto solto aqui.** A régua é `estilo/tokens.css`. */
+/* Os pedidos recebidos: um cartão por proposta, embaixo da crônica. */
+.pedidos {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pedidos[hidden] {
+  display: none;
+}
+.pedidos__cartao {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--ui-bronze);
+  border-left: 4px solid var(--cor-do-poder, var(--ui-bronze));
+  border-radius: var(--raio-2);
+  background: var(--ui-vidro);
+  box-shadow: var(--sombra-painel);
+  backdrop-filter: blur(8px);
+  color: var(--ui-texto);
+  font-family: var(--fonte-corpo);
+  font-size: var(--texto-corpo);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 110ms ease;
+}
+.pedidos__cartao:hover {
+  border-color: var(--ui-bronze-claro);
+}
+.pedidos__icone {
+  width: 18px;
+  height: 18px;
+  color: var(--ui-ouro);
+}
+.pedidos__nome {
+  font-family: var(--fonte-nome);
+  font-size: var(--texto-medida);
+  font-weight: 700;
+  color: var(--ui-bronze-claro);
+}
+.pedidos__texto {
+  color: var(--ui-texto);
+}

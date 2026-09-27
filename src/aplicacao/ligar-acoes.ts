@@ -106,6 +106,11 @@ export function ligarAcoes(jogo: Jogo): void {
     tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
     tela.diplomacia.alternar();
   };
+  // O cartão do pedido abre a mesa já falando com quem pediu.
+  tela.pedidos.aoAbrir = (idPoder) => {
+    tela.diplomacia.falarCom(idPoder);
+    tela.diplomacia.desenhar(vistaDaDiplomacia(jogo));
+  };
 
   // ── O painel da província e as duas janelas que ele abre ────────────────────────────
   tela.acoes.aoDefinirImposto = (id, nivel) => campanha.definirImposto(id, nivel);
@@ -311,7 +316,7 @@ export function ligarAcoes(jogo: Jogo): void {
     }
     campanha.firmarAlianca(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
-      `Aliança de ${turnos} turnos com ${campanha.poder(idPoder).nome}` +
+      `Aliança com ${campanha.poder(idPoder).nome}` +
         `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}.`,
     );
   };

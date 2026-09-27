@@ -263,6 +263,12 @@ export const Ajustes = z.object({
         tetoAcimaDoAlvo: z.number().positive(),
       }),
       /**
+       * Turnos que um reino espera para repetir ao jogador o pedido que ele recusou ou deixou
+       * sem resposta. Henrique: *"há muitos pedidos de alianças"* — o mesmo pedido voltava toda
+       * virada, porque a mesa se esvazia e a IA pergunta de novo.
+       */
+      esfriamentoDoPedido: z.number().int().nonnegative(),
+      /**
        * O pacto de não-agressão: prazos, o que ele vale, e o que custa rompê-lo.
        *
        * ⚠️ **Quem decide se ele é assinado é a BALANÇA** (`balanca`, abaixo, e
@@ -290,7 +296,11 @@ export const Ajustes = z.object({
        * `ia/diplomacia/aliancas.ts`.
        */
       alianca: z.object({
-        /** Os prazos oferecidos. Quem decide é a balança; ver `balanca.alianca`. */
+        /**
+         * A oferta de aliança. ⚠️ **A aliança NÃO VENCE** — decisão de Henrique: *"alianças
+         * deveriam ser até algo dar errado"*. O número é só a chave da oferta na mesa; o que
+         * a desfaz é romper, ou a opinião cair abaixo de `desfazAbaixoDe`.
+         */
         prazos: z.array(z.object({ turnos: z.number().int().positive() })).min(1),
         /** O que uma aliança em pé vale na conta da opinião. Acima do pacto, por definição. */
         pontos: z.number(),
@@ -298,6 +308,11 @@ export const Ajustes = z.object({
         choqueDeRuptura: z.number(),
         /** E o tombo na REPUTAÇÃO de quem abandonou — abandonar aliado é pior que romper pacto. */
         reputacaoDaRuptura: z.number(),
+        /**
+         * Opinião abaixo da qual a aliança se desfaz sozinha, sem culpado e sem preço: os dois
+         * deixaram de concordar. É o "algo deu errado" da aliança que não tem prazo.
+         */
+        desfazAbaixoDe: z.number(),
       }),
       /**
        * A BALANÇA DE INTERESSE: os pesos com que um reino decide se um acordo lhe serve.

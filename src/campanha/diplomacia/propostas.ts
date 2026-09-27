@@ -57,8 +57,19 @@ import {
  */
 export function esvaziarMesa(nucleo: NucleoDaCampanha): boolean {
   const havia = nucleo.estado.propostas.length > 0;
+  // O pedido que ficou sem resposta vale como recusa: ele esfria como o recusado.
+  for (const p of nucleo.estado.propostas) esfriar(nucleo, p.de, p.tipo);
   nucleo.estado.propostas = [];
+  for (const [chave, ate] of Object.entries(nucleo.estado.pedidosEsfriando)) {
+    if (ate <= nucleo.estado.turno) delete nucleo.estado.pedidosEsfriando[chave];
+  }
   return havia;
+}
+
+/** O mesmo reino não repete o mesmo pedido antes de `esfriamentoDoPedido` turnos. */
+function esfriar(nucleo: NucleoDaCampanha, de: string, tipo: Proposta['tipo']): void {
+  nucleo.estado.pedidosEsfriando[`${de}|${tipo}`] =
+    nucleo.estado.turno + nucleo.ajustes.diplomacia.esfriamentoDoPedido;
 }
 
 /** O que está na mesa do jogador agora. Ordenado por quem pede, para a tela não dançar. */
@@ -79,6 +90,8 @@ export function proporAoJogador(nucleo: NucleoDaCampanha, proposta: Proposta): b
   const jogador = nucleo.estado.jogador;
   if (jogador === null || proposta.de === jogador) return false;
   if (!avaliar(nucleo, proposta, jogador).pode) return false;
+  const esfria = nucleo.estado.pedidosEsfriando[`${proposta.de}|${proposta.tipo}`];
+  if (esfria !== undefined && esfria > nucleo.estado.turno) return false;
   // Um pedido por reino e por tipo: insistir na mesma virada é ruído, não diplomacia.
   if (
     nucleo.estado.propostas.some((p) => p.de === proposta.de && p.tipo === proposta.tipo)
@@ -134,7 +147,7 @@ export function aceitarProposta(
   if (jogador === null) return { pode: false, motivo: 'a campanha ainda não começou' };
   const proposta = nucleo.estado.propostas.find((p) => p.de === de && p.tipo === tipo);
   if (!proposta) return { pode: false, motivo: 'esta proposta não está mais na mesa' };
-  recusarProposta(nucleo, de, tipo);
+  tirarDaMesa(nucleo, de, tipo);
 
   const veredito = avaliar(nucleo, proposta, jogador);
   if (!veredito.pode) return veredito;
@@ -178,6 +191,12 @@ export function recusarProposta(
   de: string,
   tipo: Proposta['tipo'],
 ): boolean {
+  if (!tirarDaMesa(nucleo, de, tipo)) return false;
+  esfriar(nucleo, de, tipo);
+  return true;
+}
+
+function tirarDaMesa(nucleo: NucleoDaCampanha, de: string, tipo: Proposta['tipo']): boolean {
   const antes = nucleo.estado.propostas.length;
   nucleo.estado.propostas = nucleo.estado.propostas.filter(
     (p) => !(p.de === de && p.tipo === tipo),

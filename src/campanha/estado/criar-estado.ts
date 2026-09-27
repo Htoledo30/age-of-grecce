@@ -122,6 +122,7 @@ export function criarEstadoInicial(
     ligas: {},
     acessos: {},
     propostas: [],
+    pedidosEsfriando: {},
     acordos: {},
     // Ninguém compra o ano de ninguém antes de haver um ano do qual ter medo.
     tributos: {},

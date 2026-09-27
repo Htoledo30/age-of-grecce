@@ -37,6 +37,13 @@
 import type { NucleoDaCampanha, Permissao } from '../nucleo';
 import { ladosDoPar, parDe } from './par';
 
+/**
+ * O "até" de uma aliança: **nunca.** Decisão de Henrique (27/09/2026): *"alianças com data de
+ * validade não deveriam existir — deveriam ser até algo dar errado, um lado não concordar com o
+ * outro ou querer se separar"*. Ela acaba rompida, ou desfeita quando a opinião azeda.
+ */
+const ALIANCA_SEM_FIM = Number.MAX_SAFE_INTEGER;
+
 /** Até que turno a aliança segura. `undefined` quando não há uma em pé. */
 export function aliancaAte(
   nucleo: NucleoDaCampanha,
@@ -93,9 +100,9 @@ export function assinarAlianca(
   nucleo: NucleoDaCampanha,
   a: string,
   b: string,
-  turnos: number,
+  _turnos: number,
 ): void {
-  nucleo.estado.aliancas[parDe(a, b)] = nucleo.estado.turno + turnos;
+  nucleo.estado.aliancas[parDe(a, b)] = ALIANCA_SEM_FIM;
 }
 
 /** Apaga o registro. O preço de quem rompeu é cobrado por quem chama. */
@@ -105,11 +112,25 @@ export function apagarAlianca(nucleo: NucleoDaCampanha, a: string, b: string): b
   return true;
 }
 
-/** Aliança vencida some na virada, como o pacto. */
-export function limparAliancasVencidas(nucleo: NucleoDaCampanha): void {
+/**
+ * A virada das alianças: a de salvamento antigo, com prazo, ainda vence; a de hoje só se
+ * DESFAZ — quando a opinião entre os dois cai abaixo de `desfazAbaixoDe`. Sem culpado e sem
+ * preço de reputação: ninguém traiu, os dois deixaram de concordar.
+ */
+export function limparAliancasVencidas(
+  nucleo: NucleoDaCampanha,
+  opiniao: (a: string, b: string) => number,
+): readonly (readonly [string, string])[] {
+  const piso = nucleo.ajustes.diplomacia.alianca.desfazAbaixoDe;
+  const desfeitas: (readonly [string, string])[] = [];
   for (const [par, ate] of Object.entries(nucleo.estado.aliancas)) {
-    if (ate <= nucleo.estado.turno) delete nucleo.estado.aliancas[par];
+    const lados = ladosDoPar(par);
+    const azedou = lados !== undefined && opiniao(lados[0], lados[1]) < piso;
+    if (ate > nucleo.estado.turno && !azedou) continue;
+    delete nucleo.estado.aliancas[par];
+    if (lados !== undefined) desfeitas.push(lados);
   }
+  return desfeitas;
 }
 
 /**

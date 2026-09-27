@@ -630,6 +630,11 @@ export abstract class ConsultasDoReino {
     return this.efemeros.revoltasDaLiga;
   }
 
+  /** Os pares de aliados que deixaram de ser nesta virada, porque a opinião azedou. */
+  get aliancasDesfeitas(): readonly (readonly [string, string])[] {
+    return this.efemeros.aliancasDesfeitas;
+  }
+
   /** Guerras declaradas e pazes assinadas nesta virada. Notícia, não partida. */
   get diplomaciaDaRodada(): readonly NoticiaDiplomatica[] {
     return this.efemeros.diplomacia;

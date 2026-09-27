@@ -32,6 +32,7 @@ import '@/ui/estandartes.css';
 import '@/ui/cercos-mapa.css';
 import '@/ui/batalha.css';
 import '@/ui/cronica.css';
+import '@/ui/pedidos-recebidos.css';
 import '@/ui/fim-de-jogo.css';
 import '@/ui/tooltip.css';
 import '@/ui/menu-pausa.css';

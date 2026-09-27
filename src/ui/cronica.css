@@ -9,14 +9,21 @@
  * ⚠️ Largura fixa e conteúdo curto de propósito: ela cobre o mapa, e cobrir o mapa é o
  * preço de ser lida. Por isso também fecha no × e some sozinha quando não há notícia.
  */
-.cronica {
+/* A coluna do alto à direita: a crônica e, embaixo dela, os pedidos recebidos. */
+.coluna-noticias {
   position: absolute;
   top: 24px;
   /* 96px, e não 24: o painel lateral tem uma aba de 44px colada na direita, e a crônica
      passaria por baixo dela. */
   right: 96px;
   z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 380px;
+}
+.cronica {
+  position: relative;
   max-height: 46vh;
   overflow-y: auto;
   padding: 14px 16px 12px;

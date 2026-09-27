@@ -244,7 +244,7 @@ function naMesa(
             turnos: Math.max(0, emCurso.ate - campanha.turno),
           },
     pacto: Math.max(0, (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno),
-    alianca: Math.max(0, (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno),
+    alianca: campanha.aliancaAte(eu, id) !== undefined ? 1 : 0,
     liga: campanha.chefeDe(id) === eu ? 'membro' : campanha.chefeDe(eu) === id ? 'chefe' : null,
     temAcordo: campanha.acordosDe(eu).includes(id),
     rendaDoAcordo: campanha.rendaDeUmAcordoCom(id),
@@ -343,8 +343,7 @@ function desdeQuando(jogo: Jogo, eu: string, id: string): string {
   const faltam = (ate: number | undefined): number =>
     Math.max(0, (ate ?? campanha.turno) - campanha.turno);
 
-  const alianca = faltam(campanha.aliancaAte(eu, id));
-  if (alianca > 0) return `Aliados por mais ${turnos(alianca)}`;
+  if (campanha.aliancaAte(eu, id) !== undefined) return 'Aliados';
   if (campanha.chefeDe(id) === eu) return 'Membro da sua liga';
   if (campanha.chefeDe(eu) === id) return `Você é membro da liga de ${campanha.poder(id).nome}`;
   const pacto = faltam(campanha.pactoAte(eu, id));
@@ -373,8 +372,7 @@ function vinculoCom(jogo: Jogo, eu: string, id: string): string {
   if (campanha.emGuerra(eu, id)) return 'guerra';
   if (campanha.chefeDe(id) === eu) return 'membro da sua liga';
   if (campanha.chefeDe(eu) === id) return 'seu chefe';
-  const alianca = (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno;
-  if (alianca > 0) return `aliado por ${alianca} turnos`;
+  if (campanha.aliancaAte(eu, id) !== undefined) return 'aliado';
   const pacto = (campanha.pactoAte(eu, id) ?? campanha.turno) - campanha.turno;
   if (pacto > 0) return `pacto por ${pacto} turnos`;
   const tributo = campanha.tributoEntre(eu, id);
@@ -430,9 +428,7 @@ function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
   if (!proposta) return null;
   const frase = {
     pacto: `Propõe um pacto de não-agressão por ${proposta.turnos ?? 0} turnos.`,
-    alianca:
-      `Propõe uma ALIANÇA por ${proposta.turnos ?? 0} turnos: ` +
-      'as guerras dele passam a ser suas, e as suas dele.',
+    alianca: 'Propõe uma ALIANÇA: as guerras dele passam a ser suas, e as suas dele.',
     liga:
       'Convida você para a LIGA dele: você continua sendo você, mas paga tributo todo turno ' +
       'e entra nas guerras dele. Em troca, ninguém te ataca sem enfrentá-lo.',
@@ -772,19 +768,19 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
  */
 function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const { campanha } = jogo;
-  const emPe = Math.max(0, (campanha.aliancaAte(eu, id) ?? campanha.turno) - campanha.turno);
-  if (emPe > 0) {
+  // A aliança não vence (decisão de Henrique, 27/09/2026): não há prazo a mostrar.
+  if (campanha.aliancaAte(eu, id) !== undefined) {
     const guerras = campanha.guerrasDe(id).length;
     return {
       titulo: 'Aliança militar',
       vontadeDele: true,
-      resumo: `em vigor · ${emPe} ${emPe === 1 ? 'turno' : 'turnos'}`,
+      resumo: 'em vigor',
       propostas: [
         {
           acao: 'romper-alianca',
           rotulo: 'Romper',
           custo: '—',
-          prazo: `faltam ${emPe} ${emPe === 1 ? 'turno' : 'turnos'}`,
+          prazo: '—',
           valor: 0,
           pode: true,
           aceita: true,
@@ -798,7 +794,12 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       tom: 'bom',
     };
   }
-  return grupoComBalanca('Aliança militar', 'alianca', prazosDeAliancaComResposta(jogo, id, eu));
+  return grupoComBalanca(
+    'Aliança militar',
+    'alianca',
+    prazosDeAliancaComResposta(jogo, id, eu),
+    () => 'sem prazo',
+  );
 }
 
 /**
@@ -812,6 +813,7 @@ function grupoComBalanca(
   titulo: string,
   acao: string,
   prazos: readonly PrazoComBalanca[],
+  rotuloDoPrazo: (turnos: number) => string = (turnos) => `${turnos} turnos`,
 ): GrupoDaMesa {
   // `prazosDe*` vem do mais longo ao mais curto: o primeiro que fecha é o mais longo que fecha.
   const fecha = prazos.find((p) => p.pode && p.resposta.aceita);
@@ -828,7 +830,7 @@ function grupoComBalanca(
       acao,
       rotulo: 'Propor',
       custo: p.ouro > 0 ? emOuro(p.ouro, false, false) : '—',
-      prazo: `${p.turnos} turnos`,
+      prazo: rotuloDoPrazo(p.turnos),
       valor: p.turnos,
       ouro: p.ouro,
       pode: p.pode,

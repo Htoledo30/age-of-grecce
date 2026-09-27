@@ -175,3 +175,35 @@ test('o ouro que fecha o pacto aparece como custo e viaja com a proposta', async
   expect(depois).toBe(antes - ouro);
   await expect(pacto).toContainText('em vigor');
 });
+
+test('o pedido de um reino aparece embaixo da crônica e abre a mesa com ele', async ({ page }) => {
+  // Henrique: *"quando chegam ofertas de outros reinos ainda não tem um feedback muito claro"*.
+  const erros: string[] = [];
+  page.on('pageerror', (e) => erros.push(e.message));
+
+  await page.goto('/');
+  await page.waitForSelector('body[data-pronto="sim"]');
+  await page.getByRole('button', { name: 'Iniciar jogo' }).click();
+  await page.waitForTimeout(600);
+  await page.mouse.click(960, 540);
+  await page.getByRole('button', { name: 'Começar campanha' }).click();
+  await page.waitForSelector('.barra-turno');
+
+  const cartao = page.locator('.pedidos__cartao');
+  await expect(cartao).toHaveCount(0);
+  await page.evaluate(() => {
+    const i = (window as unknown as { inspecao: Ganchos }).inspecao;
+    i.congelarIA();
+    i.proporAoJogador('eleusis', 'pacto', 20);
+  });
+  await expect(cartao).toHaveCount(1);
+  await expect(cartao).toContainText('Elêusis');
+  await expect(cartao).toContainText('propõe pacto');
+
+  await cartao.click();
+  const aba = page.locator('[data-painel="diplomacia"]');
+  await expect(aba.locator('.diplomacia__pedido')).toBeVisible();
+  await expect(aba.locator('.diplomacia__secao').first()).toHaveText('O que Elêusis pede');
+
+  expect(erros).toEqual([]);
+});

@@ -284,7 +284,9 @@ A diplomacia possui:
 - acordo de comércio com renda para os dois lados;
 - tributo pago por turno, inclusive como preço de uma paz recusada de graça;
 - acesso militar unilateral;
-- aliança, que convoca automaticamente o aliado para a guerra;
+- aliança sem prazo, que convoca automaticamente o aliado para a guerra e dura até alguém
+  romper ou a opinião entre os dois cair abaixo de `alianca.desfazAbaixoDe`, quando se desfaz
+  sem culpado e a crônica avisa o jogador;
 - liga, em que o chefe recebe tributo e controla guerra e paz enquanto o membro conserva
   território, tesouro e exército;
 - anexação de membro de liga somente com consentimento dele.
@@ -303,7 +305,9 @@ propõe quando a própria
 balança passa da iniciativa e a do outro fecha.
 
 A IA apresenta ao jogador propostas que faria a outro poder, e o jogador pode aceitar ou
-recusar. Recusar uma proposta não custa opinião. A régua de acordos vai de comércio e pacto até
+recusar. Recusar uma proposta não custa opinião, mas o mesmo reino só repete o mesmo pedido
+depois de `esfriamentoDoPedido` turnos; pedido sem resposta esfria igual. Cada pedido aparece
+como cartão embaixo da crônica, e o cartão abre a mesa com quem pediu. A régua de acordos vai de comércio e pacto até
 aliança e liga; a liga é o único vínculo desigual. Em guerra com o jogador, a IA que assinaria
 a paz com outro computador pede a paz na mesa, sem tributo.
 

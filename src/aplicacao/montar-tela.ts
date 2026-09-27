@@ -16,6 +16,7 @@ import { BarraTurno } from '@/ui/barra-turno';
 import { JanelaDeBatalha } from '@/ui/batalha';
 import { CercosMapa } from '@/ui/cercos-mapa';
 import { Cronica } from '@/ui/cronica';
+import { PedidosRecebidos } from '@/ui/pedidos-recebidos';
 import { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import { FimDeJogo } from '@/ui/fim-de-jogo';
@@ -75,7 +76,12 @@ export function montarTela(
   const exercitoFicha = new ExercitoFicha(ui);
   // A crônica fica no alto à direita, sozinha: é notícia da rodada inteira, não de uma
   // província nem de uma hoste, e não pertence a nenhuma das colunas.
-  const cronica = new Cronica(ui);
+  // Os pedidos que os reinos fazem ao jogador ficam logo embaixo dela, na mesma coluna.
+  const colunaNoticias = document.createElement('div');
+  colunaNoticias.className = 'coluna-noticias';
+  ui.appendChild(colunaNoticias);
+  const cronica = new Cronica(colunaNoticias);
+  const pedidos = new PedidosRecebidos(colunaNoticias);
   // A janela de batalha para o jogo enquanto está aberta, então ela vem por cima do mapa e
   // dos marcadores, e por baixo do fim de campanha — que é a única coisa mais definitiva.
   const batalha = new JanelaDeBatalha(ui);
@@ -120,6 +126,7 @@ export function montarTela(
     mercado,
     diplomacia,
     cronica,
+    pedidos,
     batalha,
     inicio,
     fimDeJogo,

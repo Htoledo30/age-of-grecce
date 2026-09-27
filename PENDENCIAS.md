@@ -18,6 +18,12 @@ para servir à conquista, não para ocupar o jogador.
 
 | assunto | o que mudou | commit |
 |---|---|---|
+| Aliança com prazo | aliança não vence mais: dura até romper ou a opinião cair abaixo de −10; a crônica avisa quando ela se desfaz | ver `git log` |
+| Proposta chegava sem aviso | cartão embaixo da crônica para cada pedido recebido; clicar abre a mesa com quem pediu | ver `git log` |
+| Pedidos demais | o mesmo reino só repete o mesmo pedido 10 turnos depois de recusado ou ignorado | ver `git log` |
+| Exército preso depois da paz | a paz manda cada hoste para a terra própria mais próxima | `5a7df0b` |
+| Exército do membro anexado | passa para o chefe da liga | `5a7df0b` |
+| Recrutar "falta Acampamento" | diz "exige Madeira" / "exige Cavalos" quando a terra não tem o recurso | `5a7df0b` |
 | Golfo Sarônico comprido demais | separado do Mar de Sunião na ponta da Ática; alcançar a costa oriental exige outra zona | ver `git log` |
 | Ícone de comida | espigas de trigo douradas na barra, no mesmo estilo da moeda | ver `git log` |
 | Trabalho de setembro só nesta máquina | salvo no GitHub | `752fc3f` |
@@ -43,10 +49,9 @@ para servir à conquista, não para ocupar o jogador.
 
 ## Decisões esperando Henrique
 
-- **(a)** Exército acampado em terra do inimigo quando a paz é assinada: proposta — volta para
-  casa sozinho. Hoje pode ficar preso para sempre.
-- **(b)** Exército de um reino anexado pela liga: proposta — passa para o chefe da liga. Hoje
-  fica abandonado dentro da antiga capital, morrendo aos poucos.
+- **Aliança que se desfaz sozinha:** o piso de opinião (−10) e os 10 turnos de espera entre
+  pedidos repetidos foram escolha minha para atender "até algo dar errado" e "pedidos demais".
+  Henrique pode ajustar os dois no F2 (`alianca.desfazAbaixoDe`, `esfriamentoDoPedido`).
 - **Tamanho do mapa:** só 25 das 196 províncias têm economia e população. "Um reino enorme" e
   "200 mil de ouro só com ~100 províncias" dependem de simular mais terra (trabalho de dados).
 - **Preço das construções escala com a riqueza da província** (Mercado 3.065 em Atenas, 942 em
@@ -80,7 +85,5 @@ para servir à conquista, não para ocupar o jogador.
   demais); Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
   fundo é `font-size-adjust` na fonte de corpo, com uma passada do `medir-tamanho`; a cor da
   província selecionada no mapa fica marrom e apagada.
-- **Recrutar diz "falta Acampamento de arqueiro"** onde a obra nem existe no catálogo (exige
-  Madeira ou Cavalos): o motivo devia dizer o requisito da terra.
 - **Notas antigas não conferidas:** o travamento ao abrir o movimento com Porto e o cálculo de
   todas as rotas possíveis (de `revisoes feitas por henrique.txt`, antes de setembro).

@@ -77,4 +77,5 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
   // mesa — que, desde que sobrevive à virada, é o que o jogador ia responder.
   estado.acessos = { ...salvo.acessos };
   estado.propostas = salvo.propostas.map((p) => ({ ...p }));
+  estado.pedidosEsfriando = { ...salvo.pedidosEsfriando };
 }

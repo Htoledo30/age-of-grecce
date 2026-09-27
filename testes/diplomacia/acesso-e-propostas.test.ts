@@ -152,6 +152,21 @@ describe('a mesa de propostas: o que ela assinaria com outro, ela PEDE ao jogado
     expect(c.relacaoEntre('atenas', 'eleusis')).toBe(antes);
   });
 
+  it('o pedido recusado, ou deixado sem resposta, não volta antes de esfriar', () => {
+    // Henrique: *"há muitos pedidos de alianças"* — o mesmo pedido voltava toda virada.
+    const c = nova();
+    fazerAmizade(c, 'atenas', 'eleusis');
+    const pedido = { de: 'eleusis', tipo: 'acesso', turnos: CURTO } as const;
+    expect(c.proporAoJogador(pedido)).toBe(true);
+    c.recusarProposta('eleusis', 'acesso');
+    expect(c.proporAoJogador(pedido)).toBe(false);
+    for (let i = 0; i < ajustes.diplomacia.esfriamentoDoPedido; i++) c.passarTurno();
+    expect(c.proporAoJogador(pedido)).toBe(true);
+    // Ninguém respondeu: a jogada seguinte da IA esvazia a mesa e o pedido esfria igual.
+    c.esvaziarMesa();
+    expect(c.proporAoJogador(pedido)).toBe(false);
+  });
+
   /**
    * ⚠️ **Este teste guardava o FURO, escrito como se fosse a regra.** Ele se chamava *"a
    * virada limpa a mesa"* e cravava a mesa vazia depois de `passarTurno`. Mas a ordem real de

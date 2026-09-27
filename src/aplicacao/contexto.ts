@@ -23,6 +23,7 @@ import type { BarraTurno } from '@/ui/barra-turno';
 import type { JanelaDeBatalha } from '@/ui/batalha';
 import type { CercosMapa } from '@/ui/cercos-mapa';
 import type { Cronica } from '@/ui/cronica';
+import type { PedidosRecebidos } from '@/ui/pedidos-recebidos';
 import type { ExercitoFicha } from '@/ui/exercito-ficha/exercito-ficha';
 import type { FichaProvincia } from '@/ui/ficha-provincia/ficha-provincia';
 import type { FimDeJogo } from '@/ui/fim-de-jogo';
@@ -55,6 +56,7 @@ export interface Tela {
   mercado: Mercado;
   diplomacia: Diplomacia;
   cronica: Cronica;
+  pedidos: PedidosRecebidos;
   batalha: JanelaDeBatalha;
   inicio: InicioJogo;
   fimDeJogo: FimDeJogo;

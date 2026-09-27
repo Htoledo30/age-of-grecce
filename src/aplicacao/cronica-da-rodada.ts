@@ -62,6 +62,17 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
     });
   }
 
+  // A aliança não vence: ela só se desfaz quando a opinião azeda. Só a do jogador é notícia.
+  for (const [a, b] of campanha.aliancasDesfeitas) {
+    if (!envolveMim(a, b)) continue;
+    linhas.push({
+      tom: 'perda',
+      peso: 'grave',
+      icone: 'escudo',
+      texto: `A aliança com ${nomeDoPoder(a === eu ? b : a)} se desfez.`,
+    });
+  }
+
   for (const batalha of relatorio.batalhas) {
     // ⚠️ Um assalto produz DUAS batalhas na mesma província: o exército de fora contra o de
     // dentro, e depois o vencedor contra a muralha. Se as duas linhas dissessem "Batalha em
