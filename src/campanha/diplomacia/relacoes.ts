@@ -131,13 +131,9 @@ export function podeDeclararGuerra(
   }
   // ⚠️ A ALIANÇA trava antes do pacto, e a mensagem é outra de propósito: quem está prestes a
   // atacar um aliado precisa ler a palavra aliado, não a palavra pacto.
-  const alianca = aliancaAte(nucleo, de, contra);
-  if (alianca !== undefined) {
-    const faltam = alianca - nucleo.estado.turno;
-    return {
-      pode: false,
-      motivo: `ele é seu ALIADO por mais ${faltam} ${faltam === 1 ? 'turno' : 'turnos'} — rompa antes`,
-    };
+  // A aliança não tem prazo: não há turnos a contar.
+  if (aliancaAte(nucleo, de, contra) !== undefined) {
+    return { pode: false, motivo: 'ele é seu ALIADO — rompa antes' };
   }
   // ⚠️ O pacto TRAVA a guerra, como a trégua. A diferença é que ele tem uma saída explícita —
   // `romperPacto` — e ela custa a reputação com o mapa inteiro.
