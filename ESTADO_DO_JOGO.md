@@ -11,7 +11,7 @@ comércio, alianças, ligas, salvamento, áudio e IA.
 
 O mapa contém:
 
-- 196 províncias de terra e 48 zonas marítimas;
+- 196 províncias de terra e 49 zonas marítimas;
 - 53 regiões e 139 poderes;
 - 25 províncias com economia, população e simulação completas;
 - 18 poderes inteiramente configurados e jogáveis;
@@ -251,8 +251,11 @@ mas não entrega ouro nem estoque ao vencedor.
 
 ## Mar
 
-Não existe unidade de frota. A própria hoste atravessa as 48 zonas marítimas, uma zona por
+Não existe unidade de frota. A própria hoste atravessa as 49 zonas marítimas, uma zona por
 rodada. Zona de mar não tem dono, produção, milícia, cerco nem conquista.
+
+O Golfo Sarônico e o Mar de Sunião são zonas separadas na ponta de Sunião: contornar a Ática
+até sua costa oriental exige atravessar mais uma zona.
 
 Embarcar exige Porto numa província própria; desembarcar é livre em qualquer costa. Voltar ao
 mar depois de um desembarque exige conquistar ou alcançar um Porto próprio, de modo que uma

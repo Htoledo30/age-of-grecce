@@ -289,6 +289,12 @@
       "nome": "Mar de Chipre",
       "lon": 32.0,
       "lat": 35.1
+    },
+    {
+      "id": "mar-de-suniao",
+      "nome": "Mar de Sunião",
+      "lon": 24.12,
+      "lat": 38.1
     }
   ]
 }

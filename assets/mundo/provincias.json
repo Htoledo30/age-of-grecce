@@ -883,7 +883,7 @@
       },
       "vizinhas": [
         "atenas",
-        "golfo-saronico",
+        "mar-de-suniao",
         "sounion",
         "tanagra"
       ],
@@ -908,6 +908,7 @@
         "atenas",
         "estreito-de-salamina",
         "golfo-saronico",
+        "mar-de-suniao",
         "maratona"
       ],
       "rotulo": {
@@ -1044,7 +1045,7 @@
         "atenas",
         "calcis",
         "eleusis",
-        "golfo-saronico",
+        "mar-de-suniao",
         "maratona",
         "plateia",
         "tebas"
@@ -1167,9 +1168,9 @@
       "vizinhas": [
         "eretria",
         "euripo",
-        "golfo-saronico",
         "histiea",
         "mar-de-esciros",
+        "mar-de-suniao",
         "tanagra",
         "tebas"
       ],
@@ -1217,8 +1218,8 @@
       "vizinhas": [
         "calcis",
         "caristo",
-        "golfo-saronico",
-        "mar-de-esciros"
+        "mar-de-esciros",
+        "mar-de-suniao"
       ],
       "rotulo": {
         "x": 4752,
@@ -1240,8 +1241,8 @@
       "vizinhas": [
         "canal-de-ceos",
         "eretria",
-        "golfo-saronico",
-        "mar-de-esciros"
+        "mar-de-esciros",
+        "mar-de-suniao"
       ],
       "rotulo": {
         "x": 5118,
@@ -3800,9 +3801,9 @@
       },
       "vizinhas": [
         "canal-de-ceos",
-        "golfo-saronico",
         "mar-das-cicladas",
         "mar-de-egina",
+        "mar-de-suniao",
         "mar-mirtoo"
       ],
       "rotulo": {
@@ -5946,25 +5947,19 @@
       "nome": "Golfo Sarônico",
       "regiao": "mar",
       "dono": "",
-      "areaKm2": 3356,
+      "areaKm2": 1808,
       "centro": {
-        "x": 4554,
-        "y": 4406
+        "x": 4310,
+        "y": 4554
       },
       "vizinhas": [
-        "andros",
-        "calcis",
-        "canal-de-ceos",
-        "caristo",
         "corinto",
         "egina",
         "epidauro",
-        "eretria",
         "estreito-de-salamina",
         "mar-de-egina",
-        "maratona",
+        "mar-de-suniao",
         "sounion",
-        "tanagra",
         "trezena"
       ],
       "mar": true,
@@ -6007,16 +6002,17 @@
       "nome": "Mar de Egina",
       "regiao": "mar",
       "dono": "",
-      "areaKm2": 2286,
+      "areaKm2": 2192,
       "centro": {
-        "x": 4527,
-        "y": 4880
+        "x": 4512,
+        "y": 4887
       },
       "vizinhas": [
         "andros",
         "golfo-argolico",
         "golfo-saronico",
         "hermione",
+        "mar-de-suniao",
         "mar-mirtoo",
         "trezena"
       ],
@@ -6199,18 +6195,18 @@
       "nome": "Canal de Ceos",
       "regiao": "mar",
       "dono": "",
-      "areaKm2": 8115,
+      "areaKm2": 6644,
       "centro": {
-        "x": 5684,
-        "y": 4199
+        "x": 5798,
+        "y": 4157
       },
       "vizinhas": [
         "andros",
         "caristo",
-        "golfo-saronico",
         "mar-das-cicladas",
         "mar-de-esciros",
         "mar-de-quios",
+        "mar-de-suniao",
         "mar-icario"
       ],
       "mar": true,
@@ -6890,6 +6886,36 @@
         "x": 11554,
         "y": 7652,
         "raio": 602
+      }
+    },
+    {
+      "indice": 1048,
+      "id": "mar-de-suniao",
+      "nome": "Mar de Sunião",
+      "regiao": "mar",
+      "dono": "",
+      "areaKm2": 3113,
+      "centro": {
+        "x": 4998,
+        "y": 4323
+      },
+      "vizinhas": [
+        "andros",
+        "calcis",
+        "canal-de-ceos",
+        "caristo",
+        "eretria",
+        "golfo-saronico",
+        "mar-de-egina",
+        "maratona",
+        "sounion",
+        "tanagra"
+      ],
+      "mar": true,
+      "rotulo": {
+        "x": 4984,
+        "y": 4414,
+        "raio": 154
       }
     }
   ]

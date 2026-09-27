@@ -13,17 +13,17 @@ const provincias = Provincias.parse(
 const atlas = new Atlas(provincias);
 
 describe('atlas: o mundo assado e indexado', () => {
-  it('conhece o recorte inteiro: 196 terras e 48 zonas de mar', () => {
+  it('conhece o recorte inteiro: 196 terras e 49 zonas de mar', () => {
     // ⚠️ O atlas guarda os DOIS tabuleiros na mesma lista, e `terras` separa. As zonas de
     // água entraram para o exército poder atravessar o Egeu; elas não têm dono, não se
     // conquistam e não contam como território de ninguém.
     expect(atlas.terras).toHaveLength(196);
-    expect(atlas.provincias.filter((p) => p.mar === true)).toHaveLength(48);
-    expect(atlas.provincias).toHaveLength(244);
+    expect(atlas.provincias.filter((p) => p.mar === true)).toHaveLength(49);
+    expect(atlas.provincias).toHaveLength(245);
     expect(atlas.poderes).toHaveLength(139);
     expect(atlas.impressaoDigital).toEqual({
       epoca: provincias.epoca,
-      provincias: 244,
+      provincias: 245,
       poderes: 139,
     });
   });

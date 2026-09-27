@@ -14,10 +14,11 @@ jogando entram em `revisoes feitas por henrique.txt`; daqui para lá não se cop
 Sem complexidade de Victoria 3 ou Crusader Kings 3. Revolta, diplomacia e economia existem
 para servir à conquista, não para ocupar o jogador.
 
-## Feito (25–26/09/2026)
+## Feito (25–27/09/2026)
 
 | assunto | o que mudou | commit |
 |---|---|---|
+| Golfo Sarônico comprido demais | separado do Mar de Sunião na ponta da Ática; alcançar a costa oriental exige outra zona | ver `git log` |
 | Ícone de comida | espigas de trigo douradas na barra, no mesmo estilo da moeda | ver `git log` |
 | Trabalho de setembro só nesta máquina | salvo no GitHub | `752fc3f` |
 | População | cresce pela PROSPERIDADE de cada província: taxa base 0,1%/turno, cada obra de riqueza ou civil soma 0,05/0,10/0,15 p.p. | `3642ce9` |

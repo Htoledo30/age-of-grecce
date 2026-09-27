@@ -79,6 +79,13 @@ const mares = (
   JSON.parse(readFileSync(resolve('dados/mares.json'), 'utf8')) as { mares: SementeDeMar[] }
 ).mares;
 
+// Ao redesenhar o mar, conservar a terra e retirar as ligações marítimas antigas.
+const idsDeMar = new Set(assado.provincias.filter((p) => p.mar).map((p) => p.id));
+assado.provincias = assado.provincias.filter((p) => !p.mar);
+for (const p of assado.provincias) {
+  p.vizinhas = p.vizinhas.filter((id) => !idsDeMar.has(id));
+}
+
 const biomas = PNG.sync.read(readFileSync(resolve(PASTA, 'biomas.png')));
 const indices = PNG.sync.read(readFileSync(resolve(PASTA, 'provincias.png')));
 const L = indices.width;
@@ -96,7 +103,8 @@ const dono = new Uint16Array(celulas);
 const agua = new Uint8Array(celulas);
 let livres = 0;
 for (let i = 0; i < celulas; i++) {
-  const atual = indices.data[i * 4]! | (indices.data[i * 4 + 1]! << 8);
+  const anterior = indices.data[i * 4]! | (indices.data[i * 4 + 1]! << 8);
+  const atual = anterior >= PRIMEIRO_INDICE_DE_MAR ? 0 : anterior;
   dono[i] = atual;
   // Água livre é bioma de mar E índice zero: pixel já reivindicado por uma província —
   // ilha anexada, praia pintada — continua sendo dela.
