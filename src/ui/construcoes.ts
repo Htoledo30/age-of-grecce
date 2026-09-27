@@ -9,21 +9,25 @@
 
 import { Janela } from './janela';
 import { iconeDaConstrucao, iconeGrego } from './icones-gregos';
+import type { NomeDoIconeGrego } from './icones-gregos';
 import { imagemDaConstrucao } from './imagens-de-construcoes';
 import { moedaAteniense } from './moeda';
 import { definirTooltip } from './tooltip';
 
 type CategoriaDaConstrucao = 'cidade' | 'guerra' | 'rotas' | 'terra';
 
+export interface EfeitoDaConstrucao {
+  valor: string;
+  rotulo: string;
+  icone: NomeDoIconeGrego;
+  tom: 'ouro' | 'ganho' | 'perda' | 'neutro';
+}
+
 export interface ApresentacaoDaConstrucao {
   categoria: CategoriaDaConstrucao;
   categoriaNome: string;
-  /** O número ou capacidade que deve ser reconhecido antes de qualquer explicação. */
-  destaque: string;
-  destaqueRotulo: string;
-  destaqueTom: 'categoria' | 'ganho' | 'perda' | 'neutro';
-  /** Uma segunda consequência curta, quando a obra tem duas pernas importantes. */
-  apoio: string;
+  /** O primeiro efeito identifica a obra na lista; o detalhe mostra todos. */
+  efeitos: readonly [EfeitoDaConstrucao, ...EfeitoDaConstrucao[]];
 }
 
 /** Uma construção oferecida nesta província, já avaliada. */
@@ -180,7 +184,10 @@ export class JanelaDeConstrucoes {
     slot.className = 'construcoes__slot';
     if (!opcao) {
       slot.dataset['estado'] = 'livre';
-      slot.textContent = 'livre';
+      slot.setAttribute('role', 'img');
+      slot.setAttribute('aria-label', 'Espaço livre');
+      slot.append(iconeGrego('fundacao'));
+      definirTooltip(slot, { titulo: 'Espaço livre' });
       return slot;
     }
 
@@ -199,10 +206,11 @@ export class JanelaDeConstrucoes {
     nivel.textContent = `${opcao.nivelAtual > 0 ? romano(opcao.nivelAtual) : 'nova'}${destino}${espera}`;
     textos.append(nome, nivel);
     slot.append(...(imagem ? [imagem] : [iconeGrego(iconeDaConstrucao(opcao.id))]), textos);
+    definirTooltip(slot, { titulo: opcao.nome, corpo: `Nível ${nivel.textContent}` });
     return slot;
   }
 
-  /** A lista alinha efeito, custo e prazo; clicar escolhe, mas ainda não compra. */
+  /** A lista alinha efeito e custo; clicar escolhe, mas ainda não compra. */
   private desenharCatalogo(opcoes: readonly OpcaoDeConstrucao[]): void {
     const vista = this.vista;
     if (!vista) return;
@@ -264,12 +272,13 @@ export class JanelaDeConstrucoes {
     }
     const efeito = document.createElement('span');
     efeito.className = 'construcoes__efeito-lista';
-    efeito.dataset['tom'] = opcao.apresentacao.destaqueTom;
+    const principal = opcao.apresentacao.efeitos[0];
+    efeito.dataset['tom'] = principal.tom;
     const efeitoValor = document.createElement('strong');
-    efeitoValor.textContent = opcao.apresentacao.destaque;
+    efeitoValor.textContent = principal.valor;
     efeito.append(efeitoValor);
-    if (opcao.apresentacao.destaqueRotulo) {
-      efeito.append(` ${opcao.apresentacao.destaqueRotulo}`);
+    if (principal.rotulo) {
+      efeito.append(` ${principal.rotulo}`);
     }
     identidade.append(linhaDoNome, efeito);
 
@@ -283,9 +292,7 @@ export class JanelaDeConstrucoes {
     } else {
       const ouro = document.createElement('strong');
       ouro.append(moedaAteniense(), moeda(opcao.custo));
-      const prazo = document.createElement('small');
-      prazo.textContent = `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`;
-      preco.append(ouro, prazo);
+      preco.append(ouro);
     }
 
     botao.append(marca, identidade, preco);
@@ -329,27 +336,25 @@ export class JanelaDeConstrucoes {
 
     const impacto = document.createElement('section');
     impacto.className = 'construcoes__impacto';
-    impacto.dataset['tom'] = opcao.apresentacao.destaqueTom;
-    const rotulo = document.createElement('span');
-    rotulo.textContent = 'Efeito';
-    const numero = document.createElement('strong');
-    numero.textContent = opcao.apresentacao.destaque;
-    const unidade = document.createElement('p');
-    unidade.textContent = opcao.apresentacao.destaqueRotulo;
-    impacto.append(rotulo, numero, unidade);
-    if (opcao.apresentacao.apoio) {
-      const apoio = document.createElement('small');
-      apoio.textContent = opcao.apresentacao.apoio;
-      impacto.append(apoio);
-    }
+    impacto.setAttribute('aria-label', 'Efeitos da construção');
+    impacto.append(...opcao.apresentacao.efeitos.map(linhaDeEfeito));
 
     const conta = document.createElement('dl');
     conta.className = 'construcoes__conta';
     if (estado !== 'maximo') {
-      conta.append(dado('Custo', moeda(opcao.custo), estado === 'sem-ouro' ? 'perda' : 'ouro'));
+      const custo = dado('Custo', moeda(opcao.custo), estado === 'sem-ouro' ? 'perda' : 'ouro');
+      if (opcao.ganhoPorTurno > 0 && Number.isFinite(opcao.turnosParaPagar)) {
+        const retorno = Math.ceil(opcao.turnosParaPagar);
+        custo.tabIndex = 0;
+        definirTooltip(custo, {
+          titulo: 'Retorno estimado',
+          corpo: `${retorno} ${retorno === 1 ? 'turno' : 'turnos'}`,
+        });
+      }
+      conta.append(custo);
       conta.append(
         dado(
-          'Obra',
+          'Prazo',
           estado === 'obra'
             ? `${opcao.emObra ?? 0} ${opcao.emObra === 1 ? 'turno' : 'turnos'}`
             : `${opcao.turnos} ${opcao.turnos === 1 ? 'turno' : 'turnos'}`,
@@ -358,14 +363,11 @@ export class JanelaDeConstrucoes {
     }
     conta.append(
       dado(
-        'Folha',
+        'Manutenção',
         opcao.manutencao > 0 ? `−${moeda(opcao.manutencao)} / turno` : 'sem custo',
         opcao.manutencao > 0 ? 'perda' : '',
       ),
     );
-    if (opcao.ganhoPorTurno > 0 && Number.isFinite(opcao.turnosParaPagar)) {
-      conta.append(dado('Retorno', `${Math.ceil(opcao.turnosParaPagar)} turnos`));
-    }
 
     this.detalhe.replaceChildren(cabecalho, impacto, conta, this.acoes(opcao, estado));
   }
@@ -530,9 +532,23 @@ function dado(rotulo: string, valor: string, tom = ''): HTMLElement {
   const dt = document.createElement('dt');
   dt.textContent = rotulo;
   const dd = document.createElement('dd');
-  dd.textContent = valor;
+  if (tom === 'ouro' || tom === 'perda') dd.append(moedaAteniense());
+  dd.append(valor);
   grupo.append(dt, dd);
   return grupo;
+}
+
+function linhaDeEfeito(efeito: EfeitoDaConstrucao): HTMLElement {
+  const linha = document.createElement('div');
+  linha.className = 'construcoes__efeito';
+  linha.dataset['tom'] = efeito.tom;
+  const valor = document.createElement('strong');
+  valor.textContent = efeito.valor;
+  const icone = efeito.icone === 'moeda' ? moedaAteniense() : iconeGrego(efeito.icone);
+  const rotulo = document.createElement('span');
+  rotulo.textContent = efeito.rotulo;
+  linha.append(valor, icone, rotulo);
+  return linha;
 }
 
 function recusaCurta(recusa: string | null): string {

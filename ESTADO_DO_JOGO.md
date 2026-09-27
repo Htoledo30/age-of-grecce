@@ -348,9 +348,12 @@ planos que precisem sobreviver a uma virada exigirão memória salva no estado.
 O mapa é o protagonista. A ficha da província mostra identidade, alertas, saldo, humor,
 população e milícia; Construções e Recrutamento usam janelas próprias. A mesa de Construções
 mostra os quatro espaços da terra, organiza o catálogo em Cidade, Guerra, Rotas e Terra e
-separa a escolha da compra: a obra selecionada revela efeito, custo, prazo, folha e retorno
-antes do comando. Cada tipo possui uma vinheta arquitetônica própria; ela identifica a escolha
-no detalhe e reaparece como faixa no patrimônio assim que a obra ocupa um slot. Governo,
+separa a escolha da compra: a obra selecionada revela efeito, custo, prazo, manutenção e retorno
+antes do comando; o prazo de retorno fica no tooltip do custo. O detalhe reúne efeitos em linhas
+com valor, ícone e rótulo, sob uma imagem maior. Os espaços livres mostram uma fundação e os
+ocupados mostram miniatura e nível; a seleção no catálogo usa uma marca lateral. Cada tipo
+possui uma vinheta arquitetônica própria; ela identifica a escolha
+no detalhe e reaparece como miniatura no patrimônio assim que a obra ocupa um slot. Governo,
 Diplomacia, crônica, ficha de hoste e janela de batalha apresentam os mesmos números usados
 pelas regras.
 

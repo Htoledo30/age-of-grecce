@@ -14,6 +14,7 @@ export type NomeDoIconeGrego =
   | 'coruja'
   | 'escudo'
   | 'fogo'
+  | 'fundacao'
   | 'hoplon'
   | 'lanca'
   | 'lancas'
@@ -33,6 +34,10 @@ type Forma = readonly [
 ];
 
 const FORMAS: Record<NomeDoIconeGrego, readonly Forma[]> = {
+  fundacao: [
+    ['path', { d: 'M3 11 12 6l9 5-9 5Z', fill: 'currentColor', 'fill-opacity': '0.16' }],
+    ['path', { d: 'M3 11v5l9 5 9-5v-5M12 16v5M7 9v5M17 9v5' }],
+  ],
   templo: [
     ['polyline', { points: '3 8 12 3 21 8' }],
     ['line', { x1: '3', y1: '9', x2: '21', y2: '9' }],

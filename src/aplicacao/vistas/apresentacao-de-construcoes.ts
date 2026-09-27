@@ -1,10 +1,6 @@
-/**
- * A camada visual do catálogo: transforma regras de construção em quatro famílias e em um
- * efeito curto. A janela recebe significado pronto e não precisa interpretar ids nem frases.
- */
-
+/** Efeitos estruturados para a lista e o detalhe, sem interpretar frases na interface. */
 import type { Construcoes } from '@/dados/esquema';
-import type { ApresentacaoDaConstrucao } from '@/ui/construcoes';
+import type { ApresentacaoDaConstrucao, EfeitoDaConstrucao } from '@/ui/construcoes';
 
 type ConstrucaoDoCatalogo = Construcoes['construcoes'][string];
 
@@ -14,20 +10,21 @@ export function apresentacaoDaConstrucao(
   ganhoPorTurno: number,
 ): ApresentacaoDaConstrucao {
   const apresentacao = apresentacaoDoEfeito(construcao, nivel, ganhoPorTurno);
-  const extras: string[] = [];
+  const extras: EfeitoDaConstrucao[] = [];
   const prosperidade = construcao.prosperidade?.[nivel - 1] ?? 0;
   if (prosperidade > 0) {
-    extras.push(
-      `+${(prosperidade * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% crescimento`,
-    );
+    extras.push({
+      valor: `+${(prosperidade * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`,
+      rotulo: 'crescimento populacional',
+      icone: 'territorio',
+      tom: 'ganho',
+    });
   }
   const humor = construcao.humor?.[nivel - 1] ?? 0;
-  if (humor < 0) extras.push(`−${-humor} humor`);
-  if (extras.length === 0) return apresentacao;
-  return {
-    ...apresentacao,
-    apoio: [apresentacao.apoio, ...extras].filter((t) => t !== '').join(' · '),
-  };
+  if (humor < 0) {
+    extras.push({ valor: `−${-humor}`, rotulo: 'humor', icone: 'templo', tom: 'perda' });
+  }
+  return { ...apresentacao, efeitos: [...apresentacao.efeitos, ...extras] };
 }
 
 function apresentacaoDoEfeito(
@@ -37,14 +34,12 @@ function apresentacaoDoEfeito(
 ): ApresentacaoDaConstrucao {
   const efeito = construcao.efeito;
   const indice = nivel - 1;
-  const renda = (): Pick<
-    ApresentacaoDaConstrucao,
-    'destaque' | 'destaqueRotulo' | 'destaqueTom'
-  > => ({
-    destaque: moedaComSinal(ganhoPorTurno),
-    destaqueRotulo: 'moedas por turno',
-    destaqueTom: ganhoPorTurno > 0 ? 'ganho' : ganhoPorTurno < 0 ? 'perda' : 'neutro',
-  });
+  const renda: EfeitoDaConstrucao = {
+    valor: moedaComSinal(ganhoPorTurno),
+    rotulo: 'moedas por turno',
+    icone: 'moeda',
+    tom: ganhoPorTurno > 0 ? 'ouro' : ganhoPorTurno < 0 ? 'perda' : 'neutro',
+  };
 
   switch (efeito.tipo) {
     case 'renda': {
@@ -52,89 +47,102 @@ function apresentacaoDoEfeito(
       return {
         categoria: rotas ? 'rotas' : 'terra',
         categoriaNome: rotas ? 'Rotas' : 'Terra',
-        ...renda(),
-        apoio: rotas ? 'embarque + comércio pelo mar' : `${nomeDaParcela(efeito.parcela)} local`,
+        efeitos: [
+          renda,
+          {
+            valor: rotas ? '' : porcentagem((efeito.fatores[indice] ?? 1) - 1),
+            rotulo: rotas ? 'embarque e comércio marítimo' : `${nomeDaParcela(efeito.parcela)} local`,
+            icone: rotas ? 'territorio' : 'mercado',
+            tom: 'ganho',
+          },
+        ],
       };
     }
-    case 'alimento': {
-      const pontos = efeito.pontos[indice] ?? 0;
+    case 'alimento':
       return {
         categoria: 'terra',
         categoriaNome: 'Terra',
-        destaque: `+${pontos}`,
-        destaqueRotulo: 'comida',
-        destaqueTom: 'categoria',
-        apoio: '',
+        efeitos: [{
+          valor: `+${efeito.pontos[indice] ?? 0}`,
+          rotulo: 'comida', icone: 'celeiro', tom: 'ganho',
+        }],
       };
-    }
     case 'milicia': {
-      const fator = efeito.fatores[indice] ?? 1;
       const cerco = construcao.rodadasParaAssaltar?.[indice];
-      return {
-        categoria: 'guerra',
-        categoriaNome: 'Guerra',
-        destaque: porcentagem(fator - 1),
-        destaqueRotulo: 'milícia',
-        destaqueTom: 'categoria',
-        apoio: cerco ? `${cerco} ${cerco === 1 ? 'turno' : 'turnos'} antes do assalto` : '',
-      };
+      const efeitos: [EfeitoDaConstrucao, ...EfeitoDaConstrucao[]] = [{
+        valor: porcentagem((efeito.fatores[indice] ?? 1) - 1),
+        rotulo: 'milícia', icone: 'hoplon', tom: 'ganho',
+      }];
+      if (cerco) {
+        efeitos.push({
+          valor: `${cerco} ${cerco === 1 ? 'turno' : 'turnos'}`,
+          rotulo: 'antes do assalto', icone: 'muralha', tom: 'neutro',
+        });
+      }
+      return { categoria: 'guerra', categoriaNome: 'Guerra', efeitos };
     }
     case 'felicidade': {
-      const pontos = efeito.pontos[indice] ?? 0;
       const recuperacao = construcao.recuperacaoDaOrdem?.[indice] ?? 0;
-      return {
-        categoria: 'cidade',
-        categoriaNome: 'Cidade',
-        destaque: `+${pontos}`,
-        destaqueRotulo: 'humor',
-        destaqueTom: 'categoria',
-        apoio: recuperacao > 0 ? `+${recuperacao} recuperação / turno` : '',
-      };
+      const efeitos: [EfeitoDaConstrucao, ...EfeitoDaConstrucao[]] = [{
+        valor: `+${efeito.pontos[indice] ?? 0}`,
+        rotulo: 'humor', icone: 'templo', tom: 'ganho',
+      }];
+      if (recuperacao > 0) {
+        efeitos.push({
+          valor: `+${recuperacao}`,
+          rotulo: 'recuperação por turno', icone: 'turno', tom: 'ganho',
+        });
+      }
+      return { categoria: 'cidade', categoriaNome: 'Cidade', efeitos };
     }
-    case 'corrupcao': {
-      const fator = efeito.fatores[indice] ?? 1;
+    case 'corrupcao':
       return {
         categoria: efeito.alvo === 'distancia' ? 'rotas' : 'cidade',
         categoriaNome: efeito.alvo === 'distancia' ? 'Rotas' : 'Cidade',
-        ...renda(),
-        apoio: `−${Math.round((1 - fator) * 100)}% corrupção por ${efeito.alvo === 'distancia' ? 'distância' : 'tamanho'}`,
+        efeitos: [
+          renda,
+          {
+            valor: `−${Math.round((1 - (efeito.fatores[indice] ?? 1)) * 100)}%`,
+            rotulo: `corrupção por ${efeito.alvo === 'distancia' ? 'distância' : 'tamanho'}`,
+            icone: 'balanca', tom: 'ganho',
+          },
+        ],
       };
-    }
     case 'troca':
       return {
         categoria: 'cidade',
         categoriaNome: 'Cidade',
-        ...renda(),
-        apoio: 'rede do reino + trânsito local',
+        efeitos: [
+          renda,
+          {
+            valor: porcentagem((efeito.fatores[indice] ?? 1) - 1),
+            rotulo: 'rede do reino e trânsito local', icone: 'mercado', tom: 'ganho',
+          },
+        ],
       };
     case 'arma':
       return {
         categoria: 'guerra',
         categoriaNome: 'Guerra',
-        destaque: efeito.arma.charAt(0).toLocaleUpperCase('pt-BR') + efeito.arma.slice(1),
-        destaqueRotulo: 'nova arma',
-        destaqueTom: 'categoria',
-        apoio: '',
+        efeitos: [{
+          valor: efeito.arma.charAt(0).toLocaleUpperCase('pt-BR') + efeito.arma.slice(1),
+          rotulo: 'recrutamento liberado', icone: 'capacete', tom: 'neutro',
+        }],
       };
-    case 'qualidade': {
-      const fator = efeito.fatores[indice] ?? 1;
+    case 'qualidade':
       return {
         categoria: 'guerra',
         categoriaNome: 'Guerra',
-        destaque: porcentagem(fator - 1),
-        destaqueRotulo: 'treino das tropas',
-        destaqueTom: 'categoria',
-        apoio: '',
+        efeitos: [{
+          valor: porcentagem((efeito.fatores[indice] ?? 1) - 1),
+          rotulo: 'treino das tropas', icone: 'lancas', tom: 'ganho',
+        }],
       };
-    }
     case 'futuro':
       return {
         categoria: 'cidade',
         categoriaNome: 'Cidade',
-        destaque: '—',
-        destaqueRotulo: 'sem efeito atual',
-        destaqueTom: 'neutro',
-        apoio: '',
+        efeitos: [{ valor: '—', rotulo: 'sem efeito atual', icone: 'martelo', tom: 'neutro' }],
       };
   }
 }

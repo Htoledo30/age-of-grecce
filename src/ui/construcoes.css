@@ -126,81 +126,57 @@
 .construcoes__slots {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
   min-width: 0;
-  border-block: 1px solid var(--ui-borda-fraca);
-  background: rgb(8 12 13 / 26%);
 }
 
 .construcoes__slot {
-  position: relative;
-  isolation: isolate;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   min-width: 0;
-  height: 48px;
-  padding: 5px 10px;
+  height: 62px;
+  padding: 6px;
   overflow: hidden;
-  color: var(--ui-texto-fraco);
-}
-
-.construcoes__slot + .construcoes__slot::before {
-  content: '';
-  position: absolute;
-  inset-block: 9px;
-  left: 0;
-  border-left: 1px solid var(--ui-borda-fraca);
+  border: 1px solid var(--ui-borda-fraca);
+  border-radius: var(--raio-1);
+  background: rgb(8 12 13 / 22%);
+  color: var(--ui-texto);
 }
 
 .construcoes__slot[data-estado='livre'] {
   justify-content: center;
-  font-size: var(--texto-micro);
-  font-weight: 650;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-  color: var(--ui-texto-tenue);
-  background: repeating-linear-gradient(135deg, transparent 0 8px, rgb(255 255 255 / 1.5%) 8px 9px);
+  border-style: dashed;
+  border-color: rgb(155 163 154 / 22%);
+  background: rgb(8 12 13 / 12%);
 }
 
 .construcoes__slot-imagem {
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  flex: none;
+  width: 56px;
+  height: 48px;
+  border-radius: var(--raio-1);
   object-fit: cover;
   object-position: center 43%;
-  filter: saturate(0.82) contrast(0.94) brightness(0.74);
-  transform: scale(1.015);
-}
-
-.construcoes__slot:not([data-estado='livre'])::after {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    rgb(5 9 10 / 96%),
-    rgb(5 9 10 / 78%) 62%,
-    rgb(5 9 10 / 22%) 88%,
-    transparent
-  );
-  pointer-events: none;
 }
 
 .construcoes__slot > .icone-grego {
-  position: relative;
-  z-index: 1;
-  width: 19px;
-  height: 19px;
+  flex: none;
+  width: 26px;
+  height: 26px;
   color: var(--obra-cor);
 }
 
+.construcoes__slot[data-estado='livre'] > .icone-grego {
+  width: 34px;
+  height: 34px;
+  color: var(--ui-texto-tenue);
+  opacity: 0.35;
+}
+
 .construcoes__slot > span {
-  position: relative;
-  z-index: 1;
   display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -213,47 +189,24 @@
 
 .construcoes__slot strong {
   font-family: var(--fonte-nome);
-  font-size: 14px;
+  font-size: var(--texto-medida);
   font-weight: 650;
-  line-height: 1;
-  color: #f2eee2;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 78%);
+  line-height: 1.1;
 }
 
 .construcoes__slot small {
-  margin-top: 2px;
   font-family: var(--fonte-numero);
-  font-size: var(--texto-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--obra-cor-forte) 88%, white);
-  text-shadow: 0 1px 2px rgb(0 0 0 / 90%);
+  font-size: var(--texto-nota);
+  color: var(--ui-texto-fraco);
 }
 
 .construcoes__slot[data-estado='obra'] {
-  box-shadow: inset 0 -2px var(--obra-cor);
+  border-style: dashed;
+  border-color: var(--obra-cor);
 }
 
 .construcoes__slot[data-fase='nova'] .construcoes__slot-imagem {
-  filter: saturate(0.42) sepia(0.22) contrast(0.9) brightness(0.62);
-}
-
-.construcoes__slot[data-fase='nova']::after {
-  background:
-    repeating-linear-gradient(135deg, transparent 0 10px, rgb(255 255 255 / 5%) 10px 11px),
-    linear-gradient(
-      90deg,
-      rgb(5 9 10 / 97%),
-      rgb(5 9 10 / 81%) 62%,
-      rgb(5 9 10 / 26%) 88%,
-      transparent
-    );
-}
-
-.construcoes__slot[data-fase='ampliacao']::after {
-  background:
-    linear-gradient(90deg, rgb(5 9 10 / 88%), rgb(5 9 10 / 56%) 68%, transparent),
-    linear-gradient(135deg, transparent 64%, var(--obra-cor-fundo) 64%);
+  filter: saturate(0.65);
 }
 
 .construcoes__tesouro {
@@ -352,14 +305,15 @@
   --obra-cor: var(--ui-bronze);
   --obra-cor-fundo: var(--ui-pressionado);
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) auto;
+  grid-template-columns: 66px minmax(0, 1fr) minmax(92px, max-content);
   align-items: center;
   gap: 12px;
-  min-height: 52px;
-  padding: 5px 12px 5px 5px;
-  border: 1px solid transparent;
+  min-height: 60px;
+  padding: 6px 10px 6px 12px;
+  border: 0;
+  border-left: 3px solid transparent;
   border-radius: var(--raio-1);
-  background: rgb(255 255 255 / 2.5%);
+  background: transparent;
   color: var(--ui-texto);
   text-align: left;
   cursor: pointer;
@@ -369,13 +323,13 @@
 }
 
 .construcoes__cartao:hover {
-  border-color: color-mix(in srgb, var(--obra-cor) 40%, transparent);
+  border-left-color: var(--ui-borda-fraca);
   background: var(--ui-hover);
 }
 
 .construcoes__cartao[aria-pressed='true'] {
-  border-color: var(--obra-cor);
-  background: linear-gradient(90deg, var(--obra-cor-fundo), rgb(255 255 255 / 3%));
+  border-left-color: var(--ui-bronze-claro);
+  background: linear-gradient(90deg, rgb(189 143 66 / 12%), transparent);
 }
 
 .construcoes__cartao:focus-visible {
@@ -386,10 +340,10 @@
 .construcoes__marca {
   display: grid;
   place-items: center;
-  width: 58px;
-  height: 42px;
+  width: 66px;
+  height: 48px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--obra-cor) 55%, transparent);
+  border: 0;
   border-radius: 3px;
   background: var(--obra-cor-fundo);
   color: var(--obra-cor);
@@ -454,9 +408,12 @@
   color: var(--obra-cor-forte);
 }
 
-.construcoes__efeito-lista[data-tom='ganho'] strong,
-.construcoes__impacto[data-tom='ganho'] > strong {
+.construcoes__efeito-lista[data-tom='ouro'] strong {
   color: var(--ui-ouro);
+}
+
+.construcoes__efeito-lista[data-tom='ganho'] strong {
+  color: var(--ui-ganho);
 }
 
 .construcoes__efeito-lista[data-tom='perda'] strong {
@@ -488,14 +445,8 @@
   color: var(--ui-perda);
 }
 
-.construcoes__cartao[data-estado='bloqueada'],
-.construcoes__cartao[data-estado='sem-ouro'] {
-  opacity: 0.72;
-}
-
-.construcoes__cartao[data-estado='bloqueada'] .construcoes__marca,
-.construcoes__cartao[data-estado='sem-ouro'] .construcoes__marca {
-  filter: saturate(0.4);
+.construcoes__cartao[data-estado='bloqueada'] .construcoes__nome {
+  color: var(--ui-texto-fraco);
 }
 
 .construcoes__cartao[data-estado='maximo'] .construcoes__preco-lista {
@@ -517,15 +468,15 @@
      buraco vazio no meio do detalhe. */
   align-self: start;
   display: grid;
-  grid-template-rows: 158px 1fr auto auto;
+  grid-template-rows: auto auto auto auto;
   gap: 10px;
-  min-height: 415px;
+  min-height: 0;
   padding: 0 18px 14px;
   overflow: hidden;
   border: 1px solid var(--ui-borda-fraca);
   background:
     linear-gradient(160deg, rgb(255 255 255 / 2.5%), transparent 48%), rgb(10 15 16 / 34%);
-  box-shadow: inset 3px 0 var(--obra-cor);
+  box-shadow: none;
 }
 
 .construcoes__detalhe::after {
@@ -538,7 +489,7 @@
   display: grid;
   align-items: end;
   min-width: 0;
-  min-height: 158px;
+  min-height: 212px;
   margin-inline: -18px;
   overflow: hidden;
   border-bottom: 1px solid color-mix(in srgb, var(--obra-cor) 42%, var(--ui-borda-fraca));
@@ -549,10 +500,9 @@
   content: '';
   position: absolute;
   z-index: -1;
-  inset: 0;
-  background:
-    linear-gradient(0deg, rgb(6 10 11 / 95%) 0, rgb(6 10 11 / 66%) 36%, transparent 76%),
-    linear-gradient(90deg, rgb(6 10 11 / 32%), transparent 68%);
+  inset: auto 0 0;
+  height: 112px;
+  background: linear-gradient(0deg, rgb(6 10 11 / 92%), rgb(6 10 11 / 56%) 52%, transparent);
   pointer-events: none;
 }
 
@@ -564,8 +514,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center 49%;
-  filter: saturate(0.9) contrast(0.98) brightness(0.9);
-  transform: scale(1.01);
+  filter: none;
 }
 
 /* O casco do Porto vive abaixo da linha média; estes recortes preservam o que o distingue. */
@@ -645,69 +594,61 @@
 }
 
 .construcoes__impacto {
-  align-self: center;
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
-  column-gap: 14px;
-  padding: 4px 2px 2px;
+  grid-template-columns: minmax(72px, max-content) 18px minmax(0, 1fr);
+  column-gap: 12px;
+  padding-block: 4px;
 }
 
-.construcoes__impacto > span {
+.construcoes__efeito {
   grid-column: 1 / -1;
-  margin-bottom: 2px;
-  font-size: var(--texto-micro);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ui-texto-tenue);
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-height: 32px;
+  padding-block: 5px;
 }
 
-.construcoes__impacto > strong {
-  grid-row: 2 / 4;
-  align-self: center;
+.construcoes__efeito strong {
   font-family: var(--fonte-numero);
-  font-size: 39px;
-  font-weight: 680;
-  font-variant-numeric: tabular-nums;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-  color: var(--obra-cor-forte);
-}
-
-.construcoes__impacto[data-tom='perda'] > strong {
-  color: var(--ui-sangue-claro);
-}
-
-.construcoes__impacto[data-tom='neutro'] > strong {
-  color: var(--ui-texto-fraco);
-}
-
-.construcoes__impacto p {
-  align-self: end;
-  overflow: hidden;
-  font-size: 15px;
+  font-size: var(--texto-medida);
   font-weight: 650;
-  line-height: 1.05;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
   color: var(--ui-texto);
 }
 
-.construcoes__impacto small {
-  align-self: start;
-  margin-top: 4px;
-  overflow: hidden;
-  font-size: var(--texto-nota);
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.construcoes__efeito > .icone-grego,
+.construcoes__efeito > .moeda-ateniense {
+  width: 18px;
+  height: 18px;
   color: var(--ui-texto-fraco);
+}
+
+.construcoes__efeito > span:last-child {
+  min-width: 0;
+  font-size: var(--texto-corpo);
+  line-height: 1.3;
+  color: var(--ui-texto);
+}
+
+.construcoes__efeito[data-tom='ouro'] strong {
+  color: var(--ui-ouro);
+}
+
+.construcoes__efeito[data-tom='ganho'] strong,
+.construcoes__efeito[data-tom='ganho'] > .icone-grego {
+  color: var(--ui-ganho);
+}
+
+.construcoes__efeito[data-tom='perda'] strong,
+.construcoes__efeito[data-tom='perda'] > .icone-grego {
+  color: var(--ui-perda);
 }
 
 .construcoes__conta {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(115px, 1fr));
   border-block: 1px solid var(--ui-borda-fraca);
 }
 
@@ -735,6 +676,9 @@
 }
 
 .construcoes__conta dd {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   margin-top: 3px;
   font-family: var(--fonte-numero);
   font-size: 14px;
@@ -744,8 +688,20 @@
   color: var(--ui-texto);
 }
 
-.construcoes__conta [data-tom='ganho'] dd {
-  color: var(--ui-ganho);
+.construcoes__conta [data-tooltip] dt {
+  text-decoration: underline dotted var(--ui-texto-tenue);
+  text-underline-offset: 4px;
+  cursor: help;
+}
+
+.construcoes__conta [data-tooltip]:focus-visible {
+  outline: 1px solid var(--ui-bronze-claro);
+  outline-offset: -1px;
+}
+
+.construcoes__conta .moeda-ateniense {
+  width: 15px;
+  height: 15px;
 }
 
 .construcoes__conta [data-tom='ouro'] dd {
@@ -836,7 +792,11 @@
   }
 
   .construcoes__slot {
-    height: 44px;
+    height: 56px;
+  }
+
+  .construcoes__slot-imagem {
+    height: 42px;
   }
 
   .construcoes__cartao {
@@ -844,13 +804,13 @@
   }
 
   .construcoes__detalhe {
-    min-height: 395px;
-    grid-template-rows: 142px 1fr auto auto;
+    min-height: 0;
+    grid-template-rows: auto auto auto auto;
     padding: 0 16px 12px;
   }
 
   .construcoes__detalhe-cabecalho {
-    min-height: 142px;
+    min-height: 176px;
     margin-inline: -16px;
   }
 }
