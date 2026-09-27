@@ -214,7 +214,8 @@ Papéis atuais:
 - **Estrada:** reduz corrupção por distância e corta 3%/5%/7% da folha das hostes paradas
   naquela província própria; a taxa de campanha em terra alheia continua integral;
 - **Explorações:** Fazenda, Pastagem, Porto pesqueiro, Lagar, Vinhedo, Serraria, Mina e Pedreira
-  dependem dos produtos locais e melhoram comida ou produção.
+  dependem dos produtos locais e melhoram comida ou produção. Mina e Pedreira tiram 2/3/4 de
+  humor da província, e a Serraria 1/2/3 (campo `humor` da obra).
 
 Toda obra erguida cobra manutenção, inclusive sob cerco; obra em andamento ainda não cobra. Se
 o tesouro zerar, a obra continua funcionando hoje. A direção já decidida, mas não implementada,

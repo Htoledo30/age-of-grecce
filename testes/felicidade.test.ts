@@ -101,6 +101,19 @@ describe('o alvo e o passo do humor', () => {
     ).toBe(felicidade.alvoBase + templo.efeito.pontos[1]);
   });
 
+  it('a mina tira humor, e ele aparece como parcela com o nome dela', () => {
+    // Henrique: *"construções como mineradora deveriam diminuir um pouco a felicidade"*.
+    const catalogo = construcoes.construcoes;
+    const desgosto = catalogo['mina']?.humor?.[0] ?? 0;
+    expect(desgosto).toBeLessThan(0);
+    const situacao = { ...parada, construcoes: { mina: 1 } };
+    expect(alvoDeFelicidade(situacao, catalogo, felicidade)).toBe(felicidade.alvoBase + desgosto);
+    expect(parcelasDoAlvo(situacao, catalogo, felicidade)).toContainEqual({
+      rotulo: catalogo['mina']?.nome,
+      pontos: desgosto,
+    });
+  });
+
   it('o alvo nunca sai de 0 a 100, por pior ou melhor que a situação esteja', () => {
     const catalogo = construcoes.construcoes;
     const inferno = alvoDeFelicidade(

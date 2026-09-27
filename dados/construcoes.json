@@ -558,6 +558,11 @@
         0.001,
         0.0015
       ],
+      "humor": [
+        -1,
+        -2,
+        -3
+      ],
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Exploração local de madeira; não torna madeira requisito para todas as obras."
     },
@@ -598,6 +603,11 @@
         0.001,
         0.0015
       ],
+      "humor": [
+        -2,
+        -3,
+        -4
+      ],
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Poços, galerias e beneficiamento somente onde há minério."
     },
@@ -636,6 +646,11 @@
         0.0005,
         0.001,
         0.0015
+      ],
+      "humor": [
+        -2,
+        -3,
+        -4
       ],
       "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Extrai pedra onde o mármore existe; não é uma Oficina genérica disfarçada."

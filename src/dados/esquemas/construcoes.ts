@@ -250,6 +250,18 @@ export const Construcoes = z.object({
         .tuple([z.number().nonnegative(), z.number().nonnegative(), z.number().nonnegative()])
         .optional(),
       /**
+       * O que a obra TIRA do humor da província, por nível — mina e pedreira são trabalho
+       * pesado e sujo. Henrique: *"construções como mineradora deveriam diminuir um pouco a
+       * felicidade da província"*. Soma ao alvo de felicidade como parcela própria.
+       */
+      humor: z
+        .tuple([
+          z.number().int().nonpositive(),
+          z.number().int().nonpositive(),
+          z.number().int().nonpositive(),
+        ])
+        .optional(),
+      /**
        * Quantos pontos de comida o reino pode COMPRAR de fora por causa desta obra, por nível.
        *
        * É a porta por onde o grão entra: sem cais nem praça, não há de quem comprar. Obra em

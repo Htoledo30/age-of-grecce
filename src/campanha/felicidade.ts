@@ -147,10 +147,13 @@ export function parcelasDoAlvo(
   for (const [id, nivel] of Object.entries(situacao.construcoes)) {
     const construcao = catalogo[id];
     const efeito = construcao?.efeito;
+    const indice = Math.max(0, Math.min(2, nivel - 1));
     if (efeito?.tipo === 'felicidade') {
-      const pontos = efeito.pontos[Math.max(0, Math.min(2, nivel - 1))] ?? 0;
+      const pontos = efeito.pontos[indice] ?? 0;
       if (pontos !== 0) parcelas.push({ rotulo: construcao?.nome ?? id, pontos });
     }
+    const desgosto = construcao?.humor?.[indice] ?? 0;
+    if (desgosto !== 0) parcelas.push({ rotulo: construcao?.nome ?? id, pontos: desgosto });
   }
 
   return parcelas;

@@ -14,12 +14,19 @@ export function apresentacaoDaConstrucao(
   ganhoPorTurno: number,
 ): ApresentacaoDaConstrucao {
   const apresentacao = apresentacaoDoEfeito(construcao, nivel, ganhoPorTurno);
+  const extras: string[] = [];
   const prosperidade = construcao.prosperidade?.[nivel - 1] ?? 0;
-  if (prosperidade <= 0) return apresentacao;
-  const crescimento = `+${(prosperidade * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% crescimento`;
+  if (prosperidade > 0) {
+    extras.push(
+      `+${(prosperidade * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}% crescimento`,
+    );
+  }
+  const humor = construcao.humor?.[nivel - 1] ?? 0;
+  if (humor < 0) extras.push(`−${-humor} humor`);
+  if (extras.length === 0) return apresentacao;
   return {
     ...apresentacao,
-    apoio: apresentacao.apoio ? `${apresentacao.apoio} · ${crescimento}` : crescimento,
+    apoio: [apresentacao.apoio, ...extras].filter((t) => t !== '').join(' · '),
   };
 }
 

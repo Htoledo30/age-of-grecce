@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { Campanha } from '../../src/campanha/campanha';
 import { rendaDaProvincia } from '../../src/campanha/economia';
-import { ajustes, construcoes, economia, novaCampanha as nova } from '../apoio/mundo';
+import { Atlas } from '../../src/mundo/atlas';
+import {
+  ajustes,
+  construcoes,
+  economia,
+  exercitos,
+  novaCampanha as nova,
+  provincias,
+} from '../apoio/mundo';
 
 describe('construções', () => {
   it('a melhor construção muda de província — é isso que faz existir decisão', () => {
@@ -60,8 +69,23 @@ describe('construções', () => {
     expect(antesDaObra).toBeGreaterThan(0);
 
     // A Mina em Sunião mexe na produção — e o comércio sobe junto, porque sai dela.
-    const antes = c.economiaDe('sounion');
-    const ganho = c.retornoDaConstrucaoEm('sounion', 'mina')?.ganhoPorTurno ?? 0;
+    //
+    // ⚠️ Num catálogo em que a Mina não tira humor: a promessa é honesta e já desconta o humor
+    // que ela custa (ver `felicidade.test.ts`), e o que se isola aqui é só a produção.
+    const semDesgosto = {
+      ...construcoes,
+      construcoes: {
+        ...construcoes.construcoes,
+        mina: { ...construcoes.construcoes['mina']!, humor: undefined },
+      },
+    };
+    const m = new Campanha(new Atlas(provincias), economia, semDesgosto, ajustes, exercitos);
+    m.comecar('atenas');
+    // As mesmas viradas da campanha de cima: o humor chega perto do alvo, que é onde a
+    // promessa faz a conta.
+    for (let i = 0; i < construcoes.construcoes['lagar']!.turnos[0]; i++) m.passarTurno();
+    const antes = m.economiaDe('sounion');
+    const ganho = m.retornoDaConstrucaoEm('sounion', 'mina')?.ganhoPorTurno ?? 0;
     const mina = construcoes.construcoes['mina'];
     if (mina?.efeito.tipo !== 'renda') throw new Error('Mina deveria render moeda');
     const producaoNova = Math.round((antes?.producao ?? 0) * mina.efeito.fatores[0]);
@@ -70,11 +94,11 @@ describe('construções', () => {
     // uma escala própria — e a Mina mexe só no que a terra dá. Devolvendo a folha ao ganho,
     // sobra exatamente o delta da produção, com um de folga para o arredondamento de cada
     // parcela.
-    const folhaDaMina = c.manutencaoDaObraEm('sounion', 'mina', 1);
+    const folhaDaMina = m.manutencaoDaObraEm('sounion', 'mina', 1);
     const delta = producaoNova - (antes?.producao ?? 0);
     expect(ganho + folhaDaMina).toBeGreaterThanOrEqual(delta - 1);
     expect(ganho + folhaDaMina).toBeLessThanOrEqual(delta + 1);
-    expect(c.economiaDe('sounion')?.transito).toBe(antes?.transito);
+    expect(m.economiaDe('sounion')?.transito).toBe(antes?.transito);
   });
 
   it('toda construção erguida cobra manutenção: a renda é líquida', () => {
