@@ -6,9 +6,55 @@
  * ícone e posição; nunca carrega um estado sozinha.
  */
 .janela[data-janela='construções'] .janela__caixa {
+  --canto-moldura: 28px;
+  --borda-moldura: 4px;
+  border-color: rgb(189 143 66 / 25%);
   background:
     radial-gradient(circle at 72% 8%, rgb(189 143 66 / 7%), transparent 34%),
     linear-gradient(145deg, #1a2325, var(--ui-fundo-elevado) 54%, #151c1e);
+}
+
+/* Experimento restrito a Construções: cantos fixos e bordas repetidas, sem esticar a arte.
+   Substitui o friso contínuo da janela; o ornamento central não compete com o título. */
+.janela[data-janela='construções'] .janela__caixa::before {
+  inset: 0;
+  background:
+    url('/interface/molduras/bronze-v1/canto-superior-esquerdo.png') left top,
+    url('/interface/molduras/bronze-v1/canto-superior-direito.png') right top,
+    url('/interface/molduras/bronze-v1/canto-inferior-esquerdo.png') left bottom,
+    url('/interface/molduras/bronze-v1/canto-inferior-direito.png') right bottom;
+  background-size: var(--canto-moldura) var(--canto-moldura);
+  background-repeat: no-repeat;
+  -webkit-mask: none;
+  mask: none;
+  opacity: 0.85;
+}
+
+.janela[data-janela='construções'] .janela__caixa::after,
+.janela[data-janela='construções'] .janela__barra::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.janela[data-janela='construções'] .janela__caixa::after {
+  inset: 0 calc(var(--canto-moldura) - 2px);
+  background:
+    url('/interface/molduras/bronze-v1/borda-superior-repeticao.png') left top,
+    url('/interface/molduras/bronze-v1/borda-inferior-repeticao.png') left bottom;
+  background-size: auto var(--borda-moldura);
+  background-repeat: repeat-x;
+}
+
+.janela[data-janela='construções'] .janela__barra::before {
+  inset: calc(var(--canto-moldura) - 2px) 0;
+  background:
+    url('/interface/molduras/bronze-v1/borda-esquerda-repeticao.png') left top,
+    url('/interface/molduras/bronze-v1/borda-direita-repeticao.png') right top;
+  background-size: var(--borda-moldura) auto;
+  background-repeat: repeat-y;
 }
 
 .janela[data-janela='construções'] .janela__corpo.construcoes {

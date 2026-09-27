@@ -68,7 +68,10 @@ para servir à conquista, não para ocupar o jogador.
    grão já entraram; a maior parte ainda só rende ouro.
 5. **Textos e notificações** — "ainda existem muitas frases de efeito ridículas". Proposta:
    levantar todas as frases da tela num arquivo para Henrique riscar.
-6. **Interface** em geral.
+6. **Interface** em geral. Moldura de bronze aplicada somente em Construções para Henrique
+   avaliar: cantos de 28 px, bordas de 4 px e sem ornamento central. Peças recortadas em
+   `assets/interface/molduras/bronze-v1/`. Testes interrompidos a pedido de Henrique;
+   não iniciar novos testes nesta tarefa.
 7. **Combate** — "está legal, mas dá para ficar foda".
 8. **Rejogabilidade** — forma de governo, ou bônus e personalidade por reino (hoje só há os
    estilos guerreiro, mercador, cauteloso e equilibrado).
