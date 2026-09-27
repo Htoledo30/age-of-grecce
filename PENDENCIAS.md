@@ -18,6 +18,7 @@ para servir à conquista, não para ocupar o jogador.
 
 | assunto | o que mudou | commit |
 |---|---|---|
+| Janela de Diplomacia | textos curtos ("Propõe uma ALIANÇA.", "Reputação: limpa", "Pedido"/"Propostas"); letra da lista, da sanfona e das opções em 14px; opinião em verde/vermelho, nunca bronze; a sanfona cabe inteira; em guerra a paz não fica sozinha no pé; "Você paga" trocado para "Ele paga" na liga que você lidera | ver `git log` |
 | Aliança com prazo | aliança não vence mais: dura até romper ou a opinião cair abaixo de −10; a crônica avisa quando ela se desfaz | ver `git log` |
 | Proposta chegava sem aviso | cartão embaixo da crônica para cada pedido recebido; clicar abre a mesa com quem pediu | ver `git log` |
 | Pedidos demais | o mesmo reino só repete o mesmo pedido 10 turnos depois de recusado ou ignorado | ver `git log` |
@@ -81,8 +82,7 @@ para servir à conquista, não para ocupar o jogador.
   todos os vizinhos estão cobertos por trégua, pacto, tributo, aliança ou liga.
 - **Um cerco só por província:** dois co-beligerantes sobre a mesma cidade — o segundo fica sem
   cerco. A postura continua compartilhada por destino (`posturas.ts`).
-- **Visual ainda por fazer:** a janela de Diplomacia (letras pequenas e textos que explicam
-  demais); Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
+- **Visual ainda por fazer:** Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
   fundo é `font-size-adjust` na fonte de corpo, com uma passada do `medir-tamanho`; a cor da
   província selecionada no mapa fica marrom e apagada.
 - **Notas antigas não conferidas:** o travamento ao abrir o movimento com Porto e o cálculo de

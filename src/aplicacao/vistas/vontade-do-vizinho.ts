@@ -489,24 +489,3 @@ export function linhaDeAtaqueDe(jogo: Jogo, id: string): number {
   return estiloDe(jogo.ia, id).relacaoParaDeclarar;
 }
 
-/**
- * O menor presente que cobre estes pontos de opinião, ou `null` se nem o seu cofre alcança.
- *
- * ⚠️ **É o que transforma uma recusa em PREÇO.** A tela tinha as duas metades da conta — o
- * quanto falta de opinião, num tooltip de botão cinza, e três presentes cotados em pontos a
- * três centímetros dali — e nunca fazia a subtração para o jogador. Dizer "faltam 13 pontos,
- * e 2.500 de ouro cobrem" é a diferença entre um veredito e uma decisão.
- *
- * Procura de baixo para cima em degraus de meio turno de renda dele: o objetivo é COBRIR, não
- * impressionar, e cada moeda a mais é uma moeda que não vira muro.
- */
-export function ouroQueCobre(jogo: Jogo, id: string, pontos: number): number | null {
-  if (pontos <= 0) return 0;
-  const { campanha } = jogo;
-  const passo = Math.max(50, Math.round(campanha.rendaDe(id) / 2));
-  const teto = campanha.tesouroDe(campanha.jogador?.id ?? '');
-  for (let ouro = passo; ouro <= teto; ouro += passo) {
-    if (campanha.valorDoPresente(id, ouro) >= pontos) return ouro;
-  }
-  return null;
-}

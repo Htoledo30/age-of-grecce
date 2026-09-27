@@ -32,7 +32,6 @@ import {
   type PrazoComBalanca,
   intencaoDe,
   linhaDeAtaqueDe,
-  ouroQueCobre,
   prazosDeAliancaComResposta,
   prazosDePactoComResposta,
   prazosDePazComResposta,
@@ -428,15 +427,11 @@ function pedidoDe(jogo: Jogo, id: string): VizinhoNaMesa['pedido'] {
   if (!proposta) return null;
   const frase = {
     pacto: `Propõe um pacto de não-agressão por ${proposta.turnos ?? 0} turnos.`,
-    alianca: 'Propõe uma ALIANÇA: as guerras dele passam a ser suas, e as suas dele.',
-    liga:
-      'Convida você para a LIGA dele: você continua sendo você, mas paga tributo todo turno ' +
-      'e entra nas guerras dele. Em troca, ninguém te ataca sem enfrentá-lo.',
-    // ⚠️ A frase mais pesada da mesa, e ela tem de doer ao ler: aceitar é ENTREGAR o reino.
-    anexacao:
-      'Pede que o seu reino passe a fazer parte do dele. Aceitar é o fim da sua campanha — ' +
-      'recusar não custa nada, e ele só pode insistir rompendo a liga e invadindo.',
-    comercio: 'Propõe abrir comércio: rende dos dois lados, e a guerra desfaz.',
+    // Sem explicar a regra (Henrique: a tela mostra estado, não ensina o jogo).
+    alianca: 'Propõe uma ALIANÇA.',
+    liga: 'Convida você para a LIGA dele.',
+    anexacao: 'Pede a ANEXAÇÃO do seu reino.',
+    comercio: 'Propõe comércio.',
     acesso: `Pede passagem pela sua terra por ${proposta.turnos ?? 0} turnos.`,
     paz: 'Propõe a paz, sem tributo.',
   }[proposta.tipo];
@@ -474,7 +469,7 @@ function grupoDaPassagem(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: `Passagem aberta por ${dada} turnos.${nota}`,
+      fala: nota.trim(),
       tom: 'bom',
     };
   }
@@ -531,7 +526,7 @@ function grupoDaGuerra(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
     // ⚠️ **A trégua é dita UMA vez, e antes eram três** — aqui, na leitura da postura e no
     // bloqueio do botão. E a frase que sobrava sem trégua ("sem guerra declarada, sua hoste não
     // marcha") era tautologia: dizia o nome do botão de novo.
-    fala: tregoa > 0 ? `Trégua: ${tregoa} turnos.` : '',
+    fala: '',
     tom: 'ruim',
   };
 }
@@ -615,10 +610,7 @@ function grupoDoComercio(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
             acao: 'acordo',
             rotulo: 'Abrir',
             custo: emOuro(minhaRenda, true),
-            // ⚠️ **`até a guerra` é prazo, e é o único que este acordo tem.** Um traço aqui
-            // faria o comércio parecer eterno; ele não é — e a fala de baixo dizendo "a guerra
-            // o desfaz" ficava sendo a única aviso, três linhas longe da escolha.
-            prazo: 'até a guerra',
+            prazo: '—',
             valor: 0,
             pode: permissao.pode,
             aceita: resposta.aceita,
@@ -680,7 +672,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           pode: aceita,
           aceita: true,
           // ⚠️ A recusa vira PRAZO ou PREÇO, e não veredito — a mesma lição do pacto.
-          bloqueio: aceita ? '' : 'ele ainda não aceitaria: baixe o tributo e espere',
+          bloqueio: aceita ? '' : 'ele recusa',
         },
         {
           acao: 'soltar-membro',
@@ -695,7 +687,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
       ],
       // Os NÚMEROS sobrevivem, a explicação vai para o tooltip do título. A regra da liga se
       // aprende uma vez; o tributo e a vontade de sair mudam todo turno.
-      fala: `Você paga ${paga} moedas por turno. Vontade de sair: ${desejo} de 100.`,
+      fala: `Ele paga ${paga} por turno. Vontade de sair: ${desejo} de 100.`,
       tom: desejo >= 40 ? 'ruim' : 'bom',
     };
   }
@@ -748,7 +740,7 @@ function grupoDaLiga(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
         bloqueio: permissao.pode
           ? ''
           : relacao < minima
-            ? precoDaConfianca(jogo, id, minima - relacao)
+            ? `faltam ${minima - relacao} de opinião`
             : permissao.motivo,
       },
     ],
@@ -770,7 +762,6 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
   const { campanha } = jogo;
   // A aliança não vence (decisão de Henrique, 27/09/2026): não há prazo a mostrar.
   if (campanha.aliancaAte(eu, id) !== undefined) {
-    const guerras = campanha.guerrasDe(id).length;
     return {
       titulo: 'Aliança militar',
       vontadeDele: true,
@@ -787,10 +778,7 @@ function grupoDaAlianca(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala:
-        guerras > 0
-          ? `Em vigor · ${guerras} guerra${guerras === 1 ? '' : 's'} dele.`
-          : 'Em vigor.',
+      fala: '',
       tom: 'bom',
     };
   }
@@ -865,7 +853,7 @@ function grupoDoPacto(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: 'Em vigor.',
+      fala: '',
       tom: 'bom',
     };
   }
@@ -897,9 +885,7 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
           bloqueio: '',
         },
       ],
-      fala: euPago
-        ? `Você paga ${emCurso.ouro} por turno.`
-        : `Ele paga ${emCurso.ouro} por turno.`,
+      fala: '',
       tom: euPago ? 'ruim' : 'bom',
     };
   }
@@ -962,15 +948,6 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
 function emOuro(valor: number, entra: boolean, porTurno = true): string {
   const quanto = valor.toLocaleString('pt-BR');
   return `${entra ? '+' : '−'}${quanto}${porTurno ? ' por turno' : ' de ouro'}`;
-}
-
-/** Quanto ouro cobre os pontos que faltam para este prazo — ou por que não há preço. */
-function precoDaConfianca(jogo: Jogo, id: string, falta: number): string {
-  const ouro = ouroQueCobre(jogo, id, falta);
-  if (ouro === null) {
-    return `faltam ${falta} de opinião, e o seu cofre não alcança — mude os fatos`;
-  }
-  return `faltam ${falta} de opinião · ${ouro.toLocaleString('pt-BR')} de ouro cobrem`;
 }
 
 /**

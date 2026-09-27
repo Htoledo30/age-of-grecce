@@ -370,9 +370,7 @@ export class Diplomacia {
     const limpa = vista.eu.reputacao >= 0;
     palavra.className = 'diplomacia__palavra';
     palavra.dataset['tom'] = limpa ? 'bom' : 'ruim';
-    palavra.textContent = limpa
-      ? 'Sua palavra: nenhum acordo quebrado'
-      : `Sua palavra: ${vista.eu.reputacao} — o mundo lembra`;
+    palavra.textContent = limpa ? 'Reputação: limpa' : `Reputação: ${vista.eu.reputacao}`;
     definirTooltip(palavra, {
       titulo: 'Reputação',
       corpo: limpa
@@ -478,7 +476,7 @@ export class Diplomacia {
     forca.className = 'diplomacia__nome-forca';
     const rumo = vizinho.alvo > vizinho.relacao ? '↑' : vizinho.alvo < vizinho.relacao ? '↓' : '=';
     forca.textContent = `${sinal(vizinho.relacao)} ${rumo}`;
-    forca.dataset['tom'] = vizinho.relacao >= 0 ? 'bom' : 'ruim';
+    if (vizinho.relacao !== 0) forca.dataset['tom'] = vizinho.relacao > 0 ? 'bom' : 'ruim';
 
     const baixo = document.createElement('span');
     baixo.className = 'diplomacia__nome-linha';
@@ -580,12 +578,12 @@ export class Diplomacia {
     // são um par, e é o par que ensina a coluna: primeiro o que ELE quer, depois o que você
     // pode querer.
     if (vizinho.pedido) {
-      partes.push(tituloDaColuna(`O que ${vizinho.nome} pede`));
+      partes.push(tituloDaColuna('Pedido'));
       partes.push(this.pedido(vizinho));
     }
     const tratados = vizinho.grupos.filter((g) => g.fixo !== true);
     if (tratados.length > 0) {
-      partes.push(tituloDaColuna(vizinho.pedido ? 'Ou proponha você' : 'O que se pode propor'));
+      partes.push(tituloDaColuna('Propostas'));
       const pilha = document.createElement('div');
       pilha.className = 'diplomacia__acoes';
       const aberto = this.qualAberto(tratados);
@@ -595,9 +593,10 @@ export class Diplomacia {
       partes.push(pilha);
     }
     rolagem.append(...partes);
-    // Guerra e paz nunca fecham: ver `GrupoDaMesa.fixo`.
+    // Guerra e paz nunca fecham: ver `GrupoDaMesa.fixo`. Em guerra a sanfona fica vazia, e a
+    // rolagem vazia só empurraria o cartão da paz para o pé de uma coluna em branco.
     return [
-      rolagem,
+      ...(partes.length > 0 ? [rolagem] : []),
       ...vizinho.grupos.filter((g) => g.fixo === true).map((g) => this.grupo(vizinho, g, true)),
     ];
   }
@@ -760,9 +759,9 @@ export class Diplomacia {
     // fragmentos telegráficos separados por ponto, que ninguém lê como frase e que repetem a
     // contagem da fronteira já contada no selo da lista. Agora o rodapé diz a única coisa que
     // não está escrita em nenhum outro canto: como ELE joga.
-    rodape.textContent = `${dele.nome} joga como ${dele.linha}.`;
+    rodape.textContent = dele.linha.charAt(0).toUpperCase() + dele.linha.slice(1);
     definirTooltip(rodape, {
-      titulo: `${dele.nome} joga como ${dele.linha}`,
+      titulo: `${dele.nome}: ${dele.linha}`,
       corpo: vizinho.conduta,
     });
     caixa.appendChild(rodape);
@@ -955,9 +954,10 @@ export class Diplomacia {
     // *"já aparece a resposta do que os outros reinos querem antes de eu negociar com eles"*. A
     // palavra do cabeçalho (assinaria, relutante, fechado), o saldo de cada linha e a conta da
     // balança saíram da mesa; quem responde agora é a proposta, e a recusa diz o que faltou.
-    const vontade = null;
-
-    caixa.appendChild(this.cabecalho(vizinho, grupo, aberto, vontade));
+    // A guerra sem trégua a contar dispensa o cabeçalho: o botão "Declarar guerra" já diz o que
+    // o cartão é. A paz o mantém, porque as linhas dela são "Propor" e "Comprar".
+    const soDeclarar = grupo.propostas.length === 1 && grupo.propostas[0]?.acao === 'guerra';
+    if (!soDeclarar || grupo.resumo !== '') caixa.appendChild(this.cabecalho(grupo, aberto));
     if (!aberto) return caixa;
 
     const corpo = document.createElement('div');
@@ -985,12 +985,7 @@ export class Diplomacia {
   }
 
   /** A linha que abre e fecha a ficha — ou, em guerra e paz, só o título dela. */
-  private cabecalho(
-    vizinho: VizinhoNaMesa,
-    grupo: GrupoDaMesa,
-    aberto: boolean,
-    vontade: 'assinaria' | 'relutante' | 'fechado' | null,
-  ): HTMLElement {
+  private cabecalho(grupo: GrupoDaMesa, aberto: boolean): HTMLElement {
     const topo = grupo.fixo ? document.createElement('div') : document.createElement('button');
     topo.className = 'diplomacia__ficha-topo';
 
@@ -1013,26 +1008,6 @@ export class Diplomacia {
       resumo.className = 'diplomacia__resumo-ficha';
       resumo.textContent = grupo.resumo;
       topo.appendChild(resumo);
-    }
-
-    // ⚠️ **A palavra só onde existe pergunta.** Ver `GrupoDaMesa.vontadeDele`: guerra, passagem
-    // e presente são atos unilaterais, e a marca que a tela punha neles dizia "ele topa" sobre
-    // coisas que ele não decide.
-    if (vontade !== null) {
-      const palavra = document.createElement('span');
-      palavra.className = 'diplomacia__vontade';
-      palavra.dataset['vontade'] = vontade;
-      palavra.textContent = vontade;
-      definirTooltip(palavra, {
-        titulo: `${grupo.titulo} — ${vizinho.nome}`,
-        corpo:
-          vontade === 'assinaria'
-            ? 'Ele assinaria isto hoje.'
-            : vontade === 'relutante'
-              ? 'Ele recusaria hoje. Abra a ficha: ela diz o que o faria mudar.'
-              : 'Nada que você ofereça fecha isto hoje. Mude os fatos.',
-      });
-      topo.appendChild(palavra);
     }
 
     if (topo instanceof HTMLButtonElement) {
@@ -1106,12 +1081,7 @@ export class Diplomacia {
     // que a quantia compra, e é a única coisa que se compara entre as três linhas da ficha.
     if (proposta.prazo.startsWith('+')) prazo.dataset['tom'] = 'bom';
 
-    // ⚠️ A célula tem lugar fixo mesmo vazia: sem ela, uma ficha em que só parte das linhas
-    // leva resposta teria as colunas de prazo desalinhadas entre si.
-    const selo = document.createElement('span');
-    selo.className = 'diplomacia__selo';
-
-    botao.append(verbo, custo, prazo, selo);
+    botao.append(verbo, custo, prazo);
     // Só o que a REGRA barra vai no tooltip. O que ele acha só se sabe propondo.
     if (!proposta.pode) {
       definirTooltip(botao, {

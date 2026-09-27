@@ -242,7 +242,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   color: var(--ui-texto-tenue);
 }
 /* O motivo pode ser longo — "Em guerra com Corinto" — e a opinião ao lado nunca pode ser
@@ -344,8 +344,8 @@
   align-items: baseline;
   margin: 10px 0 2px;
   padding: 0 4px;
-  font-family: var(--fonte-micro, var(--fonte-interface));
-  font-size: var(--texto-micro);
+  font-family: var(--fonte-corpo);
+  font-size: var(--texto-nota);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ui-texto-tenue);
@@ -475,7 +475,7 @@
   gap: 2px;
   align-items: center;
   min-width: 96px;
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   letter-spacing: 0.05em;
   color: var(--ui-texto-tenue);
 }
@@ -710,9 +710,12 @@
   font-variant-numeric: tabular-nums;
   cursor: help;
 }
-.diplomacia__postura-nome[data-tom='bom'],
-.diplomacia__numero[data-tom='bom'] {
+.diplomacia__postura-nome[data-tom='bom'] {
   color: var(--ui-bronze-claro);
+}
+/* Opinião não é dinheiro: ganho em verde, como em toda tela. */
+.diplomacia__numero[data-tom='bom'] {
+  color: var(--ui-ganho);
 }
 .diplomacia__postura-nome[data-tom='morno'],
 .diplomacia__numero[data-tom='morno'] {
@@ -760,10 +763,10 @@
   font-variant-numeric: tabular-nums;
 }
 .diplomacia__parcelas li[data-tom='ruim'] .diplomacia__pontos {
-  color: var(--ui-sangue-claro);
+  color: var(--ui-perda);
 }
 .diplomacia__parcelas li[data-tom='bom'] .diplomacia__pontos {
-  color: var(--ui-bronze-claro);
+  color: var(--ui-ganho);
 }
 
 /* ── O QUE ELE QUER ──
@@ -819,9 +822,9 @@
 .diplomacia__secao {
   margin: 2px 0 0;
   font-family: var(--fonte-titulo);
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   font-weight: 400;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ui-bronze-claro);
 }
@@ -911,8 +914,8 @@ button.diplomacia__ficha-topo:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--texto-nota);
-  letter-spacing: 0.1em;
+  font-size: var(--texto-corpo);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ui-texto-fraco);
 }
@@ -924,7 +927,7 @@ button.diplomacia__ficha-topo:focus-visible {
    para os dezoito reinos da lista. */
 .diplomacia__resumo-ficha {
   flex: none;
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto-tenue);
 }
@@ -946,7 +949,7 @@ button.diplomacia__ficha-topo:focus-visible {
    Se ele vai recusar, o jogador lê o motivo sem precisar caçar. */
 .diplomacia__fala {
   margin: 0;
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   line-height: 1.35;
   color: var(--ui-texto-tenue);
 }
@@ -1010,65 +1013,29 @@ button.diplomacia__ficha-topo:focus-visible {
   flex: none;
   text-align: right;
   white-space: nowrap;
-  font-size: var(--texto-nota);
+  font-size: var(--texto-corpo);
   font-variant-numeric: tabular-nums;
   color: var(--ui-texto-tenue);
 }
 .diplomacia__acao-custo {
-  width: 100px;
+  width: 124px;
 }
 .diplomacia__acao-prazo {
-  width: 94px;
+  width: 110px;
 }
 .diplomacia__acao-custo[data-tom='bom'] {
   /* O custo é dinheiro: entrando, é ouro, como em toda tela. */
   color: var(--ui-ouro);
 }
 .diplomacia__acao-prazo[data-tom='bom'] {
-  color: var(--ui-verde-claro);
+  color: var(--ui-ganho);
 }
 .diplomacia__acao-custo[data-tom='ruim'] {
-  color: var(--ui-sangue-claro);
-}
-/* O saldo da balança com sinal; nas fichas sem balança, aceita ou recusa. Fica vazio quando a
-   REGRA barra — cofre curto, guerra em curso, pacto em pé.
-
-   A largura fixa vale mesmo vazio: sem ela, uma ficha em que só parte das linhas leva veredito
-   teria as colunas de prazo desalinhadas entre si. */
-.diplomacia__selo {
-  flex: none;
-  min-width: 44px;
-  text-align: right;
-  font-size: var(--texto-nota);
-  font-variant-numeric: tabular-nums;
-  color: var(--ui-texto-tenue);
-  opacity: 0.9;
-}
-/* O saldo com sinal: bronze quando sobra, sangue quando falta — a mesma paleta das parcelas
-   da opinião, e nunca um selo verde/vermelho no lugar da conta. */
-.diplomacia__selo[data-tom='bom'] {
-  color: var(--ui-bronze-claro);
-}
-.diplomacia__selo[data-tom='ruim'] {
-  color: var(--ui-sangue-claro);
+  color: var(--ui-perda);
 }
 .diplomacia__acao[data-resposta='nao'] {
   border-color: var(--ui-borda-fraca);
   color: var(--ui-texto-tenue);
-}
-/* A palavra dele no cabeçalho da ficha: assinaria, relutante, fechado. */
-.diplomacia__vontade {
-  margin-left: auto;
-  font-size: var(--texto-nota);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ui-texto-tenue);
-}
-.diplomacia__vontade[data-vontade='assinaria'] {
-  color: var(--ui-bronze-claro);
-}
-.diplomacia__vontade[data-vontade='fechado'] {
-  color: var(--ui-sangue-claro);
 }
 /* A conta aberta da balança, entre a fala dele e as linhas de proposta. */
 .diplomacia__balanca {
@@ -1088,7 +1055,7 @@ button.diplomacia__ficha-topo:focus-visible {
 .diplomacia__acao[data-acao='romper'],
 .diplomacia__acao[data-acao='romper-alianca'],
 .diplomacia__acao[data-acao='romper-tributo'] {
-  border-color: rgb(169 76 64 / 45%);
+  border-color: rgb(155 28 22 / 55%);
   color: var(--ui-sangue-claro);
 }
 
@@ -1097,12 +1064,14 @@ button.diplomacia__ficha-topo:focus-visible {
    decisão que ABRE o resto do jogo vire mais uma linha entre sete tratados. */
 .diplomacia__grupo[data-fixo='sim'] {
   flex: none;
+  /* A mesma borda direita da sanfona, que reserva 4px para a barra de rolagem. */
+  margin-right: 4px;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
   background: var(--tex-pinax);
 }
 .diplomacia__grupo[data-grupo='guerra'] {
-  border-color: rgb(169 76 64 / 45%);
+  border-color: rgb(155 28 22 / 55%);
 }
 .diplomacia__grupo[data-grupo='guerra'] .diplomacia__rotulo {
   color: var(--ui-sangue-claro);
@@ -1123,7 +1092,7 @@ button.diplomacia__ficha-topo:focus-visible {
 }
 .diplomacia__acao[data-acao='guerra']:hover:not(:disabled) {
   border-color: var(--ui-sangue-claro);
-  background: rgb(169 76 64 / 30%);
+  background: rgb(155 28 22 / 35%);
   color: var(--ui-sangue-claro);
 }
 .diplomacia__acao[data-acao='paz'] {
@@ -1168,7 +1137,7 @@ button.diplomacia__ficha-topo:focus-visible {
    A metade da diplomacia em que quem fala é o outro. Fica no topo do dossiê e tem moldura
    própria de propósito: é a única coisa da tela que espera uma resposta AGORA. */
 .diplomacia__pedido {
-  margin: 0 0 14px;
+  margin: 0;
   padding: 12px 14px;
   border: 1px solid var(--ui-bronze);
   border-left-width: 3px;
@@ -1229,8 +1198,8 @@ button.diplomacia__ficha-topo:focus-visible {
 /* A opinião da lista pega o tom do sinal: o olho corre a coluna e vê onde estão os problemas
    sem ler um número sequer. */
 .diplomacia__nome-forca[data-tom='bom'] {
-  color: var(--ui-verde-claro);
+  color: var(--ui-ganho);
 }
 .diplomacia__nome-forca[data-tom='ruim'] {
-  color: var(--ui-sangue-claro);
+  color: var(--ui-perda);
 }

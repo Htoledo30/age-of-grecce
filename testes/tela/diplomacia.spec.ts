@@ -131,8 +131,8 @@ test('a mesa diz em uma frase o que os dois são, e a lista diz por que cada rei
 
   // 4 · Os dois títulos nomeiam a coluna: primeiro o que ELE quer, depois o que você pode.
   await aba.locator('button[data-poder="eleusis"]').click();
-  await expect(aba.locator('.diplomacia__secao').first()).toHaveText('O que Elêusis pede');
-  await expect(aba.locator('.diplomacia__secao').nth(1)).toHaveText('Ou proponha você');
+  await expect(aba.locator('.diplomacia__secao').first()).toHaveText('Pedido');
+  await expect(aba.locator('.diplomacia__secao').nth(1)).toHaveText('Propostas');
   await expect(aba.locator('.diplomacia__pedido')).toBeVisible();
 
   expect(erros).toEqual([]);
@@ -203,7 +203,7 @@ test('o pedido de um reino aparece embaixo da crônica e abre a mesa com ele', a
   await cartao.click();
   const aba = page.locator('[data-painel="diplomacia"]');
   await expect(aba.locator('.diplomacia__pedido')).toBeVisible();
-  await expect(aba.locator('.diplomacia__secao').first()).toHaveText('O que Elêusis pede');
+  await expect(aba.locator('.diplomacia__secao').first()).toHaveText('Pedido');
 
   expect(erros).toEqual([]);
 });

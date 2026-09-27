@@ -59,7 +59,7 @@
   --ui-sombra-leve: rgb(0 0 0 / 28%);
   --ui-luz: rgb(255 255 255 / 7%);
   --ui-marca: rgb(198 154 74 / 20%);
-  --ui-perigo-fundo: rgb(169 76 64 / 18%);
+  --ui-perigo-fundo: rgb(155 28 22 / 20%);
   --ui-sucesso-fundo: rgb(66 107 92 / 20%);
 
   --ferro: var(--ui-fundo);
