@@ -63,6 +63,11 @@ para servir à conquista, não para ocupar o jogador.
 
 ## Frentes grandes em aberto (ordem sugerida)
 
+0. **Agressividade com cautela, sem caos** (Henrique, 27/09): o mapa de hoje é parado demais
+   (31 trocas de dono em 100 turnos, e nenhuma depois do 100). Fazenda I dando 2 leva a 58
+   trocas, 13 eliminados e maior reino com 9 — ele gostou da direção, não do exagero. Procurar o
+   meio-termo medindo com `npm run partida 100` e 150 (comida do nível I, acordos que travam o
+   mapa depois do 100).
 1. **Jogar uma partida** com tudo o que mudou e anotar em `revisoes feitas por henrique.txt`.
 2. **Renda menor** — "com 20 províncias em 200 rodadas já tem dinheiro demais".
 3. **Diplomacia** — hoje é "um checklist do que cumprir, não uma negociação".
