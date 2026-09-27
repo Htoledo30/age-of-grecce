@@ -61,6 +61,23 @@ para servir à conquista, não para ocupar o jogador.
   Hermíone). É proposital; Henrique ainda não disse se gosta.
 - **Quanto cortar da renda:** esperar Henrique jogar com o grão e a IA gastando o cofre.
 
+## Valores do F2 esperando confirmação (27/09, só nesta máquina, sem commit)
+
+Henrique mexeu pelo editor no fim da sessão. Com eles, 6 testes ficam vermelhos, por isso não
+foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
+
+- `combate.manutencaoPorHomem.emCasa` 0,15 → **0,20** — o AGENTS registra 0,15 como decisão dele
+  e mede que o soldo em casa é o valor que mais mexe no mapa (imposto sobre o fraco).
+- `batalha.limiarDeQuebra` 0,70 → **0,75** — medido antes: a cavalaria derrotada passa a ser
+  aniquilada até o último homem (quebra o teste "só a cavalaria do vencedor conta").
+- hoplita `custo` 1,29 → **1,25** — a infantaria leve só existia por 0,85% com 1,29; a IA agora
+  escolhe outra arma no teste de estilo.
+- `rodadasDeChoque` 10 → 12; arqueiro `aguento` 0,70 → 0,65; `comida` hoplita e arqueiro 1 → 1,1,
+  cavalaria 1,8 → 1,4; `milicia.fracaoMorta` 0,5 → 0,8.
+- Testes que só têm o número antigo escrito (milícia 50%, bocas 200/3) devem passar a ler os
+  ajustes; os de cavalaria e de escolha de arma mostram mudança real de comportamento.
+- `dados/construcoes.json` só teve chaves reordenadas pelo editor; nenhum valor mudou.
+
 ## Frentes grandes em aberto (ordem sugerida)
 
 0. **Agressividade com cautela, sem caos** (Henrique, 27/09): o mapa de hoje é parado demais
@@ -71,6 +88,9 @@ para servir à conquista, não para ocupar o jogador.
    de 18; entre eles quase todo par está travado por aliança (agora sem prazo), tributo de 50–70
    turnos, trégua ou liga, e os pares livres param em "gosta dele" ou "não tem força igual".
    Mégara (4.882 homens) ficou 40+ turnos em guerra com Sícion (1 província) sem tomá-la.
+   ⚠️ A aliança sem prazo (27/09) piora o congelamento: antes ela vencia e soltava o par; agora
+   só acaba rompida ou com a opinião abaixo de −10, que entre aliados quase nunca acontece.
+   Próximo passo: medir como soltar o mapa depois da primeira onda sem virar caos.
 1. **Jogar uma partida** com tudo o que mudou e anotar em `revisoes feitas por henrique.txt`.
 2. **Renda menor** — "com 20 províncias em 200 rodadas já tem dinheiro demais".
 3. **Diplomacia** — hoje é "um checklist do que cumprir, não uma negociação".
