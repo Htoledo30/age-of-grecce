@@ -108,6 +108,36 @@ foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
 8. **Rejogabilidade** — forma de governo, ou bônus e personalidade por reino (hoje só há os
    estilos guerreiro, mercador, cauteloso e equilibrado).
 
+## Auditoria de guerra e IA — 28/09/2026
+
+Leitura do código e dos dados locais, sem testes, simulações, medições ou build, por pedido
+de Henrique. Nenhuma mecânica alterada. Os impactos abaixo ainda precisam ser observados
+em partida; não são novos resultados das medições antigas.
+
+- **Corrigir primeiro a resolução:** `ameacasDe` e previsões terrestres confundem tropa
+  estrangeira com inimiga; `cidades.ts` impede assalto com dois invasores mesmo aliados e
+  sobrescreve o único cerco; `choque-na-provincia.ts` interrompe a procura se a maior força
+  não tiver inimigo, mesmo havendo guerra entre as menores.
+- **Reunir e conduzir o exército:** a declaração prevê todas as hostes juntas, mas o ataque
+  seleciona uma por vez; a concentração só chama quem alcança o ponto nesta rodada. Falta
+  conduzir reforços distantes até um objetivo persistente. Uma ameaça bloqueia ofensivas do
+  reino inteiro; invasão em casa pode chamar de volta todas as tropas elegíveis em campanha.
+- **Preparar a ofensiva:** recrutamento só usa a fatia militar da renda sob ameaça, mesmo
+  havendo guerra. O cofre pode financiar recrutamento, mas `aguentaOCerco` exige renda corrente
+  positiva e ignora a reserva. O teto alimentar da leva ignora bocas livres dentro do ponto
+  de consumo já arredondado para cima.
+- **Diplomacia e alcance:** aliados convocados não entram na comparação de forças da
+  declaração; a IA não decide romper alianças. Paz por duração ignora progresso e a compra
+  de paz prefere o maior prazo. Declaração olha vizinhança; a busca naval ampla só ataca
+  inimigos já declarados. Reinos com qualquer província sem ficha ficam fora da IA e dos alvos.
+- **Armas e sobrevivência:** com os valores locais do F2, hoplita vence os dois critérios de
+  escolha quando disponível e sem aperto alimentar; com aperto, comida acima de 1 veta todas
+  as armas especiais. A IA não usa recuo durante batalha; perder assalto dispersa os
+  sobreviventes mesmo quando a linha não quebrou. Rever antes de aumentar letalidade.
+- **Direção recomendada:** corrigir os defeitos acima, depois planejamento e defesa local;
+  só então decidir mudanças em tratados e balanço. Preservar a aliança sem prazo escolhida
+  por Henrique. Não ampliar o mapa como substituto dessas correções.
+
 ## Problemas conhecidos, medidos e ainda não tratados
 
 - **Atenas é o alvo mais valioso do mapa e começa sem exército.** Os quatro vizinhos guerreiros
