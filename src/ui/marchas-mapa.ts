@@ -7,6 +7,7 @@
  */
 
 import type { Camera } from '@/nucleo/camera';
+import { milhar } from '@/nucleo/numeros';
 
 const SVG = 'http://www.w3.org/2000/svg';
 
@@ -112,7 +113,7 @@ export class MarchasMapa {
       quantidade.classList.add('marchas__quantidade');
       quantidade.dataset['minha'] = dados.minha ? 'sim' : 'nao';
       quantidade.dataset['hostil'] = dados.hostil ? 'sim' : 'nao';
-      quantidade.textContent = dados.homens.toLocaleString('pt-BR');
+      quantidade.textContent = milhar(dados.homens);
       quantidade.style.setProperty('--cor-da-marcha', dados.cor);
       return { dados, elemento, seta, quantidade };
     });

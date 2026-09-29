@@ -39,7 +39,27 @@ export function hostesEm(
   estado: EstadoDeMobilizacao,
   idProvincia: string,
 ): readonly Exercito[] {
-  return todas(estado).filter((h) => h.posicao === idProvincia);
+  return filtradasPorId(estado, (h) => h.posicao === idProvincia);
+}
+
+/**
+ * As hostes que passam no filtro, na MESMA ordem de id que `todas`.
+ *
+ * ⚠️ **Filtra antes de ordenar.** `hostesEm` e `doPoder` são perguntadas dezenas de milhares de
+ * vezes por virada, e ordenar o mundo inteiro de hostes para devolver duas ou três era a maior
+ * conta isolada da IA. A ordem de quem sobra é a mesma: ordenar depois de filtrar dá a mesma
+ * lista que filtrar depois de ordenar.
+ */
+function filtradasPorId(
+  estado: EstadoDeMobilizacao,
+  passa: (h: Exercito) => boolean,
+): Exercito[] {
+  const achadas: [string, Exercito][] = [];
+  for (const id in estado.hostes) {
+    const h = estado.hostes[id];
+    if (h && passa(h)) achadas.push([id, h]);
+  }
+  return achadas.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([, h]) => h);
 }
 
 /**
@@ -95,7 +115,7 @@ export function formacoes(
 
 /** As hostes deste poder, onde quer que estejam — inclusive em terra alheia. */
 export function doPoder(estado: EstadoDeMobilizacao, idPoder: string): readonly Exercito[] {
-  return todas(estado).filter((h) => h.poder === idPoder);
+  return filtradasPorId(estado, (h) => h.poder === idPoder);
 }
 
 /**

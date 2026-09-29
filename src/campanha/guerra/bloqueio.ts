@@ -51,6 +51,11 @@ import { emGuerra } from '../diplomacia/relacoes';
  * que se trava uma guerra.
  */
 export function bloqueadaEm(nucleo: NucleoDaCampanha, idProvincia: string): boolean {
+  // Lembrada entre comandos: eram 47 mil varreduras de hostes por virada para 17 terras.
+  return nucleo.leitura.lembrar('bloqueadaEm', idProvincia, () => varrerBloqueio(nucleo, idProvincia));
+}
+
+function varrerBloqueio(nucleo: NucleoDaCampanha, idProvincia: string): boolean {
   const dono = donoDe(nucleo, idProvincia);
   if (dono === '') return false;
   // ⚠️ **Varre as HOSTES e não as províncias, e sem ordenar.** Esta pergunta é feita por

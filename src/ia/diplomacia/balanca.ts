@@ -55,6 +55,7 @@ import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
 import { valeAPena } from '../guerra/marchar';
 import { estaAmeacado, forcaTotalDe } from '../percepcao/ameaca';
 import { oportunidadesDe } from '../percepcao/oportunidade';
+import { milhar } from '@/nucleo/numeros';
 
 type AjustesDoJogo = Ajustes['jogo'];
 
@@ -233,7 +234,7 @@ export function ouro(
   if (quantia <= 0) return { rotulo: 'ouro oferecido', pontos: 0 };
   const pontos = pontosDoPresente(quantia, campanha.rendaDe(lados.ele), ajustes.diplomacia);
   return {
-    rotulo: `${quantia.toLocaleString('pt-BR')} de ouro`,
+    rotulo: `${milhar(quantia)} de ouro`,
     pontos: Math.min(ajustes.diplomacia.balanca.ouro.maximo, pontos * estilo.gostos.renda),
   };
 }

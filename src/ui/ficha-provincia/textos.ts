@@ -8,6 +8,7 @@
 import type { CrescimentoPopulacional } from '@/populacao/crescimento';
 import type { ConteudoDeTooltip } from '../tooltip';
 import type { VistaDaProvincia } from './vista';
+import { milhar } from '@/nucleo/numeros';
 
 /**
  * O crescimento como frase, e não como sinal grudado num número.
@@ -85,7 +86,7 @@ export function romano(nivel: number): string {
 }
 
 export function moeda(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }
 
 export function comSinal(valor: number): string {

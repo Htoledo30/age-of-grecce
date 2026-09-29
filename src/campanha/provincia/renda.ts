@@ -48,15 +48,22 @@ export function economiaDe(
   nucleo: NucleoDaCampanha,
   idProvincia: string,
 ): RendaDaProvincia | null {
-  const ficha = fichaDe(nucleo, idProvincia);
-  if (!ficha) return null;
-  return rendaDaProvincia(
-    ficha,
-    nucleo.economia.produtos,
-    nucleo.catalogo,
-    nucleo.ajustes.economia,
-    baseDe(nucleo, idProvincia),
-  );
+  // ⚠️ Lembrada entre comandos: é a pergunta mais repetida do jogo. A IA a fazia ~72 mil vezes
+  // por virada para 219 províncias. Ver `CacheDeLeitura`. Congelada para que ninguém altere a
+  // resposta que os outros também recebem.
+  return nucleo.leitura.lembrar('economiaDe', idProvincia, () => {
+    const ficha = fichaDe(nucleo, idProvincia);
+    if (!ficha) return null;
+    return Object.freeze(
+      rendaDaProvincia(
+        ficha,
+        nucleo.economia.produtos,
+        nucleo.catalogo,
+        nucleo.ajustes.economia,
+        baseDe(nucleo, idProvincia),
+      ),
+    );
+  });
 }
 
 /**
@@ -68,15 +75,18 @@ export function economiaDe(
  * o resumo é que mostra os dois.
  */
 export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
-  return (
-    rendaBaseDe(nucleo, idPoder) +
-    rendaDeAcordos(nucleo, idPoder) +
-    saldoDeTributosDe(nucleo, idPoder) +
-    // A liga é a quarta parcela: o membro paga a fatia, o chefe recebe a dos membros dele.
-    saldoDaLigaDe(nucleo, idPoder, (id) => rendaBaseDe(nucleo, id)) -
-    // O grão comprado é despesa do turno, como a folha: sai da renda para que a barra, o
-    // orçamento da IA e o tesouro vejam o mesmo número.
-    custoDaImportacaoDe(nucleo, idPoder)
+  return nucleo.leitura.lembrar(
+    'rendaDe',
+    idPoder,
+    () =>
+      rendaBaseDe(nucleo, idPoder) +
+      rendaDeAcordos(nucleo, idPoder) +
+      saldoDeTributosDe(nucleo, idPoder) +
+      // A liga é a quarta parcela: o membro paga a fatia, o chefe recebe a dos membros dele.
+      saldoDaLigaDe(nucleo, idPoder, (id) => rendaBaseDe(nucleo, id)) -
+      // O grão comprado é despesa do turno, como a folha: sai da renda para que a barra, o
+      // orçamento da IA e o tesouro vejam o mesmo número.
+      custoDaImportacaoDe(nucleo, idPoder),
   );
 }
 
@@ -88,18 +98,24 @@ export function rendaDe(nucleo: NucleoDaCampanha, idPoder: string): number {
  * aumentaria o acordo, que aumentaria a renda. É esta a base contra a qual se mede.
  */
 export function rendaBaseDe(nucleo: NucleoDaCampanha, idPoder: string): number {
-  let total = 0;
-  for (const id of nucleo.territorios.provinciasDe(idPoder)) {
-    total += economiaDe(nucleo, id)?.total ?? 0;
-  }
-  return total + rendaDeTrocas(nucleo, idPoder);
+  return nucleo.leitura.lembrar('rendaBaseDe', idPoder, () => {
+    let total = 0;
+    for (const id of nucleo.territorios.provinciasDe(idPoder)) {
+      total += economiaDe(nucleo, id)?.total ?? 0;
+    }
+    return total + rendaDeTrocas(nucleo, idPoder);
+  });
 }
 
 /** Quantas províncias do poder ainda estão sem economia configurada. */
 export function semEconomia(nucleo: NucleoDaCampanha, idPoder: string): number {
-  return nucleo.territorios
-    .provinciasDe(idPoder)
-    .filter((id) => economiaDe(nucleo, id) === null).length;
+  return nucleo.leitura.lembrar(
+    'semEconomia',
+    idPoder,
+    () =>
+      nucleo.territorios.provinciasDe(idPoder).filter((id) => economiaDe(nucleo, id) === null)
+        .length,
+  );
 }
 
 /**

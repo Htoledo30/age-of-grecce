@@ -28,6 +28,7 @@ import {
 import { vistaDeConstrucoes, vistaDeRecrutamento } from './vistas/provincia';
 import { ordensNoMapa, previsaoDaMarcha, rotasEmFoco } from './vistas/mapa';
 import { formatarAno } from '@/campanha/estado-campanha';
+import { milhar } from '@/nucleo/numeros';
 
 export function ligarAcoes(jogo: Jogo): void {
   const { campanha, atlas, ajustes, cena, tela, selecao } = jogo;
@@ -294,7 +295,7 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.firmarPacto(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
       `Pacto de ${turnos} turnos assinado com ${campanha.poder(idPoder).nome}` +
-        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}.`,
+        `${ouro > 0 ? ` por ${milhar(ouro)} de ouro` : ''}.`,
     );
   };
 
@@ -317,7 +318,7 @@ export function ligarAcoes(jogo: Jogo): void {
     campanha.firmarAlianca(idPoder, turnos, eu, ouro);
     tela.diplomacia.dizer(
       `Aliança com ${campanha.poder(idPoder).nome}` +
-        `${ouro > 0 ? ` por ${ouro.toLocaleString('pt-BR')} de ouro` : ''}.`,
+        `${ouro > 0 ? ` por ${milhar(ouro)} de ouro` : ''}.`,
     );
   };
 

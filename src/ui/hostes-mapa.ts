@@ -21,6 +21,7 @@ import type { Ponto } from '@/ui/animacao-de-marcha';
 import { criarEstandarte } from './estandartes';
 import { iconeGrego } from './icones-gregos';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma hoste como o mapa precisa vê-la. */
 export interface MarcadorDeHoste {
@@ -167,8 +168,8 @@ export class HostesMapa {
         this.marcadores.set(id, elemento);
       }
       if (this.ultimaCamera) this.assentar(elemento, this.ultimaCamera, hoste);
-      const pronta = hoste.forca.toLocaleString('pt-BR');
-      const formando = hoste.emFormacao.toLocaleString('pt-BR');
+      const pronta = milhar(hoste.forca);
+      const formando = milhar(hoste.emFormacao);
       const numero = document.createElement('span');
       numero.className = 'hostes__forca';
       numero.textContent = hoste.forca > 0 ? pronta : formando;

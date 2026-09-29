@@ -24,6 +24,7 @@
 
 import { definirTooltip, removerTooltip } from './tooltip';
 import { iconeGrego, rotularComIcone } from './icones-gregos';
+import { milhar } from '@/nucleo/numeros';
 
 /**
  * Os quatro decretos. Espelha `campanha/economia.ts` — a tela não importa da campanha, e a
@@ -297,7 +298,7 @@ ${humor}`;
     const rotulo = capital.urgente
       ? 'Assentar a capital aqui'
       : capital.custo > 0
-        ? `Tornar capital · ${capital.custo.toLocaleString('pt-BR')} moedas`
+        ? `Tornar capital · ${milhar(capital.custo)} moedas`
         : 'Tornar capital';
     rotularComIcone(this.botaoCapital, 'templo', rotulo);
     definirTooltip(this.botaoCapital, {
@@ -305,7 +306,7 @@ ${humor}`;
       corpo: capital.resposta.pode
         ? capital.urgente
           ? 'Grátis. Destrava a próxima virada.'
-          : `${capital.custo.toLocaleString('pt-BR')} moedas para mudar a sede.`
+          : `${milhar(capital.custo)} moedas para mudar a sede.`
         : capital.resposta.motivo,
       tom: capital.resposta.pode ? 'custo' : 'bloqueio',
     });

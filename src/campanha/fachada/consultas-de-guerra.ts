@@ -65,7 +65,9 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
 
   /** Toda hoste parada aqui. ⚠️ **Pode haver mais de uma**, e de poderes diferentes. */
   hostesEm(idProvincia: string): readonly Exercito[] {
-    return this.nucleo.mobilizacao.hostesEm(idProvincia);
+    return this.nucleo.leitura.lembrar('hostesEm', idProvincia, () =>
+      this.nucleo.mobilizacao.hostesEm(idProvincia),
+    );
   }
 
   forcaDaHoste(idHoste: string): number {
@@ -80,12 +82,14 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
    * sitiante. Quem fala de uma hoste específica usa `forcaDaHoste(id)`.
    */
   forcaEm(idProvincia: string, idPoder: string = this.donoDe(idProvincia)): number {
-    return this.nucleo.mobilizacao.forcaEm(idProvincia, idPoder);
+    return this.nucleo.leitura.lembrar('forcaEm', `${idProvincia}|${idPoder}`, () =>
+      this.nucleo.mobilizacao.forcaEm(idProvincia, idPoder),
+    );
   }
 
   /** Toda hoste em pé no mundo, em ordem de id. É o que o mapa desenha. */
   hostes(): readonly Exercito[] {
-    return this.nucleo.mobilizacao.todas();
+    return this.nucleo.leitura.lembrar('hostes', '', () => this.nucleo.mobilizacao.todas());
   }
 
   /** Levas visíveis no mapa que só aceitarão ordens no próximo turno. */
@@ -180,7 +184,9 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
   // ── Marchas e surtidas ──────────────────────────────────────────────────────────────
   /** As rotas que a hoste pode tomar nesta rodada, por destino. */
   rotasDaHoste(idHoste: string): ReadonlyMap<string, readonly string[]> {
-    return rotasDaHoste(this.nucleo, idHoste);
+    return this.nucleo.leitura.lembrar('rotasDaHoste', idHoste, () =>
+      rotasDaHoste(this.nucleo, idHoste),
+    );
   }
 
   /** Só os destinos, pra quem não precisa da rota. */
@@ -195,7 +201,9 @@ export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
    * água fica a três. Quem só pergunta "aonde chego hoje" nunca vê o outro lado do mar.
    */
   rotasLongasDaHoste(idHoste: string): ReadonlyMap<string, readonly string[]> {
-    return rotasLongasDaHoste(this.nucleo, idHoste);
+    return this.nucleo.leitura.lembrar('rotasLongasDaHoste', idHoste, () =>
+      rotasLongasDaHoste(this.nucleo, idHoste),
+    );
   }
 
   /** Esta província é água? Zona marítima não se conquista, não rende e não tem dono. */

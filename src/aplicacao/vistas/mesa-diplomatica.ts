@@ -43,6 +43,7 @@ import {
   semSaida,
 } from './vontade-do-vizinho';
 import { posturaDaRelacao, retratoDe } from './retrato-do-vizinho';
+import { milhar } from '@/nucleo/numeros';
 
 /**
  * A diplomacia: com quem o jogador faz fronteira, e o que ele é de cada um.
@@ -946,7 +947,7 @@ function grupoDoTributo(jogo: Jogo, eu: string, id: string): GrupoDaMesa {
  * inteira se lê de relance: o que é vermelho sai do cofre, o que é verde entra.
  */
 function emOuro(valor: number, entra: boolean, porTurno = true): string {
-  const quanto = valor.toLocaleString('pt-BR');
+  const quanto = milhar(valor);
   return `${entra ? '+' : '−'}${quanto}${porTurno ? ' por turno' : ' de ouro'}`;
 }
 

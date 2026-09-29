@@ -16,6 +16,7 @@ import { Mobilizacao } from '@/combate/mobilizacao/mobilizacao';
 import { balancoAlimentar } from '@/producao/alimentacao';
 import type { BalancoAlimentarDoPoder } from '@/producao/alimentacao';
 
+import { CacheDeLeitura } from '../cache-de-leitura';
 import { capitaisIniciais } from '../capitais';
 import { temPorto } from '../comercio/alcance';
 import { aliadosDe, aliancaAte } from '../diplomacia/alianca';
@@ -117,6 +118,39 @@ export abstract class ConsultasDoReino {
   /** Chamado depois de qualquer mudança de estado. Quem desenha se redesenha inteiro. */
   aoMudar: () => void = () => {};
 
+  /**
+   * Roda um COMANDO: o corpo mexe no mundo e a memória de leitura fica desligada até ele acabar.
+   *
+   * ⚠️ **Todo comando da fachada passa por aqui.** Sem isto, uma pergunta feita no meio da mudança
+   * devolveria a resposta de antes dela. Ver `CacheDeLeitura`.
+   */
+  protected agir<T>(corpo: () => T): T {
+    this.nucleo.leitura.suspender();
+    try {
+      return corpo();
+    } finally {
+      this.nucleo.leitura.retomar();
+    }
+  }
+
+  /**
+   * Avisa quem desenha que o comando terminou de mudar o mundo.
+   *
+   * O redesenho só LÊ e o mundo já está inteiro, então ele roda com a memória ligada: é a tela
+   * inteira perguntando as mesmas coisas de novo a cada clique.
+   */
+  protected mudou(): void {
+    this.nucleo.leitura.lendo(() => this.aoMudar());
+  }
+
+  /**
+   * Lembra a resposta de uma pergunta feita de fora de qualquer comando — a IA e as vistas.
+   * Ver `CacheDeLeitura`: a resposta vale até o próximo comando, e quem a recebe não a altera.
+   */
+  lembrar<T>(tabela: string, chave: string, calcular: () => T): T {
+    return this.nucleo.leitura.lembrar(tabela, chave, calcular);
+  }
+
   constructor(
     atlas: Atlas,
     economia: Economia,
@@ -145,6 +179,7 @@ export abstract class ConsultasDoReino {
           1 - descontoDaFolhaEmCasa(catalogo, estado.construcoes[id] ?? {}),
       ),
       saltosPorCapital: new Map(),
+      leitura: new CacheDeLeitura(),
     };
   }
 

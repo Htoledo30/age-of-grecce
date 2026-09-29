@@ -46,6 +46,7 @@ import { COR_DA_ARMA, NOME_DA_ARMA } from './armas';
 import { criarEstandarte } from './estandartes';
 import { iconeGrego } from './icones-gregos';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 /** Um lado como ele entrou na batalha. */
 interface LadoNaTela {
@@ -128,7 +129,7 @@ const DESFECHOS: Record<string, string> = {
   barrado: 'Ninguém cedeu',
 };
 
-const separarMilhar = (n: number) => n.toLocaleString('pt-BR');
+const separarMilhar = (n: number) => milhar(n);
 
 export class JanelaDeBatalha {
   readonly elemento = document.createElement('div');

@@ -8,6 +8,7 @@
  */
 
 import type { Postura } from '@/combate/cerco';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma arma dentro da hoste, com o treino que ela carrega. */
 interface ArmaNaHoste {
@@ -127,5 +128,5 @@ export interface VistaDoExercito {
 }
 
 export function numero(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }

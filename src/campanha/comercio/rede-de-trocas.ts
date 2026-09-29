@@ -43,6 +43,15 @@ export function bensEmCirculacao(
   nucleo: NucleoDaCampanha,
   idPoder: string,
 ): readonly BemEmCirculacao[] {
+  return nucleo.leitura.lembrar('bensEmCirculacao', idPoder, () =>
+    listarBensEmCirculacao(nucleo, idPoder),
+  );
+}
+
+function listarBensEmCirculacao(
+  nucleo: NucleoDaCampanha,
+  idPoder: string,
+): readonly BemEmCirculacao[] {
   const ligadas = ligadasACapital(nucleo, idPoder);
   const porBem = new Map<string, string[]>();
 
@@ -129,6 +138,15 @@ export function rendaDeAcordos(nucleo: NucleoDaCampanha, idPoder: string): numbe
 
 /** O valor bruto de cada acordo que possui uma rota funcionando neste turno. */
 function valoresAtivosDosAcordos(
+  nucleo: NucleoDaCampanha,
+  idPoder: string,
+): ReadonlyMap<string, number> {
+  return nucleo.leitura.lembrar('valoresAtivosDosAcordos', idPoder, () =>
+    somarValoresDosAcordos(nucleo, idPoder),
+  );
+}
+
+function somarValoresDosAcordos(
   nucleo: NucleoDaCampanha,
   idPoder: string,
 ): ReadonlyMap<string, number> {

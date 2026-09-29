@@ -40,8 +40,23 @@ export function virarTurno(jogo: Jogo): void {
   // E ela vive AQUI, fora de `passarTurno`, porque é um jogador e não uma regra da campanha —
   // se morasse lá dentro, os testes que viram turnos passariam a ter dezessete poderes agindo
   // dentro deles, e um teste sobre fome deixaria de ser sobre fome.
-  if (!iaCongelada) jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo);
-  jogo.campanha.passarTurno();
+  //
+  // ⚠️ **A tela só se repinta UMA vez, no fim.** Cada ordem da IA passava por `aoMudar` — repintar
+  // o mapa, redesenhar a interface inteira, salvar e conferir o fim de jogo —, e uma virada com
+  // dezenas de ordens gastava um quarto do tempo redesenhando uma tela que ninguém via: a
+  // rodada é uma tarefa só, e nenhum quadro é pintado até ela acabar.
+  const aoMudar = jogo.campanha.aoMudar;
+  let mudou = false;
+  jogo.campanha.aoMudar = () => {
+    mudou = true;
+  };
+  try {
+    if (!iaCongelada) jogarIA(jogo.campanha, jogo.ia, jogo.ajustes.jogo);
+    jogo.campanha.passarTurno();
+  } finally {
+    jogo.campanha.aoMudar = aoMudar;
+  }
+  if (mudou) aoMudar();
   jogo.tela.cronica.mostrar(jogo.campanha.turno, noticiasDaRodada(jogo));
   // ⚠️ A animação começa DEPOIS de resolver e ANTES de repintar, e a ordem importa: só depois
   // de resolver se sabe quem de fato andou (quem foi barrado na estrada parou no meio), e é o

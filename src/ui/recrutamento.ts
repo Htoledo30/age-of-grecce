@@ -28,6 +28,7 @@ import { iconeGrego } from './icones-gregos';
 import { Janela } from './janela';
 import { moedaAteniense } from './moeda';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma arma como a janela a oferece. */
 export interface ArmaParaLeva {
@@ -418,7 +419,7 @@ function statusDaArma(dados: ArmaParaLeva): HTMLElement[] {
 }
 
 function numero(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }
 
 /** Recorte de segurança: nenhuma vista real chega sem o leve na lista. */

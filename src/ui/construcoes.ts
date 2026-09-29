@@ -13,6 +13,7 @@ import type { NomeDoIconeGrego } from './icones-gregos';
 import { imagemDaConstrucao } from './imagens-de-construcoes';
 import { moedaAteniense } from './moeda';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 type CategoriaDaConstrucao = 'cidade' | 'guerra' | 'rotas' | 'terra';
 
@@ -564,5 +565,5 @@ function romano(nivel: number): string {
 }
 
 function moeda(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }

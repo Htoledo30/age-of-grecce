@@ -56,9 +56,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * declarou — o ataque de surpresa deixaria de existir.
    */
   declararGuerra(contra: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (!declararGuerra(this.nucleo, porPoder, contra)) return;
+    if (!this.agir(() => declararGuerra(this.nucleo, porPoder, contra))) return;
     this.efemeros.diplomacia.push({ de: porPoder, com: contra, tipo: 'guerra' });
-    this.aoMudar();
+    this.mudou();
   }
 
   /**
@@ -68,9 +68,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * a IA aceita é `src/ia/diplomacia/paz.ts`, e é a aplicação que junta as duas coisas.
    */
   fazerPaz(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (!fazerPaz(this.nucleo, porPoder, com)) return;
+    if (!this.agir(() => fazerPaz(this.nucleo, porPoder, com))) return;
     this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'paz' });
-    this.aoMudar();
+    this.mudou();
   }
 
   /**
@@ -88,9 +88,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
   ): void {
-    if (!fazerPazComTributo(this.nucleo, porPoder, com, turnos)) return;
+    if (!this.agir(() => fazerPazComTributo(this.nucleo, porPoder, com, turnos))) return;
     this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'paz' });
-    this.aoMudar();
+    this.mudou();
   }
 
   /**
@@ -102,7 +102,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     porPoder: string = this.nucleo.estado.jogador ?? '',
     ouro = 0,
   ): void {
-    if (firmarPacto(this.nucleo, porPoder, com, turnos, ouro)) this.aoMudar();
+    if (this.agir(() => firmarPacto(this.nucleo, porPoder, com, turnos, ouro))) this.mudou();
   }
 
   /**
@@ -112,7 +112,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * conta de todos os outros pares seus. Pacto que não custa nada é papel que não vale nada.
    */
   romperPacto(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (romperPacto(this.nucleo, porPoder, com)) this.aoMudar();
+    if (this.agir(() => romperPacto(this.nucleo, porPoder, com))) this.mudou();
   }
 
   /**
@@ -127,7 +127,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     porPoder: string = this.nucleo.estado.jogador ?? '',
     ouro = 0,
   ): void {
-    if (firmarAlianca(this.nucleo, porPoder, com, turnos, ouro)) this.aoMudar();
+    if (this.agir(() => firmarAlianca(this.nucleo, porPoder, com, turnos, ouro))) this.mudou();
   }
 
   /**
@@ -137,9 +137,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * contava com você é pior que voltar atrás numa promessa de não atacar, e o preço diz isso.
    */
   romperAlianca(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (!romperAlianca(this.nucleo, porPoder, com)) return;
+    if (!this.agir(() => romperAlianca(this.nucleo, porPoder, com))) return;
     this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'ruptura-alianca' });
-    this.aoMudar();
+    this.mudou();
   }
 
   /**
@@ -149,7 +149,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * Ver `diplomacia/liga.ts` e `ia/diplomacia/ligas.ts`.
    */
   formarLiga(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (formarLiga(this.nucleo, porPoder, membro)) this.aoMudar();
+    if (this.agir(() => formarLiga(this.nucleo, porPoder, membro))) this.mudou();
   }
 
   /**
@@ -159,12 +159,12 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * do membro, que trocou obediência por proteção: quem liberta devolveu, quem foge quebrou.
    */
   romperLiga(outro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (romperLiga(this.nucleo, porPoder, outro)) this.aoMudar();
+    if (this.agir(() => romperLiga(this.nucleo, porPoder, outro))) this.mudou();
   }
 
   /** O chefe cobra mais ou menos deste membro. Mais ouro agora, mais vontade de sair depois. */
   mudarTributoDaLiga(membro: string, nivel: string): void {
-    if (mudarTributoDaLiga(this.nucleo, membro, nivel)) this.aoMudar();
+    if (this.agir(() => mudarTributoDaLiga(this.nucleo, membro, nivel))) this.mudou();
   }
 
   /**
@@ -174,7 +174,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * por diplomacia neste jogo. Ver o comentário no topo de `diplomacia/liga.ts`.
    */
   anexarMembro(membro: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (anexarMembro(this.nucleo, porPoder, membro)) this.aoMudar();
+    if (this.agir(() => anexarMembro(this.nucleo, porPoder, membro))) this.mudou();
   }
 
   /**
@@ -184,12 +184,12 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * e é ele que abre o caminho de quem quer jogar de economia sendo amigo de todo mundo.
    */
   acordarComercio(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (acordarComercio(this.nucleo, porPoder, com)) this.aoMudar();
+    if (this.agir(() => acordarComercio(this.nucleo, porPoder, com))) this.mudou();
   }
 
   /** Desfaz o acordo. Sem preço de reputação: comércio não é promessa de paz. */
   desfazerAcordo(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (desfazerAcordo(this.nucleo, porPoder, com)) this.aoMudar();
+    if (this.agir(() => desfazerAcordo(this.nucleo, porPoder, com))) this.mudou();
   }
 
   /**
@@ -211,7 +211,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
   ): void {
-    if (firmarTributo(this.nucleo, porPoder, com, turnos)) this.aoMudar();
+    if (this.agir(() => firmarTributo(this.nucleo, porPoder, com, turnos))) this.mudou();
   }
 
   /** Passa a RECEBER tributo dele. A mesma assinatura, lida do outro lado da mesa. */
@@ -220,7 +220,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
   ): void {
-    if (firmarTributo(this.nucleo, de, porPoder, turnos)) this.aoMudar();
+    if (this.agir(() => firmarTributo(this.nucleo, de, porPoder, turnos))) this.mudou();
   }
 
   /**
@@ -231,7 +231,7 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * invadido no turno seguinte.
    */
   romperTributo(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (romperTributo(this.nucleo, porPoder, com)) this.aoMudar();
+    if (this.agir(() => romperTributo(this.nucleo, porPoder, com))) this.mudou();
   }
 
   /**
@@ -242,8 +242,8 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * quer a opinião lá em cima muda os FATOS: assina pacto, abre comércio, devolve a terra.
    */
   presentear(para: string, ouro: number, porPoder: string = this.nucleo.estado.jogador ?? ''): number {
-    const pontos = presentear(this.nucleo, porPoder, para, ouro);
-    if (pontos !== 0) this.aoMudar();
+    const pontos = this.agir(() => presentear(this.nucleo, porPoder, para, ouro));
+    if (pontos !== 0) this.mudou();
     return pontos;
   }
 
@@ -259,12 +259,12 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
     turnos: number,
     porPoder: string = this.nucleo.estado.jogador ?? '',
   ): void {
-    if (concederAcesso(this.nucleo, porPoder, para, turnos)) this.aoMudar();
+    if (this.agir(() => concederAcesso(this.nucleo, porPoder, para, turnos))) this.mudou();
   }
 
   /** Fecha a estrada antes do prazo. Custa opinião — ver `acesso-militar.ts`. */
   revogarAcesso(para: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (revogarAcesso(this.nucleo, porPoder, para)) this.aoMudar();
+    if (this.agir(() => revogarAcesso(this.nucleo, porPoder, para))) this.mudou();
   }
 
   /** Até que turno esta passagem vale. `undefined` quando ela não existe. */
@@ -285,25 +285,25 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
 
   /** A IA esvazia a mesa antes de voltar a pedir. Só ela chama; ver `propostas.ts`. */
   esvaziarMesa(): void {
-    if (esvaziarMesa(this.nucleo)) this.aoMudar();
+    if (this.agir(() => esvaziarMesa(this.nucleo))) this.mudou();
   }
 
   /** A IA põe um pedido na mesa do jogador. Devolve `false` quando ele não caberia. */
   proporAoJogador(proposta: Proposta): boolean {
-    const pos = proporAoJogador(this.nucleo, proposta);
-    if (pos) this.aoMudar();
+    const pos = this.agir(() => proporAoJogador(this.nucleo, proposta));
+    if (pos) this.mudou();
     return pos;
   }
 
   /** O jogador aceita. A recusa vem com motivo quando o mundo mudou desde o pedido. */
   aceitarProposta(de: string, tipo: Proposta['tipo']): Permissao {
-    const r = aceitarProposta(this.nucleo, de, tipo);
-    this.aoMudar();
+    const r = this.agir(() => aceitarProposta(this.nucleo, de, tipo));
+    this.mudou();
     return r;
   }
 
   /** O jogador recusa. Não custa nada — ver `propostas.ts`. */
   recusarProposta(de: string, tipo: Proposta['tipo']): void {
-    if (recusarProposta(this.nucleo, de, tipo)) this.aoMudar();
+    if (this.agir(() => recusarProposta(this.nucleo, de, tipo))) this.mudou();
   }
 }

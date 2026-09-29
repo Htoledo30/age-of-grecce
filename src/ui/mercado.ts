@@ -12,6 +12,7 @@
 import type { AbaDoGoverno } from './governo';
 import { rotulado } from './balanco';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 interface BemNoMercado {
   id: string;
@@ -125,5 +126,5 @@ function trecho(classe: string, texto: string): HTMLElement {
 }
 
 function moeda(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }

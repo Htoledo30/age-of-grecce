@@ -11,6 +11,7 @@ import type { NucleoDaCampanha, Recusa } from '../nucleo';
 import { donoDe, fichaDe } from '../provincia/consultas';
 import { estaSitiada } from '../guerra/cercos';
 import { gastar, tesouroDe } from './tesouro';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma capital que mudou de mãos na rodada. */
 export interface QuedaDeCapital {
@@ -74,7 +75,7 @@ export function podeMudarCapital(
   const custo = custoDeMudancaDeCapital(nucleo);
   const caixa = tesouroDe(nucleo, jogador);
   if (custo > caixa) {
-    return { pode: false, motivo: `faltam ${(custo - caixa).toLocaleString('pt-BR')} moedas` };
+    return { pode: false, motivo: `faltam ${milhar((custo - caixa))} moedas` };
   }
   return { pode: true, bonus: 0 };
 }

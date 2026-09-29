@@ -16,6 +16,7 @@ import { iconeGrego, rotularComIcone } from './icones-gregos';
 import { nomeDaCategoria } from './balanco-alimentar';
 import { criarEstandarte } from './estandartes';
 import { definirTooltip, removerTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 export interface VistaDoTurno {
   poder: { id: string; nome: string; cor: string };
@@ -214,19 +215,19 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
   valores.className = 'barra-turno__valores';
   const saldo = document.createElement('strong');
   saldo.className = 'barra-turno__saldo';
-  saldo.textContent = vista.tesouro.toLocaleString('pt-BR');
+  saldo.textContent = milhar(vista.tesouro);
   // Ganho em verde e folha em vermelho, cada um com a sua cor: o parêntese único com os dois
   // números na cor do ouro não dizia qual entrava e qual saía.
   const ganho = document.createElement('span');
   ganho.className = 'barra-turno__variacao';
   ganho.dataset['tom'] = 'ganho';
-  ganho.textContent = `+${vista.renda.toLocaleString('pt-BR')}`;
+  ganho.textContent = `+${milhar(vista.renda)}`;
   valores.append(saldo, ganho);
   if (vista.manutencao > 0) {
     const perda = document.createElement('span');
     perda.className = 'barra-turno__variacao';
     perda.dataset['tom'] = 'perda';
-    perda.textContent = `−${vista.manutencao.toLocaleString('pt-BR')}`;
+    perda.textContent = `−${milhar(vista.manutencao)}`;
     valores.append(perda);
   }
   linha.append(iconeGrego('moeda'), valores);
@@ -234,9 +235,9 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
   definirTooltip(linha, {
     titulo: 'Tesouro do reino',
     corpo:
-      `+${vista.renda.toLocaleString('pt-BR')} províncias` +
+      `+${milhar(vista.renda)} províncias` +
       (vista.manutencao > 0
-        ? `\n−${vista.manutencao.toLocaleString('pt-BR')} exército`
+        ? `\n−${milhar(vista.manutencao)} exército`
         : '') +
       `\n= ${comSinal(variacaoLiquida)} por turno`,
     tom: variacaoLiquida < 0 ? 'perigo' : 'informacao',
@@ -272,7 +273,7 @@ function trechoTesouro(vista: VistaDoTurno): HTMLElement {
 }
 
 function comSinal(valor: number): string {
-  const numero = Math.abs(valor).toLocaleString('pt-BR');
+  const numero = milhar(Math.abs(valor));
   return valor >= 0 ? `+${numero}` : `−${numero}`;
 }
 

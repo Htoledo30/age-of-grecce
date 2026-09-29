@@ -1,6 +1,7 @@
 /** Efeitos estruturados para a lista e o detalhe, sem interpretar frases na interface. */
 import type { Construcoes } from '@/dados/esquema';
 import type { ApresentacaoDaConstrucao, EfeitoDaConstrucao } from '@/ui/construcoes';
+import { milhar } from '@/nucleo/numeros';
 
 type ConstrucaoDoCatalogo = Construcoes['construcoes'][string];
 
@@ -149,7 +150,7 @@ function apresentacaoDoEfeito(
 
 function moedaComSinal(valor: number): string {
   if (valor === 0) return '0';
-  const absoluto = Math.abs(Math.round(valor)).toLocaleString('pt-BR');
+  const absoluto = milhar(Math.abs(Math.round(valor)));
   return valor > 0 ? `+${absoluto}` : `−${absoluto}`;
 }
 

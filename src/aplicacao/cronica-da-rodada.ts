@@ -11,12 +11,13 @@
 
 import type { LinhaDaCronica } from '@/ui/cronica';
 import type { Jogo } from './contexto';
+import { milhar } from '@/nucleo/numeros';
 
 export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   const { campanha, atlas } = jogo;
   const eu = campanha.jogador?.id ?? null;
   const nomeDoPoder = (id: string): string => campanha.poder(id).nome;
-  const numero = (n: number): string => n.toLocaleString('pt-BR');
+  const numero = (n: number): string => milhar(n);
   const linhas: LinhaDaCronica[] = [];
   const relatorio = campanha.rodada;
 

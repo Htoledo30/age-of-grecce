@@ -13,6 +13,7 @@
 import { formatarAno } from '@/campanha/estado-campanha';
 import type { AbaDoGoverno } from './governo';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma linha da tabela: uma província do jogador. */
 export interface LinhaDoBalanco {
@@ -254,7 +255,7 @@ function trecho(classe: string, texto: string): HTMLElement {
 }
 
 function moeda(valor: number): string {
-  return valor.toLocaleString('pt-BR');
+  return milhar(valor);
 }
 
 function comSinal(valor: number): string {

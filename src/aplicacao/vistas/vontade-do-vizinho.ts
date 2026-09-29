@@ -36,6 +36,7 @@ import { querPaz, querPazComTributo } from '@/ia/diplomacia/paz';
 import { aceitaPagarTributo, aceitaTributo } from '@/ia/diplomacia/tributos';
 import { oportunidadesDe } from '@/ia/percepcao/oportunidade';
 import { valeAPena } from '@/ia/guerra/marchar';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma resposta dele: aceita ou não, e a frase que explica. */
 export interface Resposta {
@@ -210,7 +211,7 @@ function cotarPrazo(
       turnos: prazo.turnos,
       ouro: oferta,
       pode: false,
-      motivo: `seu tesouro não tem ${oferta.toLocaleString('pt-BR')} de ouro`,
+      motivo: `seu tesouro não tem ${milhar(oferta)} de ouro`,
       resposta: base,
     };
   }
@@ -249,7 +250,7 @@ function pedidoQueFecha(
   const ajustes = jogo.ajustes.jogo;
   const cofre = campanha.tesouroDe(lados.voce);
   const noCofre = ouroQueFecha(campanha, lados, balanca.saldo, estilo, ajustes, cofre);
-  if (noCofre !== null) return `faltam ${noCofre.toLocaleString('pt-BR')} de ouro`;
+  if (noCofre !== null) return `faltam ${milhar(noCofre)} de ouro`;
   // Até sessenta turnos da renda dele: além disso não é preço, é o teto do ouro.
   const semCofre = ouroQueFecha(
     campanha,
@@ -260,7 +261,7 @@ function pedidoQueFecha(
     Math.max(cofre, campanha.rendaDe(lados.ele) * 60),
   );
   if (semCofre !== null) {
-    return `faltam ${semCofre.toLocaleString('pt-BR')} de ouro`;
+    return `faltam ${milhar(semCofre)} de ouro`;
   }
   if (cobicadas.length > 0) {
     const nomes = cobicadas.map((id) => campanha.nomeDe(id));

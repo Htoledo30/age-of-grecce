@@ -10,6 +10,7 @@
  */
 
 import type { Postura } from '@/combate/cerco';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma ordem de marcha registrada, ainda não concluída. */
 export interface OrdemDeMarcha {
@@ -114,7 +115,7 @@ export function avaliarOrdem(
   if (homens > situacao.forcaNaOrigem) {
     return {
       pode: false,
-      motivo: `há apenas ${situacao.forcaNaOrigem.toLocaleString('pt-BR')} homens aqui`,
+      motivo: `há apenas ${milhar(situacao.forcaNaOrigem)} homens aqui`,
     };
   }
 

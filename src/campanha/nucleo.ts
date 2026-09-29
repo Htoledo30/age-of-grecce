@@ -17,6 +17,7 @@ import type { Ajustes, Construcoes, Economia } from '@/dados/esquema';
 import type { Atlas } from '@/mundo/atlas';
 import type { Mobilizacao } from '@/combate/mobilizacao/mobilizacao';
 import type { EstadoCampanha } from './estado-campanha';
+import type { CacheDeLeitura } from './cache-de-leitura';
 import type { Territorios } from './territorios';
 
 type AjustesDoJogo = Ajustes['jogo'];
@@ -47,6 +48,11 @@ export interface NucleoDaCampanha {
    * seguro. Uma busca em largura de 196 províncias por capital, uma vez cada.
    */
   readonly saltosPorCapital: Map<string, ReadonlyMap<string, number>>;
+  /**
+   * O que já foi perguntado ao mundo desde o último comando. Ver `CacheDeLeitura`: vale só entre
+   * comandos, e é por isso que pode ser lembrado sem medo de estar velho.
+   */
+  readonly leitura: CacheDeLeitura;
 }
 
 /** Por que uma ação foi recusada. A interface mostra o motivo em vez de sumir. */

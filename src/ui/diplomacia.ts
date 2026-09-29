@@ -77,6 +77,7 @@ import type {
 import { criarEstandarte } from './estandartes';
 import { formatarAno } from '@/campanha/estado-campanha';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 export type { VistaDaDiplomacia, VizinhoNaMesa } from './diplomacia-vista';
 
@@ -379,7 +380,7 @@ export class Diplomacia {
     });
     const quando = document.createElement('span');
     quando.className = 'diplomacia__quando';
-    quando.textContent = `${formatarAno(vista.ano)} · rodada ${vista.turno.toLocaleString('pt-BR')}`;
+    quando.textContent = `${formatarAno(vista.ano)} · rodada ${milhar(vista.turno)}`;
     this.rodape.replaceChildren(palavra, quando);
   }
 
@@ -718,7 +719,7 @@ export class Diplomacia {
       return l;
     };
 
-    const n = (v: number): string => v.toLocaleString('pt-BR');
+    const n = (v: number): string => milhar(v);
     caixa.appendChild(linha(n(eu.provincias), 'províncias', n(dele.provincias)));
     caixa.appendChild(this.linhaDeForca(eu, vizinho));
     caixa.appendChild(linha(n(eu.tesouro), 'tesouro', n(dele.tesouro)));
@@ -779,7 +780,7 @@ export class Diplomacia {
 
     const meuValor = document.createElement('span');
     meuValor.className = 'diplomacia__confronto-meu';
-    meuValor.textContent = meu.toLocaleString('pt-BR');
+    meuValor.textContent = milhar(meu);
 
     const meio = document.createElement('span');
     meio.className = 'diplomacia__confronto-rotulo';
@@ -811,7 +812,7 @@ export class Diplomacia {
 
     const dValor = document.createElement('span');
     dValor.className = 'diplomacia__confronto-dele';
-    dValor.textContent = dele.toLocaleString('pt-BR');
+    dValor.textContent = milhar(dele);
 
     l.append(meuValor, meio, dValor);
     return l;

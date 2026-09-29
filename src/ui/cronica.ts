@@ -18,6 +18,7 @@
 
 import { iconeGrego } from './icones-gregos';
 import type { NomeDoIconeGrego } from './icones-gregos';
+import { milhar } from '@/nucleo/numeros';
 
 /** Uma linha da crônica, já escrita. Quem monta a frase é `main.ts`, que sabe os nomes. */
 export interface LinhaDaCronica {
@@ -84,7 +85,7 @@ export class Cronica {
       return;
     }
 
-    this.titulo.textContent = `Rodada ${rodada.toLocaleString('pt-BR')}`;
+    this.titulo.textContent = `Rodada ${milhar(rodada)}`;
 
     const graves = linhas.filter((l) => l.peso === 'grave');
     const resto = linhas.filter((l) => l.peso !== 'grave');

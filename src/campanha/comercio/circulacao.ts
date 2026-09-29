@@ -49,6 +49,12 @@ export function ligadasACapital(
   nucleo: NucleoDaCampanha,
   idPoder: string,
 ): ReadonlySet<string> {
+  // ⚠️ Lembrada entre comandos: `ligadaACapital` a refazia para CADA província do reino, e a IA
+  // chegava a 52 mil buscas por virada para 31 poderes. Ver `CacheDeLeitura`.
+  return nucleo.leitura.lembrar('ligadasACapital', idPoder, () => buscarLigadas(nucleo, idPoder));
+}
+
+function buscarLigadas(nucleo: NucleoDaCampanha, idPoder: string): ReadonlySet<string> {
   const capital = nucleo.estado.capitais[idPoder];
   if (capital === undefined) return new Set();
 

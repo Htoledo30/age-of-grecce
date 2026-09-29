@@ -54,6 +54,12 @@ export interface Oportunidade {
  * estilo. Aqui a lista precisa ser sempre a mesma para a mesma partida.
  */
 export function oportunidadesDe(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
+  // Lembrada entre comandos: `cobicadasPor` a pedia uma vez por candidato a aliado, e cada
+  // pedido varria o mapa inteiro. Quem recebe a lista não a altera.
+  return campanha.lembrar('oportunidadesDe', idPoder, () => varrerOportunidades(campanha, idPoder));
+}
+
+function varrerOportunidades(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
   const minhas = new Set(campanha.provinciasDe(idPoder));
   const meusPontos = new Set(minhas);
   for (const hoste of campanha.hostes()) {
@@ -86,6 +92,12 @@ export function oportunidadesNoLitoral(
   campanha: Campanha,
   idPoder: string,
 ): readonly Oportunidade[] {
+  return campanha.lembrar('oportunidadesNoLitoral', idPoder, () =>
+    varrerLitoral(campanha, idPoder),
+  );
+}
+
+function varrerLitoral(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
   const minhas = new Set(campanha.provinciasDe(idPoder));
   const costa = new Set<string>();
   for (const provincia of campanha.terras()) {
@@ -97,6 +109,12 @@ export function oportunidadesNoLitoral(
 
 /** Alvos alcançáveis por terra, passagem ou mar, inclusive a cidade já sitiada. */
 export function oportunidadesAlcancaveis(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
+  return campanha.lembrar('oportunidadesAlcancaveis', idPoder, () =>
+    varrerAlcancaveis(campanha, idPoder),
+  );
+}
+
+function varrerAlcancaveis(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
   const destinos = new Set<string>();
   for (const hoste of campanha.hostes()) {
     if (hoste.poder !== idPoder) continue;

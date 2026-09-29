@@ -43,9 +43,11 @@ export class Campanha extends ComandosDaDiplomacia {
   comecar(idPoder: string): void {
     if (this.iniciada) throw new Error('a campanha já começou');
     this.poder(idPoder); // valida antes de gravar
-    this.nucleo.estado.jogador = idPoder;
-    this.nucleo.estado.turno = 1;
-    this.aoMudar();
+    this.agir(() => {
+      this.nucleo.estado.jogador = idPoder;
+      this.nucleo.estado.turno = 1;
+    });
+    this.mudou();
   }
 
   /** Vira o turno. A ordem das etapas está escrita em `turno/passar-turno.ts`. */
@@ -55,71 +57,81 @@ export class Campanha extends ComandosDaDiplomacia {
     // decisão da IA, não a resolução das marchas. Se ela fosse apagada junto com o resto, a
     // crônica mostraria a batalha sem nunca ter mostrado a declaração que a causou.
     const diplomacia = this.efemeros.diplomacia;
-    this.efemeros = { ...passarTurno(this.nucleo), diplomacia };
-    this.aoMudar();
+    this.efemeros = { ...this.agir(() => passarTurno(this.nucleo)), diplomacia };
+    this.mudou();
   }
 
   /** Substitui o estado pelo de um salvamento, depois de conferi-lo contra o mundo. */
   restaurar(salvo: EstadoCampanha): void {
-    restaurarEstado(this.nucleo, salvo);
+    this.agir(() => restaurarEstado(this.nucleo, salvo));
     // Efêmeros não viajam: a notícia da rodada salva pertence à sessão que a viveu.
     this.efemeros = efemerosVazios();
-    this.aoMudar();
+    this.mudou();
   }
 
   // ── Governo ─────────────────────────────────────────────────────────────────────────
   /** Passa uma província de um dono a outro, **sem regra de guerra nenhuma**. */
   trocarDono(idProvincia: string, idPoder: string): void {
-    if (trocarDono(this.nucleo, idProvincia, idPoder)) this.aoMudar();
+    if (this.agir(() => trocarDono(this.nucleo, idProvincia, idPoder))) this.mudou();
   }
 
   /** Decreta o nível de imposto: efeito imediato na renda, gradual no humor. */
   definirImposto(idProvincia: string, nivel: NivelDeImposto, porPoder?: string): void {
-    definirImposto(this.nucleo, idProvincia, nivel, porPoder ?? this.nucleo.estado.jogador);
-    this.aoMudar();
+    this.agir(() =>
+      definirImposto(this.nucleo, idProvincia, nivel, porPoder ?? this.nucleo.estado.jogador),
+    );
+    this.mudou();
   }
 
   /** Encomenda grão de fora: pontos de comida pagos em ouro todo turno. */
   definirImportacao(pontos: number, porPoder?: string): void {
-    definirImportacao(this.nucleo, porPoder ?? this.nucleo.estado.jogador, pontos);
-    this.aoMudar();
+    this.agir(() =>
+      definirImportacao(this.nucleo, porPoder ?? this.nucleo.estado.jogador, pontos),
+    );
+    this.mudou();
   }
 
   /** Assenta a capital do jogador aqui, cobrando o custo da mudança voluntária. */
   mudarCapital(idProvincia: string): void {
-    mudarCapital(this.nucleo, idProvincia);
-    this.aoMudar();
+    this.agir(() => mudarCapital(this.nucleo, idProvincia));
+    this.mudou();
   }
 
   /** Ergue uma construção. Paga à vista e entrega depois; não existe cancelar. */
   /** Derruba uma construção e libera o slot. Não devolve moeda — ver `demolir`. */
   demolir(idProvincia: string, idConstrucao: string, porPoder?: string): void {
-    demolir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador);
-    this.aoMudar();
+    this.agir(() =>
+      demolir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador),
+    );
+    this.mudou();
   }
 
   construir(idProvincia: string, idConstrucao: string, porPoder?: string): void {
-    construir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador);
-    this.aoMudar();
+    this.agir(() =>
+      construir(this.nucleo, idProvincia, idConstrucao, porPoder ?? this.nucleo.estado.jogador),
+    );
+    this.mudou();
   }
 
   // ── Guerra ──────────────────────────────────────────────────────────────────────────
   /** Põe gente em armas: cobra o ouro e tira os homens da população da província. */
   recrutar(idProvincia: string, homens: number, arma: Arma = 'leve', porPoder?: string): void {
-    recrutar(this.nucleo, idProvincia, homens, arma, porPoder ?? this.nucleo.estado.jogador);
-    this.aoMudar();
+    this.agir(() =>
+      recrutar(this.nucleo, idProvincia, homens, arma, porPoder ?? this.nucleo.estado.jogador),
+    );
+    this.mudou();
   }
 
   /** Manda gente pra casa: cada um volta à SUA província de origem. */
   dispensar(idProvincia: string, homens: number): void {
-    this.nucleo.mobilizacao.dispensar(idProvincia, homens);
-    this.aoMudar();
+    this.agir(() => this.nucleo.mobilizacao.dispensar(idProvincia, homens));
+    this.mudou();
   }
 
   /** O mesmo, dizendo QUAL hoste. É o que a interface usa. */
   dispensarHoste(idHoste: string, homens: number): void {
-    this.nucleo.mobilizacao.dispensarDe(idHoste, homens);
-    this.aoMudar();
+    this.agir(() => this.nucleo.mobilizacao.dispensarDe(idHoste, homens));
+    this.mudou();
   }
 
   /** Registra a ordem de marcha. **Nada se move agora.** */
@@ -132,18 +144,20 @@ export class Campanha extends ComandosDaDiplomacia {
     /** `null` (o padrão) é lutar até a linha ceder. Ver `OrdemDeMarcha.recuarAos`. */
     recuarAos: number | null = null,
   ): void {
-    ordenarMarcha(this.nucleo, idHoste, destino, homens, porPoder, postura, recuarAos);
-    this.aoMudar();
+    this.agir(() =>
+      ordenarMarcha(this.nucleo, idHoste, destino, homens, porPoder, postura, recuarAos),
+    );
+    this.mudou();
   }
 
   /** Desfaz a ordem desta hoste — e a surtida junto, que é a mesma decisão. */
   cancelarOrdem(idHoste: string, reunir = true): void {
-    if (cancelarOrdem(this.nucleo, idHoste, reunir)) this.aoMudar();
+    if (this.agir(() => cancelarOrdem(this.nucleo, idHoste, reunir))) this.mudou();
   }
 
   /** Registra a surtida: o sitiado sai para atacar quem o cerca. */
   surtir(idHoste: string, porPoder: string | null = this.nucleo.estado.jogador): void {
-    if (surtir(this.nucleo, idHoste, porPoder)) this.aoMudar();
+    if (this.agir(() => surtir(this.nucleo, idHoste, porPoder))) this.mudou();
   }
 
   /** Troca a postura de um cerco já em pé. Vale na PRÓXIMA virada, como toda ordem. */
@@ -152,7 +166,7 @@ export class Campanha extends ComandosDaDiplomacia {
     postura: Postura,
     porPoder: string | null = this.nucleo.estado.jogador,
   ): void {
-    if (mudarPostura(this.nucleo, idProvincia, postura, porPoder)) this.aoMudar();
+    if (this.agir(() => mudarPostura(this.nucleo, idProvincia, postura, porPoder))) this.mudou();
   }
 
   // ── Ganchos de DESENVOLVIMENTO ──────────────────────────────────────────────────────
@@ -162,17 +176,19 @@ export class Campanha extends ComandosDaDiplomacia {
   /** Põe ouro no tesouro. */
   darOuro(valor: number, idPoder: string | null = this.nucleo.estado.jogador): void {
     if (idPoder === null) return;
-    darOuro(this.nucleo, idPoder, valor);
-    this.aoMudar();
+    this.agir(() => darOuro(this.nucleo, idPoder, valor));
+    this.mudou();
   }
 
   /** Tira gente de uma província, para pôr uma terra em crise sem esperar a fome. */
   matarPopulacao(idProvincia: string, quantos: number): void {
-    this.nucleo.estado.populacao[idProvincia] = Math.max(
-      0,
-      this.populacaoDe(idProvincia) - quantos,
-    );
-    this.aoMudar();
+    this.agir(() => {
+      this.nucleo.estado.populacao[idProvincia] = Math.max(
+        0,
+        this.populacaoDe(idProvincia) - quantos,
+      );
+    });
+    this.mudou();
   }
 
   /** Põe uma hoste de qualquer poder no mapa, pra montar um inimigo sem a IA existir. */
@@ -183,8 +199,10 @@ export class Campanha extends ComandosDaDiplomacia {
     arma: Arma = 'leve',
     qualidade = 1,
   ): string {
-    const id = this.nucleo.mobilizacao.plantar(idProvincia, idPoder, homens, arma, qualidade);
-    this.aoMudar();
+    const id = this.agir(() =>
+      this.nucleo.mobilizacao.plantar(idProvincia, idPoder, homens, arma, qualidade),
+    );
+    this.mudou();
     return id;
   }
 }

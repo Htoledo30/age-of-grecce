@@ -20,6 +20,7 @@ import { fatorDeMercadoAtual, rendaDeTrocas } from '../comercio/rede-de-trocas';
 import { alivioDasObras } from '../corrupcao';
 import { corrupcaoEm } from '../governo/corrupcao-na-provincia';
 import { fatorDoAlvoEm } from '../sociedade/humor';
+import { milhar } from '@/nucleo/numeros';
 
 /** A obra em andamento nesta província, se houver. */
 export function obraEm(nucleo: NucleoDaCampanha, idProvincia: string): Obra | undefined {
@@ -157,7 +158,7 @@ export function podeConstruir(
   const caixa = tesouroDe(nucleo, donoDe(nucleo, idProvincia));
   const custo = custoDaObra(construcao, nivelAtual + 1, escalaDeObraEm(nucleo, idProvincia));
   if (custo > caixa) {
-    return { pode: false, motivo: `faltam ${(custo - caixa).toLocaleString('pt-BR')} moedas` };
+    return { pode: false, motivo: `faltam ${milhar((custo - caixa))} moedas` };
   }
   return { pode: true, bonus: 0 };
 }

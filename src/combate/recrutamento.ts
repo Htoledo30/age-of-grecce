@@ -19,6 +19,7 @@
 
 import type { Arma } from './exercito';
 import type { Ajustes } from '@/dados/esquema';
+import { milhar } from '@/nucleo/numeros';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
 
@@ -140,7 +141,7 @@ export function avaliarLeva(
     return { pode: false, motivo: 'o número de homens precisa ser inteiro' };
   }
   const disponivel = disponivelParaLeva(situacao.populacao, ajustes);
-  const piso = ajustes.populacaoMinima.toLocaleString('pt-BR');
+  const piso = milhar(ajustes.populacaoMinima);
   if (disponivel <= 0) {
     return {
       pode: false,
@@ -151,7 +152,7 @@ export function avaliarLeva(
     return {
       pode: false,
       motivo:
-        `há apenas ${disponivel.toLocaleString('pt-BR')} habitantes disponíveis — ` +
+        `há apenas ${milhar(disponivel)} habitantes disponíveis — ` +
         `${piso} nunca saem daqui`,
     };
   }
@@ -160,7 +161,7 @@ export function avaliarLeva(
   if (ouro > situacao.tesouro) {
     return {
       pode: false,
-      motivo: `faltam ${(ouro - situacao.tesouro).toLocaleString('pt-BR')} moedas`,
+      motivo: `faltam ${milhar((ouro - situacao.tesouro))} moedas`,
     };
   }
   return { pode: true, ouro, homens };

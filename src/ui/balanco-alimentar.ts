@@ -4,6 +4,7 @@ import type { CategoriaAlimentar } from '@/producao/alimentacao';
 import type { AbaDoGoverno } from './governo';
 import { rotulado } from './balanco';
 import { definirTooltip } from './tooltip';
+import { milhar } from '@/nucleo/numeros';
 
 export interface LinhaDoAlimento {
   nome: string;
@@ -212,7 +213,7 @@ export function nomeDaCategoria(categoria: CategoriaAlimentar): string {
 }
 
 function moeda(valor: number): string {
-  return Math.round(valor).toLocaleString('pt-BR');
+  return milhar(Math.round(valor));
 }
 
 function comSinal(valor: number): string {
