@@ -144,16 +144,10 @@ describe('a cavalaria: o que ela compra é o DEPOIS', () => {
     const infantaria = duelo([grupo('hoplita', 1000)], [grupo('hoplita', 600)]);
     const comCavalo = duelo([grupo('hoplita', 1000)], [grupo('cavalaria', 600)]);
     expect(comCavalo.vencedor).toBe('a');
-    // Não se compara o número de sobreviventes — as armas são outras. O que se guarda é que a
-    // caçada do vencedor não muda por causa do que o perdedor montou.
-    const perseguicaoDoVencedor = (r: typeof infantaria): number => {
-      const antes = r.rounds.at(-2)?.b ?? 0;
-      return antes > 0 ? 1 - r.sobreviventesB / antes : 0;
-    };
-    // ⚠️ Uma casa, e não duas: quem quebra a 70% deixa 30% em pé, e a caçada acontece sobre
-    // umas seis dezenas de homens. Nessa base, um único homem arredondado vale quase dois
-    // pontos percentuais — exigir 0,5% de precisão era medir o `Math.floor`, não a regra.
-    expect(perseguicaoDoVencedor(comCavalo)).toBeCloseTo(perseguicaoDoVencedor(infantaria), 1);
+    // O que se guarda é que montar cavalo não salva o PERDEDOR: ele não leva para casa mais
+    // gente do que levaria a pé. (Com `limiarDeQuebra` em 0,75, escolha de Henrique no F2, a
+    // cavalaria derrotada chega a ser aniquilada antes da caçada — o que só reforça a regra.)
+    expect(comCavalo.sobreviventesB / 600).toBeLessThanOrEqual(infantaria.sobreviventesB / 600);
   });
 
   it('recuar diante de cavalo custa mais que recuar diante de infantaria', () => {
@@ -179,7 +173,12 @@ describe('a cavalaria: o que ela compra é o DEPOIS', () => {
 
 describe('a comida: cavalo come por vários homens', () => {
   it('bocas não é o mesmo que homens, e o leve é a régua também aqui', () => {
-    expect(bocasDe([grupo('leve', 100), grupo('hoplita', 100)], regras)).toBe(200);
+    const leves = bocasDe([grupo('leve', 100)], regras);
+    expect(leves).toBe(100);
+    // As bocas somam por grupo, e cada arma come o que os ajustes dizem.
+    expect(bocasDe([grupo('leve', 100), grupo('hoplita', 100)], regras)).toBe(
+      leves + bocasDe([grupo('hoplita', 100)], regras),
+    );
     expect(bocasDe([grupo('cavalaria', 100)], regras)).toBeGreaterThan(100);
   });
 
@@ -197,7 +196,8 @@ describe('a comida: cavalo come por vários homens', () => {
     // preço dela: sobre a terra, e não sobre o tesouro — a folha de pagamento continua sendo
     // por cabeça, porque cavalo se sustenta em pasto, não em moeda.
     expect(comArma('cavalaria')).toBeGreaterThan(comArma('hoplita'));
-    expect(comArma('hoplita')).toBe(comArma('leve'));
+    // O hoplita come 1,1 por homem desde o F2 de Henrique: nunca menos que o leve.
+    expect(comArma('hoplita')).toBeGreaterThanOrEqual(comArma('leve'));
   });
 });
 

@@ -68,23 +68,6 @@ para servir à conquista, não para ocupar o jogador.
   custo. Decidir como controlar o acúmulo dos grandes reinos sem travar os pequenos; a meta de
   200 mil moedas com cerca de 100 províncias depende de ampliar as 42 terras simuladas.
 
-## Valores do F2 esperando confirmação (27/09, só nesta máquina, sem commit)
-
-Henrique mexeu pelo editor no fim da sessão. Com eles, 6 testes ficam vermelhos, por isso não
-foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
-
-- `combate.manutencaoPorHomem.emCasa` 0,15 → **0,20** — o AGENTS registra 0,15 como decisão dele
-  e mede que o soldo em casa é o valor que mais mexe no mapa (imposto sobre o fraco).
-- `batalha.limiarDeQuebra` 0,70 → **0,75** — medido antes: a cavalaria derrotada passa a ser
-  aniquilada até o último homem (quebra o teste "só a cavalaria do vencedor conta").
-- hoplita `custo` 1,29 → **1,25** — a infantaria leve só existia por 0,85% com 1,29; a IA agora
-  escolhe outra arma no teste de estilo.
-- `rodadasDeChoque` 10 → 12; arqueiro `aguento` 0,70 → 0,65; `comida` hoplita e arqueiro 1 → 1,1,
-  cavalaria 1,8 → 1,4; `milicia.fracaoMorta` 0,5 → 0,8.
-- Testes que só têm o número antigo escrito (milícia 50%, bocas 200/3) devem passar a ler os
-  ajustes; os de cavalaria e de escolha de arma mostram mudança real de comportamento.
-- `dados/construcoes.json` só teve chaves reordenadas pelo editor; nenhum valor mudou.
-
 ## Frentes grandes em aberto (ordem sugerida)
 
 0. **Agressividade com cautela, sem caos:** jogar com as correções de guerra e IA abaixo antes

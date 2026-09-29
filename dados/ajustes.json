@@ -332,7 +332,7 @@
     "combate": {
       "custoPorHomem": 3,
       "manutencaoPorHomem": {
-        "emCasa": 0.15,
+        "emCasa": 0.2,
         "emCampanha": 0.3
       },
       "populacaoMinima": 2000,
@@ -340,9 +340,9 @@
         "rodadasParaAssaltarMuralha": 2
       },
       "batalha": {
-        "rodadasDeChoque": 10,
+        "rodadasDeChoque": 12,
         "letalidadeDoChoque": 0.15,
-        "limiarDeQuebra": 0.7,
+        "limiarDeQuebra": 0.75,
         "letalidadeDaPerseguicao": 0.7,
         "fracaoDoRecuo": 0.1,
         "limiarDeRecuo": 0.3,
@@ -356,20 +356,20 @@
           "hoplita": {
             "ataque": 1.1,
             "aguento": 1.5,
-            "custo": 1.29,
-            "comida": 1
+            "custo": 1.25,
+            "comida": 1.1
           },
           "arqueiro": {
             "ataque": 1.9,
-            "aguento": 0.7,
+            "aguento": 0.65,
             "custo": 1.3,
-            "comida": 1
+            "comida": 1.1
           },
           "cavalaria": {
             "ataque": 1.55,
             "aguento": 1.05,
             "custo": 1.6,
-            "comida": 1.8
+            "comida": 1.4
           },
           "counter": 1.4,
           "perseguicaoPorCavalaria": 1.6,
@@ -378,7 +378,7 @@
       },
       "milicia": {
         "fracao": 0.012,
-        "fracaoMorta": 0.5
+        "fracaoMorta": 0.8
       },
       "saltosPorRodada": 1
     },

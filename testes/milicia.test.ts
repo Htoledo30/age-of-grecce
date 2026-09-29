@@ -191,8 +191,12 @@ describe('a milícia segura a CIDADE, e não sai a campo', () => {
 });
 
 describe('milícia derrotada dispersa: só os mortos saem da população', () => {
-  it('metade dos perdidos morre; o resto volta pra casa', () => {
-    expect(mortosDaMilicia(100, combate)).toBe(50);
+  it('a fração dos ajustes morre; o resto volta pra casa', () => {
+    // A fração é balanço (Henrique a subiu de metade para 80% no F2); a regra é que só ela morre.
+    const fracao = combate.milicia.fracaoMorta;
+    expect(fracao).toBeGreaterThan(0);
+    expect(fracao).toBeLessThan(1);
+    expect(mortosDaMilicia(100, combate)).toBe(Math.floor(100 * fracao));
     expect(mortosDaMilicia(1, combate)).toBe(0);
   });
 
@@ -204,11 +208,14 @@ describe('milícia derrotada dispersa: só os mortos saem da população', () =>
 
     c.passarTurno();
 
-    // A milícia inteira se perdeu na derrota, mas só metade MORREU. O resto são os mesmos
-    // lavradores, e eles voltaram pra terra.
+    // A milícia inteira se perdeu na derrota, mas só a fração dos ajustes MORREU. O resto são
+    // os mesmos lavradores, e eles voltaram pra terra.
     const perdidos = c.rodada.milicianosMortos[0]?.mortos ?? 0;
     expect(perdidos).toBe(milicia);
-    expect(mortosDaMilicia(perdidos, combate)).toBe(Math.floor(milicia / 2));
+    expect(mortosDaMilicia(perdidos, combate)).toBe(
+      Math.floor(milicia * combate.milicia.fracaoMorta),
+    );
+    expect(mortosDaMilicia(perdidos, combate)).toBeLessThan(milicia);
   });
 
   it('perder em casa custa imposto E custa leva futura', () => {

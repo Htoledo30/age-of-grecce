@@ -28,12 +28,12 @@
           0.15
         ]
       },
+      "promessa": "Corta a corrupção que vem de haver gente demais para administrar e recupera impostos que se perderiam no caminho. Vale mais onde há mais gente.",
       "prosperidade": [
         0.0005,
         0.001,
         0.0015
       ],
-      "promessa": "Corta a corrupção que vem de haver gente demais para administrar e recupera impostos que se perderiam no caminho. Vale mais onde há mais gente.",
       "motivo": "Administração, cobrança e vida cívica onde há gente para organizar. Quanto maior a cidade, mais se perde no caminho — e mais ela devolve."
     },
     "mercado": {
@@ -61,6 +61,7 @@
           2
         ]
       },
+      "promessa": "Multiplica a rede de trocas do REINO inteiro e o trânsito desta praça.",
       "prosperidade": [
         0.0005,
         0.001,
@@ -71,7 +72,6 @@
         2,
         3
       ],
-      "promessa": "Multiplica a rede de trocas do REINO inteiro e o trânsito desta praça.",
       "motivo": "A praça tem dois lados: cobra de quem passa aqui e distribui o que o reino alcança. Por isso ela vale na encruzilhada rica E no império largo."
     },
     "armaria": {
@@ -249,16 +249,16 @@
           22
         ]
       },
-      "prosperidade": [
-        0.0005,
-        0.001,
-        0.0015
-      ],
       "promessa": "Eleva a felicidade em +9/+15/+22 e acelera em +1/+2/+3 pontos por turno a recuperação da ordem — especialmente após uma conquista.",
       "recuperacaoDaOrdem": [
         1,
         2,
         3
+      ],
+      "prosperidade": [
+        0.0005,
+        0.001,
+        0.0015
       ],
       "motivo": "Centro religioso e cívico: onde o deus mora, o povo aguenta mais."
     },
@@ -291,6 +291,7 @@
           2.4
         ]
       },
+      "promessa": "Abre o mar: daqui o exército embarca, e a mercadoria chega a quem não faz fronteira. Aumenta o trânsito local.",
       "prosperidade": [
         0.0005,
         0.001,
@@ -301,7 +302,6 @@
         3,
         4
       ],
-      "promessa": "Abre o mar: daqui o exército embarca, e a mercadoria chega a quem não faz fronteira. Aumenta o trânsito local.",
       "ligaPorMar": true,
       "motivo": "Só cabe onde a costa oferece ancoradouro real. É a porta do mar do reino: sem ela nenhuma tropa zarpa e nenhum acordo de comércio atravessa a água."
     },
@@ -331,16 +331,16 @@
           0.15
         ]
       },
-      "prosperidade": [
-        0.0005,
-        0.001,
-        0.0015
-      ],
       "promessa": "Corta a corrupção da DISTÂNCIA até a capital e reduz em 3%/5%/7% a folha da tropa parada nesta província. Na capital, só o desconto militar tem efeito.",
       "descontoDaFolhaEmCasa": [
         0.03,
         0.05,
         0.07
+      ],
+      "prosperidade": [
+        0.0005,
+        0.001,
+        0.0015
       ],
       "motivo": "Liga o interior: encurta a terra distante para quem governa. Prédio de imperio, nao de cidade-estado — na capital ela nao tem o que encurtar."
     },
@@ -475,12 +475,12 @@
           2.2
         ]
       },
+      "promessa": "Aumenta a renda de produção da província.",
       "prosperidade": [
         0.0005,
         0.001,
         0.0015
       ],
-      "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Prensas e armazenamento para terras de oliveiras."
     },
     "vinhedo": {
@@ -514,12 +514,12 @@
           2.2
         ]
       },
+      "promessa": "Aumenta a renda de produção da província.",
       "prosperidade": [
         0.0005,
         0.001,
         0.0015
       ],
-      "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Cultivo e prensagem especializados para terras de vinho."
     },
     "serraria": {
@@ -553,6 +553,7 @@
           2.2
         ]
       },
+      "promessa": "Aumenta a renda de produção da província.",
       "prosperidade": [
         0.0005,
         0.001,
@@ -563,7 +564,6 @@
         -2,
         -3
       ],
-      "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Exploração local de madeira; não torna madeira requisito para todas as obras."
     },
     "mina": {
@@ -598,6 +598,7 @@
           2.2
         ]
       },
+      "promessa": "Aumenta a renda de produção da província.",
       "prosperidade": [
         0.0005,
         0.001,
@@ -608,7 +609,6 @@
         -3,
         -4
       ],
-      "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Poços, galerias e beneficiamento somente onde há minério."
     },
     "pedreira": {
@@ -642,6 +642,7 @@
           2.2
         ]
       },
+      "promessa": "Aumenta a renda de produção da província.",
       "prosperidade": [
         0.0005,
         0.001,
@@ -652,7 +653,6 @@
         -3,
         -4
       ],
-      "promessa": "Aumenta a renda de produção da província.",
       "motivo": "Extrai pedra onde o mármore existe; não é uma Oficina genérica disfarçada."
     }
   }

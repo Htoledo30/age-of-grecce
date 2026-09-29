@@ -144,13 +144,15 @@ obra da partida: Atenas abre com saldo alimentar ZERO, não cresce um habitante 
 não sustenta um soldado — um ponto alimenta 1.000 homens e não há ponto sobrando. Testes que só
 precisam de tropa usam `ajustesFartos`, que neutraliza a comida pelos dois lados.
 
-A infantaria leve sobrevive por 0,85%: o estilo `barata` compara `ataque × aguento ÷ custo²`, e
-leve dá 1,0000 contra 0,9915 do hoplita com ataque 1,1 e custo 1,29. Subir o ataque do hoplita
-sem encarecer o soldado mata a leve, e encarecer o QUARTEL não resolve — a conta olha o preço do
-soldado. `limiarDeQuebra` fica em 0,70: em 0,75 a linha aguenta uma rodada a mais e a cavalaria
-derrotada é aniquilada até o último homem, sozinha entre as armas.
+Valores de combate escolhidos por Henrique no F2 em 29/09/2026: soldo em casa 0,20, hoplita com
+custo 1,25 e comida 1,1, arqueiro com aguento 0,65 e comida 1,1, cavalaria com comida 1,4,
+`rodadasDeChoque` 12, `limiarDeQuebra` 0,75 e 80% da milícia derrotada morrendo. Consequências já
+medidas que ele aceitou: em 0,75 a cavalaria derrotada é aniquilada até o último homem; e com o
+hoplita a 1,25 o estilo `barata` (`ataque × aguento ÷ custo²`) deixa de preferir o leve, e em
+`npm run armas` só hoplitas vencem só leves com o mesmo ouro. A leve só existia por 0,85% com o
+custo 1,29.
 
-`combate.manutencaoPorHomem.emCasa` fica em 0,15 por decisão de Henrique, com a comida a 1.000
+`combate.manutencaoPorHomem.emCasa` foi 0,15 até 29/09 (agora 0,20), com a comida a 1.000
 soldados por ponto. A medição antiga, com a comida a 500, mostra o peso deste valor: em 0,15
 o mapa ia a 9 poderes eliminados de 18, maior reino com 8 províncias e desigualdade 11,8×; em
 0,10, a 5, 5 e 7,2×. O soldo em casa é um imposto sobre o fraco — quem
