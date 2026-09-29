@@ -128,6 +128,14 @@ antigos prevista por campo opcional de objetivo militar; ainda não exercitada e
 
 ## Problemas conhecidos, medidos e ainda não tratados
 
+- **Desempenho da virada (30/09):** com as 42 terras simuladas a virada caiu de ~1,1 s para ~0,1 s
+  (memória de leitura entre comandos, `src/campanha/cache-de-leitura.ts`; estado salvo idêntico
+  ao código anterior). Mas com as 196 terras simuladas (teste de estresse: fichas copiadas das
+  42 existentes) a IA ainda leva ~2 s e `passarTurno` ~0,7 s. Próximos gargalos medidos, em
+  ordem: `estaAmeacado` (varre todas as hostes por poder), `andarRelacoes` (todos os pares a
+  cada turno), fichas de oportunidade refeitas por poder, bloqueio naval e `hostesEm` por
+  província. Depois disso, decidir com Henrique o que a IA precisa pensar todo turno.
+
 - **Pressão sobre Atenas e crescimento dos reinos:** conferir na partida com a nova avaliação
   de convocados, concentração de tropas, defesa local e revisão de paz/alianças.
 - **Notas antigas não conferidas:** o travamento ao abrir o movimento com Porto e o cálculo de

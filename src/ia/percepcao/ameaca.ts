@@ -89,6 +89,11 @@ export function ameacasDe(campanha: Campanha, idPoder: string): readonly Ameaca[
  * É esta pergunta que separa a folha de PAZ da de GUERRA.
  */
 export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
+  // Lembrada entre comandos: a balança de aliança pergunta isto para cada par de poderes.
+  return campanha.lembrar('estaAmeacado', idPoder, () => varrerAmeaca(campanha, idPoder));
+}
+
+function varrerAmeaca(campanha: Campanha, idPoder: string): boolean {
   const minhas = new Set(campanha.provinciasDe(idPoder));
   // ⚠️ Exército MAIS milícia: um poder sem tropa nenhuma ainda tem as cidades dele em pé, e
   // sem contá-las qualquer guarda de vizinho viraria ameaça — que é o defeito da primeira
@@ -119,9 +124,11 @@ export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
 
 /** Quantos homens este poder tem em pé no mundo todo, fora os que ainda se formam. */
 export function forcaTotalDe(campanha: Campanha, idPoder: string): number {
-  let total = 0;
-  for (const hoste of campanha.hostes()) {
-    if (hoste.poder === idPoder) total += campanha.forcaDaHoste(hoste.id);
-  }
-  return total;
+  return campanha.lembrar('forcaTotalDe', idPoder, () => {
+    let total = 0;
+    for (const hoste of campanha.hostes()) {
+      if (hoste.poder === idPoder) total += campanha.forcaDaHoste(hoste.id);
+    }
+    return total;
+  });
 }

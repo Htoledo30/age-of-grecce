@@ -228,14 +228,23 @@ export function pactoEscolhido(
     const estiloDele = estiloDe(dados, vizinho);
     const meusLados: Lados = { ele: idPoder, voce: vizinho };
     const ladosDele: Lados = { ele: vizinho, voce: idPoder };
-    // A cobiça lê uma previsão de batalha por província: uma vez por par, não por prazo.
-    const minhas = { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
-    const delas = { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
+    // A cobiça lê uma previsão de batalha por província: uma vez por par, não por prazo — e só
+    // quando a balança sem ela já fecha. A cobiça só SUBTRAI, então a balança com a lista vazia
+    // é o teto: se nem o teto chega, o resultado é o mesmo sem ler nada. Ver `aliancaEscolhida`.
+    const semCobica: ExtrasDaBalanca = { cobicadas: [] };
+    let minhas: ExtrasDaBalanca | undefined;
+    let delas: ExtrasDaBalanca | undefined;
     // Do prazo mais longo ao mais curto: o primeiro em que os dois saldos fecham.
     for (const p of prazos) {
       if (!campanha.podeFirmarPacto(vizinho, p.turnos, idPoder).pode) continue;
+      const tetoMinha = balancaDoPacto(campanha, meusLados, p.turnos, estilo, ajustes, semCobica);
+      if (tetoMinha.saldo < iniciativa) continue;
+      minhas ??= { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
       const minha = balancaDoPacto(campanha, meusLados, p.turnos, estilo, ajustes, minhas);
       if (minha.saldo < iniciativa) continue;
+      const tetoDele = balancaDoPacto(campanha, ladosDele, p.turnos, estiloDele, ajustes, semCobica);
+      if (tetoDele.saldo < 0) continue;
+      delas ??= { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
       const dele = balancaDoPacto(campanha, ladosDele, p.turnos, estiloDele, ajustes, delas);
       if (dele.saldo < 0) continue;
       if (escolhido === null || minha.saldo > escolhido.saldo) {

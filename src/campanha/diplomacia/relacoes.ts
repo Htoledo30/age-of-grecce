@@ -99,14 +99,18 @@ export function tregoaAte(
 
 /** Com quem este poder está em guerra, em ordem de id. */
 export function guerrasDe(nucleo: NucleoDaCampanha, idPoder: string): readonly string[] {
-  const inimigos: string[] = [];
-  for (const par of Object.keys(nucleo.estado.guerras).sort()) {
-    const [a, b] = par.split('|');
-    if (a === undefined || b === undefined) continue;
-    if (a === idPoder) inimigos.push(b);
-    else if (b === idPoder) inimigos.push(a);
-  }
-  return inimigos.sort();
+  // Lembrada entre comandos: a balança da IA a pergunta para cada par de poderes, e cada
+  // pergunta ordenava todas as guerras do mundo. Ver `CacheDeLeitura`.
+  return nucleo.leitura.lembrar('guerrasDe', idPoder, () => {
+    const inimigos: string[] = [];
+    for (const par of Object.keys(nucleo.estado.guerras)) {
+      const [a, b] = par.split('|');
+      if (a === undefined || b === undefined) continue;
+      if (a === idPoder) inimigos.push(b);
+      else if (b === idPoder) inimigos.push(a);
+    }
+    return inimigos.sort();
+  });
 }
 
 export function podeDeclararGuerra(

@@ -109,12 +109,24 @@ export function aliancaEscolhida(
     const estiloDele = estiloDe(dados, outro);
     const meusLados: Lados = { ele: idPoder, voce: outro };
     const ladosDele: Lados = { ele: outro, voce: idPoder };
-    const minhas = { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
-    const delas = { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
+    // ⚠️ **A cobiça é lida SÓ quando a balança sem ela já fecha, e por isso ela é lida raramente.**
+    // `cobicadasPor` roda uma previsão de batalha por província, e a IA a pedia dos dois lados
+    // para os ~140 candidatos — o gargalo da virada quando todas as terras têm economia. Como a
+    // cobiça só SUBTRAI (`cobica` é sempre ≤ 0), a balança com a lista vazia é o teto do que a
+    // verdadeira pode ser: se nem o teto chega, o resultado é o mesmo sem ler nada.
+    const semCobica: ExtrasDaBalanca = { cobicadas: [] };
+    let minhas: ExtrasDaBalanca | undefined;
+    let delas: ExtrasDaBalanca | undefined;
     for (const p of prazos) {
       if (!campanha.podeFirmarAlianca(outro, p.turnos, idPoder).pode) continue;
+      const tetoMinha = balancaDaAlianca(campanha, meusLados, p.turnos, estilo, ajustes, semCobica);
+      if (tetoMinha.saldo < iniciativa) continue;
+      minhas ??= { cobicadas: cobicadasPor(campanha, meusLados, estilo, ajustes) };
       const minha = balancaDaAlianca(campanha, meusLados, p.turnos, estilo, ajustes, minhas);
       if (minha.saldo < iniciativa) continue;
+      const tetoDele = balancaDaAlianca(campanha, ladosDele, p.turnos, estiloDele, ajustes, semCobica);
+      if (tetoDele.saldo < 0) continue;
+      delas ??= { cobicadas: cobicadasPor(campanha, ladosDele, estiloDele, ajustes) };
       const dele = balancaDaAlianca(campanha, ladosDele, p.turnos, estiloDele, ajustes, delas);
       if (dele.saldo < 0) continue;
       const forca = forcaTotalDe(campanha, outro);
