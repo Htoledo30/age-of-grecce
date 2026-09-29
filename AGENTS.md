@@ -229,6 +229,10 @@ testes de cerco, diplomacia ou movimento em testes de fome acidentalmente.
 
 ## Como trabalhar
 
+- Nada é definitivo enquanto o jogo não estiver pronto (Henrique, 29/09/2026). Todo sistema —
+  até população e comida — precisa conversar com os outros e servir à conquista; o que existe
+  por existir pode ser redesenhado ou removido. Proponha com números e pergunte antes de tirar
+  um sistema inteiro.
 - Faça a menor alteração que complete o objetivo atual.
 - Preserve mudanças existentes no worktree.
 - Claude e Codex não editam simultaneamente os mesmos arquivos; trabalho paralelo real exige
