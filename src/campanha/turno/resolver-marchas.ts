@@ -70,8 +70,33 @@ function atualizarViagens(nucleo: NucleoDaCampanha): void {
   }
 }
 
+/**
+ * A leva em formação numa terra atacada pega em armas antes da hora e defende.
+ *
+ * Atacada é: um inimigo em guerra com o dono da leva já está nela (cerco), ou tem ordem de
+ * pisar nela nos trechos desta rodada. Henrique: *"se eu mandei fazer tropas numa província e
+ * alguém está atacando aquela província, aquelas tropas deveriam defender"*.
+ */
+function convocarLevasAtacadas(nucleo: NucleoDaCampanha): void {
+  const saltos = nucleo.ajustes.combate.saltosPorRodada;
+  for (const { provincia, formacao } of nucleo.mobilizacao.formacoes()) {
+    const inimigo = (poder: string): boolean => emGuerra(nucleo, formacao.poder, poder);
+    const naPorta = nucleo.mobilizacao.hostesEm(provincia).some((h) => inimigo(h.poder));
+    const chegando = Object.entries(nucleo.estado.ordens).some(([idHoste, ordem]) => {
+      const hoste = nucleo.mobilizacao.hoste(idHoste);
+      return (
+        hoste !== undefined &&
+        inimigo(hoste.poder) &&
+        ordem.rota.slice(0, saltos).includes(provincia)
+      );
+    });
+    if (naPorta || chegando) nucleo.mobilizacao.convocarFormacao(provincia);
+  }
+}
+
 export function resolverMarchas(nucleo: NucleoDaCampanha): RelatorioDaRodada {
   atualizarViagens(nucleo);
+  convocarLevasAtacadas(nucleo);
   const ajustes = nucleo.ajustes.diplomacia.choque;
   return resolverRodada(nucleo.estado, nucleo.ajustes.combate, {
     batalha: nucleo.ajustes.combate.batalha,

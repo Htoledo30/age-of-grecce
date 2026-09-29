@@ -41,7 +41,13 @@ import { populacaoDe, proximoId, tesouroDe } from './estado';
 import type { EstadoDeMobilizacao } from './estado';
 import { manutencaoDe, pagarManutencao, taxaDe } from './folha';
 import type { EmCasa, FatorDaFolhaEmCasa } from './folha';
-import { concluirFormacoes, levantarRebeldes, plantar, recrutar } from './levas';
+import {
+  concluirFormacoes,
+  convocarFormacao,
+  levantarRebeldes,
+  plantar,
+  recrutar,
+} from './levas';
 
 type AjustesCombate = Ajustes['jogo']['combate'];
 
@@ -280,6 +286,10 @@ export class Mobilizacao {
     donoDe: (idProvincia: string) => string,
   ): ResultadoDasFormacoes {
     return concluirFormacoes(this.estado, turnoAtual, donoDe);
+  }
+
+  convocarFormacao(idProvincia: string): number {
+    return convocarFormacao(this.estado, idProvincia);
   }
 
   levantarRebeldes(idProvincia: string, idPoder: string, homens: number): string | null {

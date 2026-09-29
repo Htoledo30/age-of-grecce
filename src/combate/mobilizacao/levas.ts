@@ -7,7 +7,11 @@
 
 import type { Arma } from '../exercito';
 import { exercitoVazio, somarLeva } from '../exercito';
-import { concluirFormacoes as concluir, iniciarFormacao } from '../formacao-de-leva';
+import {
+  concluirFormacoes as concluir,
+  convocarFormacao as convocar,
+  iniciarFormacao,
+} from '../formacao-de-leva';
 import type { ResultadoDasFormacoes } from '../formacao-de-leva';
 import { hostesEm } from './consultas';
 import { populacaoDe, proximoId, tesouroDe } from './estado';
@@ -43,6 +47,11 @@ export function concluirFormacoes(
   donoDe: (idProvincia: string) => string,
 ): ResultadoDasFormacoes {
   return concluir(estado, turnoAtual, donoDe);
+}
+
+/** A leva desta província pega em armas antes do prazo: ver `formacao-de-leva.ts`. */
+export function convocarFormacao(estado: EstadoDeMobilizacao, idProvincia: string): number {
+  return convocar(estado, idProvincia);
 }
 
 /**

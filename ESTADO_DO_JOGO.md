@@ -154,7 +154,9 @@ Cidade sitiada sai da circulação do reino e vive dos próprios mantimentos. En
 dura, não cresce nem morre. Depois dela, população e guarnição definham a cada turno.
 
 Recrutar retira pessoas e imposto da província de origem. Cada contingente preserva terra,
-arma, treino e quantidade; dispensar devolve sobreviventes à população correta.
+arma, treino e quantidade; dispensar devolve sobreviventes à população correta. A leva fica
+pronta na virada seguinte, mas se um inimigo em guerra estiver na província ou chegar a ela
+nessa rodada, os recrutas pegam em armas antes da hora e defendem.
 
 ## Felicidade, nacionalidade e revoltas
 

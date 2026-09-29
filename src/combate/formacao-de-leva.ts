@@ -2,9 +2,12 @@
  * O intervalo entre pagar uma leva e ter uma hoste pronta para marchar.
  *
  * Recrutas em formação já saíram da população e já foram pagos, mas ainda não são um
- * `Exercito`: não marcham, não lutam e não cobram manutenção. Mantê-los separados é o
- * que permite haver veteranos prontos e recrutas exaustos na mesma província sem
- * congelar a hoste inteira nem deixar os recém-chegados participarem de uma batalha.
+ * `Exercito`: não marcham e não cobram manutenção. Mantê-los separados é o que permite haver
+ * veteranos prontos e recrutas exaustos na mesma província sem congelar a hoste inteira.
+ *
+ * ⚠️ **Mas DEFENDEM a própria terra.** Henrique: *"se eu mandei fazer tropas numa província e
+ * alguém está atacando aquela província, aquelas tropas deveriam defender"*. Quando o inimigo
+ * chega, a leva é convocada antes da hora — ver `convocarFormacao`.
  */
 
 import { ARMAS, exercitoVazio, somarLeva } from './exercito';
@@ -120,17 +123,6 @@ export function concluirFormacoes(
     const formacao = estado.formacoes[idProvincia];
     if (!formacao || formacao.prontaNoTurno > turnoAtual) continue;
 
-    // Por posicao, e nao por chave: a provincia deixou de ser o endereco da hoste.
-    //
-    // ⚠️ **A hoste que recebe a leva é a do MESMO poder.** Procurava só por posição, e isso
-    // quebrou quando sitiar deixou de engajar: numa cidade sitiada há duas hostes ali, e a
-    // primeira por id podia ser a do sitiante — a leva do defensor engordava o exército
-    // que estava cercando a cidade dele.
-    const daTerra = Object.keys(estado.hostes)
-      .sort()
-      .map((id) => estado.hostes[id])
-      .filter((h) => h !== undefined && h.posicao === idProvincia);
-    const hoste = daTerra.find((h) => h !== undefined && h.poder === formacao.poder);
     // E a leva se perde quando a TERRA cai, não quando alguém acampa na porta: cidade
     // sitiada continua levantando tropa — é o que `cerco.ts` promete com todas as letras.
     const perdeuAFormacao = donoDe(idProvincia) !== formacao.poder;
@@ -143,18 +135,49 @@ export function concluirFormacoes(
       continue;
     }
 
-    // A leva pronta engrossa a hoste que ja estava ali, ou nasce como hoste nova com
-    // identidade propria. O contador vem do estado, e e o mesmo de todo mundo.
-    const exercito =
-      hoste ?? exercitoVazio(`h${estado.proximaHoste++}`, formacao.poder, idProvincia);
-    // Cada grupo entra com a arma e o treino que recebeu ao ser levantado.
-    for (const c of formacao.contingentes) {
-      somarLeva(exercito, formacao.origem, c.homens, c.arma, c.qualidade);
-    }
-    estado.hostes[exercito.id] = exercito;
-    ativadas.push({ provincia: idProvincia, homens: homensEmFormacao(formacao) });
-    delete estado.formacoes[idProvincia];
+    ativadas.push({ provincia: idProvincia, homens: ativar(estado, idProvincia, formacao) });
   }
 
   return { ativadas, interrompidas };
+}
+
+/**
+ * A leva desta província vira hoste AGORA, antes do prazo: o inimigo chegou à porta.
+ * Devolve quantos homens entraram em armas (0 se não havia leva).
+ *
+ * Existe para a leva defender a própria terra: sem isto, os recrutas pagos na virada em que
+ * a província era atacada assistiam à batalha e à queda da cidade sem pegar em armas.
+ */
+export function convocarFormacao(estado: EstadoDasFormacoes, idProvincia: string): number {
+  const formacao = estado.formacoes[idProvincia];
+  if (!formacao) return 0;
+  return ativar(estado, idProvincia, formacao);
+}
+
+/** A leva engrossa a hoste do mesmo poder que já está ali, ou nasce como hoste nova. */
+function ativar(
+  estado: EstadoDasFormacoes,
+  idProvincia: string,
+  formacao: LevaEmFormacao,
+): number {
+  // Por posicao, e nao por chave: a provincia deixou de ser o endereco da hoste.
+  //
+  // ⚠️ **A hoste que recebe a leva é a do MESMO poder.** Procurava só por posição, e isso
+  // quebrou quando sitiar deixou de engajar: numa cidade sitiada há duas hostes ali, e a
+  // primeira por id podia ser a do sitiante — a leva do defensor engordava o exército
+  // que estava cercando a cidade dele.
+  const hoste = Object.keys(estado.hostes)
+    .sort()
+    .map((id) => estado.hostes[id])
+    .find((h) => h !== undefined && h.posicao === idProvincia && h.poder === formacao.poder);
+  // O contador vem do estado, e é o mesmo de todo mundo.
+  const exercito =
+    hoste ?? exercitoVazio(`h${estado.proximaHoste++}`, formacao.poder, idProvincia);
+  // Cada grupo entra com a arma e o treino que recebeu ao ser levantado.
+  for (const c of formacao.contingentes) {
+    somarLeva(exercito, formacao.origem, c.homens, c.arma, c.qualidade);
+  }
+  estado.hostes[exercito.id] = exercito;
+  delete estado.formacoes[idProvincia];
+  return homensEmFormacao(formacao);
 }
