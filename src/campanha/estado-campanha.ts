@@ -6,6 +6,11 @@ import type { Exercito } from '@/combate/exercito';
 import type { LevaEmFormacao } from '@/combate/formacao-de-leva';
 import type { OrdemDeMarcha } from '@/movimento/ordens';
 
+export interface ObjetivoMilitar {
+  alvo: string;
+  ponto: string;
+}
+
 /**
  * O estado mínimo de uma campanha — e nada além do mínimo.
  *
@@ -137,6 +142,8 @@ export interface EstadoCampanha {
    * os trechos restantes; ordens comuns acabam na resolução.
    */
   ordens: Record<string, OrdemDeMarcha>;
+  /** Objetivo e ponto de reunião da IA; ausente em salvamentos antigos. */
+  objetivosDaIa?: Record<string, ObjetivoMilitar>;
   /**
    * Hostes que vão SURTIR nesta rodada, por id.
    *

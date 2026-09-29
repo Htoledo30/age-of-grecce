@@ -21,8 +21,19 @@ import { bloqueadaEm, bloqueiamEm } from '../guerra/bloqueio';
 import { temPortoEm } from '../comercio/alcance';
 import { podeSurtir, sitianteDaHosteDe } from '../guerra/surtidas';
 import { ConsultasDaProvincia } from './consultas-da-provincia';
+import type { ObjetivoMilitar } from '../estado-campanha';
 
 export abstract class ConsultasDeGuerra extends ConsultasDaProvincia {
+  objetivoMilitarDe(poder: string): Readonly<ObjetivoMilitar> | undefined {
+    return this.nucleo.estado.objetivosDaIa?.[poder];
+  }
+
+  definirObjetivoMilitar(poder: string, objetivo: ObjetivoMilitar | null): void {
+    const objetivos = this.nucleo.estado.objetivosDaIa ??= {};
+    if (objetivo) objetivos[poder] = { ...objetivo };
+    else delete objetivos[poder];
+  }
+
   /** O relatório da última virada. Vazio antes do primeiro turno. */
   get rodada(): RelatorioDaRodada {
     return this.efemeros.rodada;

@@ -123,7 +123,9 @@ export function balancoAlimentar(
     exercito,
     saldoCivil,
     saldo,
-    homensQueSustenta: Math.max(0, saldo) * ajustes.soldadosPorPonto,
+    homensQueSustenta: Math.max(0, Math.floor(
+      saldoCivil * ajustes.soldadosPorPonto - totalDeSoldados,
+    )),
     categoria: categoriaAlimentar(saldoCivil, saldo),
   };
 }

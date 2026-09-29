@@ -18,6 +18,11 @@ export function validarSalvamento(nucleo: NucleoDaCampanha, salvo: EstadoCampanh
   const falhar = (motivo: string): never => {
     throw new Error(`salvamento inválido: ${motivo}`);
   };
+  for (const [poder, objetivo] of Object.entries(salvo.objetivosDaIa ?? {})) {
+    if (!atlas.existePoder(poder) || !atlas.existe(objetivo.alvo) || !atlas.existe(objetivo.ponto)) {
+      falhar(`objetivo militar inválido: ${poder}`);
+    }
+  }
 
   // A tabela de donos tem que ser CHEIA e exata — é a regra escrita no estado.
   for (const p of atlas.terras) {

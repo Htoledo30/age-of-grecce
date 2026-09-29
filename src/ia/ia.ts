@@ -21,9 +21,7 @@
  * decisões do jogador, dá o mesmo mapa. Sem isso não há salvamento confiável nem regressão —
  * a mesma regra que a batalha carrega escrita no cabeçalho dela.
  *
- * ⚠️ **Ela decide do zero a cada turno.** Não guarda plano de uma virada para a outra, e por
- * isso não mexe no salvamento. Quando alguma decisão precisar de memória — *"estou
- * comprometido a tomar Mégara"* —, a memória entra no estado e vai para o disco junto.
+ * O objetivo militar e as viagens persistem no estado; defesa e viabilidade são reavaliadas.
  *
  * ## Onde ela está
  *
@@ -47,7 +45,7 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, Ia } from '@/dados/esquema';
 import { guerraEscolhida } from './diplomacia/declarar';
 import { acessoPedido } from './diplomacia/acesso';
-import { aliancaEscolhida } from './diplomacia/aliancas';
+import { aliancaEscolhida, aliancaParaRomper } from './diplomacia/aliancas';
 import { anexacaoEscolhida, ligaEscolhida, tributoEscolhidoDaLiga } from './diplomacia/ligas';
 import { comercioEscolhido, pactoEscolhido, presenteEscolhido } from './diplomacia/pactos';
 import { tributoEscolhido } from './diplomacia/tributos';
@@ -56,7 +54,8 @@ import { obraEscolhida } from './economia/construir';
 import { decretosEscolhidos } from './economia/imposto';
 import { importacaoEscolhida } from './economia/importar';
 import { estiloDe } from './estilo';
-import { defesasEscolhidas } from './guerra/defender';
+import { objetivoEscolhido } from './guerra/objetivo';
+import { defesasEscolhidas, reservasDaDefesa } from './guerra/defender';
 import {
   assaltosMaduros,
   ataquesEscolhidos,
@@ -159,6 +158,8 @@ export function jogarIA(
   campanha.esvaziarMesa();
   for (const idPoder of poderesDaIa(campanha)) {
     const estilo = estiloDe(dados, idPoder);
+    const rompida = aliancaParaRomper(campanha, idPoder, estilo, ajustes);
+    if (rompida !== null) campanha.romperAlianca(rompida, idPoder);
 
     // O imposto primeiro: ele muda a renda deste mesmo turno, e a obra precisa saber com
     // quanto conta. Ao contrário, a IA decretaria em cima de uma decisão que ela já tomou.
@@ -185,48 +186,6 @@ export function jogarIA(
     // dinheiro que ela acabou de gastar seria a IA contando a mesma moeda duas vezes.
     const leva = levaEscolhida(campanha, idPoder, estilo, ajustes);
     if (leva) campanha.recrutar(leva.provincia, leva.homens, leva.arma, idPoder);
-
-    // ⚠️ **Antes de tudo o que é militar: DESISTIR do que não dá mais.** Voltam para casa as
-    // hostes em terra que deixou de ser inimiga, as que seguram um cerco que azedou, e todas as
-    // que estiverem longe enquanto a casa pega fogo. Sem esta decisão a IA vira estátua — e
-    // vinha virando: exército parado diante de um muro por cinquenta turnos, pagando folha de
-    // campanha, enquanto a província dele era tomada do outro lado do reino.
-    // ⚠️ **A TRAVESSIA antes da retirada, e a ordem é a regra inteira.** Uma hoste no meio do
-    // mar está fora do próprio reino, e para a retirada isso basta para mandá-la voltar: sem
-    // esta linha vindo primeiro, todo exército que zarpasse daria meia-volta na virada
-    // seguinte e nenhuma travessia terminaria. Quem está a caminho não volta — e quando o
-    // alvo deixa de existir, a expedição não se renova e a retirada o traz de volta da água.
-    const travessias = travessiasEscolhidas(campanha, idPoder, estilo, ajustes.combate, new Set());
-    for (const ordem of travessias) {
-      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura);
-    }
-
-    const emViagem = new Set(travessias.map((t) => t.hoste));
-
-    // ⚠️ **O BLOQUEIO depois da travessia e antes da retirada, e a ordem é a regra inteira.**
-    // Depois da travessia porque tomar uma cidade vale mais do que fechar um cais, e a hoste é
-    // a mesma. Antes da retirada porque uma frota parada na água é, para ela, um exército fora
-    // do reino — e sem esta linha vindo primeiro o bloqueio duraria exatamente um turno. Ver
-    // `guerra/bloquear.ts`.
-    const bloqueios = bloqueiosEscolhidos(
-      campanha,
-      idPoder,
-      estilo,
-      ajustes.combate,
-      emViagem,
-    );
-    for (const ordem of bloqueios) {
-      // `manter` não é ordem nenhuma no tabuleiro: a frota já está lá, e o que ela precisa é
-      // que ninguém a chame de volta.
-      if (ordem.manter) continue;
-      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
-    }
-
-    const emCampanhaNaval = new Set([...emViagem, ...bloqueios.map((b) => b.hoste)]);
-    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, emCampanhaNaval);
-    for (const ordem of retiradas) {
-      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
-    }
 
     // ⚠️ **A guerra é declarada ANTES da defesa e do ataque, e no mesmo turno em que se
     // marcha.** As ordens são simultâneas: um aviso prévio de uma virada daria ao defensor um
@@ -350,16 +309,43 @@ export function jogarIA(
     const guerra = guerraEscolhida(campanha, idPoder, estilo, ajustes.combate);
     if (guerra !== null) campanha.declararGuerra(guerra, idPoder);
 
-    // E a defesa por último, porque ela move o que JÁ existe: a leva de hoje só marcha
-    // depois de virar hoste, no turno que vem.
-    const jaMandadas = new Set([...emCampanhaNaval, ...retiradas.map((r) => r.hoste)]);
-    const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha).filter(
-      (o) => !jaMandadas.has(o.hoste),
-    );
+    campanha.definirObjetivoMilitar(idPoder, objetivoEscolhido(campanha, idPoder, estilo));
+    const recuo = estilo.sobraMinima < 1
+      ? Math.min(ajustes.combate.batalha.limiarDeQuebra, 1 - estilo.sobraMinima)
+      : null;
+
+    // Socorro primeiro, inclusive interrompendo uma viagem quando a hoste faz falta aqui.
+    const defesas = defesasEscolhidas(campanha, idPoder, ajustes.combate.batalha);
     for (const ordem of defesas) {
+      if (campanha.ordemDaHoste(ordem.hoste)) campanha.cancelarOrdem(ordem.hoste, false);
       if (ordem.tipo === 'surtida') campanha.surtir(ordem.hoste, idPoder);
-      else campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+      else campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar', recuo);
     }
+    const reservadas = new Set([...reservasDaDefesa(campanha, idPoder), ...defesas.map((d) => d.hoste)]);
+    for (const hoste of reservadas) {
+      if (defesas.some((d) => d.hoste === hoste)) continue;
+      const destino = campanha.ordemDaHoste(hoste)?.rota.at(-1);
+      if (destino && campanha.donoDe(destino) !== idPoder) campanha.cancelarOrdem(hoste, false);
+    }
+    const persistentes = campanha.ordens().filter(({ idHoste }) => campanha.hoste(idHoste)?.poder === idPoder);
+    const ocupadasAntes = new Set([...reservadas, ...persistentes.map((o) => o.idHoste)]);
+    const travessias = travessiasEscolhidas(campanha, idPoder, estilo, ajustes.combate, ocupadasAntes);
+    for (const ordem of travessias) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura, recuo);
+    }
+    const emViagem = new Set([...ocupadasAntes, ...travessias.map((t) => t.hoste)]);
+    const bloqueios = bloqueiosEscolhidos(campanha, idPoder, estilo, ajustes.combate, emViagem);
+    for (const ordem of bloqueios) {
+      if (!ordem.manter) campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar', recuo);
+    }
+    const emCampanhaNaval = new Set([...emViagem, ...bloqueios.map((b) => b.hoste)]);
+    const retiradas = retiradasEscolhidas(campanha, idPoder, ajustes.combate, emCampanhaNaval);
+    for (const ordem of retiradas) {
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar', recuo);
+    }
+    const sitiantes = campanha.hostes().filter((h) => h.poder === idPoder &&
+      campanha.cercoEm(h.posicao)?.sitiante === idPoder).map((h) => h.id);
+    const jaMandadas = new Set([...emCampanhaNaval, ...retiradas.map((r) => r.hoste), ...sitiantes]);
 
     // E o ataque depois da defesa, pelo mesmo motivo que a defesa veio depois da leva: uma
     // ordem por hoste por rodada. Quem já foi socorrer não marcha sobre o vizinho, e a casa
@@ -372,7 +358,7 @@ export function jogarIA(
       new Set([...jaMandadas, ...defesas.map((d) => d.hoste)]),
     );
     for (const ordem of ataques) {
-      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura);
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, ordem.postura, recuo);
     }
 
     // E o que sobrou vai JUNTAR O EXÉRCITO. Depois do ataque de propósito: quem já marchou
@@ -386,7 +372,7 @@ export function jogarIA(
     ]);
     const concentracoes = concentracoesEscolhidas(campanha, idPoder, estilo, ocupadas);
     for (const ordem of concentracoes) {
-      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar');
+      campanha.ordenarMarcha(ordem.hoste, ordem.destino, ordem.homens, idPoder, 'sitiar', recuo);
     }
 
     // ⚠️ Os cercos que já podem virar assalto, por último: a hoste sentada não recebe ordem de
@@ -508,14 +494,7 @@ function pazesFechadas(
   return fechadas;
 }
 
-/**
- * O prazo com que este poder compra a saída da guerra, ou `null` se nenhum é aceito.
- *
- * ⚠️ **O mais LONGO que ele aceitar**, que é a parcela mais barata — a mesma escolha de quem
- * oferece tributo em tempo de paz, e pelo mesmo motivo: quem está perdendo uma guerra tem um
- * cofre que não aguenta a parcela cara, e trocar liberdade futura por sobreviver agora é a
- * troca que qualquer um faz com uma lança apontada.
- */
+/** Prefere a paz comprada mais curta que caiba no caixa e seja aceita. */
 function pazQueElaCompra(
   campanha: Campanha,
   pagador: string,
@@ -524,8 +503,7 @@ function pazQueElaCompra(
   ajustes: Ajustes['jogo'],
 ): { pagador: string; turnos: number; ouro: number } | null {
   const estilo = estiloDe(dados, inimigo);
-  // `prazosDePazComTributo` vem do mais curto ao mais longo: de trás para frente é do barato.
-  for (const prazo of [...campanha.prazosDePazComTributo(inimigo, pagador)].reverse()) {
+  for (const prazo of [...campanha.prazosDePazComTributo(inimigo, pagador)].sort((a, b) => a.turnos - b.turnos)) {
     if (!prazo.pode) continue;
     const aceita = querPazComTributo(
       campanha,

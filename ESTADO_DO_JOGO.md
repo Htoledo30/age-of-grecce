@@ -248,6 +248,12 @@ uma batalha tática.
 
 Sitiar ocupa o campo sem conquistar. Assaltar enfrenta milícia e guarnição; Muralha exige
 preparação prévia. O defensor pode fazer surtida e reforços externos podem romper o cerco.
+O comandante do cerco permanece enquanto estiver presente e em guerra; na ausência dele,
+assume a maior hoste invasora. Co-beligerantes em paz entre si não bloqueiam o assalto nem
+sobrescrevem a postura do comandante. Ordens de postura são separadas por poder e destino.
+Uma força neutra não impede encontros entre outros inimigos presentes. Assalto barrado sem
+quebra permite retirar os sobreviventes para uma terra própria vizinha segura; sem refúgio,
+eles dispersam e voltam à população.
 Tomar à força mata civis e reduz uma construção — Muralha primeiro, depois a obra mais cara —,
 mas não entrega ouro nem estoque ao vencedor.
 
@@ -327,21 +333,43 @@ Os poderes não controlados pelo jogador usam a mesma fachada e as mesmas regras
 - administra imposto, tesouro, construções e alimentação;
 - recruta respeitando população, comida, ouro, armas e manutenção local;
 - reage a ameaças, socorre cidades, faz surtidas e abandona campanhas que perderam sentido;
+- distingue inimigos de visitantes e aliados; reúne várias hostes para socorro quando necessário,
+  reserva a defesa da região ameaçada e deixa o restante continuar a ofensiva;
 - escolhe guerras, alvos, concentração, assalto, cerco, retirada e paz; para COMEÇAR uma guerra
   exige a casa sem ameaça e gente livre para sair, mas para CONTINUAR só pergunta se o exército
   inteiro, inclusive o que já está em campo, ainda toma alguma terra do inimigo;
 - navega, desembarca, intercepta e bloqueia;
 - usa presente, pacto, comércio, tributo, acesso, aliança, liga e anexação.
 
-A folha militar da IA é uma fatia da renda (maior com inimigo na porta) mais uma fatia do
+A declaração inclui alvos alcançáveis pelo mar e compara as forças dos participantes que a
+convocação realmente envolveria. A IA guarda um alvo e um ponto de reunião no salvamento;
+reforços distantes viajam até ele e marchas longas conservam o destino entre turnos. Paz,
+caminho perdido e combate continuam interrompendo a viagem. Alvos já sitiados por um
+co-beligerante são deixados ao comandante existente.
+
+A escolha de arma considera a composição inimiga, treino, consumo e o ganho de perseguição da
+cavalaria. Aperto alimentar pesa contra armas caras de alimentar, sem vetá-las automaticamente.
+A folga de recrutamento inclui bocas ainda livres no ponto de comida já consumido. A IA usa
+recuo em ordens de marcha conforme a tolerância a perdas do estilo.
+
+A folha militar da IA é uma fatia da renda (maior em guerra ou sob ameaça) mais uma fatia do
 cofre: o que passa de 20 turnos de renda, descontada a guarda do estilo, vira folha à razão de
 `cofreNaFolha` por turno. Cofre de reserva não arma ninguém; cofre cheio vira exército, e a
 tropa que ele deixa de pagar deserta como a de qualquer reino.
+Cerco pode ter déficit temporário quando o caixa cobre o prazo estimado de viagem e preparo,
+preservando uma folha. Obras reservam uma folha durante a guerra e a IA não demole comida
+para abrir espaço a outro prédio.
+
+A duração da guerra só induz paz quando não há marcha ofensiva, preparo de assalto ou conquista
+recente. A paz comprada procura o menor prazo viável. Alianças continuam sem vencimento; fora
+de guerra, a IA pode romper quando a relação já permite hostilidade, há território acessível
+de interesse, vantagem militar e a balança da aliança fica negativa além da iniciativa. A
+ruptura paga a reputação normal e aparece na crônica. Tributo recebido continua respeitado.
 
 Os estilos guerreiro, mercador, cauteloso e equilibrado mudam prioridades econômicas e
 militares e os gostos da balança diplomática: o guerreiro pesa força, o mercador pesa ouro, o
-cauteloso pesa segurança e confiança. A IA é determinística e decide novamente a cada turno;
-planos que precisem sobreviver a uma virada exigirão memória salva no estado.
+cauteloso pesa segurança e confiança. A IA é determinística, reavalia a situação a cada turno
+e conserva no estado o objetivo militar enquanto houver caminho e motivo para persegui-lo.
 
 ## Interface, áudio e acessibilidade
 

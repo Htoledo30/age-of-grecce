@@ -100,7 +100,8 @@ export function obraEscolhida(
   const caixa = campanha.tesouroDe(idPoder);
   // ⚠️ A reserva não é frescura: sem ela a IA zera o cofre numa Ágora e não paga a folha no
   // turno seguinte. É o erro que todo jogador novo comete uma vez.
-  const disponivel = caixa * (1 - estilo.guardaDoTesouro);
+  const reservaMilitar = campanha.guerrasDe(idPoder).length > 0 ? campanha.manutencaoDe(idPoder) : 0;
+  const disponivel = Math.max(0, caixa * (1 - estilo.guardaDoTesouro) - reservaMilitar);
   // Dois degraus, e não um: a emergência é rara e cara, o gargalo é rotina e mais barato.
   const noChao = despensaNoChao(campanha, idPoder, estilo);
   const apertada = despensaApertada(campanha, idPoder, estilo, ajustes);
@@ -172,6 +173,8 @@ function trocaPossivel(
   let pior: { id: string; valor: number } | undefined;
   for (const erguida of campanha.construcoesEm(provincia)) {
     if (rendeOuro(campanha, erguida)) continue;
+    // Comida em funcionamento sustenta o exército; não é um slot descartável para armaria.
+    if (campanha.efeitoDaObra(erguida) === 'alimento') continue;
     if (!campanha.podeDemolir(provincia, erguida, idPoder).pode) continue;
     const valor = valorPorGosto(campanha, erguida, estilo);
     if (!pior || valor < pior.valor) pior = { id: erguida, valor };

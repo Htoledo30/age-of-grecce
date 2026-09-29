@@ -200,15 +200,20 @@ export function declararGuerra(
   // ⚠️ E as guerras convocadas NÃO convocam de novo. Aliado de aliado não é aliado; a chamada
   // sai daqui e morre aqui, senão uma escaramuça de fronteira viraria guerra mundial em três
   // turnos. É por isso que este laço chama `abrirGuerra` e não `declararGuerra`.
-  for (const convocado of convocadosPor(nucleo, de, contra, jaPrometido(nucleo), (poder) => [
-    ...aliadosDe(nucleo, poder),
-    ...ligadosDe(nucleo, poder),
-  ])) {
+  for (const convocado of convocadosDaGuerra(nucleo, de, contra)) {
     if (emGuerra(nucleo, convocado.poder, convocado.inimigo)) continue;
     if (!vivo(nucleo, convocado.poder) || !vivo(nucleo, convocado.inimigo)) continue;
     abrirGuerra(nucleo, convocado.poder, convocado.inimigo);
   }
   return true;
+}
+
+/** A previsão da IA e a declaração usam exatamente a mesma convocação. */
+export function convocadosDaGuerra(nucleo: NucleoDaCampanha, de: string, contra: string):
+readonly { poder: string; inimigo: string }[] {
+  return convocadosPor(nucleo, de, contra, jaPrometido(nucleo), (poder) => [
+    ...aliadosDe(nucleo, poder), ...ligadosDe(nucleo, poder),
+  ]).filter((c) => vivo(nucleo, c.poder) && vivo(nucleo, c.inimigo));
 }
 
 /** Registra a guerra e rasga o que ela rasga. Sem convocar ninguém: ver `declararGuerra`. */

@@ -68,16 +68,18 @@ export function assaltar(
     return;
   }
 
-  // Rechaçado: o exército de assalto se desfaz diante da muralha, e a cidade fica.
-  //
-  // ⚠️ **A hoste acaba; os homens, não.** É a mesma regra que a batalha de campo já segue —
-  // *quem quebra perde a hoste, não a geração* — e o assalto era o único lugar do jogo onde
-  // ela não valia: 150 homens iam contra Elêusis, 20 sobreviviam à contra-investida, e esses
-  // 20 sumiam do mundo. Não morriam na conta e não voltavam para a população: evaporavam.
-  // Agora dispersam para a terra natal, como qualquer derrotado.
+  // Sem quebra e com refúgio seguro, os sobreviventes recuam como uma hoste.
+  // Nos demais casos dispersam e voltam à população de origem.
   retirar(hoste, atacantes - choque.sobreviventesA);
-  if (hoste.contingentes.length > 0) mundo.dispersaram(terrasDe(hoste.contingentes));
-  delete estado.hostes[hoste.id];
+  const refugio = choque.desfecho !== 'quebrou' ? mundo.refugio(provincia, hoste.poder) : null;
+  const seguro = refugio !== null && !Object.values(estado.hostes).some(
+    (h) => h.posicao === refugio && mundo.emGuerra(hoste.poder, h.poder),
+  );
+  if (seguro && refugio !== null && hoste.contingentes.length > 0) hoste.posicao = refugio;
+  else {
+    if (hoste.contingentes.length > 0) mundo.dispersaram(terrasDe(hoste.contingentes));
+    delete estado.hostes[hoste.id];
+  }
   levantar(provincia);
   perder(
     choque.vencedor === 'b'

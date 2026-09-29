@@ -120,6 +120,10 @@ const SalvamentoCampanha = z.object({
     proximaHoste: z.number().int().nonnegative(),
     formacoes: z.record(z.string().min(1), Formacao),
     ordens: z.record(z.string().min(1), Ordem),
+    objetivosDaIa: z.record(z.string().min(1), z.object({
+      alvo: z.string().min(1),
+      ponto: z.string().min(1),
+    })).default({}),
     surtidas: z.array(z.string().min(1)),
     cercos: z.record(z.string().min(1), Cerco),
     capitais: z.record(z.string().min(1), z.string().min(1)),

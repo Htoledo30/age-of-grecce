@@ -16,7 +16,7 @@ import type { RevoltaDaLiga } from '../turno/andar-ligas';
 export interface NoticiaDiplomatica {
   de: string;
   com: string;
-  tipo: 'guerra' | 'paz';
+  tipo: 'guerra' | 'paz' | 'ruptura-alianca';
 }
 
 export interface EfemerosDaCampanha {

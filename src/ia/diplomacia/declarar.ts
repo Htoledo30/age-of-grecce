@@ -32,7 +32,7 @@
 import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
 import { forcaTotalDe } from '../percepcao/ameaca';
-import { oportunidadesDe } from '../percepcao/oportunidade';
+import { oportunidadesAlcancaveis } from '../percepcao/oportunidade';
 import { valeAPena } from '../guerra/marchar';
 
 type AjustesDeCombate = Ajustes['jogo']['combate'];
@@ -53,9 +53,8 @@ export function guerraEscolhida(
   // mais casos — e porque nenhuma das outras faz sentido para quem já tem um inimigo em campo.
   if (campanha.guerrasDe(idPoder).length > 0) return null;
 
-  const meuExercito = forcaTotalDe(campanha, idPoder);
   const candidatos = new Map<string, number>();
-  for (const alvo of oportunidadesDe(campanha, idPoder)) {
+  for (const alvo of oportunidadesAlcancaveis(campanha, idPoder)) {
     if (campanha.emGuerra(idPoder, alvo.dono)) continue;
     if (!campanha.podeDeclararGuerra(alvo.dono, idPoder).pode) continue;
     // ⚠️ **Gosto demais dele para atacá-lo?** É a primeira pergunta, e é o que impede a
@@ -64,7 +63,13 @@ export function guerraEscolhida(
     if (campanha.relacaoEntre(idPoder, alvo.dono) > estilo.relacaoParaDeclarar) continue;
     // A força que ele tem no mundo, e não a que está naquela província: quem declara passa a
     // enfrentar o reino inteiro, e é o reino inteiro que vem cobrar.
-    if (meuExercito < forcaTotalDe(campanha, alvo.dono) * estilo.vantagemParaDeclarar) continue;
+    const convocados = campanha.convocadosDaGuerra(idPoder, alvo.dono);
+    const nossos = new Set([idPoder, ...convocados.filter((c) => c.inimigo === alvo.dono).map((c) => c.poder)]);
+    const deles = new Set([alvo.dono, ...convocados.filter((c) => c.inimigo === idPoder).map((c) => c.poder)]);
+    // Quem é arrastado para os dois lados não conta como reforço garantido de ninguém.
+    const minhaForca = [...nossos].filter((p) => !deles.has(p)).reduce((s, p) => s + forcaTotalDe(campanha, p), 0);
+    const forcaDeles = [...deles].reduce((s, p) => s + forcaTotalDe(campanha, p), 0);
+    if (minhaForca < forcaDeles * estilo.vantagemParaDeclarar) continue;
     if (!valeAPena(campanha, idPoder, alvo, estilo, ajustes)) continue;
     const valor =
       alvo.renda + alvo.bemNovo + (alvo.capital ? estilo.valorDaCapital : 0);

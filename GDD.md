@@ -440,6 +440,10 @@ levantar a arma — e nunca baratear ou encarecer a mesma obra conforme a riquez
   não existe uma fórmula para decidir e outra para animar.
 - **Não se assalta a muralha com exército inimigo intacto nas costas.** Se o campo não foi
   decidido, senta-se e tenta-se na rodada seguinte.
+  Co-beligerantes em paz entre si não são inimigos. Quem iniciou o cerco conserva o comando
+  enquanto estiver presente; outras bandeiras não reiniciam seu preparo nem mudam sua ordem.
+- **Um assalto barrado não dissolve automaticamente a hoste.** Sem quebra e com refúgio
+  próprio vizinho seguro, os sobreviventes recuam; sem refúgio ou com quebra, dispersam.
 - **Tomar à força QUEBRA a cidade.** Morre uma fatia dos civis — não só soldado e milícia
   morre em invasão — e uma obra perde um nível: a Muralha, quando há uma, porque foi ela que
   se quebrou para entrar; a mais cara de pé, quando não há. **Cidade que cai sem luta não
@@ -501,7 +505,8 @@ exército de graça. Só a Muralha a fortalece — obra de defesa, não obra de 
 - **O jogador escolhe o destino final, não a próxima fronteira.** A rota mais curta fica
   desenhada e a hoste anda sozinha a cada virada, respeitando o limite de movimento, até
   chegar. É possível cancelar durante qualquer parada; batalha, recuo ou perda de um caminho
-  permitido interrompem a viagem. A IA continua refazendo a própria decisão a cada turno.
+  permitido interrompem a viagem. A IA também conserva viagens e um objetivo com ponto de
+  reunião, reavaliando a necessidade de defesa a cada turno.
 - Movimento pode gerar encontros na estrada e múltiplas batalhas na mesma rodada.
 - Milícia é defesa automática derivada da população.
 - Província vazia pode cair ao primeiro ingresso; cidade defendida exige combate ou cerco.
@@ -603,6 +608,12 @@ do CAIS, e não da rota no meio do mar.
   risco, e o que cada um pesa na mesa: força, ouro, segurança ou confiança.
 - Não há bônus secretos de IA. A diferença entre jogador e IA é a decisão automática, não a
   regra econômica ou militar.
+- A defesa responde à região ameaçada, sem cancelar toda ofensiva. Tropas distantes podem
+  reunir-se durante várias rodadas; sustentar viagem e cerco pode consumir uma reserva finita.
+- A declaração considera os aliados convocados e alvos alcançáveis pelo mar. Guerra em
+  andamento pesa progresso antes de duração; paz comprada prefere o menor prazo viável.
+  Alianças não vencem: conflito territorial, relação deteriorada, vantagem militar e perda
+  clara de interesse podem levar a IA a romper, com reputação e notícia como para o jogador.
 - Relação é simétrica por par e caminha para um alvo legível. Além dos atos bilaterais, pesam
   tribo comum, inimigo em comum, paz longa, diferença de porte e amizade com inimigos.
 - A régua diplomática está fechada de ponta a ponta: presente, pacto, comércio, tributo,

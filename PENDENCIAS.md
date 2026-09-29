@@ -80,17 +80,8 @@ foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
 
 ## Frentes grandes em aberto (ordem sugerida)
 
-0. **Agressividade com cautela, sem caos** (Henrique, 27/09): o mapa de hoje é parado demais
-   (31 trocas de dono em 100 turnos, e nenhuma depois do 100). Fazenda I dando 2 leva a 58
-   trocas, 13 eliminados e maior reino com 9 — ele gostou da direção, não do exagero. Procurar o
-   meio-termo medindo com `npm run partida 100` e 150 (comida do nível I, acordos que travam o
-   mapa depois do 100). Diagnóstico de 27/09: o mapa congela já no turno 60, com 8 sobreviventes
-   de 18; entre eles quase todo par está travado por aliança (agora sem prazo), tributo de 50–70
-   turnos, trégua ou liga, e os pares livres param em "gosta dele" ou "não tem força igual".
-   Mégara (4.882 homens) ficou 40+ turnos em guerra com Sícion (1 província) sem tomá-la.
-   ⚠️ A aliança sem prazo (27/09) piora o congelamento: antes ela vencia e soltava o par; agora
-   só acaba rompida ou com a opinião abaixo de −10, que entre aliados quase nunca acontece.
-   Próximo passo: medir como soltar o mapa depois da primeira onda sem virar caos.
+0. **Agressividade com cautela, sem caos:** jogar com as correções de guerra e IA abaixo antes
+   de mexer novamente em números. As medições anteriores não descrevem esta versão.
 1. **Jogar uma partida** com tudo o que mudou e anotar em `revisoes feitas por henrique.txt`.
 2. **Renda menor** — "com 20 províncias em 200 rodadas já tem dinheiro demais".
 3. **Diplomacia** — hoje é "um checklist do que cumprir, não uma negociação".
@@ -108,45 +99,34 @@ foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
 8. **Rejogabilidade** — forma de governo, ou bônus e personalidade por reino (hoje só há os
    estilos guerreiro, mercador, cauteloso e equilibrado).
 
-## Auditoria de guerra e IA — 28/09/2026
+## Guerra e IA — implementado em 29/09, aguardando Henrique jogar
 
-Leitura do código e dos dados locais, sem testes, simulações, medições ou build, por pedido
-de Henrique. Nenhuma mecânica alterada. Os impactos abaixo ainda precisam ser observados
-em partida; não são novos resultados das medições antigas.
+Sem testes, simulações, medições ou build, por pedido de Henrique. Compatibilidade de saves
+antigos prevista por campo opcional de objetivo militar; ainda não exercitada em execução.
 
-- **Corrigir primeiro a resolução:** `ameacasDe` e previsões terrestres confundem tropa
-  estrangeira com inimiga; `cidades.ts` impede assalto com dois invasores mesmo aliados e
-  sobrescreve o único cerco; `choque-na-provincia.ts` interrompe a procura se a maior força
-  não tiver inimigo, mesmo havendo guerra entre as menores.
-- **Reunir e conduzir o exército:** a declaração prevê todas as hostes juntas, mas o ataque
-  seleciona uma por vez; a concentração só chama quem alcança o ponto nesta rodada. Falta
-  conduzir reforços distantes até um objetivo persistente. Uma ameaça bloqueia ofensivas do
-  reino inteiro; invasão em casa pode chamar de volta todas as tropas elegíveis em campanha.
-- **Preparar a ofensiva:** recrutamento só usa a fatia militar da renda sob ameaça, mesmo
-  havendo guerra. O cofre pode financiar recrutamento, mas `aguentaOCerco` exige renda corrente
-  positiva e ignora a reserva. O teto alimentar da leva ignora bocas livres dentro do ponto
-  de consumo já arredondado para cima.
-- **Diplomacia e alcance:** aliados convocados não entram na comparação de forças da
-  declaração; a IA não decide romper alianças. Paz por duração ignora progresso e a compra
-  de paz prefere o maior prazo. Declaração olha vizinhança; a busca naval ampla só ataca
-  inimigos já declarados. Reinos com qualquer província sem ficha ficam fora da IA e dos alvos.
-- **Armas e sobrevivência:** com os valores locais do F2, hoplita vence os dois critérios de
-  escolha quando disponível e sem aperto alimentar; com aperto, comida acima de 1 veta todas
-  as armas especiais. A IA não usa recuo durante batalha; perder assalto dispersa os
-  sobreviventes mesmo quando a linha não quebrou. Rever antes de aumentar letalidade.
-- **Direção recomendada:** corrigir os defeitos acima, depois planejamento e defesa local;
-  só então decidir mudanças em tratados e balanço. Preservar a aliança sem prazo escolhida
-  por Henrique. Não ampliar o mapa como substituto dessas correções.
+- Inimigos separados de visitantes/aliados; neutro maior não interrompe outros combates.
+- Postura por poder e destino; comandante estável de cerco, sem veto por co-beligerante em paz.
+- Objetivo e ponto de reunião salvos; marchas longas da IA persistem. Defesa reúne socorro e
+  reserva a região ameaçada sem cancelar a ofensiva inteira.
+- Trocar uma marcha por socorro conserva a identificação da hoste. Toda marcha reconfere o
+  caminho na virada, inclusive ordens curtas que perderam acesso militar.
+- Recrutamento usa orçamento de guerra, folga alimentar exata, composição adversária e ganho
+  de perseguição. Construções preservam uma folha em guerra e não substituem obras de comida.
+- Cerco pode gastar caixa pelo prazo estimado. Recuo da IA respeita o estilo; assalto barrado
+  preserva a hoste quando há refúgio próprio seguro e a linha não quebrou.
+- Declaração considera convocados e destinos marítimos alcançáveis. Paz considera progresso
+  e prefere prazo menor ao comprar saída. Aliança continua sem vencimento, mas a IA pode
+  romper por conflito de interesses, pagando reputação e avisando na crônica.
+- **Observar jogando:** tropas reunindo e chegando ao alvo; cerco terminando; socorro sem
+  retirada geral; recrutamento sem desperdício de comida; derrotados conseguindo se reorganizar;
+  guerras navais e alianças sem congelamento nem traições excessivas.
+- **Ainda fora desta entrega:** ampliar províncias, refazer negociação diplomática e ajustar
+  números de renda, comida ou letalidade. Os valores locais do F2 foram preservados.
 
 ## Problemas conhecidos, medidos e ainda não tratados
 
-- **Atenas é o alvo mais valioso do mapa e começa sem exército.** Os quatro vizinhos guerreiros
-  declaram guerra com empate de forças (`vantagemParaDeclarar` 1,0) e quase qualquer opinião
-  (`relacaoParaDeclarar` 16). Cada declaração arrasta os aliados de quem declara.
-- **Acordos travam o mapa:** depois do turno 100, em mais da metade dos turnos em paz de um reino
-  todos os vizinhos estão cobertos por trégua, pacto, tributo, aliança ou liga.
-- **Um cerco só por província:** dois co-beligerantes sobre a mesma cidade — o segundo fica sem
-  cerco. A postura continua compartilhada por destino (`posturas.ts`).
+- **Pressão sobre Atenas e crescimento dos reinos:** conferir na partida com a nova avaliação
+  de convocados, concentração de tropas, defesa local e revisão de paz/alianças.
 - **Visual ainda por fazer:** Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
   fundo é `font-size-adjust` na fonte de corpo, com uma passada do `medir-tamanho`; a cor da
   província selecionada no mapa fica marrom e apagada.

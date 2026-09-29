@@ -39,6 +39,15 @@ export function noticiasDaRodada(jogo: Jogo): LinhaDaCronica[] {
   for (const noticia of campanha.diplomaciaDaRodada) {
     const comigo = noticia.de === eu || noticia.com === eu;
     const outro = noticia.de === eu ? noticia.com : noticia.de;
+    if (noticia.tipo === 'ruptura-alianca') {
+      linhas.push({
+        tom: comigo ? 'perda' : 'neutro',
+        peso: peso(comigo),
+        icone: 'escudo',
+        texto: `${nomeDoPoder(noticia.de)} rompeu a aliança com ${nomeDoPoder(noticia.com)}.`,
+      });
+      continue;
+    }
     if (noticia.tipo === 'guerra') {
       linhas.push({
         tom: comigo && noticia.de !== eu ? 'perda' : 'neutro',

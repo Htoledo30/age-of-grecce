@@ -28,7 +28,7 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, EstiloDeIa } from '@/dados/esquema';
 import { valeAPena } from '../guerra/marchar';
 import { forcaTotalDe } from '../percepcao/ameaca';
-import { oportunidadesDe } from '../percepcao/oportunidade';
+import { oportunidadesAlcancaveis } from '../percepcao/oportunidade';
 
 type AjustesDeCombate = Ajustes['jogo']['combate'];
 type AjustesTributo = Ajustes['jogo']['diplomacia']['tributo'];
@@ -43,20 +43,28 @@ export function querPaz(
 ): boolean {
   if (!campanha.emGuerra(idPoder, inimigo)) return false;
 
-  // ⚠️ "Já dura demais" vem primeiro porque é o único motivo que vale mesmo quando os dois
-  // lados ainda acham que ganham — e são essas as guerras que travam o mapa.
+  const avancando = campanha.ordens().some(({ idHoste, ordem }) => {
+    const destino = ordem.rota.at(-1);
+    return destino !== undefined && campanha.hoste(idHoste)?.poder === idPoder &&
+      campanha.donoDe(destino) === inimigo;
+  }) || campanha.cercos().some(({ provincia, cerco }) =>
+    cerco.sitiante === idPoder && campanha.donoDe(provincia) === inimigo &&
+    (campanha.assaltoEm(provincia).faltam > 0 || cerco.postura === 'assaltar'),
+  ) || campanha.rodada.conquistas.some((c) => c.para === idPoder && c.de === inimigo);
+  // Uma guerra parada pode acabar por duração; uma conquista em execução merece terminar.
   const desde = campanha.guerraDesde(idPoder, inimigo);
-  if (desde !== undefined && campanha.turno - desde >= estilo.guerraLonga) return true;
+  if (!avancando && desde !== undefined && campanha.turno - desde >= estilo.guerraLonga) return true;
 
   // "Ele é mais forte do que nós": a mesma conta de declarar, pelo avesso.
-  if (forcaTotalDe(campanha, idPoder) < forcaTotalDe(campanha, inimigo)) return true;
+  if (!avancando && forcaTotalDe(campanha, idPoder) < forcaTotalDe(campanha, inimigo)) return true;
 
   // "Não temos nada contra ele": guerra contra quem não se odeia acaba mais fácil — e é o
   // avesso exato de `relacaoParaDeclarar`, que é o que decide começá-la.
-  if (campanha.relacaoEntre(idPoder, inimigo) > estilo.relacaoParaDeclarar) return true;
+  if (!avancando && campanha.relacaoEntre(idPoder, inimigo) > estilo.relacaoParaDeclarar) return true;
 
   // "Não há mais o que tomar dele."
-  const alvos = oportunidadesDe(campanha, idPoder).filter((o) => o.dono === inimigo);
+  if (avancando) return false;
+  const alvos = oportunidadesAlcancaveis(campanha, idPoder).filter((o) => o.dono === inimigo);
   return !alvos.some((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes, true));
 }
 
@@ -95,7 +103,7 @@ export function querPazComTributo(
 
   // O que ela AINDA acha que vai tomar dele, por turno. Só os alvos que valem a marcha: os
   // outros já não são prêmio nenhum, e contá-los faria qualquer oferta parecer pequena.
-  const premio = oportunidadesDe(campanha, idPoder)
+  const premio = oportunidadesAlcancaveis(campanha, idPoder)
     .filter((o) => o.dono === inimigo)
     .filter((alvo) => valeAPena(campanha, idPoder, alvo, estilo, ajustes, true))
     .reduce(

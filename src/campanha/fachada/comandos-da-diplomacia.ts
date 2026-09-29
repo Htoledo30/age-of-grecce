@@ -137,7 +137,9 @@ export abstract class ComandosDaDiplomacia extends ConsultasDeGuerra {
    * contava com você é pior que voltar atrás numa promessa de não atacar, e o preço diz isso.
    */
   romperAlianca(com: string, porPoder: string = this.nucleo.estado.jogador ?? ''): void {
-    if (romperAlianca(this.nucleo, porPoder, com)) this.aoMudar();
+    if (!romperAlianca(this.nucleo, porPoder, com)) return;
+    this.efemeros.diplomacia.push({ de: porPoder, com, tipo: 'ruptura-alianca' });
+    this.aoMudar();
   }
 
   /**

@@ -64,6 +64,7 @@ import {
   parcelasDaRelacaoEntre,
   podeAcordarComercio,
   podeDeclararGuerra,
+  convocadosDaGuerra,
   podeFirmarPacto,
   podePresentear,
   prazosDeAlianca,
@@ -356,6 +357,10 @@ export abstract class ConsultasDoReino {
   /** Com quem este poder está aliado agora. A guerra de um é a guerra do outro. */
   aliadosDe(idPoder: string): readonly string[] {
     return aliadosDe(this.nucleo, idPoder);
+  }
+
+  convocadosDaGuerra(de: string, contra: string): readonly { poder: string; inimigo: string }[] {
+    return convocadosDaGuerra(this.nucleo, de, contra);
   }
 
   /** A liga deste poder como MEMBRO, ou `undefined` se ele não serve a ninguém. */

@@ -68,12 +68,14 @@ export function naProvincia(
         }))
         .sort((x, y) => y.forca - x.forca || x.poder.localeCompare(y.poder));
 
-      const maior = ordenadas[0];
+      const maior = ordenadas.find((candidata, i) =>
+        ordenadas.slice(i + 1).some((outra) => emGuerra(candidata.poder, outra.poder)),
+      );
       // ⚠️ **O segundo é o maior que está EM GUERRA com o primeiro, e não o segundo maior.**
       // Dois invasores podem estar os dois em guerra com o dono da terra e em paz entre si;
       // sem esta escolha eles se matavam no acampamento por serem os dois maiores presentes.
       const segunda = maior
-        ? ordenadas.slice(1).find((outra) => emGuerra(maior.poder, outra.poder))
+        ? ordenadas.find((outra) => outra.poder !== maior.poder && emGuerra(maior.poder, outra.poder))
         : undefined;
       if (!maior || !segunda) break;
       // ⚠️ **Empate encerra a província nesta rodada.** Com choque e perseguição os dois

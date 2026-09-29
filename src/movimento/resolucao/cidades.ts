@@ -13,6 +13,8 @@
 import { rodadasAteOAssalto } from '@/combate/cerco';
 import type { Cerco, Postura } from '@/combate/cerco';
 import { assaltar } from './assalto';
+import { forcaDe } from '@/combate/exercito';
+import { chaveDaPostura } from './posturas';
 import type { EstadoDaResolucao, MundoDaResolucao, RelatorioEmConstrucao } from './relatorio';
 
 export function resolverCidades(
@@ -40,6 +42,19 @@ export function resolverCidades(
   // acabou de escrever — e dois exércitos sentados na mesma cidade fariam o relógio andar duas
   // vezes numa rodada só.
   const antes = { ...estado.cercos };
+
+  // Quem começou conserva o comando enquanto estiver presente e em guerra. Sem comandante,
+  // assume a maior força; aliados não disputam o registro nem reiniciam o relógio do cerco.
+  const comandantes = new Map<string, string>();
+  for (const provincia of presentes.keys()) {
+    const candidatas = Object.values(estado.hostes).filter(
+      (h) => h.posicao === provincia && mundo.emGuerra(h.poder, mundo.donoDe(provincia)),
+    );
+    const anterior = antes[provincia]?.sitiante;
+    const comandante = candidatas.find((h) => h.poder === anterior) ??
+      candidatas.sort((a, b) => forcaDe(b) - forcaDe(a) || a.id.localeCompare(b.id))[0];
+    if (comandante) comandantes.set(provincia, comandante.poder);
+  }
 
   // ⚠️ **E a foto dos DONOS, pelo mesmo motivo.** O laço troca o dono da província enquanto
   // anda, e sem a foto o ex-dono vira estrangeiro no meio da varredura: a cidade caía e era
@@ -110,12 +125,16 @@ export function resolverCidades(
     // aliados em guerra com o mesmo dono entravam juntos numa praça sem milícia, e o segundo a
     // tomava do primeiro na mesma rodada — sem estar em guerra com ele.
     if (tomadas.has(provincia)) continue;
+    if (comandantes.get(provincia) !== hoste.poder) continue;
 
     const milicianos = mundo.miliciaDe(provincia);
     // Cidade sem quem feche o portão cai ao primeiro ingresso — mas exército do dono acampado
     // ali É quem fecha o portão, mesmo com a milícia zerada. Sem esta condição, sentar numa
     // província despovoada tomava a cidade por cima do exército que a defendia.
-    if (milicianos <= 0 && !estaAli(provincia, donoDe(provincia))) {
+    const campoIndeciso = (presentes.get(provincia) ?? []).some(
+      (poder) => mundo.emGuerra(hoste.poder, poder),
+    );
+    if (milicianos <= 0 && !campoIndeciso) {
       tomar(provincia, hoste.poder);
       continue;
     }
@@ -125,7 +144,8 @@ export function resolverCidades(
     // joga o exército contra a muralha por conta própria.
     const cerco = antes[provincia];
     const meu = cerco !== undefined && cerco.sitiante === hoste.poder;
-    const pedida = posturas.get(provincia) ?? (meu ? cerco.postura : 'sitiar');
+    const pedida = posturas.get(chaveDaPostura(provincia, hoste.poder)) ??
+      (meu ? cerco.postura : 'sitiar');
 
     // ⚠️ **A MURALHA BARRA O ASSALTO DE HOJE, e o que sobra é sentar.** Cidade aberta cai no
     // primeiro assalto; contra a fortificada é preciso ter passado algumas rodadas na frente
@@ -146,10 +166,6 @@ export function resolverCidades(
     // linhas o invasor tomava a cidade por cima do exército que acabara de segurá-lo, e dois
     // invasores empatados assaltavam a mesma praça na mesma rodada, um tomando e o outro
     // retomando.
-    const naProvincia = presentes.get(provincia) ?? [];
-    const invasores = new Set(naProvincia.filter((p) => p !== donoDe(provincia)));
-    const defensorDePe = naProvincia.includes(donoDe(provincia));
-    const campoIndeciso = invasores.size > 1 || defensorDePe;
     const postura: Postura =
       pedida === 'assaltar' && (faltam > 0 || campoIndeciso) ? 'sitiar' : pedida;
 

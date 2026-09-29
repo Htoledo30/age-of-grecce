@@ -53,7 +53,8 @@ import { estaAmeacado } from './ameaca';
 export function folgaDaFolha(campanha: Campanha, idPoder: string, estilo: EstiloDeIa): number {
   const renda = campanha.rendaDe(idPoder);
   const folhaAtual = campanha.manutencaoDe(idPoder);
-  const teto = estaAmeacado(campanha, idPoder) ? estilo.folhaMilitar : estilo.folhaEmPaz;
+  const mobilizado = campanha.guerrasDe(idPoder).length > 0 || estaAmeacado(campanha, idPoder);
+  const teto = mobilizado ? estilo.folhaMilitar : estilo.folhaEmPaz;
   return renda * teto + folhaDoCofre(campanha, idPoder, estilo) - folhaAtual;
 }
 

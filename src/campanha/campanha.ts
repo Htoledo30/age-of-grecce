@@ -137,8 +137,8 @@ export class Campanha extends ComandosDaDiplomacia {
   }
 
   /** Desfaz a ordem desta hoste — e a surtida junto, que é a mesma decisão. */
-  cancelarOrdem(idHoste: string): void {
-    if (cancelarOrdem(this.nucleo, idHoste)) this.aoMudar();
+  cancelarOrdem(idHoste: string, reunir = true): void {
+    if (cancelarOrdem(this.nucleo, idHoste, reunir)) this.aoMudar();
   }
 
   /** Registra a surtida: o sitiado sai para atacar quem o cerca. */

@@ -175,10 +175,8 @@ export function ordenarMarcha(
     homens,
     postura,
     recuarAos,
-    // A IA já refaz suas decisões a cada turno. A viagem persistente existe para poupar o
-    // jogador do clique repetido e só é necessária quando o destino não cabe nesta rodada.
-    ...(porPoder === nucleo.estado.jogador &&
-    r.rota.length > nucleo.ajustes.combate.saltosPorRodada
+    // Jogador e IA conservam o destino; paz, caminho perdido e combate interrompem a viagem.
+    ...(r.rota.length > nucleo.ajustes.combate.saltosPorRodada
       ? { continuar: true as const }
       : {}),
   };
@@ -191,7 +189,7 @@ export function ordenarMarcha(
  * rodada", e um botão de cancelar que desfizesse só uma delas deixaria a outra em pé sem
  * nada dizer. Nada foi gasto, então nada é devolvido.
  */
-export function cancelarOrdem(nucleo: NucleoDaCampanha, idHoste: string): boolean {
+export function cancelarOrdem(nucleo: NucleoDaCampanha, idHoste: string, reunir = true): boolean {
   const tinhaOrdem = nucleo.estado.ordens[idHoste] !== undefined;
   const tinhaSurtida = surtidaDe(nucleo, idHoste);
   if (!tinhaOrdem && !tinhaSurtida) return false;
@@ -203,7 +201,8 @@ export function cancelarOrdem(nucleo: NucleoDaCampanha, idHoste: string): boolea
   // funde quem para junto, mas só na virada seguinte: aqui é agora.
   // Livre é quem não vai a lugar nenhum: devolver os homens a uma peça que já está de partida
   // os mandaria embora sem ninguém pedir.
-  nucleo.mobilizacao.reunir(
+  // Ao substituir uma ordem, conserva a peça que receberá o novo comando.
+  if (reunir) nucleo.mobilizacao.reunir(
     idHoste,
     (id) => ordemDaHoste(nucleo, id) === undefined && !surtidaDe(nucleo, id),
   );

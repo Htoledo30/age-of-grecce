@@ -11,6 +11,11 @@ import type { Cerco, Postura } from '@/combate/cerco';
 import type { Forca } from './forcas';
 import type { EstadoDaResolucao } from './relatorio';
 
+/** Ordens de poderes diferentes nunca compartilham a postura. */
+export function chaveDaPostura(provincia: string, poder: string): string {
+  return JSON.stringify([provincia, poder]);
+}
+
 /**
  * A postura que cada hoste levava ao chegar, por província de destino.
  *
@@ -31,14 +36,16 @@ export function posturasPorDestino(
     // distância, mandado para sitiar, rebaixava o assalto já liberado de quem estava na frente
     // da cidade — e regravava o cerco do zero, sem que ninguém tivesse chegado.
     if (ordem.rota.length > saltosPorRodada) continue;
-    // ⚠️ **Marchar para casa não declara postura nenhuma.** A postura só significa alguma
-    // coisa em terra alheia (ver `ordens.ts`), e como a entrada é compartilhada por DESTINO,
-    // uma marcha em território próprio contaminava o inimigo sentado ali: mandar qualquer
-    // hoste para a cidade sitiada rebaixava o assalto do sitiante a cerco, sem que nada
-    // tivesse sido lutado. Ficou reservado ao socorro, que agora chega lutando por outra razão.
+    // Reforço do dono não altera a postura de quem cerca a cidade.
     const poder = estado.hostes[idHoste]?.poder;
-    if (poder !== undefined && donoDe(destino) === poder) continue;
-    posturas.set(destino, ordem.postura);
+    if (poder === undefined || donoDe(destino) === poder) continue;
+    const chave = chaveDaPostura(destino, poder);
+    // Reforços do mesmo poder participam do assalto já ordenado.
+    const cerco = estado.cercos[destino];
+    const assaltoEmCurso = cerco?.sitiante === poder && cerco.postura === 'assaltar';
+    if (ordem.postura === 'assaltar' || assaltoEmCurso || !posturas.has(chave)) {
+      posturas.set(chave, assaltoEmCurso ? 'assaltar' : ordem.postura);
+    }
   }
   return posturas;
 }
@@ -56,10 +63,7 @@ export function posturasPorDestino(
  * ⚠️ Nada disto vale onde o choque foi OBRIGADO: a surtida e o socorro que chega tiram a
  * escolha de todo mundo que está ali. Ver `choqueObrigadoEm`.
  *
- * ⚠️ As posturas são indexadas por província de DESTINO, não por hoste. Dois poderes marchando
- * para o mesmo lugar compartilham a entrada, e o segundo herda a postura do primeiro. É
- * limitação antiga e só aparece em guerra de três lados; quando aparecer, a ordem tem que
- * passar a carregar a postura até aqui em vez de um mapa por destino.
+ * As posturas são separadas por poder e destino: uma bandeira não comanda a outra.
  */
 export function quemLuta(
   forca: Forca,
@@ -79,7 +83,7 @@ export function quemLuta(
 ): boolean {
   if (ehMar) return true;
   if (donoDaProvincia === forca.poder) return true;
-  const pelaOrdem = posturas.get(forca.posicao);
+  const pelaOrdem = posturas.get(chaveDaPostura(forca.posicao, forca.poder));
   if (pelaOrdem) return pelaOrdem === 'assaltar';
   const cerco = cercos[forca.posicao];
   if (cerco?.sitiante === forca.poder) return cerco.postura === 'assaltar';

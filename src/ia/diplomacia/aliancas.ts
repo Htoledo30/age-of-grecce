@@ -28,6 +28,7 @@ import type { Campanha } from '@/campanha/campanha';
 import type { Ajustes, EstiloDeIa, Ia } from '@/dados/esquema';
 import { estiloDe } from '../estilo';
 import { forcaTotalDe } from '../percepcao/ameaca';
+import { oportunidadesAlcancaveis } from '../percepcao/oportunidade';
 import {
   type Balanca,
   type ExtrasDaBalanca,
@@ -128,4 +129,27 @@ export function aliancaEscolhida(
     }
   }
   return escolhido === null ? null : { com: escolhido.com, turnos: escolhido.turnos };
+}
+
+/** Rompe por conflito de interesses, nunca por vencimento ou sorteio. */
+export function aliancaParaRomper(
+  campanha: Campanha,
+  poder: string,
+  estilo: EstiloDeIa,
+  ajustes: AjustesDoJogo,
+): string | null {
+  if (campanha.guerrasDe(poder).length > 0) return null;
+  const alvos = oportunidadesAlcancaveis(campanha, poder);
+  for (const aliado of campanha.aliadosDe(poder)) {
+    if (campanha.chefeDe(poder) === aliado || campanha.chefeDe(aliado) === poder) continue;
+    if (campanha.relacaoEntre(poder, aliado) > estilo.relacaoParaDeclarar) continue;
+    if (!alvos.some((a) => a.dono === aliado && a.renda + a.bemNovo > 0)) continue;
+    if (forcaTotalDe(campanha, poder) <= forcaTotalDe(campanha, aliado) * estilo.vantagemParaDeclarar) continue;
+    const lados = { ele: poder, voce: aliado };
+    const balanca = balancaDaAlianca(campanha, lados,
+      prazoMaisCurto(ajustes.diplomacia.alianca.prazos), estilo, ajustes,
+      { cobicadas: cobicadasPor(campanha, lados, estilo, ajustes) });
+    if (balanca.saldo < -ajustes.diplomacia.balanca.iniciativa) return aliado;
+  }
+  return null;
 }

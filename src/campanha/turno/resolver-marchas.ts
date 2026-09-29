@@ -52,8 +52,7 @@ function atualizarViagens(nucleo: NucleoDaCampanha): void {
       delete nucleo.estado.ordens[idHoste];
       continue;
     }
-    // A ordem de um turno só já traz a rota certa; é a viagem longa que precisa refazê-la.
-    if (!ordem.continuar) continue;
+    // Até uma ordem curta pode perder o acesso a um trecho depois de ser registrada.
     const rotaAtual = rotasLongasDaHoste(nucleo, idHoste).get(destinoFinal);
     if (!rotaAtual) {
       delete nucleo.estado.ordens[idHoste];
@@ -64,6 +63,9 @@ function atualizarViagens(nucleo: NucleoDaCampanha): void {
       origem: hoste.posicao,
       rota: rotaAtual,
       homens: Math.min(ordem.homens, nucleo.mobilizacao.forcaDaHoste(idHoste)),
+      ...(rotaAtual.length > nucleo.ajustes.combate.saltosPorRodada
+        ? { continuar: true as const }
+        : {}),
     };
   }
 }

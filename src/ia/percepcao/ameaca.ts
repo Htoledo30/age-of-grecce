@@ -39,7 +39,7 @@ export function ameacasDe(campanha: Campanha, idPoder: string): readonly Ameaca[
     for (const hoste of campanha.hostesEm(provincia)) {
       const forca = campanha.forcaDaHoste(hoste.id);
       if (hoste.poder === idPoder) meus += forca;
-      else inimigos += forca;
+      else if (campanha.emGuerra(idPoder, hoste.poder)) inimigos += forca;
     }
     if (inimigos <= 0) continue;
     ameacas.push({
@@ -111,7 +111,8 @@ export function estaAmeacado(campanha: Campanha, idPoder: string): boolean {
     // Vale mesmo para quem está em paz comigo, e é de propósito: declarar guerra e marchar
     // acontecem no MESMO turno, então a paz não protege de quem já está pronto. É o mesmo aviso
     // que o jogador lê no mapa.
-    if (campanha.forcaDaHoste(hoste.id) > minhaDefesa) return true;
+    if ((inimigo || campanha.podeDeclararGuerra(idPoder, hoste.poder).pode) &&
+        campanha.forcaDaHoste(hoste.id) > minhaDefesa) return true;
   }
   return false;
 }

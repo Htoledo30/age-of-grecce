@@ -49,6 +49,9 @@ export function restaurarEstado(nucleo: NucleoDaCampanha, salvo: EstadoCampanha)
     Object.entries(salvo.ordens).map(([id, o]) => [id, { ...o, rota: [...o.rota] }]),
   );
   estado.surtidas = [...salvo.surtidas];
+  estado.objetivosDaIa = Object.fromEntries(
+    Object.entries(salvo.objetivosDaIa ?? {}).map(([poder, objetivo]) => [poder, { ...objetivo }]),
+  );
   estado.cercos = Object.fromEntries(
     Object.entries(salvo.cercos).map(([id, c]) => [id, { ...c }]),
   );

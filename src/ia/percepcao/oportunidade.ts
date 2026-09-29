@@ -95,6 +95,19 @@ export function oportunidadesNoLitoral(
   return fichasDe(campanha, idPoder, costa);
 }
 
+/** Alvos alcançáveis por terra, passagem ou mar, inclusive a cidade já sitiada. */
+export function oportunidadesAlcancaveis(campanha: Campanha, idPoder: string): readonly Oportunidade[] {
+  const destinos = new Set<string>();
+  for (const hoste of campanha.hostes()) {
+    if (hoste.poder !== idPoder) continue;
+    if (!campanha.ehMar(hoste.posicao)) destinos.add(hoste.posicao);
+    for (const destino of campanha.rotasLongasDaHoste(hoste.id).keys()) {
+      if (!campanha.ehMar(destino)) destinos.add(destino);
+    }
+  }
+  return fichasDe(campanha, idPoder, destinos);
+}
+
 /** A ficha de cada terra desta lista, na ordem de id. É o corpo comum das duas percepções. */
 function fichasDe(
   campanha: Campanha,
