@@ -67,7 +67,7 @@ describe('a conta curta da alimentação', () => {
 
   it('não dá subsistência a poder sem província simulada', () => {
     expect(balancoAlimentar([], 0, ajustes.alimento).saldo).toBe(0);
-    expect(nova().balancoAlimentarDe('esparta')).toMatchObject({ subsistencia: 0, saldo: 0 });
+    expect(nova().balancoAlimentarDe('delfos')).toMatchObject({ subsistencia: 0, saldo: 0 });
   });
 
   it('a categoria sai do PAR de saldos: quem não comeu decide o nome', () => {

@@ -34,7 +34,10 @@ export default defineConfig({
      * folgada e 11 s numa apertada — os arquivos rodam em paralelo e disputam os mesmos núcleos.
      * Cinco segundos transformavam um teste de comportamento num teste de hardware, que falhava
      * no notebook e passava no desktop com o mesmo código.
+     *
+     * Com o Peloponeso o mapa passou de 18 para 30 poderes simulados, e a IA ficou mais cara que
+     * linear: as simulações de 60 a 100 turnos levam de 40 a 80 s sozinhas. Três minutos.
      */
-    testTimeout: 30000,
+    testTimeout: 180000,
   },
 });

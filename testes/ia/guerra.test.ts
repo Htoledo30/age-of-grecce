@@ -160,9 +160,9 @@ describe('a IA ataca — a etapa 3', () => {
     expect(mudaram.length).toBeGreaterThan(0);
   });
 
-  it('⚠️ e NÃO come as províncias sem ficha: Esparta não é conquista, é passeio', () => {
-    // Das 196 desenhadas, 25 são simuladas. As outras 171 não têm população e portanto não têm
-    // milícia: caem no primeiro soldado. Uma IA solta nelas dobraria de tamanho em cinco turnos
+  it('⚠️ e NÃO come as províncias sem ficha: Delfos não é conquista, é passeio', () => {
+    // Das 196 desenhadas, só uma parte é simulada. As outras não têm população e portanto não
+    // têm milícia: caem no primeiro soldado. Uma IA solta nelas dobraria de tamanho em cinco turnos
     // sem levar uma batalha, e o teatro desenhado afundaria num mapa de terra grátis.
     const c = nova('atenas');
     const simuladas = new Set(c.provinciasSimuladas);
@@ -376,16 +376,18 @@ describe('a IA ataca — a etapa 3', () => {
 });
 
 describe('o mapa deixou de ser um jardim de estátuas', () => {
-  it('depois de trinta turnos, o vizinho tem exército de verdade', () => {
+  it('depois de trinta turnos, os vizinhos têm exército de verdade', () => {
     // A promessa inteira da etapa 2 num teste só: suas lanças param de entrar andando.
+    // ⚠️ Não é mais sobre Mégara: com o Peloponeso no mapa ela pode cair antes do turno 30, e o
+    // que se guarda é que quem SOBREVIVE se armou.
     const c = nova('atenas');
-    expect(forcaTotalDe(c, 'megara')).toBe(0);
+    for (const p of poderesDaIa(c)) expect(forcaTotalDe(c, p), p).toBe(0);
     correr(c, 30);
 
-    const defensores = forcaTotalDe(c, 'megara') + c.miliciaEm('megara');
-    expect(forcaTotalDe(c, 'megara')).toBeGreaterThan(0);
-    // E o que defende Mégara passou a ser mais que a milícia sozinha.
-    expect(defensores).toBeGreaterThan(c.miliciaEm('megara'));
+    const vivos = poderesDaIa(c).filter((p) => c.provinciasDe(p).length > 0);
+    const armados = vivos.filter((p) => forcaTotalDe(c, p) > 0);
+    expect(vivos.length).toBeGreaterThan(0);
+    expect(armados.length).toBeGreaterThanOrEqual(vivos.length / 2);
   });
 
   it('ninguém quebra o cofre nem passa fome em cem turnos', () => {

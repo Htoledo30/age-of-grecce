@@ -13,9 +13,14 @@ O mapa contém:
 
 - 196 províncias de terra e 49 zonas marítimas;
 - 53 regiões e 139 poderes;
-- 25 províncias com economia, população e simulação completas;
-- 18 poderes inteiramente configurados e jogáveis;
-- 171 províncias de terra desenhadas, mas ainda sem economia e população.
+- 42 províncias com economia, população e simulação completas: a Grécia central e o Peloponeso
+  inteiro (Acaia, Élide, Pisa, Trifília, Arcádia, Lacônia, Messênia e Egina);
+- 30 poderes inteiramente configurados e jogáveis;
+- 154 províncias de terra desenhadas, mas ainda sem economia e população.
+
+Élide é o reino da cavalaria: cavalos como produto principal e o Treinamento de cavaleiros de pé
+desde o turno 1. Esparta abre com Quartel II e sem muralha; Tegeia e Ítome com Muralha I; Olímpia
+com Templo I; Egina com Porto I.
 
 Somente poderes com dados completos participam da campanha e da IA. Isso impede que reinos
 simulados conquistem gratuitamente metade de um mapa ainda vazio.
@@ -27,7 +32,7 @@ O mapa abre em paz e sem hostes iniciais; cada poder decide quanto mobilizar.
 
 O jogador consegue:
 
-- escolher qualquer um dos 18 poderes configurados;
+- escolher qualquer um dos 30 poderes configurados;
 - administrar tesouro, províncias, impostos, população, comida e construções;
 - recrutar quatro armas, formar, dividir, reunir, dispensar e mover hostes;
 - lutar, recuar, perseguir, cercar, assaltar, fazer surtida e conquistar;
@@ -407,7 +412,8 @@ ouro", "cobiça Elêusis"). Só o que a regra barra aparece antes, com o motivo.
 não fecham e ficam presas ao pé da coluna. O catálogo de Construções agrupa as obras por família
 (Cidade, Terra, Rotas, Guerra), com a vinheta de cada uma, o efeito numa frase e o preço em ouro.
 
-Os 18 poderes com economia completa possuem estandartes vetoriais próprios inspirados em tipos
+Os 18 poderes da Grécia central possuem estandartes vetoriais próprios (os 12 do Peloponeso
+ainda usam o estandarte genérico) inspirados em tipos
 monetários, cultos locais e mitos reconhecíveis. A mesma cor e insígnia aparece na escolha de poder, barra principal, ficha da
 província, ficha da hoste, marcador no mapa e mesa de Diplomacia, onde identifica cada linha da
 lista, os dois lados da tira de confronto e as fileiras de aliado, inimigo e parceiro. Os demais poderes do Atlas e reinos nascidos por
@@ -452,7 +458,7 @@ Comandos principais:
 
 ## Limitações atuais conhecidas
 
-- 171 províncias de terra ainda não possuem autoria econômica e social;
+- 154 províncias de terra ainda não possuem autoria econômica e social;
 - migração, governadores e espionagem não existem;
 - construções continuam ativas quando a manutenção não pode ser paga;
 - comércio, liga, passagem e tributo ainda não usam a balança de interesse;

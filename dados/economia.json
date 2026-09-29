@@ -147,6 +147,62 @@
     "hermioneu": {
       "nome": "Hermioneu",
       "povo": "dorio"
+    },
+    "aqueu": {
+      "nome": "Aqueu",
+      "povo": "aqueu"
+    },
+    "eleu": {
+      "nome": "Eleu",
+      "povo": "aqueu"
+    },
+    "pisata": {
+      "nome": "Pisata",
+      "povo": "aqueu"
+    },
+    "trifilio": {
+      "nome": "Trifílio",
+      "povo": "aqueu"
+    },
+    "hereense": {
+      "nome": "Hereense",
+      "povo": "arcadio"
+    },
+    "figaleu": {
+      "nome": "Figaleu",
+      "povo": "arcadio"
+    },
+    "orcomenio-arcadio": {
+      "nome": "Orcomênio arcádio",
+      "povo": "arcadio"
+    },
+    "mantineu": {
+      "nome": "Mantineu",
+      "povo": "arcadio"
+    },
+    "tegeata": {
+      "nome": "Tegeata",
+      "povo": "arcadio"
+    },
+    "espartano": {
+      "nome": "Espartano",
+      "povo": "dorio"
+    },
+    "hilota": {
+      "nome": "Hilota",
+      "povo": "aqueu"
+    },
+    "lacedemonio": {
+      "nome": "Lacedemônio",
+      "povo": "dorio"
+    },
+    "messenio": {
+      "nome": "Messênio",
+      "povo": "dorio"
+    },
+    "egineta": {
+      "nome": "Egineta",
+      "povo": "dorio"
     }
   },
   "provincias": {
@@ -628,6 +684,329 @@
       "construcoes": {},
       "ancoradouro": true,
       "motivoDaFicha": "O comercio-base alto numa producao pequena e a purpura escrita em dado: Hermione vende caro um produto raro. E o tipo de presa que rende mais viva e taxada do que saqueada."
+    },
+    "egio": {
+      "populacao": 11000,
+      "produto": "graos",
+      "nivel": 2,
+      "transitoBase": 0.3,
+      "motivo": "A maior das doze cidades aqueias, na costa sul do golfo de Corinto: planicie estreita de cereal e vinha na encosta. E ali que os aqueus se reunem.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "aqueu": 1.0
+      },
+      "felicidade": 56,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Capital natural da Acaia: nenhuma obra de pe, povo uno e contente. Liga de aldeias, nao reino de guerra."
+    },
+    "patras": {
+      "populacao": 8000,
+      "produto": "peixe",
+      "nivel": 2,
+      "transitoBase": 0.2,
+      "motivo": "A boca do golfo de Corinto: pesca, vinha e o melhor abrigo da costa aqueia. Quem vai para o Adriatico passa por aqui.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "aqueu": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Porto aqueu sem muralha nem quartel. O transito e o que vale; a terra e pouca."
+    },
+    "dime": {
+      "populacao": 5000,
+      "produto": "gado",
+      "nivel": 2,
+      "transitoBase": 0.1,
+      "motivo": "A ponta ocidental da Acaia: pasto de planicie baixa, encostada na Elida.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "aqueu": 1.0
+      },
+      "felicidade": 54,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "A menor das tres aqueias do mapa. Fronteira com Elide, a vizinha dos cavalos."
+    },
+    "elide": {
+      "populacao": 16000,
+      "produto": "cavalos",
+      "nivel": 4,
+      "transitoBase": 0.35,
+      "motivo": "A Elide criadora de cavalos de Homero: a maior planicie de pasto do Peloponeso ocidental. E daqui que saem os cavalos das corridas de carro de Olimpia.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 3
+      },
+      "nacionalidades": {
+        "eleu": 1.0
+      },
+      "felicidade": 58,
+      "construcoes": {
+        "treinamento-de-cavaleiros": 1,
+        "quartel": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "O REINO DA CAVALARIA, pedido de Henrique: o unico do mapa que abre com o Treinamento de cavaleiros de pe, e Quartel I para os cavaleiros sairem treinados. Cereal farto para sustentar a tropa; o porto e Cilene, e quem vai a Olimpia passa por aqui."
+    },
+    "olimpia": {
+      "populacao": 6000,
+      "produto": "graos",
+      "nivel": 2,
+      "transitoBase": 0.35,
+      "motivo": "O santuario de Zeus no vale do Alfeu. A terra da cereal e cavalo; o que faz a riqueza sao os jogos, que trazem a Grecia inteira a cada quatro anos.",
+      "secundario": {
+        "produto": "cavalos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "pisata": 0.8,
+        "eleu": 0.2
+      },
+      "felicidade": 60,
+      "construcoes": {
+        "templo": 1
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Templo I e o Heraion, o templo mais antigo do santuario. Pisa guarda os jogos, e Elide os cobica - os 20% eleus sao os que ja moram ali."
+    },
+    "trifilia": {
+      "populacao": 5000,
+      "produto": "graos",
+      "nivel": 2,
+      "transitoBase": 0.12,
+      "motivo": "A costa baixa entre o Alfeu e a Messenia: cereal de planicie e pesca. Terra de passagem, disputada por Elide.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "trifilio": 0.8,
+        "eleu": 0.2
+      },
+      "felicidade": 52,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Pequena e sem obra nenhuma: o alvo facil do oeste. Os eleus ja chegaram ate aqui."
+    },
+    "hereia": {
+      "populacao": 6000,
+      "produto": "gado",
+      "nivel": 2,
+      "transitoBase": 0.12,
+      "motivo": "A porta da Arcadia sobre o Alfeu: pasto de vale e floresta de encosta.",
+      "secundario": {
+        "produto": "madeira",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "hereense": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Aldeia arcadia livre, sem muralha. Vive de gado e fica entre Elide e o resto da Arcadia."
+    },
+    "figalia": {
+      "populacao": 4000,
+      "produto": "madeira",
+      "nivel": 2,
+      "transitoBase": 0.08,
+      "motivo": "Montanha arcadia sobre o vale do Neda: floresta, cabra e pouca coisa mais.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "figaleu": 1.0
+      },
+      "felicidade": 50,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "A mais pobre do Peloponeso: sem obra, pouca gente e longe de tudo. Madeira para arqueiro, e so."
+    },
+    "orcomeno-arcadio": {
+      "populacao": 6000,
+      "produto": "graos",
+      "nivel": 2,
+      "transitoBase": 0.15,
+      "motivo": "O planalto fechado do norte da Arcadia: cereal no fundo do vale, floresta nas serras em volta. Nao confundir com a Orcomeno da Beocia.",
+      "secundario": {
+        "produto": "madeira",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "orcomenio-arcadio": 1.0
+      },
+      "felicidade": 54,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Cidade arcadia pequena e livre. Nenhuma obra; vive na sombra de Mantineia."
+    },
+    "mantineia": {
+      "populacao": 9000,
+      "produto": "graos",
+      "nivel": 2,
+      "transitoBase": 0.2,
+      "motivo": "A metade norte da grande planicie arcadia: cereal e pasto, e a estrada que liga Argos ao interior.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "mantineu": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": false,
+      "motivoDaFicha": "Rival eterna de Tegeia, com quem divide a planicie. Sem obra de pe: a forca dela e o tamanho."
+    },
+    "tegeia": {
+      "populacao": 11000,
+      "produto": "graos",
+      "nivel": 3,
+      "transitoBase": 0.2,
+      "motivo": "A metade sul da planicie arcadia, a mais fertil do interior. E a estrada de Esparta para o norte passa por ela.",
+      "secundario": {
+        "produto": "gado",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "tegeata": 1.0
+      },
+      "felicidade": 57,
+      "construcoes": {
+        "muralha": 1
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Muralha I porque Tegeia e a cidade que resiste a Esparta - e vai resistir por mais de um seculo. A maior da Arcadia."
+    },
+    "esparta": {
+      "populacao": 18000,
+      "produto": "graos",
+      "nivel": 3,
+      "transitoBase": 0.2,
+      "motivo": "O vale do Eurotas, o melhor cereal do sul, e o ferro do Taigeto. Esparta nao tem muralha: a muralha dela sao os homens.",
+      "secundario": {
+        "produto": "ferro",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "espartano": 0.75,
+        "hilota": 0.25
+      },
+      "felicidade": 60,
+      "construcoes": {
+        "quartel": 2
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Quartel II e a agoge, o treino mais duro da Grecia. Sem muralha, de proposito. Os 25% hilotas sao a terra que trabalha para o espartano - e o medo permanente dele."
+    },
+    "gitio": {
+      "populacao": 6000,
+      "produto": "peixe",
+      "nivel": 2,
+      "transitoBase": 0.3,
+      "motivo": "O porto de Esparta, no fundo do golfo da Laconia: pesca, sal e a saida para o mar.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "lacedemonio": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Periecos, os lacedemonios livres que nao sao espartanos. Leais enquanto Esparta ganha."
+    },
+    "maleia": {
+      "populacao": 5000,
+      "produto": "vinho",
+      "nivel": 2,
+      "transitoBase": 0.25,
+      "motivo": "Epidauro Limera, na costa leste da Laconia: vinha em terraco e um porto pequeno. Colonia antiga de Epidauro.",
+      "secundario": {
+        "produto": "peixe",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "lacedemonio": 0.7,
+        "epidaurio": 0.3
+      },
+      "felicidade": 50,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Os 30% epidaurios sao a memoria da fundacao; os lacedemonios sao o dono de agora. Terra de fronteira, humor baixo."
+    },
+    "itome": {
+      "populacao": 14000,
+      "produto": "graos",
+      "nivel": 4,
+      "transitoBase": 0.15,
+      "motivo": "A planicie da Messenia, a terra mais fertil do Peloponeso - boa para plantar, boa para arar. O monte Itome e a fortaleza dela.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "messenio": 1.0
+      },
+      "felicidade": 52,
+      "construcoes": {
+        "muralha": 1
+      },
+      "ancoradouro": false,
+      "motivoDaFicha": "Muralha I e o Itome. A felicidade e baixa porque Esparta olha por cima do Taigeto para este cereal."
+    },
+    "pilos": {
+      "populacao": 6000,
+      "produto": "peixe",
+      "nivel": 2,
+      "transitoBase": 0.3,
+      "motivo": "A baia de Navarino, o melhor porto natural do oeste, e o palacio antigo de Nestor.",
+      "secundario": {
+        "produto": "graos",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "messenio": 1.0
+      },
+      "felicidade": 55,
+      "construcoes": {},
+      "ancoradouro": true,
+      "motivoDaFicha": "Porto messenio sem obra: a saida da Messenia para o mar."
+    },
+    "egina": {
+      "populacao": 9000,
+      "produto": "peixe",
+      "nivel": 2,
+      "transitoBase": 0.55,
+      "motivo": "A ilha no meio do Saronico: terra magra, mas o maior emporio do golfo e a primeira moeda da Grecia continental. Vive do que passa, nao do que planta.",
+      "secundario": {
+        "produto": "vinho",
+        "nivel": 1
+      },
+      "nacionalidades": {
+        "egineta": 1.0
+      },
+      "felicidade": 58,
+      "construcoes": {
+        "porto": 1
+      },
+      "ancoradouro": true,
+      "motivoDaFicha": "Porto I e a frota mercante dela, a rival de Atenas no mar. Pouca terra, muito transito."
     }
   }
 }

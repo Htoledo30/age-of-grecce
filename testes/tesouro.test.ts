@@ -79,10 +79,10 @@ describe('a renda entra no cofre de cada poder', () => {
 
   it('poder sem economia configurada não arrecada nada', () => {
     const c = emCampanha();
-    const antes = c.tesouroDe('esparta');
+    const antes = c.tesouroDe('delfos');
     c.passarTurno();
-    expect(c.rendaDe('esparta')).toBe(0);
-    expect(c.tesouroDe('esparta')).toBe(antes);
+    expect(c.rendaDe('delfos')).toBe(0);
+    expect(c.tesouroDe('delfos')).toBe(antes);
   });
 });
 
@@ -203,10 +203,10 @@ function manutencao(c: Campanha, idPoder: string): number {
 describe('recrutar não depende de a província ter economia CONFIGURADA', () => {
   it('a recusa passa a falar de requisito real, não de dado que falta', () => {
     const c = emCampanha();
-    // Esparta não tem ficha econômica. Tomada por Atenas, ela vira território do jogador.
-    c.trocarDono('esparta', 'atenas');
+    // Delfos não tem ficha econômica. Tomada por Atenas, ela vira território do jogador.
+    c.trocarDono('delfos', 'atenas');
 
-    const r = c.podeRecrutar('esparta', 100);
+    const r = c.podeRecrutar('delfos', 100);
 
     expect(r.pode).toBe(false);
     // ⚠️ Antes a recusa era "esta província não tem economia configurada" — uma trava
@@ -225,10 +225,10 @@ describe('recrutar não depende de a província ter economia CONFIGURADA', () =>
 
   it('decretar imposto e construir CONTINUAM exigindo economia: ali a trava é real', () => {
     const c = emCampanha();
-    c.trocarDono('esparta', 'atenas');
+    c.trocarDono('delfos', 'atenas');
     c.darOuro(60_000);
     // Sem ficha econômica não há arrecadação para regular nem parcela para multiplicar.
-    expect(c.podeDefinirImposto('esparta').pode).toBe(false);
-    expect(c.podeAgirEm('esparta').pode).toBe(false);
+    expect(c.podeDefinirImposto('delfos').pode).toBe(false);
+    expect(c.podeAgirEm('delfos').pode).toBe(false);
   });
 });

@@ -96,9 +96,9 @@ describe('a região configurada está completa', () => {
 
   it('nenhuma província de fora dela é simulada', () => {
     const c = nova();
-    // Esparta é o caso: existe no mapa, tem dono, e continua sem ficha nenhuma.
-    expect(c.perfilDe('esparta')).toBeNull();
-    expect(c.economiaDe('esparta')).toBeNull();
+    // Delfos é o caso: existe no mapa, tem dono, e continua sem ficha nenhuma.
+    expect(c.perfilDe('delfos')).toBeNull();
+    expect(c.economiaDe('delfos')).toBeNull();
   });
 });
 

@@ -99,7 +99,9 @@ describe('a mesa aproxima, e não só afasta', () => {
         if (c.parcelasDaRelacaoEntre(a, b).length > 1) comAlgumaCoisa += 1;
       }
     }
-    // Antes das parcelas novas eram 56 de 306, e o resto era zero para sempre.
-    expect(comAlgumaCoisa).toBeGreaterThan(pares / 4);
+    // Antes das parcelas novas eram 56 de 306 (18%), e o resto era zero para sempre. Com o
+    // Peloponeso o mapa ganhou muitos pares distantes demais para se tocarem — Messênia e
+    // Eubeia não têm o que sentir uma pela outra —, e a régua é um quinto dos pares.
+    expect(comAlgumaCoisa).toBeGreaterThan(pares / 5);
   });
 });

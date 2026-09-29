@@ -101,10 +101,11 @@ describe('economia da Ática', () => {
 });
 
 describe('províncias sem economia configurada', () => {
-  it('a Grécia central inteira tem ficha, e nada além dela', () => {
-    // A coroa em volta da Ática: Megáris, Coríntia, Beócia, Eubeia, Opunte, Siciônia e
-    // Argólida. O resto do mapa continua sem ficha, e continua dizendo isso com todas as
-    // letras em vez de inventar número.
+  it('a Grécia central e o Peloponeso têm ficha, e nada além deles', () => {
+    // A coroa em volta da Ática — Megáris, Coríntia, Beócia, Eubeia, Opunte, Siciônia e
+    // Argólida — e o Peloponeso inteiro: Acaia, Élide, Arcádia, Lacônia, Messênia e Egina.
+    // O resto do mapa continua sem ficha, e continua dizendo isso com todas as letras em vez
+    // de inventar número.
     expect(Object.keys(economia.provincias).sort()).toEqual([
       'argos',
       'atenas',
@@ -112,16 +113,31 @@ describe('províncias sem economia configurada', () => {
       'caristo',
       'cinuria',
       'corinto',
+      'dime',
+      'egina',
+      'egio',
       'eleusis',
+      'elide',
       'epidauro',
       'eretria',
+      'esparta',
+      'figalia',
+      'gitio',
+      'hereia',
       'hermione',
       'histiea',
+      'itome',
+      'maleia',
+      'mantineia',
       'maratona',
       'megara',
       'micenas',
+      'olimpia',
       'opunte',
       'orcomeno',
+      'orcomeno-arcadio',
+      'patras',
+      'pilos',
       'plateia',
       'queroneia',
       'salamina',
@@ -129,8 +145,10 @@ describe('províncias sem economia configurada', () => {
       'sounion',
       'tanagra',
       'tebas',
+      'tegeia',
       'tespias',
       'trezena',
+      'trifilia',
     ]);
   });
 
@@ -145,15 +163,15 @@ describe('províncias sem economia configurada', () => {
 
   it('não recebem economia inventada nem arrecadam', () => {
     const c = nova();
-    expect(c.economiaDe('esparta')).toBeNull();
+    expect(c.economiaDe('calidao')).toBeNull();
     expect(c.economiaDe('delfos')).toBeNull();
-    expect(c.rendaDe('esparta')).toBe(0);
+    expect(c.rendaDe('etolos')).toBe(0);
     expect(c.rendaDe('delfos')).toBe(0);
   });
 
   it('a campanha sabe dizer quantas ainda faltam configurar', () => {
     const c = nova();
     expect(c.semEconomia('atenas')).toBe(0);
-    expect(c.semEconomia('esparta')).toBe(c.provinciasDe('esparta').length);
+    expect(c.semEconomia('etolos')).toBe(c.provinciasDe('etolos').length);
   });
 });

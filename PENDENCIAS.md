@@ -55,8 +55,10 @@ para servir à conquista, não para ocupar o jogador.
 - **Aliança que se desfaz sozinha:** o piso de opinião (−10) e os 10 turnos de espera entre
   pedidos repetidos foram escolha minha para atender "até algo dar errado" e "pedidos demais".
   Henrique pode ajustar os dois no F2 (`alianca.desfazAbaixoDe`, `esfriamentoDoPedido`).
-- **Tamanho do mapa:** só 25 das 196 províncias têm economia e população. "Um reino enorme" e
-  "200 mil de ouro só com ~100 províncias" dependem de simular mais terra (trabalho de dados).
+- **Tamanho do mapa:** 42 das 196 províncias têm economia e população desde 29/09 (entrou o
+  Peloponeso: 17 províncias e 12 poderes). "Um reino enorme" e "200 mil de ouro só com ~100
+  províncias" ainda dependem de simular mais terra. Faltam estandartes próprios para os 12 novos
+  poderes, e a IA ficou mais cara que linear: 100 turnos levam 64 s com 30 poderes, 16 s com 18.
 - **Preço das construções:** hoje usa população, produção e trânsito iniciais da terra; preço e
   manutenção escalam juntos. A regra ajuda o reino pequeno, mas obras de ganho fixo (comida,
   Porto) e o melhor Mercado do reino dão a mesma capacidade mesmo se erguidos mais baratos numa
@@ -64,7 +66,7 @@ para servir à conquista, não para ocupar o jogador.
 - **Cofre dos reinos:** a renda provincial entra todo turno; não há despesa obrigatória por
   província além das obras erguidas e das tropas recrutadas. Corrupção reduz receita, não cria
   custo. Decidir como controlar o acúmulo dos grandes reinos sem travar os pequenos; a meta de
-  200 mil moedas com cerca de 100 províncias depende de ampliar as 25 terras simuladas.
+  200 mil moedas com cerca de 100 províncias depende de ampliar as 42 terras simuladas.
 
 ## Valores do F2 esperando confirmação (27/09, só nesta máquina, sem commit)
 

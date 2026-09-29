@@ -61,7 +61,7 @@ conseguem produzir.
   vale entre vizinhos e entre quaisquer dois poderes a menos de 120 km.
 - Um turno/rodada representa aproximadamente um ano.
 - O mapa tem 196 províncias de terra, 48 zonas marítimas, 53 regiões e 139 poderes. A simulação
-  autoral cobre hoje 25 províncias e 18 poderes jogáveis da Grécia central; as outras 171 terras
+  autoral cobre hoje 42 províncias e 30 poderes jogáveis da Grécia central e do Peloponeso; as outras 154 terras
   permanecem desenhadas, mas sem economia e população, até receberem autoria completa.
 - **Ritmo da campanha:** início até o turno 79; meio entre 80 e 150; fim depois de 150. No turno
   100 já devem existir alguns impérios aparecendo, mas nenhum reino imenso ou mapa consolidado.
@@ -771,7 +771,7 @@ Henrique; uma possibilidade pode ser removida se não combinar com o jogo.
 **Direções fechadas, ainda não implementadas:**
 
 - obra cuja manutenção não cabe no tesouro fica inativa naquele turno, sem ser destruída;
-- expansão autoral gradual das outras 171 províncias de terra;
+- expansão autoral gradual das outras 154 províncias de terra;
 - limpeza das tooltips para que nenhuma carregue o manual inteiro.
 
 **Possibilidades que ainda exigem decisão:**

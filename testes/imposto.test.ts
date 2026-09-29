@@ -55,9 +55,10 @@ describe('o decreto de imposto é uma alavanca de verdade', () => {
     }
   });
 
-  it('o CONFISCO sempre marca a data do levante; os outros não', () => {
+  it('o CONFISCO marca a data do levante onde nada segura o humor; os outros não', () => {
     const c = nova();
-    for (const id of c.provinciasSimuladas) {
+    // O Templo é justamente o que segura: Olímpia abre com o dela e aguenta o confisco.
+    for (const id of c.provinciasSimuladas.filter((p) => !c.construcoesEm(p).includes('templo'))) {
       expect(c.previsaoDeImpostoEm(id, 'confisco')!.levanteEm, id).not.toBeNull();
       expect(c.previsaoDeImpostoEm(id, 'normal')!.levanteEm, id).toBeNull();
     }

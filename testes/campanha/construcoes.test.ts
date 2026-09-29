@@ -328,8 +328,8 @@ describe('construções', () => {
   it('província sem economia não aceita construção', () => {
     const c = nova();
     c.comecar('atenas');
-    expect(c.retornoDaConstrucaoEm('esparta', 'agora')).toBeNull();
-    expect(c.podeConstruir('esparta', 'agora')).toMatchObject({ pode: false });
+    expect(c.retornoDaConstrucaoEm('delfos', 'agora')).toBeNull();
+    expect(c.podeConstruir('delfos', 'agora')).toMatchObject({ pode: false });
   });
 
   it('todo dinheiro continua inteiro depois de construir', () => {

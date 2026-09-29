@@ -92,6 +92,8 @@ describe('a economia é sobre a terra, não sobre cabeças', () => {
     // renda do comércio: um entreposto cujo comércio é um quinto da renda não é entreposto.
     const porBase = new Map<number, string[]>();
     for (const [id, ficha] of Object.entries(economia.provincias)) {
+      // Sem obra de pé: o Porto de Egina multiplica o trânsito e não é o que se mede aqui.
+      if (Object.keys(ficha.construcoes).length > 0) continue;
       porBase.set(ficha.transitoBase, [...(porBase.get(ficha.transitoBase) ?? []), id]);
     }
     const gemeas = [...porBase.values()].find((ids) => ids.length > 1);

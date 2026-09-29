@@ -47,9 +47,9 @@ describe('a milícia é derivada da população, nunca guardada', () => {
 
   it('província sem população não levanta ninguém', () => {
     expect(miliciaDe(0, {}, catalogo, combate)).toBe(0);
-    // As 202 sem economia configurada continuam caindo sem resistência — a mesma resposta
+    // As sem economia configurada continuam caindo sem resistência — a mesma resposta
     // honesta que a economia já dá, em vez de inventar defensores.
-    expect(nova().miliciaEm('esparta')).toBe(0);
+    expect(nova().miliciaEm('delfos')).toBe(0);
   });
 
   it('a Muralha melhora a DERIVAÇÃO sem dobrar gente', () => {

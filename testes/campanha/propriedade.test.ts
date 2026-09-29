@@ -20,7 +20,7 @@ describe('o saldo completo da província: renda menos a tropa nascida nela', () 
     const renda = c.economiaDe('atenas')?.total ?? 0;
     expect(c.saldoDaProvincia('atenas')).toBe(renda - custo);
     // Onde não há economia, não há veredito — a honestidade de sempre.
-    expect(c.saldoDaProvincia('esparta')).toBeNull();
+    expect(c.saldoDaProvincia('delfos')).toBeNull();
   });
 
   it('a tropa segue a ORIGEM, não a posição: marchar não muda a conta de casa', () => {
