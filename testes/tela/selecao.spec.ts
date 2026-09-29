@@ -119,8 +119,11 @@ test('construir uma Ágora muda a renda, a ficha e a própria linha', async ({ p
       arte.evaluate((imagem: HTMLImageElement) => [imagem.naturalWidth, imagem.naturalHeight]),
     )
     .toEqual([1200, 900]);
-  await expect(detalhe).toContainText(/Retorno\s*\d+ turnos/);
-  await expect(detalhe).toContainText('−40% corrupção por tamanho');
+  // O retorno mora no tooltip do custo desde a moldura nova da janela (29/09).
+  await detalhe.locator('.construcoes__conta [data-tooltip="sim"]').first().hover();
+  await expect(page.locator('.tooltip-jogo__titulo')).toHaveText('Retorno estimado');
+  await expect(page.locator('.tooltip-jogo__corpo')).toHaveText(/\d+ turnos?/);
+  await expect(detalhe).toContainText(/−40%\s*corrupção por tamanho/);
   await expect(armaria).toHaveAttribute('data-estado', 'sem-ouro');
   await armaria.click();
   await expect(detalhe.getByRole('button', { name: 'Erguer nível I' })).toBeDisabled();

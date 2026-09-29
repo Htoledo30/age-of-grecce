@@ -65,7 +65,9 @@ test('inicia uma campanha escolhendo Atenas no mapa', async ({ page }) => {
   // e apontar a câmera para ela responde a mesma pergunta em qualquer enquadramento.
   await page.evaluate(() => {
     const i = (window as unknown as { inspecao: Ganchos }).inspecao;
-    const centro = i.centroDe('golfo-saronico');
+    // Mar aberto de verdade: desde que o Golfo Sarônico foi recortado (27/09) o centro dele cai
+    // em Egina, e o do Mar Icário cai em Icária. O Mar Líbio não tem ilha no meio.
+    const centro = i.centroDe('mar-libio');
     // Bem de perto: no zoom de abertura o centro da tela ainda pega terra vizinha, e o teste
     // acusaria um painel que não fecha quando o que não fechou foi a mira.
     i.posicionar(centro.x, centro.y, 4);
