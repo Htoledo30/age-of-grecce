@@ -85,6 +85,14 @@ export function quemLuta(
   if (donoDaProvincia === forca.poder) return true;
   const pelaOrdem = posturas.get(chaveDaPostura(forca.posicao, forca.poder));
   if (pelaOrdem) return pelaOrdem === 'assaltar';
+  // ⚠️ **No meio do caminho, a postura é a da própria marcha.** A ordem longa não registra
+  // postura no destino (ver `posturasPorDestino`), e sem esta linha o exército que vai assaltar
+  // lá adiante atravessava calado o inimigo que o esperava numa província do caminho — os dois
+  // marchando e nenhum lutando. A cidade do caminho continua fora disto: ela só lê `posturas`.
+  const destino = forca.ordem?.rota.at(-1);
+  if (forca.ordem && destino !== undefined && destino !== forca.posicao) {
+    return forca.ordem.postura === 'assaltar';
+  }
   const cerco = cercos[forca.posicao];
   if (cerco?.sitiante === forca.poder) return cerco.postura === 'assaltar';
   // Chegou em terra alheia sem dizer nada: senta. Mesmo padrão que a cidade já usava — quem

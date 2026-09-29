@@ -14,6 +14,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { estiloDe } from '../../src/ia/estilo';
+import { reservasDaDefesa } from '../../src/ia/guerra/defender';
 import { travessiasEscolhidas } from '../../src/ia/guerra/marchar';
 import { ajustes, ia, novaCampanha } from '../apoio/mundo';
 
@@ -50,8 +51,11 @@ describe('a travessia põe a VIAGEM na conta do alvo', () => {
     expect(c.podeOrdenarMarcha(ordem.hoste, ordem.destino, ordem.homens, 'megara').pode).toBe(
       true,
     );
-    // E ela não zarpa para o outro lado do mapa: o destino de hoje encosta na terra de onde saiu.
-    expect(c.vizinhasDe(ordem.destino)).toContain('megara');
+    // E ela não zarpa para o outro lado do mapa: o trecho de hoje encosta na terra de onde saiu.
+    // (A ordem é a viagem inteira desde 29/09; o que anda hoje é o primeiro trecho da rota.)
+    const hoje = c.rotasLongasDaHoste(ordem.hoste).get(ordem.destino)?.[0];
+    expect(hoje).toBeDefined();
+    expect(c.vizinhasDe(hoje!)).toContain('megara');
   });
 });
 
@@ -64,7 +68,11 @@ describe('casa em chamas fecha o cais, não afunda a viagem', () => {
     // Um inimigo pisando em terra de Mégara: a casa está pegando fogo.
     c.plantarHoste('megara', 'calcis', 400);
 
-    const ordens = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens);
+    // ⚠️ Desde 29/09 quem tranca o cais é a DEFESA: ela reserva a hoste da terra ameaçada, e
+    // `ia.ts` passa a reserva adiante. É a mesma fiação da jogada de verdade.
+    const reservadas = reservasDaDefesa(c, 'megara');
+    expect(reservadas.has(noCais)).toBe(true);
+    const ordens = travessiasEscolhidas(c, 'megara', estilo, combate, reservadas);
     expect(ordens.some((o) => o.hoste === naAgua)).toBe(true);
     expect(ordens.some((o) => o.hoste === noCais)).toBe(false);
   });

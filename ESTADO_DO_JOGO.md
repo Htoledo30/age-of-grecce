@@ -257,7 +257,8 @@ Sitiar ocupa o campo sem conquistar. Assaltar enfrenta milícia e guarnição; M
 preparação prévia. O defensor pode fazer surtida e reforços externos podem romper o cerco.
 O comandante do cerco permanece enquanto estiver presente e em guerra; na ausência dele,
 assume a maior hoste invasora. Co-beligerantes em paz entre si não bloqueiam o assalto nem
-sobrescrevem a postura do comandante. Ordens de postura são separadas por poder e destino.
+sobrescrevem a postura do comandante. Ordens de postura são separadas por poder e destino; no
+meio de uma marcha longa, a hoste luta ou não conforme a postura da própria ordem.
 Uma força neutra não impede encontros entre outros inimigos presentes. Assalto barrado sem
 quebra permite retirar os sobreviventes para uma terra própria vizinha segura; sem refúgio,
 eles dispersam e voltam à população.

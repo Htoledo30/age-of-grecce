@@ -47,8 +47,12 @@ describe('a IA atravessa o mar — e a porta continua sendo o Porto', () => {
     const c = megaraComPorto();
     const ordens = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens);
     expect(ordens.length).toBeGreaterThan(0);
-    // O destino de HOJE é água: a ilha fica a mais de um salto, e a hoste anda um por rodada.
-    expect(c.ehMar(ordens[0]!.destino)).toBe(true);
+    // ⚠️ A ordem é a VIAGEM inteira (desde 29/09 a marcha longa da IA persiste): o destino é a
+    // terra do outro lado, e o primeiro trecho — o de hoje — é água.
+    const ordem = ordens[0]!;
+    const rota = c.rotasLongasDaHoste(ordem.hoste).get(ordem.destino);
+    expect(rota).toBeDefined();
+    expect(c.ehMar(rota![0]!)).toBe(true);
   });
 
   it('a rota longa chega onde a rota da rodada não chega', () => {
@@ -113,13 +117,14 @@ describe('a travessia termina: quem chega à água da ilha desembarca nela', () 
     expect(voltas.some((v) => v.hoste === naAgua)).toBe(false);
   });
 
-  it('no meio da água a postura é sitiar; no desembarque ela volta a ser decidida', () => {
+  it('a viagem inteira é uma ordem só, e a postura é a do desembarque', () => {
     const c = megaraComPorto();
     const estilo = estiloDe(ia, 'megara');
-    // Quem parte de Mégara ainda tem mar pela frente: postura nenhuma significa nada ali.
+    // Quem parte de Mégara já leva o destino em terra: a postura só vale ao chegar, e a
+    // resolução não a aplica no meio do mar (ver `posturasPorDestino`).
     const emCasa = travessiasEscolhidas(c, 'megara', estilo, combate, semOrdens);
     expect(emCasa.length).toBeGreaterThan(0);
-    expect(emCasa.every((o) => o.postura === 'sitiar')).toBe(true);
+    expect(emCasa.every((o) => !c.ehMar(o.destino))).toBe(true);
 
     // Quem já está na água da ilha decide de verdade — e contra uma praça aberta ela vai.
     const zona = c.vizinhasDe('calcis').find((v) => c.ehMar(v));

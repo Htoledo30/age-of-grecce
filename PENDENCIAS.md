@@ -108,10 +108,13 @@ foram enviados ao GitHub. Conferir com ele antes de acertar testes ou valores:
 
 ## Guerra e IA — implementado em 29/09, aguardando Henrique jogar
 
-⚠️ Medido em 29/09 pelo Claude: com os dados do GitHub (sem o F2 local), **21 testes ficam
-vermelhos** depois desta entrega — `ia/guerra` (10), `movimento/adjudicacao` (5), `ia/expedicao`,
-`ia/travessia`, `movimento/resolucao` e `salvamento`. Antes dela a suíte estava verde. Falta
-decidir, caso a caso, se o teste guardava regra que mudou de propósito ou se é regressão.
+Os 21 testes que esta entrega deixou vermelhos foram revistos em 29/09: a suíte voltou a ficar
+verde com os dados do GitHub. Três eram defeitos de verdade, corrigidos no código: o exército no
+meio de uma marcha longa atravessava calado o inimigo que queria lutar; o estado novo nascia sem
+`objetivosDaIa` e salvar/retomar mudava a forma dele; e o mundo de teste dizia que cada poder
+estava em guerra consigo mesmo. O resto guardava regra antiga que a entrega mudou de propósito
+(ameaça só de quem está em guerra, marcha longa com destino final, defesa que reserva hostes em
+vez de congelar o ataque, cerco pago com caixa) e foi reescrito para a regra nova.
 
 Sem testes, simulações, medições ou build, por pedido de Henrique. Compatibilidade de saves
 antigos prevista por campo opcional de objetivo militar; ainda não exercitada em execução.

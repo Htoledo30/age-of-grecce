@@ -123,6 +123,8 @@ export function criarEstadoInicial(
     acessos: {},
     propostas: [],
     pedidosEsfriando: {},
+    // Nasce vazio, como o restaurado: sem isto salvar e retomar mudava a forma do estado.
+    objetivosDaIa: {},
     acordos: {},
     // Ninguém compra o ano de ninguém antes de haver um ano do qual ter medo.
     tributos: {},

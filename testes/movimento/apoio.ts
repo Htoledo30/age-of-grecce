@@ -59,7 +59,9 @@ export function mundoDe(
     // ⚠️ Neste tabuleiro todo mundo está em guerra com todo mundo, e é de propósito: estes
     // testes são de ADJUDICAÇÃO — quem luta contra quem e em que ordem. A diplomacia tem os
     // testes dela, e misturar as duas faria cada cenário daqui começar com um tratado.
-    emGuerra: () => true,
+    // ⚠️ Com todo mundo — menos consigo mesmo, como no jogo (`relacoes.ts › emGuerra`). O
+    // "true" cego fazia o dono sitiar a própria cidade e o invasor ver inimigo em si mesmo.
+    emGuerra: (a: string, b: string) => a !== b,
     trocarDono: (id: string, poder: string) => {
       donos[id] = poder;
     },
