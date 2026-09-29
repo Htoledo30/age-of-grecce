@@ -53,6 +53,10 @@ para servir à conquista, não para ocupar o jogador.
 
 ## Decisões esperando Henrique
 
+- **Personalidade do mapa:** prints e análise visual feitos; há cores repetidas (Esparta e
+  Mégara inclusive) e tons que se aproximam sobre o terreno. Proposta: paleta mais distinta,
+  fronteiras de reino mais marcadas que divisões internas e arte estática de mar/relevo mais
+  expressiva. Aguardando Henrique escolher a direção; nenhuma mudança visual implementada.
 - **Aliança que se desfaz sozinha:** o piso de opinião (−10) e os 10 turnos de espera entre
   pedidos repetidos foram escolha minha para atender "até algo dar errado" e "pedidos demais".
   Henrique pode ajustar os dois no F2 (`alianca.desfazAbaixoDe`, `esfriamentoDoPedido`).
