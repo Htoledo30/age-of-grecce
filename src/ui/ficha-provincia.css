@@ -191,9 +191,11 @@
 .ficha__caixa-de-medidas:empty {
   display: none;
 }
+/* O povo leva a coluna mais larga: a faixa dele é a nota mais comprida ("terra pequena") e a
+   milícia, que quase nunca tem nota, cede o espaço. */
 .ficha__medidas {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 0.85fr);
 }
 .ficha__medida {
   padding: 0 8px;

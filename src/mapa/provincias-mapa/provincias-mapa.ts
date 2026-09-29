@@ -22,6 +22,9 @@ type AjustesProvincias = Ajustes['provincias'];
 /** Quanto a cor cobre o terreno num modo de dados. Ver `intensificar`. */
 const OPACIDADE_DO_MODO_DE_DADOS = 0.85;
 
+/** Quanto o destaque leva para acender depois do clique. Curto: é resposta, não espetáculo. */
+const SEGUNDOS_PARA_ACENDER = 0.16;
+
 /**
  * A partir de qual índice o mapa é água.
  *
@@ -52,6 +55,8 @@ export class ProvinciasMapa {
   /** Guardada porque desligar as cores zera o uniforme e ligar precisa restaurá-lo. */
   private readonly opacidadeCheia: number;
   private selecionada = NENHUMA;
+  /** Quanto do destaque da selecionada já acendeu, de 0 a 1, em tempo linear. Ver `avancar`. */
+  private acendimento = 1;
   private coresLigadas = true;
   /** O mapa está respondendo uma pergunta de dados, e não "de quem é esta terra". */
   private emModoDeDados = false;
@@ -100,6 +105,7 @@ export class ProvinciasMapa {
           uPrimeiroMar: { type: 'f32', value: primeiroMar(dados) },
           uForcaDoMar: { type: 'f32', value: ajustes.forcaDoMar },
           uSelecionada: { type: 'f32', value: NENHUMA },
+          uPresenca: { type: 'f32', value: 1 },
           uCorSelecao: {
             type: 'vec4<f32>',
             value: new Float32Array([sr / 255, sg / 255, sb / 255, ajustes.forcaSelecao]),
@@ -311,7 +317,19 @@ export class ProvinciasMapa {
   }
 
   selecionar(indice: number | null): void {
-    this.selecionada = indice ?? NENHUMA;
-    this.uniformes['uSelecionada'] = this.selecionada;
+    const nova = indice ?? NENHUMA;
+    // Clicar de novo na que já está acesa não a apaga para acender outra vez.
+    if (nova !== this.selecionada) this.acendimento = 0;
+    this.selecionada = nova;
+    this.uniformes['uSelecionada'] = nova;
+    this.uniformes['uPresenca'] = this.acendimento;
+  }
+
+  /** Acende a selecionada aos poucos. `segundos` é o tempo do quadro que acabou de passar. */
+  avancar(segundos: number): void {
+    if (this.acendimento >= 1) return;
+    this.acendimento = Math.min(1, this.acendimento + segundos / SEGUNDOS_PARA_ACENDER);
+    // ease-out cúbico: o clique responde de imediato e assenta no fim, sem arrancar.
+    this.uniformes['uPresenca'] = 1 - (1 - this.acendimento) ** 3;
   }
 }

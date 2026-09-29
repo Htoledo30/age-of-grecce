@@ -14,6 +14,12 @@
    ⚠️ Dois subconjuntos por peso, `latin` e `latin-ext`: o português precisa dos dois — "ê" de
    Elêusis e "ó" de Órcomeno vivem no primeiro, mas o segundo carrega o resto dos acentos e as
    aspas tipográficas. O navegador só baixa o que a página realmente usar.
+
+   ⚠️ `size-adjust: 112%` só na Alegreya Sans. Medida a 100px: altura da caixa alta 65 contra 73
+   da Inter, e da caixa baixa 46 contra 55 — no mesmo tamanho o texto de corpo parecia menor que
+   os números ao lado. 112% iguala a caixa alta; a caixa baixa ainda fica um pouco abaixo, de
+   propósito, porque mais que isso já faria o texto transbordar dos painéis. Ajuste na face, e
+   não `font-size-adjust` no corpo: este herdaria para a Inter e a encolheria.
 */
 @font-face {
   font-family: 'Cinzel';
@@ -68,6 +74,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-400-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
@@ -76,6 +83,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-400-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -84,6 +92,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-500-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
@@ -92,6 +101,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-500-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -100,6 +110,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-700-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
@@ -108,6 +119,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-700-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -196,6 +208,7 @@
   font-style: italic;
   font-weight: 400;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-400-italico-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
@@ -204,6 +217,7 @@
   font-style: italic;
   font-weight: 400;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-400-italico-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -212,6 +226,7 @@
   font-style: italic;
   font-weight: 500;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-500-italico-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
@@ -220,6 +235,7 @@
   font-style: italic;
   font-weight: 500;
   font-display: block;
+  size-adjust: 112%;
   src: url('/interface/fontes/alegreya-sans-500-italico-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }

@@ -48,6 +48,7 @@ para servir à conquista, não para ocupar o jogador.
 | Janela de Recrutar | só quantos e quanto: cartões com a arte da casa de cada arma, número grande, custo com a dracma; comida só quando falta | ver `git log` |
 | Cores foscas | ouro velho, pátina e óxido no lugar de amarelo, menta e salmão; dracma da barra em toda tela de ouro | ver `git log` |
 | Catálogo de Construções | agrupado por família, com a vinheta de cada obra, efeito numa frase e preço com moeda | ver `git log` |
+| Seleção no mapa e fonte do corpo | a província selecionada não pinta mais o miolo de marrom (traço grosso vazava pela curva de nível); agora cor do dono mais viva, linha e aro de marfim, e acende em 0,16 s. Alegreya Sans a 112% (`size-adjust`) para casar com a Inter; coluna do Povo na ficha mais larga | ver `git log` |
 | Retoque visual | convenção de cores (ouro amarelo, ganho verde, perda vermelha, rótulo em marfim) na barra, no painel, no Governo, em Construções e em Recrutar; textos pequenos subiram (11/12/14px); tamanhos soltos de Construções viraram régua; Guerra deixou de ser vermelha; custo da leva sempre visível | ver `git log` |
 
 ## Decisões esperando Henrique
@@ -125,8 +126,5 @@ antigos prevista por campo opcional de objetivo militar; ainda não exercitada e
 
 - **Pressão sobre Atenas e crescimento dos reinos:** conferir na partida com a nova avaliação
   de convocados, concentração de tropas, defesa local e revisão de paz/alianças.
-- **Visual ainda por fazer:** Alegreya Sans parece menor que os números em Inter no mesmo tamanho — a saída de
-  fundo é `font-size-adjust` na fonte de corpo, com uma passada do `medir-tamanho`; a cor da
-  província selecionada no mapa fica marrom e apagada.
 - **Notas antigas não conferidas:** o travamento ao abrir o movimento com Porto e o cálculo de
   todas as rotas possíveis (de `revisoes feitas por henrique.txt`, antes de setembro).

@@ -253,6 +253,7 @@ export class CenaMapa {
 
     // A paleta é drenada uma vez por quadro, depois de tudo que pôde sujá-la.
     this.camadaProvincias.aplicarPaleta();
+    this.camadaProvincias.avancar(relogio.delta);
     this.grao.atualizar(this.camera.zoom);
 
     const centro = this.camera.mundoParaPalco(0, 0);
