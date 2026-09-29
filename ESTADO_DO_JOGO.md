@@ -198,7 +198,7 @@ riqueza viva. Isso mantém a obra acessível numa terra pequena sem permitir que
 barateie a mesma melhoria numa conquista pobre.
 
 Armaria, Acampamento de arqueiro e Treinamento de cavaleiros são exceções de nível único. Cada
-uma custa 8.000 e cobra 25 por turno em qualquer província. Elas liberam respectivamente
+uma custa 4.000 e cobra 25 por turno em qualquer província. Elas liberam respectivamente
 hoplita, arqueiro e cavalaria naquela terra; arqueiro exige madeira e cavalaria exige cavalos.
 
 Papéis atuais:

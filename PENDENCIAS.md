@@ -57,9 +57,14 @@ para servir à conquista, não para ocupar o jogador.
   Henrique pode ajustar os dois no F2 (`alianca.desfazAbaixoDe`, `esfriamentoDoPedido`).
 - **Tamanho do mapa:** só 25 das 196 províncias têm economia e população. "Um reino enorme" e
   "200 mil de ouro só com ~100 províncias" dependem de simular mais terra (trabalho de dados).
-- **Preço das construções escala com a riqueza da província** (Mercado 3.065 em Atenas, 942 em
-  Hermíone). É proposital; Henrique ainda não disse se gosta.
-- **Quanto cortar da renda:** esperar Henrique jogar com o grão e a IA gastando o cofre.
+- **Preço das construções:** hoje usa população, produção e trânsito iniciais da terra; preço e
+  manutenção escalam juntos. A regra ajuda o reino pequeno, mas obras de ganho fixo (comida,
+  Porto) e o melhor Mercado do reino dão a mesma capacidade mesmo se erguidos mais baratos numa
+  terra pobre. Decidir se esses efeitos precisam de uma parcela de preço fixa.
+- **Cofre dos reinos:** a renda provincial entra todo turno; não há despesa obrigatória por
+  província além das obras erguidas e das tropas recrutadas. Corrupção reduz receita, não cria
+  custo. Decidir como controlar o acúmulo dos grandes reinos sem travar os pequenos; a meta de
+  200 mil moedas com cerca de 100 províncias depende de ampliar as 25 terras simuladas.
 
 ## Valores do F2 esperando confirmação (27/09, só nesta máquina, sem commit)
 

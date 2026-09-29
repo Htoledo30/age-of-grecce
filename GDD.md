@@ -342,7 +342,7 @@ Construções normalmente sobrevivem à conquista.
 
 **As três obras que liberam armas são a exceção: têm somente o nível I.** Liberar uma
 arma é uma capacidade binária, e vender níveis II e III sem efeito adicional seria uma
-armadilha. Armaria, Acampamento de arqueiro e Treinamento de cavaleiros custam 8.000 moedas e
+armadilha. Armaria, Acampamento de arqueiro e Treinamento de cavaleiros custam 4.000 moedas e
 mantêm o mesmo preço e a mesma folha de 25 moedas por turno em qualquer província: Atenas não
 compra nem sustenta a mesma arma mais barato erguendo o prédio numa vila conquistada.
 
