@@ -24,7 +24,6 @@
 
 import type { Arma } from '@/combate/exercito';
 import { NOME_DA_ARMA, PAPEL_DA_ARMA } from './armas';
-import { imagemDaConstrucao } from './imagens-de-construcoes';
 import { iconeGrego } from './icones-gregos';
 import { Janela } from './janela';
 import { moedaAteniense } from './moeda';
@@ -211,17 +210,14 @@ export class Recrutamento {
   }
 
   /**
-   * Um cartão por arma: **a arte da casa que a forma, o nome e o preço por homem.**
-   *
-   * A vinheta é a do prédio que libera a arma — Quartel, Armaria, Acampamento, Treinamento —,
-   * a mesma do catálogo de Construções: quem vê o cartão apagado já reconhece o que falta.
+   * Um cartão por arma: a ilustração, o nome e o preço por homem.
    */
   private cartaoDeArma(arma: Arma): HTMLButtonElement {
     const botao = document.createElement('button');
     botao.type = 'button';
     botao.className = 'recrutamento__arma';
     botao.dataset['arma'] = arma;
-    const origem = imagemDaConstrucao(ARTE_DA_ARMA[arma]);
+    const origem = new URL(ARTE_DA_ARMA[arma], document.baseURI).href;
     if (origem) {
       const arte = document.createElement('img');
       arte.className = 'recrutamento__arma-arte';
@@ -387,12 +383,12 @@ export class Recrutamento {
   }
 }
 
-/** A casa que forma cada arma — e é a arte dela que o cartão mostra. */
+/** Artes exclusivas do recrutamento; cavalaria mantém a vinheta atual. */
 const ARTE_DA_ARMA: Readonly<Record<Arma, string>> = {
-  leve: 'quartel',
-  hoplita: 'armaria',
-  arqueiro: 'acampamento-de-arqueiro',
-  cavalaria: 'treinamento-de-cavaleiros',
+  leve: 'interface/soldados/leve-v2.png',
+  hoplita: 'interface/soldados/hoplita-v2.png',
+  arqueiro: 'interface/soldados/arqueiro-v2.png',
+  cavalaria: 'interface/construcoes/treinamento-de-cavaleiros-v1.webp',
 };
 
 /**

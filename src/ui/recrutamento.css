@@ -11,7 +11,7 @@
   gap: 18px;
 }
 
-/* AS QUATRO ARMAS: a arte da casa que as forma, o nome e o preço por homem. */
+/* AS QUATRO ARMAS: ilustração de fundo, nome e preço na base do cartão. */
 .recrutamento__armas {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -19,11 +19,12 @@
 }
 .recrutamento__arma {
   position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-rows: 64px auto auto auto;
-  align-content: start;
+  grid-template-rows: 1fr auto auto auto;
+  aspect-ratio: 3 / 4;
   gap: 3px;
-  padding: 0 0 9px;
+  padding: 9px 0;
   overflow: hidden;
   border: 1px solid var(--ui-borda-fraca);
   border-radius: var(--raio-1);
@@ -37,12 +38,22 @@
     transform 110ms ease;
 }
 .recrutamento__arma-arte {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
   width: 100%;
-  height: 64px;
-  margin-bottom: 5px;
+  height: 100%;
   object-fit: cover;
-  border-bottom: 1px solid var(--ui-borda-fraca);
+  object-position: 43% center;
   filter: saturate(0.85) brightness(0.9);
+}
+.recrutamento__arma::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(transparent 42%, rgb(8 13 14 / 85%) 100%);
+  pointer-events: none;
 }
 .recrutamento__arma:hover:not(:disabled) {
   border-color: var(--ui-bronze);
@@ -70,6 +81,7 @@
   filter: saturate(1) brightness(1.05);
 }
 .recrutamento__arma-nome {
+  grid-row: 2;
   font-family: var(--fonte-nome);
   font-size: var(--texto-medida);
   font-weight: 650;
@@ -80,6 +92,7 @@
   color: var(--ui-bronze-claro);
 }
 .recrutamento__arma-preco {
+  grid-row: 3;
   font-family: var(--fonte-numero);
   font-size: var(--texto-corpo);
   font-weight: 700;
@@ -87,6 +100,9 @@
   color: var(--ui-ouro);
 }
 /* O que falta para levantar esta arma. Vazio quando ela está liberada. */
+.recrutamento__arma-trava {
+  grid-row: 4;
+}
 .recrutamento__arma-trava:not(:empty) {
   padding: 0 6px;
   font-size: var(--texto-nota);
